@@ -1,0 +1,18 @@
+.SUFFIXES:
+.SUFFIXES: .cpp .o
+
+CPP=g++
+CPPFLAGS=-g -Wall -ansi -pedantic
+
+all: picross_solver
+
+OBJS= main.o picross_solver.o
+
+picross_solver: $(OBJS)
+	$(CPP) -o picross_solver $(OBJS)
+
+.cpp.o:
+	$(CPP) -c $(CPPFLAGS) $< -o $@
+
+clean:
+	rm *.o picross_solver

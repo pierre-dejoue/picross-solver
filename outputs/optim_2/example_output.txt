@@ -1,0 +1,68 @@
+GRID 1: "Fish" (Picross, Normal mode, level 11-G)
+ > Found 1 solution(s):
+
+Grid 22x20:
+                        
+           #####        
+   ##     #    ###      
+  #  #    ##     ##     
+  # ##  ######### #     
+   ##  ## #  ########## 
+       #      #####   ##
+       # # #  ####     #
+       # # #  ###      #
+       #      ##      ##
+        # #  ###      # 
+       #   ########### #
+       ###  #########  #
+         ##  ########  #
+         ##  # ###### ##
+        #    #  ####  # 
+        #####     ## #  
+          ##     ## #   
+           ######       
+                        
+
+  Max nested level: 0
+  Max theoretical nb of alternatives on a line: 3003
+  21 calls to reduce_all_rows_and_columns().
+  257 calls to reduce_lines(). Max list size/total nb of lines being reduced:            1912/19968
+  3584 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 19/16235
+
+
+GRID 2: "Two notes" (based on Picross level 0-D)
+ > Found 2 solution(s):
+
+Grid 10x10:
+    ###     
+    # #     
+    # #     
+  ###       
+  ###       
+         ###
+         # #
+         # #
+       ###  
+       ###  
+
+Grid 10x10:
+         ###
+         # #
+         # #
+       ###  
+       ###  
+    ###     
+    # #     
+    # #     
+  ###       
+  ###       
+
+  Max nested level: 1
+    > The solving of the grid required an hypothesis on 1 row(s) or column(s).
+    > Max/total nb of alternatives being tested: 6/6
+  Max theoretical nb of alternatives on a line: 36
+  15 calls to reduce_all_rows_and_columns().
+  154 calls to reduce_lines(). Max list size/total nb of lines being reduced:            29/869
+  184 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 10/1420
+
+

@@ -2,6 +2,13 @@
 *.slo
 *.lo
 *.o
+*.obj
+*.idb
+*.pdb
+
+# Executables
+*.exe
+
 
 # Compiled Dynamic libraries
 *.so

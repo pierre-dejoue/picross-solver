@@ -1,0 +1,366 @@
+GRID 1: Picross, Free mode, level 1-J
+ > Found 1 solution(s):
+
+Grid 10x10:
+            
+        #   
+       ##   
+     #####  
+   ##  ## # 
+  #        #
+  ######## #
+  ##########
+  #        #
+  ##########
+
+  Max nested level: 0
+    > The solving of the grid required an hypothesis on 0 row(s) or column(s).
+    > Max/total nb of alternatives being tested: 0/0
+  4 calls to reduce_all_rows_and_columns().
+  40 calls to reduce_lines(). Max list size/total nb of lines being reduced:            56/387
+  255 calls to add_and_filter(). Max list size/total nb of lines being added and filtered: 56/1087
+
+
+GRID 2: Picross, Free mode, level 7-O
+ > Found 1 solution(s):
+
+Grid 20x20:
+             #####    
+            #######   
+         ###########  
+    ### ### ########  
+   # ##### ##### ###  
+  # ##### ####    ##  
+  ####    #   ### ##  
+  ## # ## ## ##    #  
+     #####  ##    #   
+    # ########   ##   
+   # ###  ## ### #    
+   ######  ###   #### 
+   ##  ##  ########  #
+   # ## #   ######   #
+   # ## ##   ##   #  #
+   ##  ####   ##  # ##
+    ####  ##   #  ####
+     #   ####  # #####
+     #  ############# 
+      ### ########### 
+
+  Max nested level: 0
+    > The solving of the grid required an hypothesis on 0 row(s) or column(s).
+    > Max/total nb of alternatives being tested: 0/0
+  7 calls to reduce_all_rows_and_columns().
+  170 calls to reduce_lines(). Max list size/total nb of lines being reduced:            1287/7909
+  5854 calls to add_and_filter(). Max list size/total nb of lines being added and filtered: 1287/35958
+
+
+GRID 3: Picross, Free mode, level 8-H
+ > Found 1 solution(s):
+
+Grid 20x20:
+         ####         
+        ######        
+        ##   #        
+   ###  #   ###       
+  #####  # #   #      
+  ##  ######    #     
+  #   #  ##  #  ##    
+   # #  #    #   #    
+    # ##    ##   ##   
+   #   #  ####    #   
+  #   #### ###    ##  
+  #  ## #  ###   #### 
+   ######  ##  #### ##
+  #  # ##  ######    #
+   ##   #    ## #     
+     #  #   ### ##    
+      # #  ##### #   #
+      # # ####  #   ##
+      #######    #### 
+       ### ##    #    
+
+  Max nested level: 0
+    > The solving of the grid required an hypothesis on 0 row(s) or column(s).
+    > Max/total nb of alternatives being tested: 0/0
+  19 calls to reduce_all_rows_and_columns().
+  587 calls to reduce_lines(). Max list size/total nb of lines being reduced:            4368/101118
+  48265 calls to add_and_filter(). Max list size/total nb of lines being added and filtered: 4368/463233
+
+
+GRID 4: "Fish" (Picross, Normal mode, level 11-G)
+ > Found 1 solution(s):
+
+Grid 22x20:
+                        
+           #####        
+   ##     #    ###      
+  #  #    ##     ##     
+  # ##  ######### #     
+   ##  ## #  ########## 
+       #      #####   ##
+       # # #  ####     #
+       # # #  ###      #
+       #      ##      ##
+        # #  ###      # 
+       #   ########### #
+       ###  #########  #
+         ##  ########  #
+         ##  # ###### ##
+        #    #  ####  # 
+        #####     ## #  
+          ##     ## #   
+           ######       
+                        
+
+  Max nested level: 0
+    > The solving of the grid required an hypothesis on 0 row(s) or column(s).
+    > Max/total nb of alternatives being tested: 0/0
+  21 calls to reduce_all_rows_and_columns().
+  518 calls to reduce_lines(). Max list size/total nb of lines being reduced:            3003/37817
+  18411 calls to add_and_filter(). Max list size/total nb of lines being added and filtered: 3003/159719
+
+
+GRID 5: Picross, Normal mode, level 11-G
+ > Found 2 solution(s):
+
+Grid 8x8:
+  ##  ##  
+  ##  ##  
+    ##  ##
+    ##  ##
+  ##  ##  
+  ##  ##  
+    ##  ##
+    ##  ##
+
+Grid 8x8:
+    ##  ##
+    ##  ##
+  ##  ##  
+  ##  ##  
+    ##  ##
+    ##  ##
+  ##  ##  
+  ##  ##  
+
+  Max nested level: 1
+    > The solving of the grid required an hypothesis on 1 row(s) or column(s).
+    > Max/total nb of alternatives being tested: 10/10
+  9 calls to reduce_all_rows_and_columns().
+  182 calls to reduce_lines(). Max list size/total nb of lines being reduced:            10/812
+  557 calls to add_and_filter(). Max list size/total nb of lines being added and filtered: 10/1763
+
+
+GRID 6: Multiple solutions
+ > Found 6 solution(s):
+
+Grid 6x6:
+  ##    
+  ##    
+    ##  
+    ##  
+      ##
+      ##
+
+Grid 6x6:
+  ##    
+  ##    
+      ##
+      ##
+    ##  
+    ##  
+
+Grid 6x6:
+    ##  
+    ##  
+  ##    
+  ##    
+      ##
+      ##
+
+Grid 6x6:
+    ##  
+    ##  
+      ##
+      ##
+  ##    
+  ##    
+
+Grid 6x6:
+      ##
+      ##
+  ##    
+  ##    
+    ##  
+    ##  
+
+Grid 6x6:
+      ##
+      ##
+    ##  
+    ##  
+  ##    
+  ##    
+
+  Max nested level: 2
+    > The solving of the grid required an hypothesis on 4 row(s) or column(s).
+    > Max/total nb of alternatives being tested: 5/13
+  21 calls to reduce_all_rows_and_columns().
+  169 calls to reduce_lines(). Max list size/total nb of lines being reduced:            5/367
+  177 calls to add_and_filter(). Max list size/total nb of lines being added and filtered: 5/885
+
+
+GRID 7: Picross, Normal mode, level 11-G
+ > Found 2 solution(s):
+
+Grid 20x19:
+                      
+        #             
+       ##             
+     #####            
+   ##  ## #           
+  #        #          
+  ######## #          
+  ##########          
+  #        #          
+  ##########          
+                  #   
+                 ##   
+               #####  
+             ##  ## # 
+            #        #
+            ######## #
+            ##########
+            #        #
+            ##########
+
+Grid 20x19:
+                      
+                  #   
+                 ##   
+               #####  
+             ##  ## # 
+            #        #
+            ######## #
+            ##########
+            #        #
+            ##########
+        #             
+       ##             
+     #####            
+   ##  ## #           
+  #        #          
+  ######## #          
+  ##########          
+  #        #          
+  ##########          
+
+  Max nested level: 1
+    > The solving of the grid required an hypothesis on 1 row(s) or column(s).
+    > Max/total nb of alternatives being tested: 11/11
+  21 calls to reduce_all_rows_and_columns().
+  813 calls to reduce_lines(). Max list size/total nb of lines being reduced:            680/78343
+  21873 calls to add_and_filter(). Max list size/total nb of lines being added and filtered: 680/244554
+
+
+GRID 8: "Notes" (based on picross level 0-D)
+ > Found 2 solution(s):
+
+Grid 10x10:
+    ###     
+    # #     
+    # #     
+  ###       
+  ###       
+         ###
+         # #
+         # #
+       ###  
+       ###  
+
+Grid 10x10:
+         ###
+         # #
+         # #
+       ###  
+       ###  
+    ###     
+    # #     
+    # #     
+  ###       
+  ###       
+
+  Max nested level: 1
+    > The solving of the grid required an hypothesis on 1 row(s) or column(s).
+    > Max/total nb of alternatives being tested: 6/6
+  15 calls to reduce_all_rows_and_columns().
+  250 calls to reduce_lines(). Max list size/total nb of lines being reduced:            36/1697
+  441 calls to add_and_filter(). Max list size/total nb of lines being added and filtered: 36/3294
+
+
+GRID 9: "-" (Picross, Normal mode, level 11-M)
+ > Found 1 solution(s):
+
+Grid 25x20:
+       ###                 
+     #######               
+    #########              
+   ## ########             
+  ## ### ##  #             
+  ####### ##  #            
+  ###### ###  #            
+   ##    #### #            
+   #    # #########        
+  #    # # #   ## ##       
+  #   #        ###### ## ##
+  #   #   ##  ####### ## ##
+  #    ##  ###### ##       
+  ##   ############        
+   #    ## ####            
+   ##   ##  ####           
+    #    #######           
+   #     # ## ##           
+   #      #                
+   #       #               
+
+  Max nested level: 0
+    > The solving of the grid required an hypothesis on 0 row(s) or column(s).
+    > Max/total nb of alternatives being tested: 0/0
+  16 calls to reduce_all_rows_and_columns().
+  392 calls to reduce_lines(). Max list size/total nb of lines being reduced:            6748/35758
+  25967 calls to add_and_filter(). Max list size/total nb of lines being added and filtered: 6748/199464
+
+
+GRID 10:  "Le vilain petit canard" (Picross, Free mode, level 9-D)
+ > Found 1 solution(s):
+
+Grid 25x20:
+   #################    ###
+     #  #      #   ########
+   ##    #  ###############
+  ###    #        #  ######
+  #  #  ##  ######   ######
+  #####  ###   #### #  ####
+  #####       # ###    ##  
+  ####        ######  #####
+    ##       #########     
+  #### #     ###     ####  
+  ######    ####         ##
+  # #####  ####            
+   # #  ######       ##    
+  # ##  ##          ####   
+  #   ## ##        ## ##  #
+     #    #         #######
+     #   ##          ######
+    # ####         # ######
+    #             #   #### 
+     #            # #      
+
+  Max nested level: 0
+    > The solving of the grid required an hypothesis on 0 row(s) or column(s).
+    > Max/total nb of alternatives being tested: 0/0
+  9 calls to reduce_all_rows_and_columns().
+  267 calls to reduce_lines(). Max list size/total nb of lines being reduced:            2002/39774
+  19570 calls to add_and_filter(). Max list size/total nb of lines being added and filtered: 2002/175428
+
+
