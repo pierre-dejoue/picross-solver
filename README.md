@@ -1,4 +1,4 @@
-picross-solver
+Picross Solver
 ==============
 
 A text-based Picross puzzle solver in C++
@@ -15,14 +15,9 @@ A text-based Picross puzzle solver in C++
     row and column constraints given as an input text file. There can be zero, one or several
     solutions.
 
-    That project consists of several files concatenated below. I also added an example input
-    file and the corresponding output (with two grids being solved, the first one has a unique
-    solution, whereas the second grid has two solutions).
 
-    1) main.cpp
-    2) picross_solver.h
-    3) picross__solver.cpp
-    4) example_input.txt
-    5) example_output.txt
+## License
+
+[![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](./LICENSE)
 
 

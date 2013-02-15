@@ -1,19 +1,20 @@
 /*******************************************************************************
  * PICROSS SOLVER: main.cpp
  *
- *   My implementation of a solver for Picross puzzles (nonograms). This file
+ *   Implementation of a solver for Picross puzzles (nonograms). This file
  *   parses the input text file with the information for one or several grids
  *   and solve them. If several solutions exist, an exhaustive search is done
  *   and all of them are displayed.
  *
- * Author/Copyright: Pierre DEJOUE - pdejoue.perso.neuf.fr - 2010
+ * Copyright (c) 2010 Pierre DEJOUE
  ******************************************************************************/
 #include <fstream>
 #include "picross_solver.h"
 
 using namespace std;
 
-enum ParsingState {
+enum ParsingState
+{
     FILE_START,
     GRID_START,
     ROW_SECTION,

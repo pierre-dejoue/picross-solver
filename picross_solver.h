@@ -1,9 +1,9 @@
 /*******************************************************************************
  * PICROSS SOLVER: picross_solver.h
  *
- *  Declaration of the classes of the Picross solver.
+ *   Declaration of the classes of the Picross solver.
  *
- * Author/Copyright: Pierre DEJOUE - pdejoue.perso.neuf.fr - 2010
+ * Copyright (c) 2010 Pierre DEJOUE
  ******************************************************************************/
 #ifndef PICROSS_SOLVER_H
 #define PICROSS_SOLVER_H

@@ -3,7 +3,7 @@
  *
  *   This file implements the core functions of the  Picross solver.
  *
- * Author/Copyright: Pierre DEJOUE - pdejoue.perso.neuf.fr - 2010
+ * Copyright (c) 2010 Pierre DEJOUE
  ******************************************************************************/
 #include "picross_solver.h"
 #include <string.h>
