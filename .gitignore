@@ -1,20 +1,13 @@
-# Compiled Object files
+build/
 *.slo
 *.lo
 *.o
 *.obj
 *.idb
 *.pdb
-
-# Executables
 *.exe
-
-
-# Compiled Dynamic libraries
 *.so
 *.dylib
-
-# Compiled Static libraries
 *.lai
 *.la
 *.a

@@ -15,6 +15,17 @@ A text-based Picross puzzle solver in C++
     row and column constraints given as an input text file. There can be zero, one or several
     solutions.
 
+## Build
+
+Build using CMake: https://cmake.org/download/
+
+For example on Windows:
+
+* `mkdir -p build/msvc14x64`
+* `cd build/msvc14x64`
+* `cmake -G "Visual Studio 14 2015 Win64" ../..`
+* `cmake --build . --config Release`
+
 
 ## License
 
