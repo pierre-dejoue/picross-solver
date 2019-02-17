@@ -8,10 +8,15 @@
  *
  * Copyright (c) 2010 Pierre DEJOUE
  ******************************************************************************/
+#include <exception>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <vector>
+
+
 #include "picross_solver.h"
 
-using namespace std;
 
 enum ParsingState
 {
@@ -20,10 +25,14 @@ enum ParsingState
     ROW_SECTION,
     COLUMN_SECTION
 };
+
+
 ParsingState parsing_state = FILE_START;
 const int INPUT_BUFFER_SZ = 2048;
 
-bool parse_picross_input_file(const string& line_to_parse, vector<GridInput>& grids);
+
+bool parse_picross_input_file(const std::string& line_to_parse, std::vector<GridInput>& grids);
+
 
 /*******************************************************************************
  * MAIN()
@@ -33,7 +42,7 @@ int main(int argc, char *argv[])
     /***************************************************************************
      * I - Process command line
      **************************************************************************/
-    ifstream inputstream;
+    std::ifstream inputstream;
     char * filename;
     if(argc == 2)
     {
@@ -41,14 +50,14 @@ int main(int argc, char *argv[])
         inputstream.open(filename);
         if(!inputstream.is_open())
         {
-            cerr << "Cannot open file " << filename << endl;
+            std::cerr << "Cannot open file " << filename << std::endl;
             exit(1);
         }
     }
     else
     {
-        cerr << "Usage:" << endl;
-        cerr << "    picross_parser input_filename" << endl;
+        std::cerr << "Usage:" << std::endl;
+        std::cerr << "    picross_parser input_filename" << std::endl;
         exit(1);
     }
 
@@ -59,7 +68,7 @@ int main(int argc, char *argv[])
     /* Line buffer */
     char line[INPUT_BUFFER_SZ];
     /* Container for grids input data */
-    vector<GridInput> grids_to_solve;
+    std::vector<GridInput> grids_to_solve;
     int line_nb = 0;
     bool is_line_ok;
     GridStats* stats = new GridStats;
@@ -68,9 +77,9 @@ int main(int argc, char *argv[])
     {
         line_nb++;
         inputstream.getline(line, INPUT_BUFFER_SZ - 1);
-        if((is_line_ok = parse_picross_input_file(string(line), grids_to_solve)) == false)
+        if((is_line_ok = parse_picross_input_file(std::string(line), grids_to_solve)) == false)
         {
-            cerr << "Parsing error on line " << line_nb << " (parsing_state = " << parsing_state << "): " << line << endl;
+            std::cerr << "Parsing error on line " << line_nb << " (parsing_state = " << parsing_state << "): " << line << std::endl;
         }
     }
     /* Close file */
@@ -82,12 +91,11 @@ int main(int argc, char *argv[])
     try
     {
         int count_grids = 0;
-        for(vector<GridInput>::iterator grid_input = grids_to_solve.begin(); grid_input != grids_to_solve.end(); grid_input++)
+        for(std::vector<GridInput>::iterator grid_input = grids_to_solve.begin(); grid_input != grids_to_solve.end(); grid_input++)
         {
-            cout << "GRID " << ++count_grids << ": " << grid_input->name << endl;
+            std::cout << "GRID " << ++count_grids << ": " << grid_input->name << std::endl;
             /* Container for the solutions */
-            Line line();
-            vector<Grid> solutions;
+            std::vector<Grid> solutions;
             solutions.reserve(16);
             Grid grid(grid_input->columns.size(), grid_input->rows.size(), *grid_input, solutions, stats);
 
@@ -97,30 +105,36 @@ int main(int argc, char *argv[])
             /* Sanity check of the input data */
             if(!grid_input->sanity_check())
             {
-                cout << " > Invalid grid. Check the input file." << endl << endl;
+                std::cout << " > Invalid grid. Check the input file." << std::endl << std::endl;
             }
             else
             {
                 /* Solve the grid */
                 if(!grid.solve())
                 {
-                    cout << " > Could not solve that grid :-(" << endl << endl;
+                    std::cout << " > Could not solve that grid :-(" << std::endl << std::endl;
                 }
                 else
                 {
-                    cout << " > Found " << solutions.size() << " solution(s):" << endl << endl;
-                    for(vector<Grid>::iterator solution = solutions.begin(); solution != solutions.end(); solution++) { solution->print(); }
+                    std::cout << " > Found " << solutions.size() << " solution(s):" << std::endl << std::endl;
+                    for(std::vector<Grid>::iterator solution = solutions.begin(); solution != solutions.end(); solution++) { solution->print(); }
                 }
 
                 /* Display stats */
                 print_grid_stats(stats);
-                cout << endl;
+                std::cout << std::endl;
             }
 
         }
     }
-    catch (exception& e) { cout << "ERROR: " << e.what() << endl; }
-    catch (...)          { cout << "UNEXPECTED ERROR." << endl; }
+    catch (std::exception& e)
+    {
+        std::cout << "ERROR: " << e.what() << std::endl;
+    }
+    catch (...)
+    {
+        std::cout << "UNEXPECTED ERROR." << std::endl;
+    }
 
     /***************************************************************************
      * IV - Exit
@@ -128,6 +142,7 @@ int main(int argc, char *argv[])
     delete stats;
     return 0;
 }
+
 
 /*******************************************************************************
  * parse_picross_input_file: parse one line from the input file, based on parsing_state
@@ -140,11 +155,11 @@ int main(int argc, char *argv[])
  *      COLUMNS             <--- marker for columns
  *      ...
  ******************************************************************************/
-bool parse_picross_input_file(const string& line_to_parse, vector<GridInput>& grids)
+bool parse_picross_input_file(const std::string& line_to_parse, std::vector<GridInput>& grids)
 {
     bool valid_line = false;
-    istringstream iss(line_to_parse);
-    string token;
+    std::istringstream iss(line_to_parse);
+    std::string token;
 
     /* Copy the first word in 'token' */
     iss >> token;
@@ -177,7 +192,7 @@ bool parse_picross_input_file(const string& line_to_parse, vector<GridInput>& gr
     {
         if(parsing_state == ROW_SECTION)
         {
-            vector<int> new_row;
+            std::vector<int> new_row;
             int n;
             while(iss >> n) { new_row.push_back(n); }
             grids.back().rows.push_back(Constraint(Line::ROW, new_row));
@@ -185,7 +200,7 @@ bool parse_picross_input_file(const string& line_to_parse, vector<GridInput>& gr
         }
         else if(parsing_state == COLUMN_SECTION)
         {
-            vector<int> new_column;
+            std::vector<int> new_column;
             int n;
             while(iss >> n) { new_column.push_back(n); }
             grids.back().columns.push_back(Constraint(Line::COLUMN, new_column));
@@ -200,4 +215,3 @@ bool parse_picross_input_file(const string& line_to_parse, vector<GridInput>& gr
 
     return valid_line;
 }
-
