@@ -20,6 +20,25 @@
 #include <vector>
 
 
+namespace
+{
+    class PicrossLineAdditionError : public std::runtime_error
+    {
+    public:
+        PicrossLineAdditionError() : std::runtime_error("[PicrossSolver] An error was detected adding two lines")
+        {}
+    };
+
+
+    class PicrossGridCannotBeSolved : public std::runtime_error
+    {
+    public:
+        PicrossGridCannotBeSolved() : std::runtime_error("[PicrossSolver] The current grid cannot be solved")
+        {}
+    };
+}
+
+
 namespace Tile
 {
     char str(tile t)
@@ -32,7 +51,6 @@ namespace Tile
         throw std::invalid_argument(oss.str());
     }
 
-    /* See comments for Line::add() */
     tile add(tile t1, tile t2)
     {
         if(t1 == t2 || t2 == Tile::UNKNOWN) { return t1; }
@@ -40,7 +58,6 @@ namespace Tile
         else                                { throw PicrossLineAdditionError(); }
     }
 
-    /* See comments for Line::reduce() */
     tile reduce(tile t1, tile t2)
     {
         if(t1 == t2) { return t1; }

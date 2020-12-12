@@ -19,32 +19,15 @@ struct GridStats;
 
 
 /*
- * Exceptions specific to the Picross solver:
- *  - PicrossLineAdditionError
- *  - PicrossGridCannotBeSolved
- */
-class PicrossLineAdditionError : public std::exception
-{
-    const char * what () const throw () { return "Picross Solver: an error was detected adding two lines."; }
-};
-
-
-class PicrossGridCannotBeSolved : public std::exception
-{
-    const char * what () const throw () { return "Picross Solver: this is a warning indicating that the current grid cannot be solved."; }
-};
-
-
-/*
  * Tile namespace.
  *
  *   A tile is the base element to construct lines and grids: it can be empty (ZERO) of filled (ONE).
  *   The following namespace defines the constants, types and functions used for the manipulation of tiles.
  */
 namespace Tile
-{
-    const int UNKNOWN = -1, ZERO = 0, ONE = 1;
-    typedef int tile;
+ {
+    constexpr int UNKNOWN = -1, ZERO = 0, ONE = 1;
+    using tile = int;
 
     char str(tile t);
     tile add(tile t1, tile t2);
