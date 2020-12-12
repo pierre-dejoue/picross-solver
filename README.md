@@ -21,11 +21,14 @@ Build using CMake: https://cmake.org/download/
 
 For example on Windows:
 
-* `mkdir -p build/msvc14x64`
-* `cd build/msvc14x64`
-* `cmake -G "Visual Studio 14 2015 Win64" ../..`
+* `mkdir -p build/msvc141x64`
+* `cd build/msvc141x64`
+* `cmake -G "Visual Studio 15 2017 Win64" ../..`
 * `cmake --build . --config Release`
 
+## Run the solver app
+
+`./build/msvc141x64/bin/Release/picross_solver.exe inputs/example_input.txt`
 
 ## License
 
