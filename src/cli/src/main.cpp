@@ -1,12 +1,12 @@
 /*******************************************************************************
- * PICROSS SOLVER: main.cpp
+ * PICROSS SOLVER
  *
- *   Implementation of a solver for Picross puzzles (nonograms). This file
- *   parses the input text file with the information for one or several grids
+ *   Implementation of a CLI for the solver of Picross puzzles (nonograms)
+ *   Parses the input text file with the information for one or several grids
  *   and solve them. If several solutions exist, an exhaustive search is done
  *   and all of them are displayed.
  *
- * Copyright (c) 2010 Pierre DEJOUE
+ * Copyright (c) 2010-2020 Pierre DEJOUE
  ******************************************************************************/
 #include <exception>
 #include <fstream>
@@ -15,7 +15,7 @@
 #include <vector>
 
 
-#include "picross_solver.h"
+#include <picross/picross.h>
 
 
 enum ParsingState
@@ -31,7 +31,7 @@ ParsingState parsing_state = FILE_START;
 const int INPUT_BUFFER_SZ = 2048;
 
 
-bool parse_picross_input_file(const std::string& line_to_parse, std::vector<InputGrid>& grids);
+bool parse_picross_input_file(const std::string& line_to_parse, std::vector<picross::InputGrid>& grids);
 
 
 /*******************************************************************************
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     /* Line buffer */
     char line[INPUT_BUFFER_SZ];
     /* Container for grids input data */
-    std::vector<InputGrid> grids_to_solve;
+    std::vector<picross::InputGrid> grids_to_solve;
     int line_nb = 0;
     bool is_line_ok;
     /* Start parsing */
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
      **************************************************************************/
     try
     {
-        std::unique_ptr<Solver> solver = getRefSolver();
+        const auto solver = picross::getRefSolver();
 
         unsigned int count_grids = 0u;
         for(auto& grid_input = grids_to_solve.begin(); grid_input != grids_to_solve.end(); ++grid_input)
@@ -100,8 +100,8 @@ int main(int argc, char *argv[])
             if (check_grid_input(*grid_input))
             {
                 /* Solve the grid */
-                GridStats stats;
-                std::vector<std::unique_ptr<SolvedGrid>> solutions = solver->solve(*grid_input, &stats);
+                picross::GridStats stats;
+                std::vector<std::unique_ptr<picross::SolvedGrid>> solutions = solver->solve(*grid_input, &stats);
 
                 /* Display solutions */
                 if(solutions.empty())
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
  *      COLUMNS             <--- marker for columns
  *      ...
  ******************************************************************************/
-bool parse_picross_input_file(const std::string& line_to_parse, std::vector<InputGrid>& grids)
+bool parse_picross_input_file(const std::string& line_to_parse, std::vector<picross::InputGrid>& grids)
 {
     bool valid_line = false;
     std::istringstream iss(line_to_parse);
@@ -164,7 +164,7 @@ bool parse_picross_input_file(const std::string& line_to_parse, std::vector<Inpu
     {
         parsing_state = GRID_START;
         valid_line = true;
-        grids.push_back(InputGrid());
+        grids.push_back(picross::InputGrid());
 
         grids.back().name = line_to_parse.substr(5);
     }
@@ -188,7 +188,7 @@ bool parse_picross_input_file(const std::string& line_to_parse, std::vector<Inpu
     {
         if(parsing_state == ROW_SECTION)
         {
-            InputConstraint new_row;
+            picross::InputConstraint new_row;
             unsigned int n;
             while(iss >> n) { new_row.push_back(n); }
             grids.back().rows.push_back(std::move(new_row));
@@ -196,7 +196,7 @@ bool parse_picross_input_file(const std::string& line_to_parse, std::vector<Inpu
         }
         else if(parsing_state == COLUMN_SECTION)
         {
-            InputConstraint new_column;
+            picross::InputConstraint new_column;
             unsigned int n;
             while(iss >> n) { new_column.push_back(n); }
             grids.back().columns.push_back(std::move(new_column));

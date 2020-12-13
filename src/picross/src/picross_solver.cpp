@@ -1,9 +1,9 @@
 /*******************************************************************************
- * PICROSS SOLVER: picross_solver.cpp
+ * PICROSS SOLVER
  *
- *   This file implements the core functions of the  Picross solver.
+ *   This file implements the core functions of the Picross solver
  *
- * Copyright (c) 2010 Pierre DEJOUE
+ * Copyright (c) 2010-2020 Pierre DEJOUE
  ******************************************************************************/
 #include "picross_solver.h"
 
@@ -15,6 +15,7 @@
 #include <functional>
 #include <iostream>
 #include <list>
+#include <memory>
 #include <numeric>
 #include <sstream>
 #include <utility>
@@ -22,6 +23,8 @@
 #include <vector>
 
 
+namespace picross
+{
 namespace
 {
     class PicrossLineAdditionError : public std::runtime_error
@@ -53,7 +56,7 @@ namespace
             return accumulator;
         }
     }
-}
+} // Anonymous namespace
 
 
 namespace Tile
@@ -903,3 +906,5 @@ std::unique_ptr<Solver> getRefSolver()
 {
     return std::make_unique<RefSolver>();
 }
+
+} // namespace picross

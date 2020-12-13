@@ -1,19 +1,24 @@
 /*******************************************************************************
- * PICROSS SOLVER: picross_solver.h
+ * PICROSS SOLVER
  *
- *   Declaration of the classes of the Picross solver.
+ *   Declaration of the PRIVATE API of the Picross solver
  *
- * Copyright (c) 2010 Pierre DEJOUE
+ * Copyright (c) 2010-2020 Pierre DEJOUE
  ******************************************************************************/
 #pragma once
 
 
-#include <exception>
 #include <list>
 #include <memory>
 #include <string>
 #include <vector>
 
+
+#include <picross/picross.h>
+
+
+namespace picross
+{
 
 /*
  * Tile namespace.
@@ -22,64 +27,11 @@
  *   The following namespace defines the constants, types and functions used for the manipulation of tiles.
  */
 namespace Tile
- {
-    using Type = int;
-    constexpr Type UNKNOWN = -1, ZERO = 0, ONE = 1;
-
+{
     char str(Type t);
     Type add(Type t1, Type t2);
     Type reduce(Type t1, Type t2);
 }
-
-
-/*
- * InputConstraint class
- *
- *   It defines the constraints that apply to one line (row or column) in a grid.
- *   It provides the size of each of the groups of contiguous filled tiles.
- *   This is basically the input information of the solver
- */
-using InputConstraint = std::vector<unsigned int>;
-
-
-/*
- * InputGrid class
- *
- *   A data structure to store the information related to one grid and coming from the input file.
- */
-struct InputGrid
-{
-    std::string name;
-    std::vector<InputConstraint> rows;
-    std::vector<InputConstraint> columns;
-};
-
-bool check_grid_input(const InputGrid& grid_input);
-
-
-/*
- * GridStats struct
- *
- *   A data structure to store some stat data.
- */
-struct GridStats
-{
-    unsigned int guess_max_nested_level = 0u;
-    unsigned int guess_total_calls = 0u;
-    unsigned int guess_max_alternatives = 0u;
-    unsigned int guess_total_alternatives = 0u;
-    unsigned int nb_reduce_lines_calls = 0u;
-    unsigned int max_reduce_list_size = 0u;
-    unsigned int max_theoretical_nb_alternatives = 0u;
-    unsigned int total_lines_reduced = 0u;
-    unsigned int nb_add_and_filter_calls = 0u;
-    unsigned int max_add_and_filter_list_size = 0u;
-    unsigned int total_lines_added_and_filtered = 0u;
-    unsigned int nb_reduce_all_rows_and_colums_calls = 0u;
-};
-
-
-void print_grid_stats(const GridStats* stats);
 
 
 /*
@@ -140,22 +92,6 @@ private:
 
 
 /*
- * SolvedGrid class
- *
- *   An interface to view a grid solution.
- */
-class SolvedGrid
-{
-public:
-    virtual const std::string& get_name() const = 0;
-    virtual unsigned int get_height() const = 0;
-    virtual unsigned int get_width() const = 0;
-    virtual std::vector<Tile::Type> get_row(unsigned int index) const = 0;
-    virtual void print() const = 0;
-};
-
-
-/*
  * Grid class
  *
  *   Describe a full puzzle grid. This is also the working class used to solve it (Grid::solve())
@@ -205,16 +141,6 @@ private:
 
 
 /*
- * Grid solver interface
- */
-class Solver
-{
-public:
-    virtual std::vector<std::unique_ptr<SolvedGrid>> solve(const InputGrid& grid_input, GridStats* stats = nullptr) const = 0;
-};
-
-
-/*
  * Grid solver: an implementation
  */
 class RefSolver : public Solver
@@ -223,8 +149,4 @@ public:
     std::vector<std::unique_ptr<SolvedGrid>> solve(const InputGrid& grid_input, GridStats* stats) const override;
 };
 
-
-/*
- * Factory for the reference grid solver
- */
-std::unique_ptr<Solver> getRefSolver();
+} // namespace picross
