@@ -53,7 +53,7 @@ public:
     Line& operator=(const Line& line) = default;
 public:
     Type       get_type()        const { return type; }
-    int        get_size()        const { return tiles.size(); }
+    size_t     get_size()        const { return tiles.size(); }
     Tile::tile get_tile(int idx) const { return tiles.at(idx); }
     std::vector<Tile::tile>::const_iterator read_tiles() const;   // iterator to read the tiles.
     bool is_all_one_color(Tile::tile color) const;
@@ -63,8 +63,8 @@ public:
 };
 
 
-void add_and_filter_lines(std::list<Line>& list_of_lines, const Line& filter_line, GridStats * stats);
-Line reduce_lines(const std::list<Line>& list_of_lines, GridStats * stats);
+void add_and_filter_lines(std::list<Line>& list_of_lines, const Line& filter_line, GridStats* stats);
+Line reduce_lines(const std::list<Line>& list_of_lines, GridStats* stats);
 std::string str_line(const Line& line);
 std::string str_line_type(Line::Type type);
 
@@ -77,33 +77,33 @@ std::string str_line_type(Line::Type type);
 class Grid
 {
 private:
-    Tile::tile**        grid;            // 2D array of tiles.
-    int                 width, height;
-    const GridInput&    grid_input;      // reference to the constraints information
-    std::vector<bool>   line_complete[2];
-    std::vector<bool>   line_to_be_reduced[2];  // flag added for optimization
-    std::vector<int>    alternatives[2];
-    Line::Type          guess_line_type;
-    int                 guess_line_index;
-    std::list<Line>     guess_list_of_all_alternatives;
-    std::vector<Grid>&  saved_solutions; // reference to a vector where to store solutions
-    GridStats*          stats;           // if not null, the program will store some stats in that structure
-    int                 nested_level;    // nested_level is incremented by function Grid::guess()
+    Tile::tile**                grid;            // 2D array of tiles.
+    unsigned int                width, height;
+    const GridInput&            grid_input;      // reference to the constraints information
+    std::vector<bool>           line_complete[2];
+    std::vector<bool>           line_to_be_reduced[2];  // flag added for optimization
+    std::vector<unsigned int>   alternatives[2];
+    Line::Type                  guess_line_type;
+    unsigned int                guess_line_index;
+    std::list<Line>             guess_list_of_all_alternatives;
+    std::vector<Grid>&          saved_solutions; // reference to a vector where to store solutions
+    GridStats*                  stats;           // if not null, the program will store some stats in that structure
+    unsigned int                nested_level;    // nested_level is incremented by function Grid::guess()
 public:
-    Grid(int width, int height, const GridInput& grid_input, std::vector<Grid>& solutions, GridStats* in_stats = 0, int n_level = 0);
-    Grid(const Grid& c_grid);
-    Grid& operator=(const Grid& c_grid);
+    Grid(unsigned int width, unsigned int height, const GridInput& grid_input, std::vector<Grid>& solutions, GridStats* in_stats = nullptr, unsigned int n_level = 0u);
+    Grid(const Grid& other);
+    Grid& operator=(const Grid& other);
     ~Grid();
 public:
-    Line get_line(Line::Type type, int index);
-    bool set_line(Line line, int index);
-    bool reduce_one_line(Line::Type type, int index);
+    Line get_line(Line::Type type, unsigned int index) const;
+    bool set_line(Line line, unsigned int index);
+    bool reduce_one_line(Line::Type type, unsigned int index);
     bool reduce_all_rows_and_columns();
-    bool is_solved();
+    bool is_solved() const;
     bool solve();
-    void print();
+    void print() const;
 private:
-    bool set(int x, int y, Tile::tile t);
+    bool set(unsigned int x, unsigned int y, Tile::tile t);
     bool guess();
     void save_solution();
 };
@@ -119,20 +119,20 @@ private:
 class Constraint
 {
 private:
-    Line::Type  type;                                   // Row or column
-    std::vector<int> sets_of_ones;                      // Size of the continuing blocks of filled tiles
-    std::vector<int> sets_of_ones_plus_trailing_zero;
-    int min_line_size;
+    Line::Type type;                                            // Row or column
+    std::vector<unsigned int> sets_of_ones;                     // Size of the continuing blocks of filled tiles
+    std::vector<unsigned int> sets_of_ones_plus_trailing_zero;
+    unsigned int min_line_size;
 public:
-    Constraint(Line::Type type, const std::vector<int>& vect);
+    Constraint(Line::Type type, const std::vector<unsigned int>& vect);
 public:
-    int nb_filled_tiles() const;                            // Total number of filled tiles
-    int nb_blocks() const { return sets_of_ones.size(); }
-    int max_block_size() const;                             // Max size of a group of contiguous filled tiles
-    int get_min_line_size() const { return min_line_size; }
+    unsigned int nb_filled_tiles() const;                       // Total number of filled tiles
+    size_t nb_blocks() const { return sets_of_ones.size(); }
+    unsigned int max_block_size() const;                        // Max size of a group of contiguous filled tiles
+    unsigned int get_min_line_size() const { return min_line_size; }
     void print() const;
-    int theoretical_nb_alternatives(int size, GridStats * stats) const;
-    std::list<Line> build_all_possible_lines_with_size(int size, const Line& filter_line, GridStats * stats) const;
+    int theoretical_nb_alternatives(unsigned int line_size, GridStats * stats) const;
+    std::list<Line> build_all_possible_lines_with_size(unsigned int line_size, const Line& filter_line, GridStats * stats) const;
 };
 
 
@@ -159,20 +159,19 @@ public:
  */
 struct GridStats
 {
-    int guess_max_nested_level;
-    int guess_total_calls;
-    int guess_max_alternatives;
-    int guess_total_alternatives;
-    int nb_reduce_lines_calls;
-    int max_reduce_list_size;
-    int max_theoretical_nb_alternatives;
-    int total_lines_reduced;
-    int nb_add_and_filter_calls;
-    int max_add_and_filter_list_size;
-    int total_lines_added_and_filtered;
-    int nb_reduce_all_rows_and_colums_calls;
+    unsigned int guess_max_nested_level = 0u;
+    unsigned int guess_total_calls = 0u;
+    unsigned int guess_max_alternatives = 0u;
+    unsigned int guess_total_alternatives = 0u;
+    unsigned int nb_reduce_lines_calls = 0u;
+    unsigned int max_reduce_list_size = 0u;
+    unsigned int max_theoretical_nb_alternatives = 0u;
+    unsigned int total_lines_reduced = 0u;
+    unsigned int nb_add_and_filter_calls = 0u;
+    unsigned int max_add_and_filter_list_size = 0u;
+    unsigned int total_lines_added_and_filtered = 0u;
+    unsigned int nb_reduce_all_rows_and_colums_calls = 0u;
 };
 
 
-void reset_grid_stats(GridStats * stats);
-void print_grid_stats(GridStats * stats);
+void print_grid_stats(const GridStats* stats);
