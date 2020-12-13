@@ -12,7 +12,6 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <utility>
 #include <vector>
 
 
@@ -32,7 +31,7 @@ ParsingState parsing_state = FILE_START;
 const int INPUT_BUFFER_SZ = 2048;
 
 
-bool parse_picross_input_file(const std::string& line_to_parse, std::vector<GridInput>& grids);
+bool parse_picross_input_file(const std::string& line_to_parse, std::vector<InputGrid>& grids);
 
 
 /*******************************************************************************
@@ -69,10 +68,9 @@ int main(int argc, char *argv[])
     /* Line buffer */
     char line[INPUT_BUFFER_SZ];
     /* Container for grids input data */
-    std::vector<GridInput> grids_to_solve;
+    std::vector<InputGrid> grids_to_solve;
     int line_nb = 0;
     bool is_line_ok;
-    GridStats stats;
     /* Start parsing */
     while(inputstream.good())
     {
@@ -91,42 +89,39 @@ int main(int argc, char *argv[])
      **************************************************************************/
     try
     {
-        int count_grids = 0;
+        std::unique_ptr<Solver> solver = getRefSolver();
+
+        unsigned int count_grids = 0u;
         for(auto& grid_input = grids_to_solve.begin(); grid_input != grids_to_solve.end(); ++grid_input)
         {
             std::cout << "GRID " << ++count_grids << ": " << grid_input->name << std::endl;
 
-            /* Reset the stats */
-            std::swap(stats, GridStats());
-
-            /* Container for the solutions */
-            std::vector<Grid> solutions;
-            solutions.reserve(16);
-            Grid grid(static_cast<unsigned int>(grid_input->columns.size()), static_cast<unsigned int>(grid_input->rows.size()), *grid_input, solutions, &stats);
-
             /* Sanity check of the input data */
-            if(!grid_input->sanity_check())
-            {
-                std::cout << " > Invalid grid. Check the input file." << std::endl << std::endl;
-            }
-            else
+            if (check_grid_input(*grid_input))
             {
                 /* Solve the grid */
-                if(!grid.solve())
+                GridStats stats;
+                std::vector<std::unique_ptr<SolvedGrid>> solutions = solver->solve(*grid_input, &stats);
+
+                /* Display solutions */
+                if(solutions.empty())
                 {
                     std::cout << " > Could not solve that grid :-(" << std::endl << std::endl;
                 }
                 else
                 {
                     std::cout << " > Found " << solutions.size() << " solution(s):" << std::endl << std::endl;
-                    for(std::vector<Grid>::iterator solution = solutions.begin(); solution != solutions.end(); solution++) { solution->print(); }
+                    for(auto& solution = solutions.cbegin(); solution != solutions.cend(); ++solution) { (*solution)->print(); }
                 }
 
                 /* Display stats */
                 print_grid_stats(&stats);
                 std::cout << std::endl;
             }
-
+            else
+            {
+                std::cout << " > Invalid grid. Check the input file." << std::endl << std::endl;
+            }
         }
     }
     catch (std::exception& e)
@@ -156,7 +151,7 @@ int main(int argc, char *argv[])
  *      COLUMNS             <--- marker for columns
  *      ...
  ******************************************************************************/
-bool parse_picross_input_file(const std::string& line_to_parse, std::vector<GridInput>& grids)
+bool parse_picross_input_file(const std::string& line_to_parse, std::vector<InputGrid>& grids)
 {
     bool valid_line = false;
     std::istringstream iss(line_to_parse);
@@ -169,7 +164,7 @@ bool parse_picross_input_file(const std::string& line_to_parse, std::vector<Grid
     {
         parsing_state = GRID_START;
         valid_line = true;
-        grids.push_back(GridInput());
+        grids.push_back(InputGrid());
 
         grids.back().name = line_to_parse.substr(5);
     }
@@ -193,18 +188,18 @@ bool parse_picross_input_file(const std::string& line_to_parse, std::vector<Grid
     {
         if(parsing_state == ROW_SECTION)
         {
-            std::vector<unsigned int> new_row;
+            InputConstraint new_row;
             unsigned int n;
             while(iss >> n) { new_row.push_back(n); }
-            grids.back().rows.push_back(Constraint(Line::ROW, new_row));
+            grids.back().rows.push_back(std::move(new_row));
             valid_line = true;
         }
         else if(parsing_state == COLUMN_SECTION)
         {
-            std::vector<unsigned int> new_column;
+            InputConstraint new_column;
             unsigned int n;
             while(iss >> n) { new_column.push_back(n); }
-            grids.back().columns.push_back(Constraint(Line::COLUMN, new_column));
+            grids.back().columns.push_back(std::move(new_column));
             valid_line = true;
         }
     }
