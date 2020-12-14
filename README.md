@@ -4,7 +4,7 @@ Picross Solver
 A text-based Picross puzzle solver in C++
 
 
-    Picross is a puzzle game licensed by Nintendo. Those puzzles are sometimes called nonograms.
+    PicrossDS is a puzzle game licensed by Nintendo. Those puzzles are sometimes called nonograms.
     The goal is to find a hidden picture in a rectangular grid, by painting some of the cells
     with one color, or leaving them blank. The information given is, for each row and each
     column, the number and sizes of the grousp of continuous filled cells on that line.
