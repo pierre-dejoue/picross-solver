@@ -13,10 +13,10 @@
 #include <cstdlib>
 #include <exception>
 #include <functional>
-#include <iostream>
 #include <list>
 #include <memory>
 #include <numeric>
+#include <ostream>
 #include <sstream>
 #include <utility>
 #include <string>
@@ -205,11 +205,11 @@ bool Line::is_all_one_color(Tile::Type color) const
 }
 
 
-void Line::print() const
+void Line::print(std::ostream& ostream) const
 {
-    if(type == Line::ROW)    { std::cout << "ROW    "; }
-    if(type == Line::COLUMN) { std::cout << "COLUMN "; }
-    std::cout << str_line(*this) << std::endl;
+    if(type == Line::ROW)    { ostream << "ROW    "; }
+    if(type == Line::COLUMN) { ostream << "COLUMN "; }
+    ostream << str_line(*this) << std::endl;
 }
 
 
@@ -260,7 +260,6 @@ Grid::Grid(const Grid& other) :
     saved_solutions(other.saved_solutions)
 {
     *this = other;
-    //cout << "Grid COPY constructor!" << endl;
 }
 
 
@@ -294,8 +293,6 @@ Grid& Grid::operator=(const Grid& other)
 
     // Ignore the other members (TODO rework)
 
-    //cout << "Grid assignment!" << endl;
-
     return *this;
 }
 
@@ -309,9 +306,6 @@ Grid::~Grid()
     }
     delete[] grid;
     grid = nullptr;
-
-    //cout << "Grid destructor!" << endl;
-
 }
 
 
@@ -347,8 +341,6 @@ Grid::Grid(const std::string& grid_name, const std::vector<Constraint>& rows, co
 
     // Stats TODO move
     if (stats != nullptr && nested_level > stats->guess_max_nested_level) { stats->guess_max_nested_level = nested_level; }
-
-    //cout << "Grid constructor" << endl;
 }
 
 
@@ -444,16 +436,16 @@ std::vector<Tile::Type> Grid::get_row(unsigned int index) const
 }
 
 
-void Grid::print() const
+void Grid::print(std::ostream& ostream) const
 {
     assert(is_solved());
-    std::cout << "Grid " << width << "x" << height << ":" << std::endl;
+    ostream << "Grid " << width << "x" << height << ":" << std::endl;
     for(unsigned int y = 0u; y < height; y++)
     {
         Line line = get_line(Line::ROW, y);
-        std::cout << "  " << str_line(line) << std::endl;
+        ostream << "  " << str_line(line) << std::endl;
     }
-    std::cout << std::endl;
+    ostream << std::endl;
 }
 
 
@@ -711,14 +703,14 @@ unsigned int Constraint::max_block_size() const
 }
 
 
-void Constraint::print() const
+void Constraint::print(std::ostream& ostream) const
 {
-    std::cout << "Constraint on a " << str_line_type(type) << ": [ ";
+    ostream << "Constraint on a " << str_line_type(type) << ": [ ";
     for(auto& it = sets_of_ones.begin(); it != sets_of_ones.end(); ++it)
     {
-        std::cout << *it << " ";
+        ostream << *it << " ";
     }
-    std::cout << "]; min_line_size = " << min_line_size << std::endl;
+    ostream << "]; min_line_size = " << min_line_size << std::endl;
 }
 
 
@@ -819,7 +811,7 @@ std::list<Line> Constraint::build_all_possible_lines_with_size(unsigned int line
 }
 
 
-bool check_grid_input(const InputGrid& grid_input)
+std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input)
 {
     // Sanity check of the grid input
     //  -> height != 0 and width != 0
@@ -829,59 +821,69 @@ bool check_grid_input(const InputGrid& grid_input)
     const auto width  = static_cast<unsigned int>(grid_input.columns.size());
     const auto height = static_cast<unsigned int>(grid_input.rows.size());
 
-    if(height == 0u || width == 0u)
+    if(height == 0u)
     {
-        std::cout << "Invalid width = " << width << " or height = " << height << std::endl;
-        return false;
+        std::ostringstream oss;
+        oss << "Invalid height = " << height << std::endl;
+        return std::make_pair(false, oss.str());
     }
-    unsigned int nb_tiles_on_rows = 0u, nb_tiles_on_columns = 0u;
+    if (width == 0u)
+    {
+        std::ostringstream oss;
+        oss << "Invalid width = " << width << std::endl;
+        return std::make_pair(false, oss.str());
+    }
+    unsigned int nb_tiles_on_rows = 0u;
     for(auto& c = grid_input.rows.begin(); c != grid_input.rows.end(); c++)
     {
         Constraint row(Line::ROW, *c);
         nb_tiles_on_rows += row.nb_filled_tiles();
         if(row.get_min_line_size() > width)
         {
-            std::cout << "Width = " << width << " of the grid is too small for constraint: ";
-            row.print();
-            return false;
+            std::ostringstream oss;
+            oss << "Width = " << width << " of the grid is too small for constraint: ";
+            row.print(oss);
+            return std::make_pair(false, oss.str());
         }
     }
+    unsigned int nb_tiles_on_columns = 0u;
     for(auto& c = grid_input.columns.begin(); c != grid_input.columns.end(); c++)
     {
         Constraint column(Line::COLUMN, *c);
         nb_tiles_on_columns += column.nb_filled_tiles();
         if(column.get_min_line_size() > height)
         {
-            std::cout << "Height = " << height << " of the grid is too small for constraint: ";
-            column.print();
-            return false;
+            std::ostringstream oss;
+            oss << "Height = " << height << " of the grid is too small for constraint: ";
+            column.print(oss);
+            return std::make_pair(false, oss.str());
         }
     }
     if(nb_tiles_on_rows != nb_tiles_on_columns)
     {
-        std::cout << "Number of filled tiles on rows (" << nb_tiles_on_rows << ") and columns (" <<  nb_tiles_on_columns << ") do not match." << std::endl;
-        return false;
+        std::ostringstream oss;
+        oss << "Number of filled tiles on rows (" << nb_tiles_on_rows << ") and columns (" <<  nb_tiles_on_columns << ") do not match." << std::endl;
+        return std::make_pair(false, oss.str());
     }
-
-    return true;
+    return std::make_pair(true, std::string());
 }
 
 
-void print_grid_stats(const GridStats* stats)
+void print_grid_stats(const GridStats* stats, std::ostream& ostream)
 {
     if(stats != nullptr)
     {
-        std::cout << "  Max nested level: " << stats->guess_max_nested_level << std::endl;
+        ostream << "  Max nested level: " << stats->guess_max_nested_level << std::endl;
         if(stats->guess_max_nested_level > 0u)
         {
-            std::cout << "    > The solving of the grid required an hypothesis on " << stats->guess_total_calls << " row(s) or column(s)." << std::endl;
-            std::cout << "    > Max/total nb of alternatives being tested: " << stats->guess_max_alternatives << "/" << stats->guess_total_alternatives << std::endl;
+            ostream << "    > The solving of the grid required an hypothesis on " << stats->guess_total_calls << " row(s) or column(s)." << std::endl;
+            ostream << "    > Max/total nb of alternatives being tested: " << stats->guess_max_alternatives << "/" << stats->guess_total_alternatives << std::endl;
         }
-        std::cout << "  Max theoretical nb of alternatives on a line: " << stats->max_theoretical_nb_alternatives << std::endl;
-        std::cout << "  " << stats->nb_reduce_all_rows_and_colums_calls << " calls to reduce_all_rows_and_columns()." << std::endl;
-        std::cout << "  " << stats->nb_reduce_lines_calls   << " calls to reduce_lines(). Max list size/total nb of lines being reduced: " << stats->max_reduce_list_size << "/" << stats->total_lines_reduced << std::endl;
-        std::cout << "  " << stats->nb_add_and_filter_calls << " calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: " << stats->max_add_and_filter_list_size << "/" << stats->total_lines_added_and_filtered << std::endl;
-        std::cout << std::endl;
+        ostream << "  Max theoretical nb of alternatives on a line: " << stats->max_theoretical_nb_alternatives << std::endl;
+        ostream << "  " << stats->nb_reduce_all_rows_and_colums_calls << " calls to reduce_all_rows_and_columns()." << std::endl;
+        ostream << "  " << stats->nb_reduce_lines_calls   << " calls to reduce_lines(). Max list size/total nb of lines being reduced: " << stats->max_reduce_list_size << "/" << stats->total_lines_reduced << std::endl;
+        ostream << "  " << stats->nb_add_and_filter_calls << " calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: " << stats->max_add_and_filter_list_size << "/" << stats->total_lines_added_and_filtered << std::endl;
+        ostream << std::endl;
     }
 }
 

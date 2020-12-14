@@ -10,6 +10,7 @@
 
 #include <list>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -56,7 +57,7 @@ public:
     bool is_all_one_color(Tile::Type color) const;
     void add(const Line& line);
     void reduce(const Line& line);
-    void print() const;
+    void print(std::ostream& ostream) const;
 private:
     Type type;
     std::vector<Tile::Type> tiles;
@@ -81,7 +82,7 @@ public:
     size_t nb_blocks() const { return sets_of_ones.size(); }
     unsigned int max_block_size() const;                        // Max size of a group of contiguous filled tiles
     unsigned int get_min_line_size() const { return min_line_size; }
-    void print() const;
+    void print(std::ostream& ostream) const;
     int theoretical_nb_alternatives(unsigned int line_size, GridStats * stats) const;
     std::list<Line> build_all_possible_lines_with_size(unsigned int line_size, const Line& filter_line, GridStats * stats) const;
 private:
@@ -114,7 +115,7 @@ public:
     unsigned int get_height() const override;
     unsigned int get_width() const override;
     std::vector<Tile::Type> get_row(unsigned int index) const override;
-    void print() const override;
+    void print(std::ostream& ostream) const override;
 private:
     bool set_line(Line line, unsigned int index);
     bool reduce_one_line(Line::Type type, unsigned int index);

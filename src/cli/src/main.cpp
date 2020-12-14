@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <tuple>
 #include <vector>
 
 
@@ -97,7 +98,10 @@ int main(int argc, char *argv[])
             std::cout << "GRID " << ++count_grids << ": " << grid_input->name << std::endl;
 
             /* Sanity check of the input data */
-            if (check_grid_input(*grid_input))
+            bool check;
+            std::string check_msg;
+            std::tie(check, check_msg) = check_grid_input(*grid_input);
+            if(check)
             {
                 /* Solve the grid */
                 picross::GridStats stats;
@@ -111,17 +115,18 @@ int main(int argc, char *argv[])
                 else
                 {
                     std::cout << " > Found " << solutions.size() << " solution(s):" << std::endl << std::endl;
-                    for(auto& solution = solutions.cbegin(); solution != solutions.cend(); ++solution) { (*solution)->print(); }
+                    for(auto& solution = solutions.cbegin(); solution != solutions.cend(); ++solution) { (*solution)->print(std::cout); }
                 }
 
                 /* Display stats */
-                print_grid_stats(&stats);
+                print_grid_stats(&stats, std::cout);
                 std::cout << std::endl;
             }
             else
             {
-                std::cout << " > Invalid grid. Check the input file." << std::endl << std::endl;
+                std::cout << " > Invalid grid. Error message: " << check_msg << std::endl;
             }
+            std::cout << std::endl;
         }
     }
     catch (std::exception& e)

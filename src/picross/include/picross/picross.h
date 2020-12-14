@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 
@@ -51,7 +52,8 @@ struct InputGrid
     std::vector<InputConstraint> columns;
 };
 
-bool check_grid_input(const InputGrid& grid_input);
+
+std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input);
 
 
 /*
@@ -76,7 +78,7 @@ struct GridStats
 };
 
 
-void print_grid_stats(const GridStats* stats);
+void print_grid_stats(const GridStats* stats, std::ostream& ostream);
 
 
 /*
@@ -91,7 +93,7 @@ public:
     virtual unsigned int get_height() const = 0;
     virtual unsigned int get_width() const = 0;
     virtual std::vector<Tile::Type> get_row(unsigned int index) const = 0;
-    virtual void print() const = 0;
+    virtual void print(std::ostream& ostream) const = 0;
 };
 
 
