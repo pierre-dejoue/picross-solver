@@ -1,4 +1,5 @@
-GRID "Fish" (PicrossDS, Normal mode, level 11-G)
+# Picross DS, Normal mode, level 11-G
+GRID Fish
 ROWS
 [ ]
 [ 5 ]

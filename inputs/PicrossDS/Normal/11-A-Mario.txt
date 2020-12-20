@@ -1,4 +1,5 @@
-GRID "Mario" (PicrossDS, Normal mode, level 11-A)
+# Picross DS, Normal mode, level 11-A
+GRID Mario
 ROWS
 [ ]
 [ 5 ]

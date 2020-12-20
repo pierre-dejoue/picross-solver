@@ -1,4 +1,4 @@
-GRID "Fish" (Picross, Normal mode, level 11-G)
+GRID Fish
 ROWS
 [ ]
 [ 5 ]
@@ -44,7 +44,7 @@ COLUMNS
 [ 2 2 2 ]
 [ 4 4 ]
 
-GRID "Two notes" (based on Picross level 0-D)
+GRID Two notes
 COLUMNS
 [ 2 ]
 [ 2 ]

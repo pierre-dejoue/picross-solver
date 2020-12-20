@@ -1,4 +1,5 @@
-GRID "Samus" (PicrossDS, Normal mode, level 11-M)
+# Picross DS, Normal mode, level 11-M
+GRID Samus
 ROWS
 [ 3 ]
 [ 7 ]

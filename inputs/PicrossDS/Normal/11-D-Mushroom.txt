@@ -1,4 +1,5 @@
-GRID "Mushroom" (PicrossDS, Normal mode, level 11-D)
+# Picross DS, Normal mode, level 11-D
+GRID Mushroom
 ROWS
 [ ]
 [ 6 ]
