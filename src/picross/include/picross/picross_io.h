@@ -28,12 +28,17 @@ using ErrorHandler = std::function<void(const std::string&, ExitCode)>;
 /*******************************************************************************
  * Picross file format:
  *
- *      GRID <title>        <--- beginning of a new grid
+ *      # comment           <--- lines starting with # are ignored
+ *      GRID name           <--- marker for the beginning of a new grid
  *      ROWS                <--- marker to start listing the constraints on the rows
- *      [ 1 2 3 ...         <--- constraint on one line (here a row)
+ *      [ 1 2 3 ]           <--- constraint on one line (here a row)
  *      ...
  *      COLUMNS             <--- marker for columns
  *      ...
+ *
+ * NB: Empty lines are skipped
+ * NB: Grid name is optional
+ *
  ******************************************************************************/
 std::vector<InputGrid> parse_input_file(const std::string& filepath, const ErrorHandler& error_handler) noexcept;
 

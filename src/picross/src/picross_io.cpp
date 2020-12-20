@@ -48,10 +48,12 @@ namespace
             if (token == "GRID")
             {
                 parsing_state = ParsingState::GRID_START;
-                valid_line = true;
                 grids.push_back(picross::InputGrid());
-
-                grids.back().name = line_to_parse.substr(5);
+                if (line_to_parse.size() > 5u)
+                {
+                    grids.back().name = line_to_parse.substr(5u);
+                }
+                valid_line = true;
             }
             else if (token == "ROWS")
             {
@@ -100,6 +102,11 @@ namespace
                     error_decorator(error_handler, "Unexpected token " + token);
                 }
             }
+            else if (token == "#")
+            {
+                // Comment line
+                valid_line = true;
+            }
             else if (token.empty())
             {
                 // Empty line is ignored
@@ -108,7 +115,6 @@ namespace
             else
             {
                 error_decorator(error_handler, "Invalid token " + token);
-                valid_line = false;
             }
 
             return valid_line;
@@ -185,7 +191,9 @@ std::vector<InputGrid> parse_input_file(const std::string& filepath, const Error
     }
     catch (std::exception& e)
     {
-        error_handler(e.what(), 2);
+        std::ostringstream oss;
+        oss << "Unhandled exception: " << e.what();
+        error_handler(oss.str(), 2);
     }
 
     return result;
