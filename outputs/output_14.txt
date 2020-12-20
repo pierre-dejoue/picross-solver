@@ -10118,3 +10118,4 @@ Grid 12x12:
   440776 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 8/2274257
 
 
+

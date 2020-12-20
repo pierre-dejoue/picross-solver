@@ -5786,3 +5786,4 @@ Grid 6x6:
   7435 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 4/22659
 
 
+

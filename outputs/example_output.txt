@@ -1,4 +1,4 @@
-GRID 1: "Fish" (Picross, Normal mode, level 11-G)
+GRID 1: Fish
  > Found 1 solution(s):
 
 Grid 22x20:
@@ -26,11 +26,12 @@ Grid 22x20:
   Max nested level: 0
   Max theoretical nb of alternatives on a line: 3003
   21 calls to reduce_all_rows_and_columns().
-  257 calls to reduce_lines(). Max list size/total nb of lines being reduced:            1912/19968
+  257 calls to reduce_lines(). Max list size/total nb of lines being reduced: 1912/19968
   3584 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 19/16235
 
 
-GRID 2: "Two notes" (based on Picross level 0-D)
+
+GRID 2: Two Notes
  > Found 2 solution(s):
 
 Grid 10x10:
@@ -62,7 +63,8 @@ Grid 10x10:
     > Max/total nb of alternatives being tested: 6/6
   Max theoretical nb of alternatives on a line: 36
   15 calls to reduce_all_rows_and_columns().
-  154 calls to reduce_lines(). Max list size/total nb of lines being reduced:            29/869
+  154 calls to reduce_lines(). Max list size/total nb of lines being reduced: 29/869
   184 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 10/1420
+
 
 

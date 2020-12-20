@@ -1,12 +1,12 @@
-GRID 1: "Fish" (Picross, Normal mode, level 11-G)
-Number of filled tiles on rows (153) and columns (154) do not match.
- > Invalid grid. Check the input file.
+GRID 1: Fish
+ > Invalid grid. Error message: Number of filled tiles on rows (153) and columns (154) do not match.
 
-GRID 2: "Two notes" (based on Picross level 0-D)
-Invalid width = 10 or height = 0
- > Invalid grid. Check the input file.
+
+GRID 2: Two notes
+ > Invalid grid. Error message: Invalid height = 0
+
 
 GRID 3: no name
-Height = 3 of the grid is too small for constraint: Constraint on a COLUMN: [ 4 ]; min_line_size = 4
- > Invalid grid. Check the input file.
+ > Invalid grid. Error message: Height = 3 of the grid is too small for constraint: Constraint on a COLUMN: [ 4 ]; min_line_size = 4
+
 
