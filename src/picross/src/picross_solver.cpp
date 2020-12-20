@@ -904,7 +904,7 @@ std::vector<std::unique_ptr<SolvedGrid>> RefSolver::solve(const InputGrid& grid_
 }
 
 
-std::unique_ptr<Solver> getRefSolver()
+std::unique_ptr<Solver> get_ref_solver()
 {
     return std::make_unique<RefSolver>();
 }

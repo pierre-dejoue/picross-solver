@@ -13,6 +13,7 @@ option(PICROSS_BUILD_APP "Build the test application" OFF)
 # Build the library
 #
 set(LIB_SOURCES
+    src/picross/src/picross_io.cpp
     src/picross/src/picross_solver.cpp
 )
 

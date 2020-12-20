@@ -3,6 +3,9 @@
  *
  *   Declaration of the PUBLIC API of the Picross solver
  *
+ *   - Data structures
+ *   - Solver
+ *
  * Copyright (c) 2010-2020 Pierre DEJOUE
  ******************************************************************************/
 #pragma once
@@ -18,7 +21,7 @@ namespace picross
 {
 
 /*
- * Tile namespace.
+ * Tile namespace
  *
  *   A tile is the base element to construct lines and grids: it can be empty (ZERO) of filled (ONE).
  *   The following namespace defines the constants, types and functions used for the manipulation of tiles.
@@ -110,6 +113,6 @@ public:
 /*
  * Factory for the reference grid solver
  */
-std::unique_ptr<Solver> getRefSolver();
+std::unique_ptr<Solver> get_ref_solver();
 
 } // namespace picross
