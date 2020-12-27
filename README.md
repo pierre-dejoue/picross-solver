@@ -26,6 +26,20 @@ cmake -G "Visual Studio 15 2017 Win64" ../..
 cmake --build . --config Release
 ```
 
+## Install
+
+Install in some dir:
+
+```
+cmake --install . --config Release --prefix <some_dir>
+```
+
+Or, package the library:
+
+```
+cpack -G ZIP -C Release
+```
+
 ## Building the Library and the Command Line Tool
 
 On Windows:
@@ -35,9 +49,12 @@ cmake -G "Visual Studio 15 2017 Win64" -DPICROSS_BUILD_APP=ON ../..
 cmake --build . --config Release
 ```
 
-## Running the Solver
+## Command Line Tool
+
+Run on an example file:
 
 `./build/msvc141x64/bin/Release/picross_solver.exe inputs/example_input.txt`
+
 
 ## License
 
