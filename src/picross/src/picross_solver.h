@@ -47,6 +47,7 @@ public:
     static constexpr Type ROW = 0u, COLUMN = 1u;
 public:
     Line(Type type, const std::vector<Tile::Type>& vect);
+    Line(Type type, std::vector<Tile::Type>&& vect);
 public:
     Type get_type() const { return type; }
     size_t get_size() const { return tiles.size(); }
@@ -97,15 +98,16 @@ private:
  *
  *   Describe a full puzzle grid. This is also the working class used to solve it (Grid::solve())
  */
-class Grid : public SolvedGrid
+class Grid final : public SolvedGrid
 {
 public:
-    Grid(const InputGrid& grid, std::vector<std::unique_ptr<SolvedGrid>>& solutions, GridStats* stats = nullptr);
-    Grid(const Grid& other);
-    Grid& operator=(const Grid& other);
-    virtual ~Grid();
+    Grid(const InputGrid& grid, std::vector<std::unique_ptr<SolvedGrid>>* solutions, GridStats* stats = nullptr);
+    Grid(const Grid& other) = delete;
+    Grid& operator=(const Grid& other) = delete;
+    Grid(Grid&& other) = default;
+    Grid& operator=(Grid&& other) = default;
 private:
-    Grid(const std::string& grid_name, const std::vector<Constraint>& rows, const std::vector<Constraint>& columns, std::vector<std::unique_ptr<SolvedGrid>>& solutions, GridStats* stats, unsigned int nested_level = 0u);
+    Grid(const std::string& grid_name, const std::vector<Constraint>& rows, const std::vector<Constraint>& columns, std::vector<std::unique_ptr<SolvedGrid>>* solutions, GridStats* stats = nullptr, unsigned int nested_level = 0u);
     Grid(const Grid& parent, unsigned int nested_level);
 public:
     Line get_line(Line::Type type, unsigned int index) const;
@@ -121,15 +123,15 @@ private:
     bool reduce_one_line(Line::Type type, unsigned int index);
     bool reduce_all_rows_and_columns();
     bool set(unsigned int x, unsigned int y, Tile::Type t);
-    bool guess();
-    void save_solution();
+    bool guess() const;
+    void save_solution() const;
 private:
     unsigned int                                height, width;
+    std::vector<Tile::Type>                     grid;            // 2D array of tiles.
     std::string                                 grid_name;
     std::vector<Constraint>                     rows;
     std::vector<Constraint>                     columns;
-    std::vector<std::unique_ptr<SolvedGrid>>&   saved_solutions; // reference to a vector where to store solutions
-    Tile::Type**                                grid;            // 2D array of tiles.
+    std::vector<std::unique_ptr<SolvedGrid>>*   saved_solutions; // ptr to a vector where to store solutions
     GridStats*                                  stats;           // if not null, the program will store some stats in that structure
     std::vector<bool>                           line_complete[2];
     std::vector<bool>                           line_to_be_reduced[2];  // flag added for optimization

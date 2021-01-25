@@ -93,6 +93,13 @@ Line::Line(Line::Type type, const std::vector<Tile::Type>& vect) :
 }
 
 
+Line::Line(Line::Type type, std::vector<Tile::Type>&& vect) :
+    type(type),
+    tiles(std::move(vect))
+{
+}
+
+
 const std::vector<Tile::Type>& Line::get_tiles() const
 {
     return tiles;
@@ -249,87 +256,24 @@ namespace
 }
 
 
-Grid::Grid(const InputGrid& grid, std::vector<std::unique_ptr<SolvedGrid>>& solutions, GridStats* stats) :
+Grid::Grid(const InputGrid& grid, std::vector<std::unique_ptr<SolvedGrid>>* solutions, GridStats* stats) :
     Grid(grid.name, row_constraints_from_input_grid(grid), column_constraints_from_input_grid(grid), solutions, stats)
 {
 }
 
 
-/* Copy constructor. Do a full copy */
-Grid::Grid(const Grid& other) :
-    saved_solutions(other.saved_solutions)
-{
-    *this = other;
-}
-
-
-/* Assignment operator. Do a full copy. */
-Grid& Grid::operator=(const Grid& other)
-{
-    height = other.height;
-    width = other.width;
-    grid_name = other.grid_name;
-    rows = other.rows;
-    columns = other.columns;
-    // Skip reference saved_solutions
-    stats = other.stats;
-    nested_level = other.nested_level;
-
-    // Allocate memory
-    grid = new Tile::Type*[width];
-    for(unsigned int x = 0u; x < width; x++)
-    {
-        grid[x] = new Tile::Type[height];
-    }
-
-    // Copy the grid contents from this grid to the new one
-    for(unsigned int x = 0u; x < width; x++)
-    {
-        for(unsigned int y = 0u; y < height; y++)
-        {
-            grid[x][y] = other.grid[x][y];
-        }
-    }
-
-    // Ignore the other members (TODO rework)
-
-    return *this;
-}
-
-
-Grid::~Grid()
-{
-    // Free memory
-    for(unsigned int x = 0u; x < width; x++)
-    {
-       delete[] grid[x];
-    }
-    delete[] grid;
-    grid = nullptr;
-}
-
-
-Grid::Grid(const std::string& grid_name, const std::vector<Constraint>& rows, const std::vector<Constraint>& columns, std::vector<std::unique_ptr<SolvedGrid>>& solutions, GridStats* stats, unsigned int nested_level) :
+Grid::Grid(const std::string& grid_name, const std::vector<Constraint>& rows, const std::vector<Constraint>& columns, std::vector<std::unique_ptr<SolvedGrid>>* solutions, GridStats* stats, unsigned int nested_level) :
     height(static_cast<unsigned int>(rows.size())),
     width(static_cast<unsigned int>(columns.size())),
+    grid(static_cast<size_t>(height * width), Tile::UNKNOWN),
     grid_name(grid_name),
     rows(rows),
     columns(columns),
     saved_solutions(solutions),
-    grid(nullptr),
     stats(stats),
     nested_level(nested_level)
 {
-    // Allocate memory
-    grid = new Tile::Type*[width];
-    for (unsigned int x = 0u; x < width; x++)
-    {
-        grid[x] = new Tile::Type[height];
-        for (unsigned int y = 0u; y < height; y++)
-        {
-            grid[x][y] = Tile::UNKNOWN;
-        }
-    }
+    assert(saved_solutions != nullptr);
 
     // Other initializations
     line_complete[Line::ROW].resize(height, false);
@@ -340,13 +284,24 @@ Grid::Grid(const std::string& grid_name, const std::vector<Constraint>& rows, co
     alternatives[Line::COLUMN].resize(width);
 
     // Stats TODO move
-    if (stats != nullptr && nested_level > stats->guess_max_nested_level) { stats->guess_max_nested_level = nested_level; }
+    if (stats != nullptr && nested_level > stats->guess_max_nested_level)
+    {
+        stats->guess_max_nested_level = nested_level;
+    }
 }
 
 
+// Shallow copy (does not copy the list of alternatives)
 Grid::Grid(const Grid& parent, unsigned int nested_level) :
     Grid(parent.grid_name, parent.rows, parent.columns, parent.saved_solutions, parent.stats, nested_level)
 {
+    grid = parent.grid;
+
+    line_complete[Line::ROW] = parent.line_complete[Line::ROW];
+    line_complete[Line::COLUMN] = parent.line_complete[Line::COLUMN];
+
+    line_to_be_reduced[Line::ROW] = parent.line_to_be_reduced[Line::ROW];
+    line_to_be_reduced[Line::COLUMN] = parent.line_to_be_reduced[Line::COLUMN];
 }
 
 
@@ -356,16 +311,23 @@ Line Grid::get_line(Line::Type type, unsigned int index) const
     {
         if(index >= height) { throw std::invalid_argument("Grid::get_line: row index is out of range"); }
         std::vector<Tile::Type> vect;
-        for(unsigned int x = 0u; x < width; x++) { vect.push_back(grid[x][index]); }
-        return Line(type, vect);
+        vect.reserve(static_cast<size_t>(width));
+        for(unsigned int x = 0u; x < width; x++)
+        {
+            vect.push_back(grid[x * height + index]);
+        }
+        return Line(type, std::move(vect));
     }
     else if(type == Line::COLUMN)
     {
         if (index >= width) { throw std::invalid_argument("Grid::get_line: column index is out of range"); }
-        std::vector<Tile::Type> vect(grid[index], grid[index] + height);
-        return Line(type, vect);
+        std::vector<Tile::Type> vect(grid.data() + index * height, grid.data() + (index + 1) * height);
+        return Line(type, std::move(vect));
     }
-    else { throw std::invalid_argument("Grid::get_line: wrong type argument"); }
+    else
+    {
+        throw std::invalid_argument("Grid::get_line: wrong type argument");
+    }
 }
 
 
@@ -373,10 +335,10 @@ bool Grid::set(unsigned int x, unsigned int y, Tile::Type t)
 {
     if(x >= width) { throw std::invalid_argument("Grid::set: x is out of range"); }
     if(y >= height) { throw std::invalid_argument("Grid::set: y is out of range"); }
-    if(t != grid[x][y])
+    if(t != grid[x * height + y])
     {
         // modify grid
-        grid[x][y] = t;
+        grid[x * height + y] = t;
 
         // marked the impacted row and column with flag "to be reduced".
         line_to_be_reduced[Line::ROW][y] = true;
@@ -624,7 +586,7 @@ bool Grid::solve()
 }
 
 
-bool Grid::guess()
+bool Grid::guess() const
 {
     /* This function will test a range of alternatives for one particular line of the grid, each time
      * creating a new instance of the grid class on which the function Grid::solve() is called.
@@ -633,26 +595,8 @@ bool Grid::guess()
     if(stats != nullptr) { stats->guess_total_calls++; }
     for(std::list<Line>::const_iterator guess_line = guess_list_of_all_alternatives.begin(); guess_line != guess_list_of_all_alternatives.end(); guess_line++)
     {
-        // Allocate a new grid.
-        // One reason to not using the copy contructor: that would copy the guess_list_of_all_alternatives, which is not useful.
+        // Allocate a new grid. Use the shallow copy.
         Grid new_grid(*this, nested_level + 1);
-
-        // Copy the grid contents from this grid to the new one
-        for(unsigned int x = 0u; x < width; x++)
-        {
-            for(unsigned int y = 0u; y < height; y++)
-            {
-                new_grid.grid[x][y] = grid[x][y];
-            }
-        }
-
-        // Copy also the 'line_complete' status array, so that the new instance of the grid does not lose time on lines that are already solved.
-        new_grid.line_complete[Line::ROW]    = line_complete[Line::ROW];
-        new_grid.line_complete[Line::COLUMN] = line_complete[Line::COLUMN];
-
-        // Copy also the 'line_to_be_reduced' status array, for the same reason
-        new_grid.line_to_be_reduced[Line::ROW]    = line_to_be_reduced[Line::ROW];
-        new_grid.line_to_be_reduced[Line::COLUMN] = line_to_be_reduced[Line::COLUMN];
 
         // Set one line in the new_grid according to the hypothesis we made. That line is then complete
         if(!new_grid.set_line(*guess_line, guess_line_index)) { throw std::logic_error("Grid::guess: no change in the new grid, will cause infinite loop."); }
@@ -665,10 +609,10 @@ bool Grid::guess()
 }
 
 
-void Grid::save_solution()
+void Grid::save_solution() const
 {
-    // The copy operator will copy the grid data
-    saved_solutions.push_back(std::make_unique<Grid>(*this));
+    // Shallow copy of only the grid data
+    saved_solutions->emplace_back(std::unique_ptr<Grid>(new Grid(*this, nested_level)));
 }
 
 
@@ -898,7 +842,7 @@ std::vector<std::unique_ptr<SolvedGrid>> RefSolver::solve(const InputGrid& grid_
         std::swap(*stats, GridStats());
     }
 
-    Grid(grid_input, solutions, stats).solve();
+    Grid(grid_input, &solutions, stats).solve();
 
     return solutions;
 }
