@@ -10,6 +10,7 @@ set(LIB_SOURCES
 file(GLOB LIB_HEADERS include/picross/*.h src/*.h)
 
 add_library(picross STATIC ${LIB_SOURCES} ${LIB_HEADERS})
+
 target_include_directories(picross
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include

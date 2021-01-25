@@ -8,8 +8,6 @@ set(CLI_SOURCES
 
 file(GLOB CLI_HEADERS src/*.h)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin/)
-
 add_executable(picross_solver ${CLI_SOURCES} ${CLI_HEADERS})
 
 target_link_libraries(picross_solver PRIVATE picross)
