@@ -280,8 +280,8 @@ Grid::Grid(const std::string& grid_name, const std::vector<Constraint>& rows, co
     line_complete[Line::COLUMN].resize(width, false);
     line_to_be_reduced[Line::ROW].resize(height, true);
     line_to_be_reduced[Line::COLUMN].resize(width, true);
-    alternatives[Line::ROW].resize(height);
-    alternatives[Line::COLUMN].resize(width);
+    alternatives[Line::ROW].resize(height, 0u);
+    alternatives[Line::COLUMN].resize(width, 0u);
 
     // Stats TODO move
     if (stats != nullptr && nested_level > stats->guess_max_nested_level)
@@ -414,7 +414,7 @@ void Grid::print(std::ostream& ostream) const
 bool Grid::reduce_one_line(Line::Type type, unsigned int index)
 {
     Line filter_line = get_line(type, index);
-    const Constraint * line_constraint;
+    const Constraint * line_constraint = nullptr;
     unsigned int line_size;
 
     if(type == Line::ROW)
@@ -427,6 +427,7 @@ bool Grid::reduce_one_line(Line::Type type, unsigned int index)
         line_constraint = &(columns.at(index));
         line_size = height;
     }
+    assert(line_constraint != nullptr);
 
     // OPTIM: if the color of every tile in the line is unknown, there is a simple way to determine
     // if the reduce operation is relevant: max block size must be greater than line_size - min_line_size.
@@ -497,26 +498,6 @@ bool Grid::is_solved() const
 }
 
 
-// Utility class used to find the min value, greater ot equal to 2. Used in Grid::solve()
-class f_min_greater_than_2 {
-public:
-    f_min_greater_than_2(unsigned int& min) : min(min) {}
-
-    void operator()(unsigned int val)
-    {
-        if(val >= 2u)
-        {
-            if(min < 2u || val < min)
-            {
-                min = val;
-            }
-        }
-    }
-private:
-    unsigned int& min;
-};
-
-
 bool Grid::solve()
 {
     try
@@ -537,12 +518,18 @@ bool Grid::solve()
         {
             // Find the row or column not yet solved with the minimal alternative lines.
             // That is the min of all alternatives greater or equal to 2.
-            const Constraint* line_constraint;
-            int line_size;
             unsigned int min_alt = 0u;
+            for (const auto& type : { Line::ROW, Line::COLUMN })
+            {
+                for (const unsigned int val : alternatives[type])
+                {
+                    if (val >= 2u && (min_alt < 2u || val < min_alt))
+                    {
+                        min_alt = val;
+                    }
+                }
+            }
 
-            for_each(alternatives[Line::ROW].begin(),    alternatives[Line::ROW].end(),    f_min_greater_than_2(min_alt));
-            for_each(alternatives[Line::COLUMN].begin(), alternatives[Line::COLUMN].end(), f_min_greater_than_2(min_alt));
             if(min_alt == 0u) { throw std::logic_error("Grid::solve: no min value, this should not happen!"); }
 
             // Some stats
@@ -550,6 +537,8 @@ bool Grid::solve()
             if(stats != nullptr)                                             { stats->guess_total_alternatives += min_alt; }
 
             // Select one row or one column with the minimal number of alternatives.
+            const Constraint* line_constraint = nullptr;
+            unsigned int line_size = 0u;
             auto alternative_it = std::find_if(alternatives[Line::ROW].cbegin(), alternatives[Line::ROW].cend(), [min_alt](unsigned int alt) { return alt == min_alt; });
             if (alternative_it == alternatives[Line::ROW].end())
             {
@@ -572,6 +561,7 @@ bool Grid::solve()
                 line_size = width;
             }
 
+            assert(line_constraint != nullptr);
             guess_list_of_all_alternatives = line_constraint->build_all_possible_lines_with_size(line_size, get_line(guess_line_type, guess_line_index), stats);
 
             // Guess!
