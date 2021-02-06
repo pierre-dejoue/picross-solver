@@ -92,6 +92,7 @@ void print_grid_stats(const GridStats* stats, std::ostream& ostream);
 class SolvedGrid
 {
 public:
+    virtual ~SolvedGrid() {};
     virtual const std::string& get_name() const = 0;
     virtual unsigned int get_height() const = 0;
     virtual unsigned int get_width() const = 0;
@@ -106,6 +107,7 @@ public:
 class Solver
 {
 public:
+    virtual ~Solver() {};
     virtual std::vector<std::unique_ptr<SolvedGrid>> solve(const InputGrid& grid_input, GridStats* stats = nullptr) const = 0;
 };
 
