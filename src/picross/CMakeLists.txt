@@ -18,6 +18,8 @@ target_include_directories(picross
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
+set_property(TARGET picross PROPERTY FOLDER "libraries")
+
 install(TARGETS picross)
 install(DIRECTORY include/picross DESTINATION include)      # Public headers
 install(FILES ${PROJECT_SOURCE_DIR}/LICENSE DESTINATION .)

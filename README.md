@@ -1,8 +1,6 @@
 Picross Solver
 ==============
 
-A text-based Picross puzzle solver in C++
-
 Picross DS is a puzzle game licensed by Nintendo. Those puzzles are sometimes called nonograms.
 The goal is to find a hidden picture in a rectangular grid, by painting some of the cells
 with one color, or leaving them blank. The information given is, for each row and each
@@ -13,11 +11,17 @@ based on the row and column constraints given as input. It makes use of a backtr
 technique to explore the possible arrangements of filled and empty cells. The solver handles
 grids with multiple solutions.
 
-## Building the Library
+## Library
 
-Build using CMake: https://cmake.org/download/
+The Picross solver provided as a library
 
-For example on Windows:
+### Dependencies
+
+None
+
+### Build
+
+With [CMake](https://cmake.org/download/). For example on Windows:
 
 ```
 mkdir -p build/msvc141x64
@@ -26,7 +30,7 @@ cmake -G "Visual Studio 15 2017 Win64" ../..
 cmake --build . --config Release
 ```
 
-## Install
+### Install
 
 Install in some dir:
 
@@ -40,21 +44,34 @@ Or, package the library:
 cpack -G ZIP -C Release
 ```
 
-## Building the Library and the Command Line Tool
+## Test Applications
+
+A CLI and a graphical UI applications built on top of the solver library
+
+### Dependencies
+
+Graphical UI:
+
+* OpenGL
+* [GLFW3](http://glfw.sf.net)
+* [Dear ImGui](https://github.com/ocornut/imgui)
+
+### Build
 
 On Windows:
 
 ```
-cmake -G "Visual Studio 15 2017 Win64" -DPICROSS_BUILD_APP=ON ../..
+mkdir -p build/msvc141x64
+cd build/msvc141x64
+cmake -G "Visual Studio 15 2017 Win64" -DPICROSS_BUILD_APP=ON -DPICROSS_BUILD_CLI=ON ../..
 cmake --build . --config Release
 ```
 
-## Command Line Tool
+### Usage
 
-Run on an example file:
+Run the CLI on an example file:
 
-`./build/msvc141x64/bin/Release/picross_solver.exe inputs/example_input.txt`
-
+`./build/msvc141x64/bin/Release/picross_cli.exe inputs/example_input.txt`
 
 ## License
 
