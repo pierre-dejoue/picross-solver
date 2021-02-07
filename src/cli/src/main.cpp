@@ -13,7 +13,6 @@
 #include <tuple>
 #include <vector>
 
-
 #include <picross/picross.h>
 #include <picross/picross_io.h>
 
@@ -66,7 +65,7 @@ int main(int argc, char *argv[])
             /* Sanity check of the input data */
             bool check;
             std::string check_msg;
-            std::tie(check, check_msg) = check_grid_input(*grid_input);
+            std::tie(check, check_msg) = picross::check_grid_input(*grid_input);
             if(check)
             {
                 /* Solve the grid */
@@ -85,7 +84,7 @@ int main(int argc, char *argv[])
                 }
 
                 /* Display stats */
-                print_grid_stats(&stats, std::cout);
+                picross::print_grid_stats(&stats, std::cout);
                 std::cout << std::endl;
             }
             else

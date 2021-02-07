@@ -6,6 +6,7 @@
 find_package(OpenGL REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
 include(imgui)
+include(pfd)
 
 set(GUI_SOURCES
     src/main.cpp
@@ -19,6 +20,7 @@ target_link_libraries(picross_solver
     PRIVATE
     picross
     imgui
+    portable_file_dialogs
 )
 
 install(TARGETS picross_solver)

@@ -55,6 +55,7 @@ Graphical UI:
 * OpenGL
 * [GLFW3](http://glfw.sf.net)
 * [Dear ImGui](https://github.com/ocornut/imgui)
+* [Portable File Dialogs](https://github.com/samhocevar/portable-file-dialogs)
 
 ### Build
 
