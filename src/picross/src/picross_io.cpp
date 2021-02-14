@@ -83,7 +83,7 @@ namespace
             {
                 if (parsing_state == ParsingState::ROW_SECTION)
                 {
-                    picross::InputConstraint new_row;
+                    picross::InputGrid::Constraint new_row;
                     unsigned int n;
                     while (iss >> n) { new_row.push_back(n); }
                     grids.back().rows.push_back(std::move(new_row));
@@ -91,10 +91,10 @@ namespace
                 }
                 else if (parsing_state == ParsingState::COLUMN_SECTION)
                 {
-                    picross::InputConstraint new_column;
+                    picross::InputGrid::Constraint new_col;
                     unsigned int n;
-                    while (iss >> n) { new_column.push_back(n); }
-                    grids.back().cols.push_back(std::move(new_column));
+                    while (iss >> n) { new_col.push_back(n); }
+                    grids.back().cols.push_back(std::move(new_col));
                     valid_line = true;
                 }
                 else

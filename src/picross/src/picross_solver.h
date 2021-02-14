@@ -78,7 +78,7 @@ std::string str_line_type(Line::Type type);
 class Constraint
 {
 public:
-    Constraint(Line::Type type, const InputConstraint& vect);
+    Constraint(Line::Type type, const InputGrid::Constraint& vect);
 public:
     unsigned int nb_filled_tiles() const;                       // Total number of filled tiles
     size_t nb_blocks() const { return sets_of_ones.size(); }
@@ -89,7 +89,7 @@ public:
     std::list<Line> build_all_possible_lines(const Line& filter_line, GridStats * stats) const;
 private:
     Line::Type type;                                            // Row or column
-    InputConstraint sets_of_ones;                               // Size of the continuing blocks of filled tiles
+    InputGrid::Constraint sets_of_ones;                         // Size of the continuing blocks of filled tiles
     unsigned int min_line_size;
 };
 

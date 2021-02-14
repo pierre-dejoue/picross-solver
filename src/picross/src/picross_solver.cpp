@@ -270,7 +270,7 @@ namespace
     {
         std::vector<Constraint> rows;
         rows.reserve(grid.rows.size());
-        std::transform(grid.rows.cbegin(), grid.rows.cend(), std::back_inserter(rows), [](const InputConstraint& c) { return Constraint(Line::ROW, c); });
+        std::transform(grid.rows.cbegin(), grid.rows.cend(), std::back_inserter(rows), [](const InputGrid::Constraint& c) { return Constraint(Line::ROW, c); });
         return rows;
     }
 
@@ -278,7 +278,7 @@ namespace
     {
         std::vector<Constraint> cols;
         cols.reserve(grid.cols.size());
-        std::transform(grid.cols.cbegin(), grid.cols.cend(), std::back_inserter(cols), [](const InputConstraint& c) { return Constraint(Line::COL, c); });
+        std::transform(grid.cols.cbegin(), grid.cols.cend(), std::back_inserter(cols), [](const InputGrid::Constraint& c) { return Constraint(Line::COL, c); });
         return cols;
     }
 }
@@ -622,7 +622,7 @@ void WorkGrid::save_solution() const
 }
 
 
-Constraint::Constraint(Line::Type type, const InputConstraint& vect) :
+Constraint::Constraint(Line::Type type, const InputGrid::Constraint& vect) :
     type(type),
     sets_of_ones(vect)
 {

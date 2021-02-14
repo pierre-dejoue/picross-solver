@@ -35,15 +35,6 @@ namespace Tile
 
 
 /*
- * InputConstraint class
- *
- *   It defines the constraints that apply to a single line (row or column) of a Picross grid.
- *   It provides the size of each of the groups of contiguous filled tiles.
- */
-using InputConstraint = std::vector<unsigned int>;
-
-
-/*
  * InputGrid class
  *
  *   A data structure to store the information related to an unsolved Picross grid.
@@ -51,9 +42,13 @@ using InputConstraint = std::vector<unsigned int>;
  */
 struct InputGrid
 {
+    // Constraint that applies to a line (row or column)
+    // It gives the size of each of the groups of contiguous filled tiles
+    using Constraint = std::vector<unsigned int>;
+
     std::string name;
-    std::vector<InputConstraint> rows;
-    std::vector<InputConstraint> cols;
+    std::vector<Constraint> rows;
+    std::vector<Constraint> cols;
 };
 
 
