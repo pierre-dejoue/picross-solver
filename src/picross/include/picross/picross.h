@@ -12,6 +12,7 @@
 
 
 #include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -52,7 +53,7 @@ struct InputGrid
 {
     std::string name;
     std::vector<InputConstraint> rows;
-    std::vector<InputConstraint> columns;
+    std::vector<InputConstraint> cols;
 };
 
 
@@ -66,7 +67,7 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input);
  */
 struct GridStats
 {
-    unsigned int guess_max_nested_level = 0u;
+    unsigned int max_nested_level = 0u;
     unsigned int guess_total_calls = 0u;
     unsigned int guess_max_alternatives = 0u;
     unsigned int guess_total_alternatives = 0u;
@@ -77,7 +78,7 @@ struct GridStats
     unsigned int nb_add_and_filter_calls = 0u;
     unsigned int max_add_and_filter_list_size = 0u;
     unsigned int total_lines_added_and_filtered = 0u;
-    unsigned int nb_reduce_all_rows_and_colums_calls = 0u;
+    unsigned int nb_reduce_all_lines_calls = 0u;
 };
 
 
@@ -85,21 +86,31 @@ void print_grid_stats(const GridStats* stats, std::ostream& ostream);
 
 
 /*
- * SolvedGrid class
+ * OutputGrid class
  *
- *   An interface to view the solution of a Picross grid
+ *   A partially of fully solved Picross grid
  */
-class SolvedGrid
+class OutputGrid
 {
 public:
-    virtual ~SolvedGrid() {};
-    virtual const std::string& get_name() const = 0;
-    virtual unsigned int get_height() const = 0;
-    virtual unsigned int get_width() const = 0;
-    virtual std::vector<Tile::Type> get_row(unsigned int index) const = 0;
-    virtual void print(std::ostream& ostream) const = 0;
-};
+    OutputGrid(size_t width, size_t height, const std::string& name = "");
 
+    const std::string& get_name() const;
+    size_t get_width() const;
+    size_t get_height() const;
+
+    Tile::Type get(size_t x, size_t y) const;
+    void set(size_t x, size_t y, Tile::Type t);
+
+    bool is_solved() const;
+    const Tile::Type* data() const;
+    virtual void print(std::ostream& ostream) const;
+
+private:
+    const size_t                                width, height;
+    const std::string                           name;
+    std::vector<Tile::Type>                     grid;            // 2D array of tiles
+};
 
 /*
  * Grid solver interface
@@ -107,8 +118,10 @@ public:
 class Solver
 {
 public:
-    virtual ~Solver() {};
-    virtual std::vector<std::unique_ptr<SolvedGrid>> solve(const InputGrid& grid_input, GridStats* stats = nullptr) const = 0;
+    using Solutions = std::vector<OutputGrid>;
+
+    virtual ~Solver() = default;
+    virtual Solutions solve(const InputGrid& grid_input, GridStats* stats = nullptr) const = 0;
 };
 
 

@@ -44,13 +44,14 @@ class Line
 {
 public:
     using Type = unsigned int;
-    static constexpr Type ROW = 0u, COLUMN = 1u;
+    static constexpr Type ROW = 0u, COL = 1u;
 public:
-    Line(Type type, const std::vector<Tile::Type>& vect);
-    Line(Type type, std::vector<Tile::Type>&& vect);
+    Line(Type type, const std::vector<Tile::Type>& tiles);
+    Line(Type type, std::vector<Tile::Type>&& tiles);
+    Line(Type type, const OutputGrid& grid, size_t index);
 public:
     Type get_type() const { return type; }
-    size_t get_size() const { return tiles.size(); }
+    unsigned int size() const { return static_cast<unsigned int>(tiles.size()); }
     Tile::Type get_tile(int idx) const { return tiles.at(idx); }
     const std::vector<Tile::Type>& get_tiles() const;
     std::vector<Tile::Type>::const_iterator cbegin() const;
@@ -85,7 +86,7 @@ public:
     unsigned int get_min_line_size() const { return min_line_size; }
     void print(std::ostream& ostream) const;
     int theoretical_nb_alternatives(unsigned int line_size, GridStats * stats) const;
-    std::list<Line> build_all_possible_lines_with_size(unsigned int line_size, const Line& filter_line, GridStats * stats) const;
+    std::list<Line> build_all_possible_lines(const Line& filter_line, GridStats * stats) const;
 private:
     Line::Type type;                                            // Row or column
     InputConstraint sets_of_ones;                               // Size of the continuing blocks of filled tiles
@@ -94,48 +95,38 @@ private:
 
 
 /*
- * Grid class
+ * WorkGrid class
  *
- *   Describe a full puzzle grid. This is also the working class used to solve it (Grid::solve())
+ *   Working class used to solve a grid.
  */
-class Grid final : public SolvedGrid
+class WorkGrid final : public OutputGrid
 {
 public:
-    Grid(const InputGrid& grid, std::vector<std::unique_ptr<SolvedGrid>>* solutions, GridStats* stats = nullptr);
-    Grid(const Grid& other) = delete;
-    Grid& operator=(const Grid& other) = delete;
-    Grid(Grid&& other) = default;
-    Grid& operator=(Grid&& other) = default;
+    WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats = nullptr);
+    WorkGrid(const WorkGrid& other) = delete;
+    WorkGrid& operator=(const WorkGrid& other) = delete;
+    WorkGrid(WorkGrid&& other) = default;
+    WorkGrid& operator=(WorkGrid&& other) = default;
 private:
-    Grid(const std::string& grid_name, const std::vector<Constraint>& rows, const std::vector<Constraint>& columns, std::vector<std::unique_ptr<SolvedGrid>>* solutions, GridStats* stats = nullptr, unsigned int nested_level = 0u);
-    Grid(const Grid& parent, unsigned int nested_level);
+    WorkGrid(const WorkGrid& parent, unsigned int nested_level);
 public:
-    Line get_line(Line::Type type, unsigned int index) const;
-    bool is_solved() const;
     bool solve();
-    const std::string& get_name() const override;
-    unsigned int get_height() const override;
-    unsigned int get_width() const override;
-    std::vector<Tile::Type> get_row(unsigned int index) const override;
-    void print(std::ostream& ostream) const override;
 private:
+    bool all_lines_completed() const;
     bool set_line(Line line, unsigned int index);
     bool reduce_one_line(Line::Type type, unsigned int index);
-    bool reduce_all_rows_and_columns();
-    bool set(unsigned int x, unsigned int y, Tile::Type t);
+    bool reduce_all_lines();
+    bool set_w_reduce_flag(size_t x, size_t y, Tile::Type t);
     bool guess() const;
     void save_solution() const;
 private:
-    unsigned int                                height, width;
-    std::vector<Tile::Type>                     grid;            // 2D array of tiles.
-    std::string                                 grid_name;
     std::vector<Constraint>                     rows;
-    std::vector<Constraint>                     columns;
-    std::vector<std::unique_ptr<SolvedGrid>>*   saved_solutions; // ptr to a vector where to store solutions
+    std::vector<Constraint>                     cols;
+    Solver::Solutions*                          saved_solutions; // ptr to a vector where to store solutions
     GridStats*                                  stats;           // if not null, the program will store some stats in that structure
-    std::vector<bool>                           line_complete[2];
+    std::vector<bool>                           line_completed[2];
     std::vector<bool>                           line_to_be_reduced[2];  // flag added for optimization
-    std::vector<unsigned int>                   alternatives[2];
+    std::vector<unsigned int>                   nb_alternatives[2];
     Line::Type                                  guess_line_type;
     unsigned int                                guess_line_index;
     std::list<Line>                             guess_list_of_all_alternatives;
@@ -149,7 +140,7 @@ private:
 class RefSolver : public Solver
 {
 public:
-    std::vector<std::unique_ptr<SolvedGrid>> solve(const InputGrid& grid_input, GridStats* stats) const override;
+    Solver::Solutions solve(const InputGrid& grid_input, GridStats* stats) const override;
 };
 
 } // namespace picross

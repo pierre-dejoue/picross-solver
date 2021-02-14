@@ -63,9 +63,9 @@ namespace Tile
 {
     char str(Type t)
     {
-        if(t == UNKNOWN) { return '?'; }
-        if(t == ZERO)    { return ' '; }
-        if(t == ONE)     { return '#'; }
+        if (t == UNKNOWN) { return '?'; }
+        if (t == ZERO)    { return ' '; }
+        if (t == ONE)     { return '#'; }
         std::ostringstream oss;
         oss << "Invalid tile value: " << t;
         throw std::invalid_argument(oss.str());
@@ -73,30 +73,58 @@ namespace Tile
 
     Type add(Type t1, Type t2)
     {
-        if(t1 == t2 || t2 == Tile::UNKNOWN) { return t1; }
-        else if(t1 == Tile::UNKNOWN)        { return t2; }
-        else                                { throw PicrossLineAdditionError(); }
+        if (t1 == t2 || t2 == Tile::UNKNOWN) { return t1; }
+        else if (t1 == Tile::UNKNOWN)        { return t2; }
+        else                                 { throw PicrossLineAdditionError(); }
     }
 
     Type reduce(Type t1, Type t2)
     {
-        if(t1 == t2) { return t1; }
-        else         { return Tile::UNKNOWN; }
+        if (t1 == t2) { return t1; }
+        else          { return Tile::UNKNOWN; }
     }
 } // end namespace Tile
 
 
-Line::Line(Line::Type type, const std::vector<Tile::Type>& vect) :
+Line::Line(Line::Type type, const std::vector<Tile::Type>& tiles) :
     type(type),
-    tiles(vect)
+    tiles(tiles)
 {
 }
 
 
-Line::Line(Line::Type type, std::vector<Tile::Type>&& vect) :
+Line::Line(Line::Type type, std::vector<Tile::Type>&& tiles) :
     type(type),
-    tiles(std::move(vect))
+    tiles(std::move(tiles))
 {
+}
+
+
+Line::Line(Type type, const OutputGrid& grid, size_t index) :
+    type(type),
+    tiles()
+{
+    const auto height = grid.get_height();
+    const auto width = grid.get_width();
+    if (type == Line::ROW)
+    {
+        if (index >= height) { throw std::invalid_argument("Line ctor: row index is out of range"); }
+        tiles.reserve(static_cast<size_t>(width));
+        for (unsigned int x = 0u; x < width; x++)
+        {
+            tiles.push_back(grid.get(x, index));
+        }
+    }
+    else if (type == Line::COL)
+    {
+        if (index >= width) { throw std::invalid_argument("Line ctor: column index is out of range"); }
+        tiles.reserve(static_cast<size_t>(height));
+        tiles.insert(tiles.cbegin(), grid.data() + index * height, grid.data() + (index + 1) * height);
+    }
+    else
+    {
+        throw std::invalid_argument("Line ctor: wrong type argument");
+    }
 }
 
 
@@ -128,8 +156,8 @@ std::vector<Tile::Type>::const_iterator Line::cend() const
  */
 void Line::add(const Line& line)
 {
-    if(line.type != type)                 { throw std::invalid_argument("Add: Line type mismatch"); }
-    if(line.tiles.size() != tiles.size()) { throw std::invalid_argument("Add: Line size mismatch"); }
+    if (line.type != type)                 { throw std::invalid_argument("Add: Line type mismatch"); }
+    if (line.tiles.size() != tiles.size()) { throw std::invalid_argument("Add: Line size mismatch"); }
     std::transform(tiles.begin(), tiles.end(), line.tiles.begin(), tiles.begin(), Tile::add);
 }
 
@@ -144,8 +172,8 @@ void Line::add(const Line& line)
  */
 void Line::reduce(const Line& line)
 {
-    if(line.type != type)                 { throw std::invalid_argument("Reduce: Line type mismatch"); }
-    if(line.tiles.size() != tiles.size()) { throw std::invalid_argument("Reduce: Line size mismatch"); }
+    if (line.type != type)                 { throw std::invalid_argument("Reduce: Line type mismatch"); }
+    if (line.tiles.size() != tiles.size()) { throw std::invalid_argument("Reduce: Line size mismatch"); }
     std::transform(tiles.begin(), tiles.end(), line.tiles.begin(), tiles.begin(), Tile::reduce);
 }
 
@@ -156,12 +184,12 @@ void Line::reduce(const Line& line)
 void add_and_filter_lines(std::list<Line>& list_of_lines, const Line& filter_line, GridStats* stats)
 {
     // Stats
-    if(stats != nullptr)
+    if (stats != nullptr)
     {
          const auto list_size = static_cast<unsigned int>(list_of_lines.size());
          stats->nb_add_and_filter_calls++;
          stats->total_lines_added_and_filtered += list_size;
-         if(list_size > stats->max_add_and_filter_list_size) { stats->max_add_and_filter_list_size = list_size; }
+         if (list_size > stats->max_add_and_filter_list_size) { stats->max_add_and_filter_list_size = list_size; }
     }
 
     std::list<Line>::iterator line = list_of_lines.begin();
@@ -184,17 +212,17 @@ void add_and_filter_lines(std::list<Line>& list_of_lines, const Line& filter_lin
 Line reduce_lines(const std::list<Line>& list_of_lines, GridStats * stats)
 {
     // Stats
-    if(stats != nullptr)
+    if (stats != nullptr)
     {
          const auto list_size = static_cast<unsigned int>(list_of_lines.size());
          stats->nb_reduce_lines_calls++;
          stats->total_lines_reduced += list_size;
-         if(list_size > stats->max_reduce_list_size) { stats->max_reduce_list_size = list_size; }
+         if (list_size > stats->max_reduce_list_size) { stats->max_reduce_list_size = list_size; }
     }
 
-    if(list_of_lines.empty()) { throw std::invalid_argument("Cannot reduce an empty list of lines"); }
+    if (list_of_lines.empty()) { throw std::invalid_argument("Cannot reduce an empty list of lines"); }
     Line new_line = list_of_lines.front();
-    for(std::list<Line>::const_iterator line = ++list_of_lines.begin(); line != list_of_lines.end(); line++)
+    for (std::list<Line>::const_iterator line = ++list_of_lines.begin(); line != list_of_lines.end(); line++)
     {
         new_line.reduce(*line);
     }
@@ -204,9 +232,9 @@ Line reduce_lines(const std::list<Line>& list_of_lines, GridStats * stats)
 
 bool Line::is_all_one_color(Tile::Type color) const
 {
-    for(size_t idx = 0; idx < tiles.size(); idx++)
+    for (size_t idx = 0; idx < tiles.size(); idx++)
     {
-        if(tiles.at(idx) != color) { return false; }
+        if (tiles.at(idx) != color) { return false; }
     }
     return true;
 }
@@ -214,16 +242,16 @@ bool Line::is_all_one_color(Tile::Type color) const
 
 void Line::print(std::ostream& ostream) const
 {
-    if(type == Line::ROW)    { ostream << "ROW    "; }
-    if(type == Line::COLUMN) { ostream << "COLUMN "; }
+    if (type == Line::ROW) { ostream << "ROW "; }
+    if (type == Line::COL) { ostream << "COL "; }
     ostream << str_line(*this) << std::endl;
 }
 
 
 std::string str_line(const Line& line)
 {
-    std::string out_str = "";
-    for(int idx = 0; idx < line.get_size(); idx++) { out_str += Tile::str(line.get_tile(idx)); }
+    std::string out_str;
+    for (unsigned int idx = 0u; idx < line.size(); idx++) { out_str += Tile::str(line.get_tile(idx)); }
     return out_str;
 }
 
@@ -231,14 +259,14 @@ std::string str_line(const Line& line)
 std::string str_line_type(Line::Type type)
 {
     if (type == Line::ROW) { return "ROW"; }
-    if (type == Line::COLUMN) { return "COLUMN"; }
+    if (type == Line::COL) { return "COL"; }
     assert(0);
     return "UNKNOWN";
 }
 
 namespace
 {
-    std::vector<Constraint> row_constraints_from_input_grid(const InputGrid& grid)
+    std::vector<Constraint> row_constraints_from(const InputGrid& grid)
     {
         std::vector<Constraint> rows;
         rows.reserve(grid.rows.size());
@@ -246,103 +274,140 @@ namespace
         return rows;
     }
 
-    std::vector<Constraint> column_constraints_from_input_grid(const InputGrid& grid)
+    std::vector<Constraint> column_constraints_from(const InputGrid& grid)
     {
-        std::vector<Constraint> columns;
-        columns.reserve(grid.columns.size());
-        std::transform(grid.columns.cbegin(), grid.columns.cend(), std::back_inserter(columns), [](const InputConstraint& c) { return Constraint(Line::COLUMN, c); });
-        return columns;
+        std::vector<Constraint> cols;
+        cols.reserve(grid.cols.size());
+        std::transform(grid.cols.cbegin(), grid.cols.cend(), std::back_inserter(cols), [](const InputConstraint& c) { return Constraint(Line::COL, c); });
+        return cols;
     }
 }
 
 
-Grid::Grid(const InputGrid& grid, std::vector<std::unique_ptr<SolvedGrid>>* solutions, GridStats* stats) :
-    Grid(grid.name, row_constraints_from_input_grid(grid), column_constraints_from_input_grid(grid), solutions, stats)
+const std::string& OutputGrid::get_name() const
 {
+    return name;
 }
 
 
-Grid::Grid(const std::string& grid_name, const std::vector<Constraint>& rows, const std::vector<Constraint>& columns, std::vector<std::unique_ptr<SolvedGrid>>* solutions, GridStats* stats, unsigned int nested_level) :
-    height(static_cast<unsigned int>(rows.size())),
-    width(static_cast<unsigned int>(columns.size())),
-    grid(static_cast<size_t>(height * width), Tile::UNKNOWN),
-    grid_name(grid_name),
-    rows(rows),
-    columns(columns),
+OutputGrid::OutputGrid(size_t width, size_t height, const std::string& name) :
+    width(width),
+    height(height),
+    name(name),
+    grid(height * width, Tile::UNKNOWN)
+{
+}
+
+size_t OutputGrid::get_width() const
+{
+    return width;
+}
+
+
+size_t OutputGrid::get_height() const
+{
+    return height;
+}
+
+
+Tile::Type OutputGrid::get(size_t x, size_t y) const
+{
+    if (x >= width) { throw std::invalid_argument("OutputGrid::set: x is out of range"); }
+    if (y >= height) { throw std::invalid_argument("OutputGrid::set: y is out of range"); }
+    return grid[x * height + y];
+}
+
+
+void OutputGrid::set(size_t x, size_t y, Tile::Type t)
+{
+    if (x >= width) { throw std::invalid_argument("OutputGrid::set: x is out of range"); }
+    if (y >= height) { throw std::invalid_argument("OutputGrid::set: y is out of range"); }
+    grid[x * height + y] = t;
+}
+
+
+bool OutputGrid::is_solved() const
+{
+    return std::none_of(grid.cbegin(), grid.cend(), [](const Tile::Type& t) { return t == Tile::UNKNOWN; });
+}
+
+
+const Tile::Type* OutputGrid::data() const
+{
+    return grid.data();
+}
+
+
+void OutputGrid::print(std::ostream& ostream) const
+{
+    ostream << "Grid " << width << "x" << height << ":" << std::endl;
+    for (unsigned int y = 0u; y < height; y++)
+    {
+        Line line(Line::ROW, *this, y);
+        ostream << "  " << str_line(line) << std::endl;
+    }
+    ostream << std::endl;
+}
+
+
+WorkGrid::WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats) :
+    OutputGrid(grid.cols.size(), grid.rows.size(), grid.name),
+    rows(row_constraints_from(grid)),
+    cols(column_constraints_from(grid)),
     saved_solutions(solutions),
     stats(stats),
-    nested_level(nested_level)
+    nested_level(0u)
 {
+    assert(cols.size() == get_width());
+    assert(rows.size() == get_height());
     assert(saved_solutions != nullptr);
 
     // Other initializations
-    line_complete[Line::ROW].resize(height, false);
-    line_complete[Line::COLUMN].resize(width, false);
-    line_to_be_reduced[Line::ROW].resize(height, true);
-    line_to_be_reduced[Line::COLUMN].resize(width, true);
-    alternatives[Line::ROW].resize(height, 0u);
-    alternatives[Line::COLUMN].resize(width, 0u);
-
-    // Stats TODO move
-    if (stats != nullptr && nested_level > stats->guess_max_nested_level)
-    {
-        stats->guess_max_nested_level = nested_level;
-    }
+    line_completed[Line::ROW].resize(get_height(), false);
+    line_completed[Line::COL].resize(get_width(), false);
+    line_to_be_reduced[Line::ROW].resize(get_height(), true);
+    line_to_be_reduced[Line::COL].resize(get_width(), true);
+    nb_alternatives[Line::ROW].resize(get_height(), 0u);
+    nb_alternatives[Line::COL].resize(get_width(), 0u);
 }
 
 
 // Shallow copy (does not copy the list of alternatives)
-Grid::Grid(const Grid& parent, unsigned int nested_level) :
-    Grid(parent.grid_name, parent.rows, parent.columns, parent.saved_solutions, parent.stats, nested_level)
+WorkGrid::WorkGrid(const WorkGrid& parent, unsigned int nested_level) :
+    OutputGrid(static_cast<const OutputGrid&>(parent)),
+    rows(parent.rows),
+    cols(parent.cols),
+    saved_solutions(parent.saved_solutions),
+    stats(parent.stats),
+    nested_level(nested_level)
 {
-    grid = parent.grid;
-
-    line_complete[Line::ROW] = parent.line_complete[Line::ROW];
-    line_complete[Line::COLUMN] = parent.line_complete[Line::COLUMN];
+    line_completed[Line::ROW] = parent.line_completed[Line::ROW];
+    line_completed[Line::COL] = parent.line_completed[Line::COL];
 
     line_to_be_reduced[Line::ROW] = parent.line_to_be_reduced[Line::ROW];
-    line_to_be_reduced[Line::COLUMN] = parent.line_to_be_reduced[Line::COLUMN];
-}
+    line_to_be_reduced[Line::COL] = parent.line_to_be_reduced[Line::COL];
 
+    nb_alternatives[Line::ROW].resize(get_height(), 0u);
+    nb_alternatives[Line::COL].resize(get_width(), 0u);
 
-Line Grid::get_line(Line::Type type, unsigned int index) const
-{
-    if(type == Line::ROW)
+    // Stats
+    if (stats != nullptr && nested_level > stats->max_nested_level)
     {
-        if(index >= height) { throw std::invalid_argument("Grid::get_line: row index is out of range"); }
-        std::vector<Tile::Type> vect;
-        vect.reserve(static_cast<size_t>(width));
-        for(unsigned int x = 0u; x < width; x++)
-        {
-            vect.push_back(grid[x * height + index]);
-        }
-        return Line(type, std::move(vect));
-    }
-    else if(type == Line::COLUMN)
-    {
-        if (index >= width) { throw std::invalid_argument("Grid::get_line: column index is out of range"); }
-        std::vector<Tile::Type> vect(grid.data() + index * height, grid.data() + (index + 1) * height);
-        return Line(type, std::move(vect));
-    }
-    else
-    {
-        throw std::invalid_argument("Grid::get_line: wrong type argument");
+        stats->max_nested_level = nested_level;
     }
 }
 
 
-bool Grid::set(unsigned int x, unsigned int y, Tile::Type t)
+bool WorkGrid::set_w_reduce_flag(size_t x, size_t y, Tile::Type t)
 {
-    if(x >= width) { throw std::invalid_argument("Grid::set: x is out of range"); }
-    if(y >= height) { throw std::invalid_argument("Grid::set: y is out of range"); }
-    if(t != grid[x * height + y])
+    if (t != get(x, y))
     {
         // modify grid
-        grid[x * height + y] = t;
+        set(x, y, t);
 
-        // marked the impacted row and column with flag "to be reduced".
+        // mark the impacted row and column with flag "to be reduced".
         line_to_be_reduced[Line::ROW][y] = true;
-        line_to_be_reduced[Line::COLUMN][x] = true;
+        line_to_be_reduced[Line::COL][x] = true;
 
         // return true since the grid was modifed.
         return true;
@@ -354,93 +419,45 @@ bool Grid::set(unsigned int x, unsigned int y, Tile::Type t)
 }
 
 
-bool Grid::set_line(Line line, unsigned int index)
+bool WorkGrid::set_line(Line line, unsigned int index)
 {
     bool changed = false;
-    if(line.get_type() == Line::ROW && line.get_size() == width)
+    const auto width = static_cast<unsigned int>(get_width());
+    const auto height = static_cast<unsigned int>(get_height());
+    if (line.get_type() == Line::ROW && line.size() == width)
     {
-        for(unsigned int x = 0u; x < width; x++) { changed |= set(x, index, line.get_tile(x)); }
+        for (unsigned int x = 0u; x < width; x++) { changed |= set_w_reduce_flag(x, index, line.get_tile(x)); }
     }
-    else if(line.get_type() == Line::COLUMN && line.get_size() == height)
+    else if (line.get_type() == Line::COL && line.size() == height)
     {
-        for(unsigned int y = 0u; y < height; y++) { changed |= set(index, y, line.get_tile(y)); }
+        for (unsigned int y = 0u; y < height; y++) { changed |= set_w_reduce_flag(index, y, line.get_tile(y)); }
     }
     else
     {
-        throw std::invalid_argument("Grid::set_line: wrong arguments");
+        throw std::invalid_argument("WorkGrid::set_line: wrong arguments");
     }
     return changed;
 }
 
 
-const std::string& Grid::get_name() const
+bool WorkGrid::reduce_one_line(Line::Type type, unsigned int index)
 {
-    return grid_name;
-}
-
-
-unsigned int Grid::get_height() const
-{
-    return height;
-}
-
-
-unsigned int Grid::get_width() const
-{
-    return width;
-}
-
-
-std::vector<Tile::Type> Grid::get_row(unsigned int index) const
-{
-    assert(is_solved());
-    return get_line(Line::ROW, index).get_tiles();
-}
-
-
-void Grid::print(std::ostream& ostream) const
-{
-    assert(is_solved());
-    ostream << "Grid " << width << "x" << height << ":" << std::endl;
-    for(unsigned int y = 0u; y < height; y++)
-    {
-        Line line = get_line(Line::ROW, y);
-        ostream << "  " << str_line(line) << std::endl;
-    }
-    ostream << std::endl;
-}
-
-
-bool Grid::reduce_one_line(Line::Type type, unsigned int index)
-{
-    Line filter_line = get_line(type, index);
-    const Constraint * line_constraint = nullptr;
-    unsigned int line_size;
-
-    if(type == Line::ROW)
-    {
-        line_constraint = &(rows.at(index));
-        line_size = width;
-    }
-    else if(type == Line::COLUMN)
-    {
-        line_constraint = &(columns.at(index));
-        line_size = height;
-    }
+    const Line filter_line(type, *this, index);
+    const Constraint * line_constraint = type == Line::ROW ? &(rows.at(index)) : &(cols.at(index));
     assert(line_constraint != nullptr);
 
     // OPTIM: if the color of every tile in the line is unknown, there is a simple way to determine
     // if the reduce operation is relevant: max block size must be greater than line_size - min_line_size.
-    if(filter_line.is_all_one_color(Tile::UNKNOWN))
+    if (filter_line.is_all_one_color(Tile::UNKNOWN))
     {
-        if(line_constraint->max_block_size() != 0 &&
-           line_constraint->max_block_size() <= (line_size - line_constraint->get_min_line_size()))
+        if (line_constraint->max_block_size() != 0 &&
+            line_constraint->max_block_size() <= (filter_line.size() - line_constraint->get_min_line_size()))
         {
             // Need not reduce this line until one of the tiles is modified.
             line_to_be_reduced[type][index] = false;
 
             // We shall compute the number of alternatives anyway (in case we have to make an hypothesis on the grid)
-            alternatives[type].at(index) = line_constraint->theoretical_nb_alternatives(line_size, stats);
+            nb_alternatives[type].at(index) = line_constraint->theoretical_nb_alternatives(filter_line.size(), stats);
 
             // No change made on this line
             return false;
@@ -449,14 +466,14 @@ bool Grid::reduce_one_line(Line::Type type, unsigned int index)
     // End of OPTIM.
 
     // Compute all possible lines that match the data already present in the grid and the line constraints
-    std::list<Line> all_lines = line_constraint->build_all_possible_lines_with_size(line_size, filter_line, stats);
-    alternatives[type].at(index) = static_cast<unsigned int>(all_lines.size());
+    std::list<Line> all_lines = line_constraint->build_all_possible_lines(filter_line, stats);
+    nb_alternatives[type].at(index) = static_cast<unsigned int>(all_lines.size());
 
     // If the list of all lines is empty, it means the grid data is contradictory. Throw an exception.
-    if(alternatives[type].at(index) == 0) { throw PicrossGridCannotBeSolved(); }
+    if (nb_alternatives[type].at(index) == 0) { throw PicrossGridCannotBeSolved(); }
 
     // If the list comprises of only one element, it means we solved that line
-    if(alternatives[type].at(index) == 1) { line_complete[type].at(index) = true; }
+    if (nb_alternatives[type].at(index) == 1) { line_completed[type].at(index) = true; }
 
     // In any case, update the grid data with the reduced line resulting from list all_lines
     Line new_line = reduce_lines(all_lines, stats);
@@ -470,45 +487,45 @@ bool Grid::reduce_one_line(Line::Type type, unsigned int index)
 }
 
 
-bool Grid::reduce_all_rows_and_columns()
+bool WorkGrid::reduce_all_lines()
 {
     // Reduce all columns and all rows. Return false if no change was made on the grid.
     bool changed = false;
-    for(unsigned int x = 0u; x < width; x++)
+    for (unsigned int x = 0u; x < get_width(); x++)
     {
-        if(!line_complete[Line::COLUMN][x] && line_to_be_reduced[Line::COLUMN][x]) { changed |= reduce_one_line(Line::COLUMN, x); }
+        if (!line_completed[Line::COL][x] && line_to_be_reduced[Line::COL][x]) { changed |= reduce_one_line(Line::COL, x); }
     }
-    for(unsigned int y = 0u; y < height; y++)
+    for (unsigned int y = 0u; y < get_height(); y++)
     {
-        if(!line_complete[Line::ROW][y] && line_to_be_reduced[Line::ROW][y])       { changed |= reduce_one_line(Line::ROW, y); }
+        if (!line_completed[Line::ROW][y] && line_to_be_reduced[Line::ROW][y]) { changed |= reduce_one_line(Line::ROW, y); }
     }
 
     // Stats
-    if(stats != nullptr) { stats->nb_reduce_all_rows_and_colums_calls++; }
+    if (stats != nullptr) { stats->nb_reduce_all_lines_calls++; }
 
     return changed;
 }
 
 
-bool Grid::is_solved() const
+bool WorkGrid::all_lines_completed() const
 {
-    bool on_rows = std::accumulate(line_complete[Line::ROW].cbegin(), line_complete[Line::ROW].cend(), true, std::logical_and<bool>());
-    bool on_columns = std::accumulate(line_complete[Line::COLUMN].cbegin(), line_complete[Line::COLUMN].cend(), true, std::logical_and<bool>());
-    return on_rows || on_columns;
+    const bool all_rows = std::all_of(line_completed[Line::ROW].cbegin(), line_completed[Line::ROW].cend(), [](bool b) { return b; });
+    const bool all_cols = std::all_of(line_completed[Line::COL].cbegin(), line_completed[Line::COL].cend(), [](bool b) { return b; }); ;
+    return all_rows || all_cols;
 }
 
 
-bool Grid::solve()
+bool WorkGrid::solve()
 {
     try
     {
-        while(reduce_all_rows_and_columns())
+        while(reduce_all_lines())
         {
             // While the reduce method is successful, use it to find the filled and empty tiles.
         }
 
         // Are we done?
-        if(is_solved())
+        if (all_lines_completed())
         {
             save_solution();
             return true;
@@ -519,9 +536,9 @@ bool Grid::solve()
             // Find the row or column not yet solved with the minimal alternative lines.
             // That is the min of all alternatives greater or equal to 2.
             unsigned int min_alt = 0u;
-            for (const auto& type : { Line::ROW, Line::COLUMN })
+            for (const auto& type : { Line::ROW, Line::COL })
             {
-                for (const unsigned int val : alternatives[type])
+                for (const unsigned int val : nb_alternatives[type])
                 {
                     if (val >= 2u && (min_alt < 2u || val < min_alt))
                     {
@@ -530,39 +547,36 @@ bool Grid::solve()
                 }
             }
 
-            if(min_alt == 0u) { throw std::logic_error("Grid::solve: no min value, this should not happen!"); }
+            if (min_alt == 0u) { throw std::logic_error("WorkGrid::solve: no min value, this should not happen!"); }
 
             // Some stats
-            if(stats != nullptr && min_alt > stats->guess_max_alternatives)  { stats->guess_max_alternatives = min_alt; }
-            if(stats != nullptr)                                             { stats->guess_total_alternatives += min_alt; }
+            if (stats != nullptr && min_alt > stats->guess_max_alternatives)  { stats->guess_max_alternatives = min_alt; }
+            if (stats != nullptr)                                             { stats->guess_total_alternatives += min_alt; }
 
             // Select one row or one column with the minimal number of alternatives.
             const Constraint* line_constraint = nullptr;
-            unsigned int line_size = 0u;
-            auto alternative_it = std::find_if(alternatives[Line::ROW].cbegin(), alternatives[Line::ROW].cend(), [min_alt](unsigned int alt) { return alt == min_alt; });
-            if (alternative_it == alternatives[Line::ROW].end())
+            auto alternative_it = std::find_if (nb_alternatives[Line::ROW].cbegin(), nb_alternatives[Line::ROW].cend(), [min_alt](unsigned int alt) { return alt == min_alt; });
+            if (alternative_it == nb_alternatives[Line::ROW].end())
             {
-                alternative_it = std::find_if(alternatives[Line::COLUMN].cbegin(), alternatives[Line::COLUMN].cend(), [min_alt](unsigned int alt) { return alt == min_alt; });
-                if (alternative_it == alternatives[Line::COLUMN].end())
+                alternative_it = std::find_if (nb_alternatives[Line::COL].cbegin(), nb_alternatives[Line::COL].cend(), [min_alt](unsigned int alt) { return alt == min_alt; });
+                if (alternative_it == nb_alternatives[Line::COL].end())
                 {
                     // Again, this should not happen.
-                    throw std::logic_error("Grid::solve: alternative_it = alternatives[Line::COLUMN].end(). Impossible!");
+                    throw std::logic_error("WorkGrid::solve: alternative_it = alternatives[Line::COL].end(). Impossible!");
                 }
-                guess_line_type = Line::COLUMN;
-                guess_line_index = static_cast<unsigned int>(alternative_it - alternatives[Line::COLUMN].cbegin());
-                line_constraint = &(columns.at(guess_line_index));
-                line_size = height;
+                guess_line_type = Line::COL;
+                guess_line_index = static_cast<unsigned int>(alternative_it - nb_alternatives[Line::COL].cbegin());
+                line_constraint = &(cols.at(guess_line_index));
             }
             else
             {
                 guess_line_type = Line::ROW;
-                guess_line_index = static_cast<unsigned int>(alternative_it - alternatives[Line::ROW].cbegin());
+                guess_line_index = static_cast<unsigned int>(alternative_it - nb_alternatives[Line::ROW].cbegin());
                 line_constraint = &(rows.at(guess_line_index));
-                line_size = width;
             }
 
             assert(line_constraint != nullptr);
-            guess_list_of_all_alternatives = line_constraint->build_all_possible_lines_with_size(line_size, get_line(guess_line_type, guess_line_index), stats);
+            guess_list_of_all_alternatives = line_constraint->build_all_possible_lines(Line(guess_line_type, *this, guess_line_index), stats);
 
             // Guess!
             return guess();
@@ -576,21 +590,21 @@ bool Grid::solve()
 }
 
 
-bool Grid::guess() const
+bool WorkGrid::guess() const
 {
     /* This function will test a range of alternatives for one particular line of the grid, each time
-     * creating a new instance of the grid class on which the function Grid::solve() is called.
+     * creating a new instance of the grid class on which the function WorkGrid::solve() is called.
      */
     bool flag_solution_found = false;
-    if(stats != nullptr) { stats->guess_total_calls++; }
-    for(std::list<Line>::const_iterator guess_line = guess_list_of_all_alternatives.begin(); guess_line != guess_list_of_all_alternatives.end(); guess_line++)
+    if (stats != nullptr) { stats->guess_total_calls++; }
+    for (std::list<Line>::const_iterator guess_line = guess_list_of_all_alternatives.begin(); guess_line != guess_list_of_all_alternatives.end(); guess_line++)
     {
-        // Allocate a new grid. Use the shallow copy.
-        Grid new_grid(*this, nested_level + 1);
+        // Allocate a new work grid. Use the shallow copy.
+        WorkGrid new_grid(*this, nested_level + 1);
 
         // Set one line in the new_grid according to the hypothesis we made. That line is then complete
-        if(!new_grid.set_line(*guess_line, guess_line_index)) { throw std::logic_error("Grid::guess: no change in the new grid, will cause infinite loop."); }
-        new_grid.line_complete[guess_line->get_type()].at(guess_line_index) = true;
+        if (!new_grid.set_line(*guess_line, guess_line_index)) { throw std::logic_error("WorkGrid::guess: no change in the new grid, will cause infinite loop."); }
+        new_grid.line_completed[guess_line->get_type()].at(guess_line_index) = true;
 
         // Solve the new grid!
         flag_solution_found |= new_grid.solve();
@@ -599,10 +613,12 @@ bool Grid::guess() const
 }
 
 
-void Grid::save_solution() const
+void WorkGrid::save_solution() const
 {
+    assert(is_solved());
+
     // Shallow copy of only the grid data
-    saved_solutions->emplace_back(std::unique_ptr<Grid>(new Grid(*this, nested_level)));
+    saved_solutions->emplace_back(static_cast<const OutputGrid&>(*this));
 }
 
 
@@ -631,7 +647,8 @@ unsigned int Constraint::nb_filled_tiles() const
 unsigned int Constraint::max_block_size() const
 {
     // Sets_of_ones vector must not be empty.
-    if(sets_of_ones.empty()) { return 0u; }
+    if (sets_of_ones.empty()) { return 0u; }
+
     // Compute max
     return *max_element(sets_of_ones.cbegin(), sets_of_ones.cend());
 }
@@ -640,7 +657,7 @@ unsigned int Constraint::max_block_size() const
 void Constraint::print(std::ostream& ostream) const
 {
     ostream << "Constraint on a " << str_line_type(type) << ": [ ";
-    for(auto& it = sets_of_ones.begin(); it != sets_of_ones.end(); ++it)
+    for (auto& it = sets_of_ones.begin(); it != sets_of_ones.end(); ++it)
     {
         ostream << *it << " ";
     }
@@ -652,58 +669,57 @@ int Constraint::theoretical_nb_alternatives(unsigned int line_size, GridStats * 
 {
     // Compute the number of alternatives for a line of size 'size', assuming all tiles are Tile::UNKONWN.
     // Number of zeros to add to the minimal size line.
-    if(line_size < min_line_size)  { throw std::logic_error("Constraint::theoretical_nb_alternatives: line_size < min_line_size"); }
+    if (line_size < min_line_size)  { throw std::logic_error("Constraint::theoretical_nb_alternatives: line_size < min_line_size"); }
     unsigned int nb_zeros = line_size - min_line_size;
 
     unsigned int nb_alternatives = nb_alternatives_for_fixed_nb_of_partitions(nb_zeros, static_cast<unsigned int>(sets_of_ones.size()) + 1);
-    if(stats != nullptr && nb_alternatives > stats->max_theoretical_nb_alternatives) {  stats->max_theoretical_nb_alternatives = nb_alternatives; }
+    if (stats != nullptr && nb_alternatives > stats->max_theoretical_nb_alternatives) {  stats->max_theoretical_nb_alternatives = nb_alternatives; }
 
     return nb_alternatives;
 }
 
 
-std::list<Line> Constraint::build_all_possible_lines_with_size(unsigned int line_size, const Line& filter_line, GridStats * stats) const
+std::list<Line> Constraint::build_all_possible_lines(const Line& filter_line, GridStats* stats) const
 {
-    if(filter_line.get_size() != line_size)   { throw std::invalid_argument("Wrong filter line size"); }
-    if(filter_line.get_type() != type)   { throw std::invalid_argument("Wrong filter line type"); }
+    if (filter_line.get_type() != type) { throw std::invalid_argument("Wrong filter line type"); }
 
     // Number of zeros to add to the minimal size line.
-    if (line_size < min_line_size) { throw std::logic_error("Constraint::build_all_possible_lines_with_size: line_size < min_line_size"); }
-    unsigned int nb_zeros = line_size - min_line_size;
+    if (filter_line.size() < min_line_size) { throw std::logic_error("Constraint::build_all_possible_lines_with_size: line_size < min_line_size"); }
+    unsigned int nb_zeros = filter_line.size() - min_line_size;
 
     std::list<Line> return_list;
-    std::vector<Tile::Type> new_tile_vect(line_size, Tile::ZERO);
+    std::vector<Tile::Type> new_tile_vect(filter_line.size(), Tile::ZERO);
 
-    if(sets_of_ones.size() == 0)
+    if (sets_of_ones.size() == 0)
     {
         // Return a list with only one all-zero line
         return_list.push_back( Line(type, new_tile_vect) );
 
-        // Filter the return_list against filter_line
+        // Filter the return_list against input line
         add_and_filter_lines(return_list, filter_line, stats);
     }
-    else if(sets_of_ones.size() == 1)
+    else if (sets_of_ones.size() == 1)
     {
         // Build the list of all possible lines with only one block of continuous filled tiles.
         // NB: in this case nb_zeros = size - sets_of_ones[0]
-        for(unsigned int n = 0u; n <= nb_zeros; n++)
+        for (unsigned int n = 0u; n <= nb_zeros; n++)
         {
-            for(unsigned int idx = 0u; idx < n; idx++)                          { new_tile_vect.at(idx)   = Tile::ZERO; }
-            for(unsigned int idx = 0u; idx < sets_of_ones[0]; idx++)            { new_tile_vect.at(n+idx) = Tile::ONE;  }
-            for(unsigned int idx = n + sets_of_ones[0]; idx < line_size; idx++) { new_tile_vect.at(idx)   = Tile::ZERO; }
+            for (unsigned int idx = 0u; idx < n; idx++)                                      { new_tile_vect.at(idx)   = Tile::ZERO; }
+            for (unsigned int idx = 0u; idx < sets_of_ones[0]; idx++)                        { new_tile_vect.at(n+idx) = Tile::ONE;  }
+            for (unsigned int idx = n + sets_of_ones[0]; idx < filter_line.size(); idx++)    { new_tile_vect.at(idx) = Tile::ZERO; }
             return_list.push_back( Line(type, new_tile_vect) );
         }
 
         // Filter the return_list against filter_line
-        if(!filter_line.is_all_one_color(Tile::UNKNOWN)) { add_and_filter_lines(return_list, filter_line, stats); }
+        if (!filter_line.is_all_one_color(Tile::UNKNOWN)) { add_and_filter_lines(return_list, filter_line, stats); }
     }
     else
     {
         // For loop on the number of zeros before the first block of ones
-        for(unsigned int n = 0u; n <= nb_zeros; n++)
+        for (unsigned int n = 0u; n <= nb_zeros; n++)
         {
-            for(unsigned int idx = 0u; idx < n; idx++)                  { new_tile_vect.at(idx)   = Tile::ZERO; }
-            for(unsigned int idx = 0u; idx < sets_of_ones[0]; idx++)    { new_tile_vect.at(n+idx) = Tile::ONE;  }
+            for (unsigned int idx = 0u; idx < n; idx++)                  { new_tile_vect.at(idx)   = Tile::ZERO; }
+            for (unsigned int idx = 0u; idx < sets_of_ones[0]; idx++)    { new_tile_vect.at(n+idx) = Tile::ONE;  }
             const unsigned int begin_size = n + sets_of_ones[0] + 1u;
             new_tile_vect.at(begin_size - 1u) = Tile::ZERO;
 
@@ -721,16 +737,16 @@ std::list<Line> Constraint::build_all_possible_lines_with_size(unsigned int line
                 std::vector<unsigned int> trim_sets_of_ones(sets_of_ones.begin()+1, sets_of_ones.end());
                 Constraint recursive_constraint(type, trim_sets_of_ones);
 
-                std::vector<Tile::Type> end_filter_vect(filter_line.cbegin() + begin_size, filter_line.cbegin() + filter_line.get_size());
+                std::vector<Tile::Type> end_filter_vect(filter_line.cbegin() + begin_size, filter_line.cend());
                 Line end_filter(type, end_filter_vect);
 
-                std::list<Line> recursive_list = recursive_constraint.build_all_possible_lines_with_size(line_size - begin_size, end_filter, stats);
+                std::list<Line> recursive_list = recursive_constraint.build_all_possible_lines(end_filter, stats);
 
                 // Finally, construct the return_list based on the contents of the recursive_list.
-                for(std::list<Line>::iterator line = recursive_list.begin(); line != recursive_list.end(); line++)
+                for (const Line& line : recursive_list)
                 {
-                    copy(line->cbegin(),  line->cbegin() + line->get_size(), new_tile_vect.begin() + begin_size);
-                    return_list.push_back( Line(type, new_tile_vect) );
+                    std::copy(line.cbegin(), line.cend(), new_tile_vect.begin() + begin_size);
+                    return_list.emplace_back(type, new_tile_vect);
                 }
             }
             catch(PicrossLineAdditionError&)
@@ -752,10 +768,10 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input)
     //  -> same number of painted cells on rows and columns
     //  -> for each constraint min_line_size is smaller than the width or height of the row or column, respectively.
 
-    const auto width  = static_cast<unsigned int>(grid_input.columns.size());
+    const auto width  = static_cast<unsigned int>(grid_input.cols.size());
     const auto height = static_cast<unsigned int>(grid_input.rows.size());
 
-    if(height == 0u)
+    if (height == 0u)
     {
         std::ostringstream oss;
         oss << "Invalid height = " << height << std::endl;
@@ -768,11 +784,11 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input)
         return std::make_pair(false, oss.str());
     }
     unsigned int nb_tiles_on_rows = 0u;
-    for(auto& c = grid_input.rows.begin(); c != grid_input.rows.end(); c++)
+    for (auto& c = grid_input.rows.begin(); c != grid_input.rows.end(); c++)
     {
         Constraint row(Line::ROW, *c);
         nb_tiles_on_rows += row.nb_filled_tiles();
-        if(row.get_min_line_size() > width)
+        if (row.get_min_line_size() > width)
         {
             std::ostringstream oss;
             oss << "Width = " << width << " of the grid is too small for constraint: ";
@@ -780,23 +796,23 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input)
             return std::make_pair(false, oss.str());
         }
     }
-    unsigned int nb_tiles_on_columns = 0u;
-    for(auto& c = grid_input.columns.begin(); c != grid_input.columns.end(); c++)
+    unsigned int nb_tiles_on_cols = 0u;
+    for (auto& c = grid_input.cols.begin(); c != grid_input.cols.end(); c++)
     {
-        Constraint column(Line::COLUMN, *c);
-        nb_tiles_on_columns += column.nb_filled_tiles();
-        if(column.get_min_line_size() > height)
+        Constraint col(Line::COL, *c);
+        nb_tiles_on_cols += col.nb_filled_tiles();
+        if (col.get_min_line_size() > height)
         {
             std::ostringstream oss;
             oss << "Height = " << height << " of the grid is too small for constraint: ";
-            column.print(oss);
+            col.print(oss);
             return std::make_pair(false, oss.str());
         }
     }
-    if(nb_tiles_on_rows != nb_tiles_on_columns)
+    if (nb_tiles_on_rows != nb_tiles_on_cols)
     {
         std::ostringstream oss;
-        oss << "Number of filled tiles on rows (" << nb_tiles_on_rows << ") and columns (" <<  nb_tiles_on_columns << ") do not match." << std::endl;
+        oss << "Number of filled tiles on rows (" << nb_tiles_on_rows << ") and columns (" <<  nb_tiles_on_cols << ") do not match." << std::endl;
         return std::make_pair(false, oss.str());
     }
     return std::make_pair(true, std::string());
@@ -805,16 +821,16 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input)
 
 void print_grid_stats(const GridStats* stats, std::ostream& ostream)
 {
-    if(stats != nullptr)
+    if (stats != nullptr)
     {
-        ostream << "  Max nested level: " << stats->guess_max_nested_level << std::endl;
-        if(stats->guess_max_nested_level > 0u)
+        ostream << "  Max nested level: " << stats->max_nested_level << std::endl;
+        if (stats->max_nested_level > 0u)
         {
             ostream << "    > The solving of the grid required an hypothesis on " << stats->guess_total_calls << " row(s) or column(s)." << std::endl;
             ostream << "    > Max/total nb of alternatives being tested: " << stats->guess_max_alternatives << "/" << stats->guess_total_alternatives << std::endl;
         }
         ostream << "  Max theoretical nb of alternatives on a line: " << stats->max_theoretical_nb_alternatives << std::endl;
-        ostream << "  " << stats->nb_reduce_all_rows_and_colums_calls << " calls to reduce_all_rows_and_columns()." << std::endl;
+        ostream << "  " << stats->nb_reduce_all_lines_calls << " calls to reduce_all_rows_and_columns()." << std::endl;
         ostream << "  " << stats->nb_reduce_lines_calls   << " calls to reduce_lines(). Max list size/total nb of lines being reduced: " << stats->max_reduce_list_size << "/" << stats->total_lines_reduced << std::endl;
         ostream << "  " << stats->nb_add_and_filter_calls << " calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: " << stats->max_add_and_filter_list_size << "/" << stats->total_lines_added_and_filtered << std::endl;
         ostream << std::endl;
@@ -822,9 +838,9 @@ void print_grid_stats(const GridStats* stats, std::ostream& ostream)
 }
 
 
-std::vector<std::unique_ptr<SolvedGrid>> RefSolver::solve(const InputGrid& grid_input, GridStats* stats) const
+Solver::Solutions RefSolver::solve(const InputGrid& grid_input, GridStats* stats) const
 {
-    std::vector<std::unique_ptr<SolvedGrid>> solutions;
+    Solutions solutions;
 
     if (stats != nullptr)
     {
@@ -832,8 +848,9 @@ std::vector<std::unique_ptr<SolvedGrid>> RefSolver::solve(const InputGrid& grid_
         std::swap(*stats, GridStats());
     }
 
-    Grid(grid_input, &solutions, stats).solve();
+    const bool success = WorkGrid(grid_input, &solutions, stats).solve();
 
+    assert(success == (solutions.size() > 0u));
     return solutions;
 }
 

@@ -6,8 +6,9 @@
  *   and solve them. If several solutions exist, an exhaustive search is done
  *   and all of them are displayed.
  *
- * Copyright (c) 2010-2020 Pierre DEJOUE
+ * Copyright (c) 2010-2021 Pierre DEJOUE
  ******************************************************************************/
+#include <cassert>
 #include <exception>
 #include <iostream>
 #include <tuple>
@@ -26,7 +27,7 @@ int main(int argc, char *argv[])
      * I - Process command line
      **************************************************************************/
     std::string filename;
-    if(argc == 2)
+    if (argc == 2)
     {
         filename = argv[1];     // input filename;
     }
@@ -58,7 +59,7 @@ int main(int argc, char *argv[])
         const auto solver = picross::get_ref_solver();
 
         unsigned int count_grids = 0u;
-        for(auto& grid_input = grids_to_solve.begin(); grid_input != grids_to_solve.end(); ++grid_input)
+        for (auto& grid_input = grids_to_solve.begin(); grid_input != grids_to_solve.end(); ++grid_input)
         {
             std::cout << "GRID " << ++count_grids << ": " << grid_input->name << std::endl;
 
@@ -66,21 +67,25 @@ int main(int argc, char *argv[])
             bool check;
             std::string check_msg;
             std::tie(check, check_msg) = picross::check_grid_input(*grid_input);
-            if(check)
+            if (check)
             {
                 /* Solve the grid */
                 picross::GridStats stats;
-                std::vector<std::unique_ptr<picross::SolvedGrid>> solutions = solver->solve(*grid_input, &stats);
+                std::vector<picross::OutputGrid> solutions = solver->solve(*grid_input, &stats);
 
                 /* Display solutions */
-                if(solutions.empty())
+                if (solutions.empty())
                 {
                     std::cout << " > Could not solve that grid :-(" << std::endl << std::endl;
                 }
                 else
                 {
                     std::cout << " > Found " << solutions.size() << " solution(s):" << std::endl << std::endl;
-                    for(auto& solution = solutions.cbegin(); solution != solutions.cend(); ++solution) { (*solution)->print(std::cout); }
+                    for (const auto& solution : solutions)
+                    {
+                        assert(solution.is_solved());
+                        solution.print(std::cout);
+                    }
                 }
 
                 /* Display stats */

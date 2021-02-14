@@ -94,7 +94,7 @@ namespace
                     picross::InputConstraint new_column;
                     unsigned int n;
                     while (iss >> n) { new_column.push_back(n); }
-                    grids.back().columns.push_back(std::move(new_column));
+                    grids.back().cols.push_back(std::move(new_column));
                     valid_line = true;
                 }
                 else

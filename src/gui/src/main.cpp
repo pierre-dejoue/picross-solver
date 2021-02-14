@@ -74,7 +74,7 @@ void picrossSolveGrids(PicrossFile* picrossFile)
         std::tie(check, check_msg) = picross::check_grid_input(grid_input);
         if (check)
         {
-            std::vector<std::unique_ptr<picross::SolvedGrid>> solutions = solver->solve(grid_input);
+            std::vector<picross::OutputGrid> solutions = solver->solve(grid_input);
             if (solutions.empty())
             {
                 std::lock_guard<std::mutex> lock(picrossFile->textBufferLock);
@@ -86,10 +86,11 @@ void picrossSolveGrids(PicrossFile* picrossFile)
                     std::lock_guard<std::mutex> lock(picrossFile->textBufferLock);
                     picrossFile->textBuffer.appendf(" > Found %d solution(s) :\n", solutions.size());
                 }
-                for (auto& solution = solutions.cbegin(); solution != solutions.cend(); ++solution)
+                for (const auto& solution : solutions)
                 {
+                    assert(solution.is_solved());
                     std::ostringstream oss;
-                    (*solution)->print(oss);
+                    solution.print(oss);
                     {
                         std::lock_guard<std::mutex> lock(picrossFile->textBufferLock);
                         picrossFile->textBuffer.append(oss.str().c_str());
