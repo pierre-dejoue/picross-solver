@@ -78,7 +78,7 @@ struct GridStats
 };
 
 
-void print_grid_stats(const GridStats* stats, std::ostream& ostream);
+std::ostream& operator<<(std::ostream& ostream, const GridStats& stats);
 
 
 /*
@@ -100,13 +100,16 @@ public:
 
     bool is_solved() const;
     const Tile::Type* data() const;
-    virtual void print(std::ostream& ostream) const;
-
+    void print(std::ostream& ostream) const;
 private:
     const size_t                                width, height;
     const std::string                           name;
     std::vector<Tile::Type>                     grid;            // 2D array of tiles
 };
+
+
+std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid);
+
 
 /*
  * Grid solver interface

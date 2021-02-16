@@ -90,7 +90,7 @@ void picrossSolveGrids(PicrossFile* picrossFile)
                 {
                     assert(solution.is_solved());
                     std::ostringstream oss;
-                    solution.print(oss);
+                    oss << solution << std::endl;
                     {
                         std::lock_guard<std::mutex> lock(picrossFile->textBufferLock);
                         picrossFile->textBuffer.append(oss.str().c_str());

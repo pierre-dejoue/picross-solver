@@ -244,7 +244,14 @@ void Line::print(std::ostream& ostream) const
 {
     if (type == Line::ROW) { ostream << "ROW "; }
     if (type == Line::COL) { ostream << "COL "; }
-    ostream << str_line(*this) << std::endl;
+    ostream << str_line(*this);
+}
+
+
+std::ostream& operator<<(std::ostream& ostream, const Line& line)
+{
+    line.print(ostream);
+    return ostream;
 }
 
 
@@ -346,7 +353,13 @@ void OutputGrid::print(std::ostream& ostream) const
         Line line(Line::ROW, *this, y);
         ostream << "  " << str_line(line) << std::endl;
     }
-    ostream << std::endl;
+}
+
+
+std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid)
+{
+    grid.print(ostream);
+    return ostream;
 }
 
 
@@ -666,7 +679,14 @@ void Constraint::print(std::ostream& ostream) const
     {
         ostream << *it << " ";
     }
-    ostream << "]; min_line_size = " << min_line_size << std::endl;
+    ostream << "]; min_line_size = " << min_line_size;
+}
+
+
+std::ostream& operator<<(std::ostream& ostream, const Constraint& constraint)
+{
+    constraint.print(ostream);
+    return ostream;
 }
 
 
@@ -796,8 +816,7 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input)
         if (row.get_min_line_size() > width)
         {
             std::ostringstream oss;
-            oss << "Width = " << width << " of the grid is too small for constraint: ";
-            row.print(oss);
+            oss << "Width = " << width << " of the grid is too small for constraint: " << row << std::endl;
             return std::make_pair(false, oss.str());
         }
     }
@@ -809,8 +828,7 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input)
         if (col.get_min_line_size() > height)
         {
             std::ostringstream oss;
-            oss << "Height = " << height << " of the grid is too small for constraint: ";
-            col.print(oss);
+            oss << "Height = " << height << " of the grid is too small for constraint: " << col << std::endl;
             return std::make_pair(false, oss.str());
         }
     }
@@ -824,23 +842,21 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input)
 }
 
 
-void print_grid_stats(const GridStats* stats, std::ostream& ostream)
+std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
 {
-    if (stats != nullptr)
+    ostream << "  Max nested level: " << stats.max_nested_level << std::endl;
+    if (stats.max_nested_level > 0u)
     {
-        ostream << "  Max nested level: " << stats->max_nested_level << std::endl;
-        if (stats->max_nested_level > 0u)
-        {
-            ostream << "    > The solving of the grid required an hypothesis on " << stats->guess_total_calls << " row(s) or column(s)." << std::endl;
-            ostream << "    > Max/total nb of alternatives being tested: " << stats->guess_max_alternatives << "/" << stats->guess_total_alternatives << std::endl;
-        }
-        ostream << "  Max theoretical nb of alternatives on a line: " << stats->max_theoretical_nb_alternatives << std::endl;
-        ostream << "  " << stats->nb_full_grid_pass_calls << " calls to full_grid_pass()." << std::endl;
-        ostream << "  " << stats->nb_single_line_pass_calls << " calls to single_line_pass()." << std::endl;
-        ostream << "  " << stats->nb_reduce_line_calls   << " calls to reduce_line(). Max list size/total nb of lines reduced: " << stats->max_reduce_list_size << "/" << stats->total_lines_reduced << std::endl;
-        ostream << "  " << stats->nb_add_and_filter_calls << " calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: " << stats->max_add_and_filter_list_size << "/" << stats->total_lines_added_and_filtered << std::endl;
-        ostream << std::endl;
+        ostream << "    > The solving of the grid required an hypothesis on " << stats.guess_total_calls << " row(s) or column(s)." << std::endl;
+        ostream << "    > Max/total nb of alternatives being tested: " << stats.guess_max_alternatives << "/" << stats.guess_total_alternatives << std::endl;
     }
+    ostream << "  Max theoretical nb of alternatives on a line: " << stats.max_theoretical_nb_alternatives << std::endl;
+    ostream << "  " << stats.nb_full_grid_pass_calls << " calls to full_grid_pass()." << std::endl;
+    ostream << "  " << stats.nb_single_line_pass_calls << " calls to single_line_pass()." << std::endl;
+    ostream << "  " << stats.nb_reduce_line_calls << " calls to reduce_line(). Max list size/total nb of lines reduced: " << stats.max_reduce_list_size << "/" << stats.total_lines_reduced << std::endl;
+    ostream << "  " << stats.nb_add_and_filter_calls << " calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: " << stats.max_add_and_filter_list_size << "/" << stats.total_lines_added_and_filtered << std::endl;
+
+    return ostream;
 }
 
 

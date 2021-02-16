@@ -70,6 +70,7 @@ void add_and_filter_lines(std::list<Line>& lines, const Line& filter_line, GridS
 Line reduce_line(const std::list<Line>& all_alternatives, GridStats* stats);
 std::string str_line(const Line& line);
 std::string str_line_type(Line::Type type);
+std::ostream& operator<<(std::ostream& ostream, const Line& line);
 
 
 /*
@@ -84,14 +85,17 @@ public:
     size_t nb_blocks() const { return sets_of_ones.size(); }
     unsigned int max_block_size() const;                        // Max size of a group of contiguous filled tiles
     unsigned int get_min_line_size() const { return min_line_size; }
-    void print(std::ostream& ostream) const;
     int theoretical_nb_alternatives(unsigned int line_size, GridStats * stats) const;
     std::list<Line> build_all_possible_lines(const Line& filter_line, GridStats * stats) const;
+    void print(std::ostream& ostream) const;
 private:
     Line::Type type;                                            // Row or column
     InputGrid::Constraint sets_of_ones;                         // Size of the continuing blocks of filled tiles
     unsigned int min_line_size;
 };
+
+
+std::ostream& operator<<(std::ostream& ostream, const Constraint& constraint);
 
 
 /*

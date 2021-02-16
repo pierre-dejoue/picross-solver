@@ -84,12 +84,12 @@ int main(int argc, char *argv[])
                     for (const auto& solution : solutions)
                     {
                         assert(solution.is_solved());
-                        solution.print(std::cout);
+                        std::cout << solution << std::endl;
                     }
                 }
 
                 /* Display stats */
-                picross::print_grid_stats(&stats, std::cout);
+                std::cout << stats << std::endl;
                 std::cout << std::endl;
             }
             else
