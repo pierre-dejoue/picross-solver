@@ -6,7 +6,23 @@ GRID 2: Two notes
  > Invalid grid. Error message: Invalid height = 0
 
 
-GRID 3: no name
+GRID 3: Ill-formed
  > Invalid grid. Error message: Height = 3 of the grid is too small for constraint: Constraint on a COL: [ 4 ]; min_line_size = 4
+
+
+GRID 4: Wrong constraint
+ > Invalid grid. Error message: Width = 2 of the grid is too small for constraint: Constraint on a ROW: [ 1 1 ]; min_line_size = 3
+
+
+GRID 5: Impossible
+ > Could not solve that grid :-(
+
+  Max nested level: 0
+  Max theoretical nb of alternatives on a line: 0
+  1 calls to full_grid_pass().
+  4 calls to single_line_pass().
+  3 calls to reduce_line(). Max list size/total nb of lines reduced: 1/3
+  1 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 1/1
+
 
 

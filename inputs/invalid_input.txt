@@ -1,3 +1,4 @@
+# Mismatch number of tiles on rows and columns
 GRID Fish
 ROWS
 [ ]
@@ -44,6 +45,7 @@ COLUMNS
 [ 2 2 2 ]
 [ 4 4 ]
 
+# Missing rows
 GRID Two notes
 COLUMNS
 [ 2 ]
@@ -57,7 +59,8 @@ COLUMNS
 [ 1 ]
 [ 3 ]
 
-GRID no name
+# Invalid constraint (1)
+GRID Ill-formed
 ROWS
 [ 1 1 ]
 [ 2 ]
@@ -67,3 +70,22 @@ COLUMNS
 [ 1 ]
 [ 1 1 ]
 
+# Invalid constraint (2)
+GRID Wrong constraint
+ROWS
+[ 1 1 ]
+[ 2 ]
+COLUMNS
+[ 2 ]
+[ 2 ]
+
+# Valid constraints but the grid has no solution
+GRID Impossible
+ROWS
+[ 1 1 ]
+[ 1 1 ]
+[ 1 1 ]
+COLUMNS
+[ ]
+[ 3 ]
+[ 3 ]
