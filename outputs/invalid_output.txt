@@ -7,6 +7,6 @@ GRID 2: Two notes
 
 
 GRID 3: no name
- > Invalid grid. Error message: Height = 3 of the grid is too small for constraint: Constraint on a COLUMN: [ 4 ]; min_line_size = 4
+ > Invalid grid. Error message: Height = 3 of the grid is too small for constraint: Constraint on a COL: [ 4 ]; min_line_size = 4
 
 

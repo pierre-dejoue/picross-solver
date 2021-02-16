@@ -66,14 +66,15 @@ struct GridStats
     unsigned int guess_total_calls = 0u;
     unsigned int guess_max_alternatives = 0u;
     unsigned int guess_total_alternatives = 0u;
-    unsigned int nb_reduce_lines_calls = 0u;
+    unsigned int nb_reduce_line_calls = 0u;
     unsigned int max_reduce_list_size = 0u;
     unsigned int max_theoretical_nb_alternatives = 0u;
     unsigned int total_lines_reduced = 0u;
     unsigned int nb_add_and_filter_calls = 0u;
     unsigned int max_add_and_filter_list_size = 0u;
     unsigned int total_lines_added_and_filtered = 0u;
-    unsigned int nb_reduce_all_lines_calls = 0u;
+    unsigned int nb_full_grid_pass_calls = 0u;
+    unsigned int nb_single_line_pass_calls = 0u;
 };
 
 

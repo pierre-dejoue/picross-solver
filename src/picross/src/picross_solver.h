@@ -66,8 +66,8 @@ private:
 };
 
 
-void add_and_filter_lines(std::list<Line>& list_of_lines, const Line& filter_line, GridStats* stats);
-Line reduce_lines(const std::list<Line>& list_of_lines, GridStats* stats);
+void add_and_filter_lines(std::list<Line>& lines, const Line& filter_line, GridStats* stats);
+Line reduce_line(const std::list<Line>& all_alternatives, GridStats* stats);
 std::string str_line(const Line& line);
 std::string str_line_type(Line::Type type);
 
@@ -114,8 +114,8 @@ public:
 private:
     bool all_lines_completed() const;
     bool set_line(Line line, unsigned int index);
-    bool reduce_one_line(Line::Type type, unsigned int index);
-    bool reduce_all_lines();
+    bool single_line_pass(Line::Type type, unsigned int index);
+    bool full_grid_pass();
     bool set_w_reduce_flag(size_t x, size_t y, Tile::Type t);
     bool guess() const;
     void save_solution() const;

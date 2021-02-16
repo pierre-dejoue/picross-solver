@@ -181,19 +181,19 @@ void Line::reduce(const Line& line)
 /* Add (with Tile::add) a filter line to each line in a list. If the addition fails,
  * the offending line is discarded from the list
  */
-void add_and_filter_lines(std::list<Line>& list_of_lines, const Line& filter_line, GridStats* stats)
+void add_and_filter_lines(std::list<Line>& lines, const Line& filter_line, GridStats* stats)
 {
     // Stats
     if (stats != nullptr)
     {
-         const auto list_size = static_cast<unsigned int>(list_of_lines.size());
+         const auto list_size = static_cast<unsigned int>(lines.size());
          stats->nb_add_and_filter_calls++;
          stats->total_lines_added_and_filtered += list_size;
          if (list_size > stats->max_add_and_filter_list_size) { stats->max_add_and_filter_list_size = list_size; }
     }
 
-    std::list<Line>::iterator line = list_of_lines.begin();
-    while(line != list_of_lines.end())
+    std::list<Line>::iterator line = lines.begin();
+    while(line != lines.end())
     {
         try
         {
@@ -202,27 +202,27 @@ void add_and_filter_lines(std::list<Line>& list_of_lines, const Line& filter_lin
         }
         catch(PicrossLineAdditionError&)
         {
-            line = list_of_lines.erase(line);
+            line = lines.erase(line);
         }
     }
 }
 
 
 /* Reduce a list of lines and return one line that comprises the information common to all */
-Line reduce_lines(const std::list<Line>& list_of_lines, GridStats * stats)
+Line reduce_line(const std::list<Line>& all_alternatives, GridStats * stats)
 {
     // Stats
     if (stats != nullptr)
     {
-         const auto list_size = static_cast<unsigned int>(list_of_lines.size());
-         stats->nb_reduce_lines_calls++;
+         const auto list_size = static_cast<unsigned int>(all_alternatives.size());
+         stats->nb_reduce_line_calls++;
          stats->total_lines_reduced += list_size;
          if (list_size > stats->max_reduce_list_size) { stats->max_reduce_list_size = list_size; }
     }
 
-    if (list_of_lines.empty()) { throw std::invalid_argument("Cannot reduce an empty list of lines"); }
-    Line new_line = list_of_lines.front();
-    for (std::list<Line>::const_iterator line = ++list_of_lines.begin(); line != list_of_lines.end(); line++)
+    if (all_alternatives.empty()) { throw std::invalid_argument("Cannot reduce an empty list of lines"); }
+    Line new_line = all_alternatives.front();
+    for (std::list<Line>::const_iterator line = ++all_alternatives.begin(); line != all_alternatives.end(); line++)
     {
         new_line.reduce(*line);
     }
@@ -402,6 +402,8 @@ bool WorkGrid::set_w_reduce_flag(size_t x, size_t y, Tile::Type t)
 {
     if (t != get(x, y))
     {
+        assert(get(x, y) == Tile::UNKNOWN);
+
         // modify grid
         set(x, y, t);
 
@@ -440,14 +442,18 @@ bool WorkGrid::set_line(Line line, unsigned int index)
 }
 
 
-bool WorkGrid::reduce_one_line(Line::Type type, unsigned int index)
+bool WorkGrid::single_line_pass(Line::Type type, unsigned int index)
 {
-    const Line filter_line(type, *this, index);
+    assert(line_completed[type].at(index) == false);
     const Constraint * line_constraint = type == Line::ROW ? &(rows.at(index)) : &(cols.at(index));
     assert(line_constraint != nullptr);
 
-    // OPTIM: if the color of every tile in the line is unknown, there is a simple way to determine
+    // Stats
+    if (stats != nullptr) { stats->nb_single_line_pass_calls++;  }
+
+    // If the color of every tile in the line is unknown, there is a simple way to determine
     // if the reduce operation is relevant: max block size must be greater than line_size - min_line_size.
+    const Line filter_line(type, *this, index);
     if (filter_line.is_all_one_color(Tile::UNKNOWN))
     {
         if (line_constraint->max_block_size() != 0 &&
@@ -463,7 +469,6 @@ bool WorkGrid::reduce_one_line(Line::Type type, unsigned int index)
             return false;
         }
     }
-    // End of OPTIM.
 
     // Compute all possible lines that match the data already present in the grid and the line constraints
     std::list<Line> all_lines = line_constraint->build_all_possible_lines(filter_line, stats);
@@ -476,7 +481,7 @@ bool WorkGrid::reduce_one_line(Line::Type type, unsigned int index)
     if (nb_alternatives[type].at(index) == 1) { line_completed[type].at(index) = true; }
 
     // In any case, update the grid data with the reduced line resulting from list all_lines
-    Line new_line = reduce_lines(all_lines, stats);
+    Line new_line = reduce_line(all_lines, stats);
     bool changed = set_line(new_line, index);
 
     // This line does not need to be reduced until one of the tiles is modified.
@@ -487,22 +492,21 @@ bool WorkGrid::reduce_one_line(Line::Type type, unsigned int index)
 }
 
 
-bool WorkGrid::reduce_all_lines()
+bool WorkGrid::full_grid_pass()
 {
+    // Stats
+    if (stats != nullptr) { stats->nb_full_grid_pass_calls++; }
+
     // Reduce all columns and all rows. Return false if no change was made on the grid.
     bool changed = false;
     for (unsigned int x = 0u; x < get_width(); x++)
     {
-        if (!line_completed[Line::COL][x] && line_to_be_reduced[Line::COL][x]) { changed |= reduce_one_line(Line::COL, x); }
+        if (line_to_be_reduced[Line::COL][x]) { changed |= single_line_pass(Line::COL, x); }
     }
     for (unsigned int y = 0u; y < get_height(); y++)
     {
-        if (!line_completed[Line::ROW][y] && line_to_be_reduced[Line::ROW][y]) { changed |= reduce_one_line(Line::ROW, y); }
+        if (line_to_be_reduced[Line::ROW][y]) { changed |= single_line_pass(Line::ROW, y); }
     }
-
-    // Stats
-    if (stats != nullptr) { stats->nb_reduce_all_lines_calls++; }
-
     return changed;
 }
 
@@ -519,7 +523,7 @@ bool WorkGrid::solve()
 {
     try
     {
-        while(reduce_all_lines())
+        while(full_grid_pass())
         {
             // While the reduce method is successful, use it to find the filled and empty tiles.
         }
@@ -605,6 +609,7 @@ bool WorkGrid::guess() const
         // Set one line in the new_grid according to the hypothesis we made. That line is then complete
         if (!new_grid.set_line(*guess_line, guess_line_index)) { throw std::logic_error("WorkGrid::guess: no change in the new grid, will cause infinite loop."); }
         new_grid.line_completed[guess_line->get_type()].at(guess_line_index) = true;
+        new_grid.line_to_be_reduced[guess_line->get_type()].at(guess_line_index) = false;
 
         // Solve the new grid!
         flag_solution_found |= new_grid.solve();
@@ -633,14 +638,14 @@ Constraint::Constraint(Line::Type type, const InputGrid::Constraint& vect) :
     else
     {
         /* Include at least one zero between the sets of one */
-        min_line_size = accumulate(sets_of_ones.cbegin(), sets_of_ones.cend(), 0u) + static_cast<unsigned int>(sets_of_ones.size()) - 1u;
+        min_line_size = std::accumulate(sets_of_ones.cbegin(), sets_of_ones.cend(), 0u) + static_cast<unsigned int>(sets_of_ones.size()) - 1u;
     }
 }
 
 
 unsigned int Constraint::nb_filled_tiles() const
 {
-    return accumulate(sets_of_ones.cbegin(), sets_of_ones.cend(), 0u);
+    return std::accumulate(sets_of_ones.cbegin(), sets_of_ones.cend(), 0u);
 }
 
 
@@ -830,8 +835,9 @@ void print_grid_stats(const GridStats* stats, std::ostream& ostream)
             ostream << "    > Max/total nb of alternatives being tested: " << stats->guess_max_alternatives << "/" << stats->guess_total_alternatives << std::endl;
         }
         ostream << "  Max theoretical nb of alternatives on a line: " << stats->max_theoretical_nb_alternatives << std::endl;
-        ostream << "  " << stats->nb_reduce_all_lines_calls << " calls to reduce_all_rows_and_columns()." << std::endl;
-        ostream << "  " << stats->nb_reduce_lines_calls   << " calls to reduce_lines(). Max list size/total nb of lines being reduced: " << stats->max_reduce_list_size << "/" << stats->total_lines_reduced << std::endl;
+        ostream << "  " << stats->nb_full_grid_pass_calls << " calls to full_grid_pass()." << std::endl;
+        ostream << "  " << stats->nb_single_line_pass_calls << " calls to single_line_pass()." << std::endl;
+        ostream << "  " << stats->nb_reduce_line_calls   << " calls to reduce_line(). Max list size/total nb of lines reduced: " << stats->max_reduce_list_size << "/" << stats->total_lines_reduced << std::endl;
         ostream << "  " << stats->nb_add_and_filter_calls << " calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: " << stats->max_add_and_filter_list_size << "/" << stats->total_lines_added_and_filtered << std::endl;
         ostream << std::endl;
     }

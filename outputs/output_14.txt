@@ -10113,8 +10113,9 @@ Grid 12x12:
     > The solving of the grid required an hypothesis on 2984 row(s) or column(s).
     > Max/total nb of alternatives being tested: 36/14305
   Max theoretical nb of alternatives on a line: 36
-  22062 calls to reduce_all_rows_and_columns().
-  224410 calls to reduce_lines(). Max list size/total nb of lines being reduced: 28/1238806
+  32662 calls to full_grid_pass().
+  235034 calls to single_line_pass().
+  224410 calls to reduce_line(). Max list size/total nb of lines reduced: 28/1238806
   440776 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 8/2274257
 
 
