@@ -34,6 +34,12 @@ namespace
         {}
     };
 
+    class PicrossLineDeltaError : public std::runtime_error
+    {
+    public:
+        PicrossLineDeltaError() : std::runtime_error("[PicrossSolver] An error was detected computing the delta of two lines")
+        {}
+    };
 
     class PicrossGridCannotBeSolved : public std::runtime_error
     {
@@ -78,6 +84,13 @@ namespace Tile
         else                                 { throw PicrossLineAdditionError(); }
     }
 
+    Type delta(Type t1, Type t2)
+    {
+        if (t1 == t2) { return Tile::UNKNOWN; }
+        else if (t1 == Tile::UNKNOWN) { return t2; }
+        else { throw PicrossLineDeltaError(); }
+    }
+
     Type reduce(Type t1, Type t2)
     {
         if (t1 == t2) { return t1; }
@@ -100,31 +113,9 @@ Line::Line(Line::Type type, std::vector<Tile::Type>&& tiles) :
 }
 
 
-Line::Line(Type type, const OutputGrid& grid, size_t index) :
-    type(type),
-    tiles()
+Line::Type Line::get_type() const
 {
-    const auto height = grid.get_height();
-    const auto width = grid.get_width();
-    if (type == Line::ROW)
-    {
-        if (index >= height) { throw std::invalid_argument("Line ctor: row index is out of range"); }
-        tiles.reserve(static_cast<size_t>(width));
-        for (unsigned int x = 0u; x < width; x++)
-        {
-            tiles.push_back(grid.get(x, index));
-        }
-    }
-    else if (type == Line::COL)
-    {
-        if (index >= width) { throw std::invalid_argument("Line ctor: column index is out of range"); }
-        tiles.reserve(static_cast<size_t>(height));
-        tiles.insert(tiles.cbegin(), grid.data() + index * height, grid.data() + (index + 1) * height);
-    }
-    else
-    {
-        throw std::invalid_argument("Line ctor: wrong type argument");
-    }
+    return type;
 }
 
 
@@ -134,15 +125,15 @@ const std::vector<Tile::Type>& Line::get_tiles() const
 }
 
 
-std::vector<Tile::Type>::const_iterator Line::cbegin() const
+size_t Line::size() const
 {
-    return tiles.cbegin();
+    return tiles.size();
 }
 
 
-std::vector<Tile::Type>::const_iterator Line::cend() const
+Tile::Type Line::at(size_t idx) const
 {
-    return tiles.cend();
+    return tiles.at(idx);
 }
 
 
@@ -163,7 +154,6 @@ void Line::add(const Line& line)
 
 
 /* Line::reduce captures the information that is common to two lines.
- * To the contrary of Line::add it does not throw an exception.
  *
  * Example:
  *         line1:    ??..######..
@@ -175,6 +165,24 @@ void Line::reduce(const Line& line)
     if (line.type != type)                 { throw std::invalid_argument("Reduce: Line type mismatch"); }
     if (line.tiles.size() != tiles.size()) { throw std::invalid_argument("Reduce: Line size mismatch"); }
     std::transform(tiles.begin(), tiles.end(), line.tiles.begin(), tiles.begin(), Tile::reduce);
+}
+
+
+/* line_delta computes the delta between line2 and line1, such that line2 = line1 + delta
+ *
+ * Example:
+ *  (this) line2:    ....####..??
+ *         line1:    ..????##..??
+ *         delta:    ??..##??????
+ */
+Line line_delta(const Line& line1, const Line& line2)
+{
+    if (line1.get_type() != line2.get_type()) { throw std::invalid_argument("line_delta: Line type mismatch"); }
+    if (line1.size() != line2.size()) { throw std::invalid_argument("line_delta: Line size mismatch"); }
+    std::vector<Tile::Type> delta_tiles;
+    delta_tiles.reserve(line1.size());
+    std::transform(line1.get_tiles().cbegin(), line1.get_tiles().cend(), line2.get_tiles().cbegin(), delta_tiles.begin(), Tile::delta);
+    return Line(line1.get_type(), std::move(delta_tiles));
 }
 
 
@@ -230,35 +238,16 @@ Line reduce_line(const std::list<Line>& all_alternatives, GridStats * stats)
 }
 
 
-bool Line::is_all_one_color(Tile::Type color) const
+bool is_all_one_color(const Line& line, Tile::Type color)
 {
-    for (size_t idx = 0; idx < tiles.size(); idx++)
-    {
-        if (tiles.at(idx) != color) { return false; }
-    }
-    return true;
-}
-
-
-void Line::print(std::ostream& ostream) const
-{
-    if (type == Line::ROW) { ostream << "ROW "; }
-    if (type == Line::COL) { ostream << "COL "; }
-    ostream << str_line(*this);
-}
-
-
-std::ostream& operator<<(std::ostream& ostream, const Line& line)
-{
-    line.print(ostream);
-    return ostream;
+    return std::all_of(line.get_tiles().cbegin(), line.get_tiles().cend(), [color](const Tile::Type t) { return t == color; });
 }
 
 
 std::string str_line(const Line& line)
 {
     std::string out_str;
-    for (unsigned int idx = 0u; idx < line.size(); idx++) { out_str += Tile::str(line.get_tile(idx)); }
+    for (unsigned int idx = 0u; idx < line.size(); idx++) { out_str += Tile::str(line.at(idx)); }
     return out_str;
 }
 
@@ -270,6 +259,14 @@ std::string str_line_type(Line::Type type)
     assert(0);
     return "UNKNOWN";
 }
+
+
+std::ostream& operator<<(std::ostream& ostream, const Line& line)
+{
+    ostream << str_line_type(line.get_type()) << " " << str_line(line);
+    return ostream;
+}
+
 
 namespace
 {
@@ -333,32 +330,46 @@ void OutputGrid::set(size_t x, size_t y, Tile::Type t)
 }
 
 
+Line OutputGrid::get_line(Line::Type type, size_t index) const
+{
+    std::vector<Tile::Type> tiles;
+    if (type == Line::ROW)
+    {
+        if (index >= height) { throw std::invalid_argument("Line ctor: row index is out of range"); }
+        tiles.reserve(width);
+        for (unsigned int x = 0u; x < width; x++)
+        {
+            tiles.push_back(get(x, index));
+        }
+    }
+    else if (type == Line::COL)
+    {
+        if (index >= width) { throw std::invalid_argument("Line ctor: column index is out of range"); }
+        tiles.reserve(height);
+        tiles.insert(tiles.cbegin(), grid.data() + index * height, grid.data() + (index + 1) * height);
+    }
+    else
+    {
+        throw std::invalid_argument("Line ctor: wrong type argument");
+    }
+    return Line(type, std::move(tiles));
+}
+
+
 bool OutputGrid::is_solved() const
 {
     return std::none_of(grid.cbegin(), grid.cend(), [](const Tile::Type& t) { return t == Tile::UNKNOWN; });
 }
 
 
-const Tile::Type* OutputGrid::data() const
-{
-    return grid.data();
-}
-
-
-void OutputGrid::print(std::ostream& ostream) const
-{
-    ostream << "Grid " << width << "x" << height << ":" << std::endl;
-    for (unsigned int y = 0u; y < height; y++)
-    {
-        Line line(Line::ROW, *this, y);
-        ostream << "  " << str_line(line) << std::endl;
-    }
-}
-
-
 std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid)
 {
-    grid.print(ostream);
+    ostream << "Grid " << grid.get_width() << "x" << grid.get_height() << ":" << std::endl;
+    for (unsigned int y = 0u; y < grid.get_height(); y++)
+    {
+        const Line row = grid.get_line(Line::ROW, y);
+        ostream << "  " << str_line(row) << std::endl;
+    }
     return ostream;
 }
 
@@ -441,11 +452,11 @@ bool WorkGrid::set_line(Line line, unsigned int index)
     const auto height = static_cast<unsigned int>(get_height());
     if (line.get_type() == Line::ROW && line.size() == width)
     {
-        for (unsigned int x = 0u; x < width; x++) { changed |= set_w_reduce_flag(x, index, line.get_tile(x)); }
+        for (unsigned int x = 0u; x < width; x++) { changed |= set_w_reduce_flag(x, index, line.at(x)); }
     }
     else if (line.get_type() == Line::COL && line.size() == height)
     {
-        for (unsigned int y = 0u; y < height; y++) { changed |= set_w_reduce_flag(index, y, line.get_tile(y)); }
+        for (unsigned int y = 0u; y < height; y++) { changed |= set_w_reduce_flag(index, y, line.at(y)); }
     }
     else
     {
@@ -466,8 +477,8 @@ bool WorkGrid::single_line_pass(Line::Type type, unsigned int index)
 
     // If the color of every tile in the line is unknown, there is a simple way to determine
     // if the reduce operation is relevant: max block size must be greater than line_size - min_line_size.
-    const Line filter_line(type, *this, index);
-    if (filter_line.is_all_one_color(Tile::UNKNOWN))
+    const Line filter_line = get_line(type, index);
+    if (is_all_one_color(filter_line, Tile::UNKNOWN))
     {
         if (line_constraint->max_block_size() != 0 &&
             line_constraint->max_block_size() <= (filter_line.size() - line_constraint->get_min_line_size()))
@@ -593,7 +604,7 @@ bool WorkGrid::solve()
             }
 
             assert(line_constraint != nullptr);
-            guess_list_of_all_alternatives = line_constraint->build_all_possible_lines(Line(guess_line_type, *this, guess_line_index), stats);
+            guess_list_of_all_alternatives = line_constraint->build_all_possible_lines(get_line(guess_line_type, guess_line_index), stats);
 
             // Guess!
             return guess();
@@ -718,7 +729,7 @@ std::list<Line> Constraint::build_all_possible_lines(const Line& filter_line, Gr
     if (sets_of_ones.size() == 0)
     {
         // Return a list with only one all-zero line
-        return_list.push_back( Line(type, new_tile_vect) );
+        return_list.emplace_back(type, new_tile_vect);
 
         // Filter the return_list against input line
         add_and_filter_lines(return_list, filter_line, stats);
@@ -732,11 +743,11 @@ std::list<Line> Constraint::build_all_possible_lines(const Line& filter_line, Gr
             for (unsigned int idx = 0u; idx < n; idx++)                                      { new_tile_vect.at(idx)   = Tile::ZERO; }
             for (unsigned int idx = 0u; idx < sets_of_ones[0]; idx++)                        { new_tile_vect.at(n+idx) = Tile::ONE;  }
             for (unsigned int idx = n + sets_of_ones[0]; idx < filter_line.size(); idx++)    { new_tile_vect.at(idx) = Tile::ZERO; }
-            return_list.push_back( Line(type, new_tile_vect) );
+            return_list.emplace_back(type, new_tile_vect);
         }
 
         // Filter the return_list against filter_line
-        if (!filter_line.is_all_one_color(Tile::UNKNOWN)) { add_and_filter_lines(return_list, filter_line, stats); }
+        if (!is_all_one_color(filter_line, Tile::UNKNOWN)) { add_and_filter_lines(return_list, filter_line, stats); }
     }
     else
     {
@@ -752,7 +763,7 @@ std::list<Line> Constraint::build_all_possible_lines(const Line& filter_line, Gr
             {
                 // Add the start of the line (first block of ones) and the beginning of the filter line
                 std::vector<Tile::Type> begin_vect(new_tile_vect.begin(), new_tile_vect.begin() + begin_size);
-                std::vector<Tile::Type> begin_filter_vect(filter_line.cbegin(), filter_line.cbegin() + begin_size);
+                std::vector<Tile::Type> begin_filter_vect(filter_line.get_tiles().cbegin(), filter_line.get_tiles().cbegin() + begin_size);
 
                 Line begin_line(type, begin_vect);
                 Line begin_filter(type, begin_filter_vect);
@@ -762,7 +773,7 @@ std::list<Line> Constraint::build_all_possible_lines(const Line& filter_line, Gr
                 std::vector<unsigned int> trim_sets_of_ones(sets_of_ones.begin()+1, sets_of_ones.end());
                 Constraint recursive_constraint(type, trim_sets_of_ones);
 
-                std::vector<Tile::Type> end_filter_vect(filter_line.cbegin() + begin_size, filter_line.cend());
+                std::vector<Tile::Type> end_filter_vect(filter_line.get_tiles().cbegin() + begin_size, filter_line.get_tiles().cend());
                 Line end_filter(type, end_filter_vect);
 
                 std::list<Line> recursive_list = recursive_constraint.build_all_possible_lines(end_filter, stats);
@@ -770,7 +781,7 @@ std::list<Line> Constraint::build_all_possible_lines(const Line& filter_line, Gr
                 // Finally, construct the return_list based on the contents of the recursive_list.
                 for (const Line& line : recursive_list)
                 {
-                    std::copy(line.cbegin(), line.cend(), new_tile_vect.begin() + begin_size);
+                    std::copy(line.get_tiles().cbegin(), line.get_tiles().cend(), new_tile_vect.begin() + begin_size);
                     return_list.emplace_back(type, new_tile_vect);
                 }
             }

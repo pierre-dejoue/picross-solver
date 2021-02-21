@@ -8,14 +8,14 @@
 #pragma once
 
 
+#include <picross/picross.h>
+
+
 #include <list>
 #include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
-
-
-#include <picross/picross.h>
 
 
 namespace picross
@@ -31,46 +31,20 @@ namespace Tile
 {
     char str(Type t);
     Type add(Type t1, Type t2);
+    Type delta(Type t1, Type t2);
     Type reduce(Type t1, Type t2);
 }
 
 
 /*
- * Line class
- *
- *   A line can be either a row or a column of a grid. It consists of an array of tiles.
+ * Line related functions
  */
-class Line
-{
-public:
-    using Type = unsigned int;
-    static constexpr Type ROW = 0u, COL = 1u;
-public:
-    Line(Type type, const std::vector<Tile::Type>& tiles);
-    Line(Type type, std::vector<Tile::Type>&& tiles);
-    Line(Type type, const OutputGrid& grid, size_t index);
-public:
-    Type get_type() const { return type; }
-    unsigned int size() const { return static_cast<unsigned int>(tiles.size()); }
-    Tile::Type get_tile(int idx) const { return tiles.at(idx); }
-    const std::vector<Tile::Type>& get_tiles() const;
-    std::vector<Tile::Type>::const_iterator cbegin() const;
-    std::vector<Tile::Type>::const_iterator cend() const;
-    bool is_all_one_color(Tile::Type color) const;
-    void add(const Line& line);
-    void reduce(const Line& line);
-    void print(std::ostream& ostream) const;
-private:
-    Type type;
-    std::vector<Tile::Type> tiles;
-};
-
-
+bool is_all_one_color(const Line& line, Tile::Type color);
 void add_and_filter_lines(std::list<Line>& lines, const Line& filter_line, GridStats* stats);
 Line reduce_line(const std::list<Line>& all_alternatives, GridStats* stats);
 std::string str_line(const Line& line);
 std::string str_line_type(Line::Type type);
-std::ostream& operator<<(std::ostream& ostream, const Line& line);
+Line line_delta(const Line& line1, const Line& line2);
 
 
 /*

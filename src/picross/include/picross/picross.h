@@ -11,6 +11,8 @@
 #pragma once
 
 
+#include <stddef.h>
+
 #include <memory>
 #include <ostream>
 #include <string>
@@ -82,9 +84,38 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats);
 
 
 /*
+ * Line class
+ *
+ *   A line can be either a row or a column of a grid. It consists of an array of tiles.
+ */
+class Line
+{
+public:
+    using Type = size_t;
+    static constexpr Type ROW = 0u, COL = 1u;
+public:
+    Line(Type type, const std::vector<Tile::Type>& tiles);
+    Line(Type type, std::vector<Tile::Type>&& tiles);
+public:
+    Type get_type() const;
+    const std::vector<Tile::Type>& get_tiles() const;
+    size_t size() const;
+    Tile::Type at(size_t idx) const;
+    void add(const Line& line);
+    void reduce(const Line& line);
+private:
+    Type type;
+    std::vector<Tile::Type> tiles;
+};
+
+
+std::ostream& operator<<(std::ostream& ostream, const Line& line);
+
+
+/*
  * OutputGrid class
  *
- *   A partially of fully solved Picross grid
+ *   A partially or fully solved Picross grid
  */
 class OutputGrid
 {
@@ -98,9 +129,9 @@ public:
     Tile::Type get(size_t x, size_t y) const;
     void set(size_t x, size_t y, Tile::Type t);
 
+    Line get_line(Line::Type type, size_t index) const;
+
     bool is_solved() const;
-    const Tile::Type* data() const;
-    void print(std::ostream& ostream) const;
 private:
     const size_t                                width, height;
     const std::string                           name;
