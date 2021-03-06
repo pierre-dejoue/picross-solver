@@ -13,6 +13,7 @@
 
 #include <stddef.h>
 
+#include <functional>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -121,6 +122,10 @@ class OutputGrid
 {
 public:
     OutputGrid(size_t width, size_t height, const std::string& name = "");
+    OutputGrid(const OutputGrid& other) = default;
+    OutputGrid(OutputGrid&& other) = default;
+    OutputGrid& operator=(const OutputGrid& other);
+    OutputGrid& operator=(OutputGrid&& other);
 
     const std::string& get_name() const;
     size_t get_width() const;
@@ -148,11 +153,52 @@ std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid);
 class Solver
 {
 public:
+    virtual ~Solver() = default;
+
+    //
+    // Main method called to solve a grid
+    //
     using Solutions = std::vector<OutputGrid>;
 
-    virtual ~Solver() = default;
     virtual Solutions solve(const InputGrid& grid_input, GridStats* stats = nullptr) const = 0;
+
+    //
+    // It is possible to set an observer on the solver. That object will be notified when certain
+    // events happen, allowing the user to follow the process step by step.
+    //
+    // The observer is a function object with the following signature:
+    //
+    // void observer(Event event, const Line* delta, unsigned int index, unsigned int depth);
+    //
+    //  * event = DELTA_LINE        delta != nullptr            index is set        depth is set
+    //
+    //      A line of the output grid has been updated, the delta between the previous value of that line
+    //      and the new one is given in delta. The index is the index of the row or column in the grid,
+    //      depending on the type of the delta line.
+    //      The depth is set to zero initially, then it is the same value as that of the last BRANCHING event.
+    //
+    //  * event = BRANCHING         delta = nullptr             index = 0u          depth > 0
+    //
+    //      This event occurs when the algorithm is branching between several alternative solutions, or
+    //      when it is going back to an earlier branch. Upon starting a new branch the depth is increased
+    //      by one. In the other case, depth is set the the value of the earlier branch.
+    //      NB: The user must keep track of the state of the grid at each branching point in order to be
+    //          able to reconstruct the final solutions based on the observer events only.
+    //      NB: There is no BRANCHING event sent at the beginning of the solving process (depth = 0),
+    //          therefore the depth of the first BRANCHING event is always 1.
+    //
+    //  * event = SOLVED_GRID       delta = nullptr             index = 0u          depth is set
+    //
+    //      A solution grid has been found. The sum of all the delta lines up until that stage is the solved grid.
+    //
+    enum class Event { DELTA_LINE, BRANCHING, SOLVED_GRID };
+    using Observer = std::function<void(Event,const Line*,unsigned int,unsigned int)>;
+
+    virtual void setObserver(Observer observer) = 0;
 };
+
+
+std::ostream& operator<<(std::ostream& ostream, Solver::Event event);
 
 
 /*

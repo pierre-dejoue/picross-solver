@@ -180,7 +180,7 @@ Line line_delta(const Line& line1, const Line& line2)
     if (line1.get_type() != line2.get_type()) { throw std::invalid_argument("line_delta: Line type mismatch"); }
     if (line1.size() != line2.size()) { throw std::invalid_argument("line_delta: Line size mismatch"); }
     std::vector<Tile::Type> delta_tiles;
-    delta_tiles.reserve(line1.size());
+    delta_tiles.resize(line1.size(), Tile::UNKNOWN);
     std::transform(line1.get_tiles().cbegin(), line1.get_tiles().cend(), line2.get_tiles().cbegin(), delta_tiles.begin(), Tile::delta);
     return Line(line1.get_type(), std::move(delta_tiles));
 }
@@ -302,6 +302,27 @@ OutputGrid::OutputGrid(size_t width, size_t height, const std::string& name) :
 {
 }
 
+
+OutputGrid& OutputGrid::operator=(const OutputGrid& other)
+{
+    assert(width == other.width);
+    assert(height == other.height);
+    assert(name == other.name);
+    grid = other.grid;
+    return *this;
+}
+
+
+OutputGrid& OutputGrid::operator=(OutputGrid&& other)
+{
+    assert(width == other.width);
+    assert(height == other.height);
+    assert(name == other.name);
+    grid == std::move(other.grid);
+    return *this;
+}
+
+
 size_t OutputGrid::get_width() const
 {
     return width;
@@ -374,12 +395,13 @@ std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid)
 }
 
 
-WorkGrid::WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats) :
+WorkGrid::WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats, Solver::Observer observer) :
     OutputGrid(grid.cols.size(), grid.rows.size(), grid.name),
     rows(row_constraints_from(grid)),
     cols(column_constraints_from(grid)),
     saved_solutions(solutions),
     stats(stats),
+    observer(std::move(observer)),
     nested_level(0u)
 {
     assert(cols.size() == get_width());
@@ -403,8 +425,11 @@ WorkGrid::WorkGrid(const WorkGrid& parent, unsigned int nested_level) :
     cols(parent.cols),
     saved_solutions(parent.saved_solutions),
     stats(parent.stats),
+    observer(parent.observer),
     nested_level(nested_level)
 {
+    assert(nested_level > 0u);
+
     line_completed[Line::ROW] = parent.line_completed[Line::ROW];
     line_completed[Line::COL] = parent.line_completed[Line::COL];
 
@@ -418,6 +443,12 @@ WorkGrid::WorkGrid(const WorkGrid& parent, unsigned int nested_level) :
     if (stats != nullptr && nested_level > stats->max_nested_level)
     {
         stats->max_nested_level = nested_level;
+    }
+
+    // Solver::Observer
+    if (observer)
+    {
+        observer(Solver::Event::BRANCHING, nullptr, 0u, nested_level);
     }
 }
 
@@ -445,9 +476,15 @@ bool WorkGrid::set_w_reduce_flag(size_t x, size_t y, Tile::Type t)
 }
 
 
-bool WorkGrid::set_line(Line line, unsigned int index)
+bool WorkGrid::set_line(const Line& line, unsigned int index)
 {
     bool changed = false;
+    if (observer)
+    {
+        const Line origin_line = get_line(line.get_type(), index);
+        const Line delta = line_delta(origin_line, line);
+        observer(Solver::Event::DELTA_LINE, &delta, index, nested_level);
+    }
     const auto width = static_cast<unsigned int>(get_width());
     const auto height = static_cast<unsigned int>(get_height());
     if (line.get_type() == Line::ROW && line.size() == width)
@@ -505,7 +542,7 @@ bool WorkGrid::single_line_pass(Line::Type type, unsigned int index)
     if (nb_alternatives[type].at(index) == 1) { line_completed[type].at(index) = true; }
 
     // In any case, update the grid data with the reduced line resulting from list all_lines
-    Line new_line = reduce_line(all_lines, stats);
+    const Line new_line = reduce_line(all_lines, stats);
     bool changed = set_line(new_line, index);
 
     // This line does not need to be reduced until one of the tiles is modified.
@@ -555,6 +592,10 @@ bool WorkGrid::solve()
         // Are we done?
         if (all_lines_completed())
         {
+            if (observer)
+            {
+                observer(Solver::Event::SOLVED_GRID, nullptr, 0u, nested_level);
+            }
             save_solution();
             return true;
         }
@@ -625,15 +666,15 @@ bool WorkGrid::guess() const
      */
     bool flag_solution_found = false;
     if (stats != nullptr) { stats->guess_total_calls++; }
-    for (std::list<Line>::const_iterator guess_line = guess_list_of_all_alternatives.begin(); guess_line != guess_list_of_all_alternatives.end(); guess_line++)
+    for (const Line& guess_line : guess_list_of_all_alternatives)
     {
         // Allocate a new work grid. Use the shallow copy.
         WorkGrid new_grid(*this, nested_level + 1);
 
         // Set one line in the new_grid according to the hypothesis we made. That line is then complete
-        if (!new_grid.set_line(*guess_line, guess_line_index)) { throw std::logic_error("WorkGrid::guess: no change in the new grid, will cause infinite loop."); }
-        new_grid.line_completed[guess_line->get_type()].at(guess_line_index) = true;
-        new_grid.line_to_be_reduced[guess_line->get_type()].at(guess_line_index) = false;
+        if (!new_grid.set_line(guess_line, guess_line_index)) { throw std::logic_error("WorkGrid::guess: no change in the new grid, will cause infinite loop."); }
+        new_grid.line_completed[guess_line.get_type()].at(guess_line_index) = true;
+        new_grid.line_to_be_reduced[guess_line.get_type()].at(guess_line_index) = false;
 
         // Solve the new grid!
         flag_solution_found |= new_grid.solve();
@@ -881,10 +922,36 @@ Solver::Solutions RefSolver::solve(const InputGrid& grid_input, GridStats* stats
         std::swap(*stats, GridStats());
     }
 
-    const bool success = WorkGrid(grid_input, &solutions, stats).solve();
+    const bool success = WorkGrid(grid_input, &solutions, stats, observer).solve();
 
     assert(success == (solutions.size() > 0u));
     return solutions;
+}
+
+
+void RefSolver::setObserver(Observer observer)
+{
+    this->observer = std::move(observer);
+}
+
+
+std::ostream& operator<<(std::ostream& ostream, Solver::Event event)
+{
+    switch (event)
+    {
+    case Solver::Event::BRANCHING:
+        ostream << "BRANCHING";
+        break;
+    case Solver::Event::DELTA_LINE:
+        ostream << "DELTA_LINE";
+        break;
+    case Solver::Event::SOLVED_GRID:
+        ostream << "SOLVED_GRID";
+        break;
+    default:
+        throw std::invalid_argument("Unknown Solver::Event");
+    }
+    return ostream;
 }
 
 

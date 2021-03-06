@@ -17,6 +17,8 @@
 #include <picross/picross.h>
 #include <picross/picross_io.h>
 
+#include "observer.h"
+
 
 /*******************************************************************************
  * MAIN()
@@ -69,6 +71,12 @@ int main(int argc, char *argv[])
             std::tie(check, check_msg) = picross::check_grid_input(*grid_input);
             if (check)
             {
+                /* Set observer */
+                const auto width = grid_input->cols.size();
+                const auto height = grid_input->rows.size();
+                ConsoleObserver obs(width, height, std::cout);
+                solver->setObserver(obs);
+
                 /* Solve the grid */
                 picross::GridStats stats;
                 std::vector<picross::OutputGrid> solutions = solver->solve(*grid_input, &stats);

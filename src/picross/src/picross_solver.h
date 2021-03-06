@@ -80,7 +80,7 @@ std::ostream& operator<<(std::ostream& ostream, const Constraint& constraint);
 class WorkGrid final : public OutputGrid
 {
 public:
-    WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats = nullptr);
+    WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats = nullptr, Solver::Observer observer = Solver::Observer());
     WorkGrid(const WorkGrid& other) = delete;
     WorkGrid& operator=(const WorkGrid& other) = delete;
     WorkGrid(WorkGrid&& other) = default;
@@ -91,7 +91,7 @@ public:
     bool solve();
 private:
     bool all_lines_completed() const;
-    bool set_line(Line line, unsigned int index);
+    bool set_line(const Line& line, unsigned int index);
     bool single_line_pass(Line::Type type, unsigned int index);
     bool full_grid_pass();
     bool set_w_reduce_flag(size_t x, size_t y, Tile::Type t);
@@ -101,9 +101,10 @@ private:
     std::vector<Constraint>                     rows;
     std::vector<Constraint>                     cols;
     Solver::Solutions*                          saved_solutions; // ptr to a vector where to store solutions
-    GridStats*                                  stats;           // if not null, the program will store some stats in that structure
+    GridStats*                                  stats;           // if not null, the solver will store some stats in that structure
+    Solver::Observer                            observer;        // if not empty, the solver will notify the observer of its progress
     std::vector<bool>                           line_completed[2];
-    std::vector<bool>                           line_to_be_reduced[2];  // flag added for optimization
+    std::vector<bool>                           line_to_be_reduced[2];
     std::vector<unsigned int>                   nb_alternatives[2];
     Line::Type                                  guess_line_type;
     unsigned int                                guess_line_index;
@@ -119,6 +120,9 @@ class RefSolver : public Solver
 {
 public:
     Solver::Solutions solve(const InputGrid& grid_input, GridStats* stats) const override;
+    void setObserver(Observer observer) override;
+private:
+    Observer observer;
 };
 
 } // namespace picross

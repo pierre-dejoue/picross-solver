@@ -3,6 +3,7 @@
 #
 
 set(CLI_SOURCES
+    src/observer.cpp
     src/main.cpp
 )
 
