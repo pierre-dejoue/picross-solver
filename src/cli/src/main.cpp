@@ -11,8 +11,11 @@
 #include <cassert>
 #include <exception>
 #include <iostream>
+#include <sstream>
 #include <tuple>
 #include <vector>
+
+#include <argagg/argagg.hpp>
 
 #include <picross/picross.h>
 #include <picross/picross_io.h>
@@ -28,17 +31,47 @@ int main(int argc, char *argv[])
     /***************************************************************************
      * I - Process command line
      **************************************************************************/
-    std::string filename;
-    if (argc == 2)
+    argagg::parser argparser
+    {{
+      {
+        "help", {"-h", "--help"},
+        "Print usage note and exit", 0},
+      {
+        "verbose", {"-v", "--verbose"},
+        "Print additional debug information", 0}
+    }};
+
+    std::ostringstream usage_note;
+    usage_note << "Usage:" << std::endl;
+    usage_note << "    picross_solver_cli [options] FILE" << std::endl;
+    usage_note << argparser;
+
+    argagg::parser_results args;
+    try
     {
-        filename = argv[1];     // input filename;
+        args = argparser.parse(argc, argv);
     }
-    else
+    catch (const std::exception& e)
     {
-        std::cerr << "Usage:" << std::endl;
-        std::cerr << "    picross_parser input_filename" << std::endl;
+        std::cerr << usage_note.str();
+        std::cerr << std::endl;
+        std::cerr << "Exception while parsing arguments: " << e.what() << std::endl;
         exit(1);
     }
+
+    if (args["help"])
+    {
+        std::cerr << usage_note.str();
+        exit(0);
+    }
+
+    // Positional arguments
+    if (args.pos.size() != 1u)
+    {
+        std::cerr << usage_note.str();
+        exit(1);
+    }
+    const std::string filename = args.pos[0];
 
     /***************************************************************************
      * II - Parse input file
@@ -61,25 +94,28 @@ int main(int argc, char *argv[])
         const auto solver = picross::get_ref_solver();
 
         unsigned int count_grids = 0u;
-        for (auto& grid_input = grids_to_solve.begin(); grid_input != grids_to_solve.end(); ++grid_input)
+        for (const auto& grid_input : grids_to_solve)
         {
-            std::cout << "GRID " << ++count_grids << ": " << grid_input->name << std::endl;
+            std::cout << "GRID " << ++count_grids << ": " << grid_input.name << std::endl;
 
             /* Sanity check of the input data */
             bool check;
             std::string check_msg;
-            std::tie(check, check_msg) = picross::check_grid_input(*grid_input);
+            std::tie(check, check_msg) = picross::check_grid_input(grid_input);
             if (check)
             {
                 /* Set observer */
-                const auto width = grid_input->cols.size();
-                const auto height = grid_input->rows.size();
+                const auto width = grid_input.cols.size();
+                const auto height = grid_input.rows.size();
                 ConsoleObserver obs(width, height, std::cout);
-                solver->setObserver(obs);
+                if (args["verbose"])
+                {
+                    solver->setObserver(obs);
+                }
 
                 /* Solve the grid */
                 picross::GridStats stats;
-                std::vector<picross::OutputGrid> solutions = solver->solve(*grid_input, &stats);
+                std::vector<picross::OutputGrid> solutions = solver->solve(grid_input, &stats);
 
                 /* Display solutions */
                 if (solutions.empty())
@@ -110,6 +146,7 @@ int main(int argc, char *argv[])
     catch (std::exception& e)
     {
         std::cerr << "ERROR: " << e.what() << std::endl;
+        exit(1);
     }
 
     /***************************************************************************

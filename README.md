@@ -57,6 +57,10 @@ Graphical UI:
 * [Dear ImGui](https://github.com/ocornut/imgui)
 * [Portable File Dialogs](https://github.com/samhocevar/portable-file-dialogs)
 
+Command line interface:
+
+* [Argagg](https://github.com/vietjtnguyen/argagg)
+
 ### Build
 
 On Windows:
