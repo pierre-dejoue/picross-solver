@@ -77,21 +77,26 @@ namespace Tile
         throw std::invalid_argument(oss.str());
     }
 
-    Type add(Type t1, Type t2)
+    inline Type compatible(Type t1, Type t2)
+    {
+        return t1 == Tile::UNKNOWN || t2 == Tile::UNKNOWN || t1 == t2;
+    }
+
+    inline Type add(Type t1, Type t2)
     {
         if (t1 == t2 || t2 == Tile::UNKNOWN) { return t1; }
         else if (t1 == Tile::UNKNOWN)        { return t2; }
         else                                 { throw PicrossLineAdditionError(); }
     }
 
-    Type delta(Type t1, Type t2)
+    inline Type delta(Type t1, Type t2)
     {
         if (t1 == t2) { return Tile::UNKNOWN; }
         else if (t1 == Tile::UNKNOWN) { return t2; }
         else { throw PicrossLineDeltaError(); }
     }
 
-    Type reduce(Type t1, Type t2)
+    inline Type reduce(Type t1, Type t2)
     {
         if (t1 == t2) { return t1; }
         else          { return Tile::UNKNOWN; }
@@ -145,11 +150,24 @@ Tile::Type Line::at(size_t idx) const
  *         line2:    ..????##..??
  * line1 + line2:    ....####..??
  */
-void Line::add(const Line& line)
+bool Line::add(const Line& line)
 {
     if (line.type != type)                 { throw std::invalid_argument("Add: Line type mismatch"); }
     if (line.tiles.size() != tiles.size()) { throw std::invalid_argument("Add: Line size mismatch"); }
-    std::transform(tiles.begin(), tiles.end(), line.tiles.begin(), tiles.begin(), Tile::add);
+    bool valid = true;
+    for (size_t idx = 0u; idx < tiles.size(); ++idx)
+    {
+        if (!Tile::compatible(line.tiles.at(idx), tiles[idx]))
+        {
+            valid = false;
+            break;
+        }
+    }
+    if (valid)
+    {
+        std::transform(tiles.cbegin(), tiles.cend(), line.tiles.cbegin(), tiles.begin(), Tile::add);
+    }
+    return valid;
 }
 
 
@@ -203,12 +221,11 @@ void add_and_filter_lines(std::list<Line>& lines, const Line& filter_line, GridS
     std::list<Line>::iterator line = lines.begin();
     while(line != lines.end())
     {
-        try
+        if (line->add(filter_line))
         {
-            line->add(filter_line);
             line++;
         }
-        catch(PicrossLineAdditionError&)
+        else
         {
             line = lines.erase(line);
         }
@@ -800,18 +817,16 @@ std::list<Line> Constraint::build_all_possible_lines(const Line& filter_line, Gr
             const unsigned int begin_size = n + sets_of_ones[0] + 1u;
             new_tile_vect.at(begin_size - 1u) = Tile::ZERO;
 
-            try
+            // Add the start of the line (first block of ones) and the beginning of the filter line
+            std::vector<Tile::Type> begin_vect(new_tile_vect.begin(), new_tile_vect.begin() + begin_size);
+            std::vector<Tile::Type> begin_filter_vect(filter_line.get_tiles().cbegin(), filter_line.get_tiles().cbegin() + begin_size);
+
+            Line begin_line(type, begin_vect);
+            Line begin_filter(type, begin_filter_vect);
+            if (begin_line.add(begin_filter))
             {
-                // Add the start of the line (first block of ones) and the beginning of the filter line
-                std::vector<Tile::Type> begin_vect(new_tile_vect.begin(), new_tile_vect.begin() + begin_size);
-                std::vector<Tile::Type> begin_filter_vect(filter_line.get_tiles().cbegin(), filter_line.get_tiles().cbegin() + begin_size);
-
-                Line begin_line(type, begin_vect);
-                Line begin_filter(type, begin_filter_vect);
-                begin_line.add(begin_filter);               // can throw PicrossLineAdditionError
-
                 // If OK, then go on and recursively call this function to construct the remaining part of the line.
-                std::vector<unsigned int> trim_sets_of_ones(sets_of_ones.begin()+1, sets_of_ones.end());
+                std::vector<unsigned int> trim_sets_of_ones(sets_of_ones.begin() + 1, sets_of_ones.end());
                 Constraint recursive_constraint(type, trim_sets_of_ones);
 
                 std::vector<Tile::Type> end_filter_vect(filter_line.get_tiles().cbegin() + begin_size, filter_line.get_tiles().cend());
@@ -826,7 +841,7 @@ std::list<Line> Constraint::build_all_possible_lines(const Line& filter_line, Gr
                     return_list.emplace_back(type, new_tile_vect);
                 }
             }
-            catch(PicrossLineAdditionError&)
+            else
             {
                 // The beginning of the line does not match the filter_line. Do nothing.
             }

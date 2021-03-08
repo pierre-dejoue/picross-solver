@@ -102,7 +102,7 @@ public:
     const std::vector<Tile::Type>& get_tiles() const;
     size_t size() const;
     Tile::Type at(size_t idx) const;
-    void add(const Line& line);
+    bool add(const Line& line);
     void reduce(const Line& line);
 private:
     Type type;
