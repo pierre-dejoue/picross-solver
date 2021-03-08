@@ -22,6 +22,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Picross library
 add_subdirectory(src/picross)
 
+# Utility library
+if(PICROSS_BUILD_APP OR PICROSS_BUILD_CLI)
+    add_subdirectory(src/utils)
+endif()
+
 # Picross graphical app
 if(PICROSS_BUILD_APP)
     add_subdirectory(src/gui)

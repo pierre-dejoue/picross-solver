@@ -20,8 +20,9 @@
 #include <picross/picross.h>
 #include <picross/picross_io.h>
 
-#include "observer.h"
+#include <duration_meas.h>
 
+#include "observer.h"
 
 /*******************************************************************************
  * MAIN()
@@ -36,6 +37,9 @@ int main(int argc, char *argv[])
       {
         "help", {"-h", "--help"},
         "Print usage note and exit", 0},
+      {
+        "no-timing", {"--no-timing"},
+        "Do not print out timing measurements", 0},
       {
         "verbose", {"-v", "--verbose"},
         "Print additional debug information", 0}
@@ -115,7 +119,12 @@ int main(int argc, char *argv[])
 
                 /* Solve the grid */
                 picross::GridStats stats;
-                std::vector<picross::OutputGrid> solutions = solver->solve(grid_input, &stats);
+                std::chrono::duration<float, std::milli> time_ms;
+                std::vector<picross::OutputGrid> solutions;
+                {
+                    DurationMeas<float, std::milli> meas_ms(time_ms);
+                    solutions = solver->solve(grid_input, &stats);
+                }
 
                 /* Display solutions */
                 if (solutions.empty())
@@ -134,6 +143,13 @@ int main(int argc, char *argv[])
 
                 /* Display stats */
                 std::cout << stats << std::endl;
+
+                /* Display timings */
+                if (!args["no-timing"])
+                {
+                    std::cout << "  Solver wall time: " << time_ms.count() << "ms" << std::endl;
+                }
+
                 std::cout << std::endl;
             }
             else

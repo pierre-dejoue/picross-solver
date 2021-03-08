@@ -18,6 +18,7 @@ target_link_libraries(picross_solver_cli
     PRIVATE
     argagg-lib
     picross
+    utils
 )
 
 install(TARGETS picross_solver_cli)
