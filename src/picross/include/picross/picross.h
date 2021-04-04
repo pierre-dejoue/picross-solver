@@ -92,13 +92,14 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats);
 class Line
 {
 public:
-    using Type = size_t;
+    using Type = unsigned int;
     static constexpr Type ROW = 0u, COL = 1u;
 public:
-    Line(Type type, const std::vector<Tile::Type>& tiles);
-    Line(Type type, std::vector<Tile::Type>&& tiles);
+    Line(Type type, size_t index, const std::vector<Tile::Type>& tiles);
+    Line(Type type, size_t index, std::vector<Tile::Type>&& tiles);
 public:
     Type get_type() const;
+    size_t get_index() const;
     const std::vector<Tile::Type>& get_tiles() const;
     size_t size() const;
     Tile::Type at(size_t idx) const;
@@ -106,6 +107,7 @@ public:
     void reduce(const Line& line);
 private:
     Type type;
+    size_t index;
     std::vector<Tile::Type> tiles;
 };
 
@@ -168,16 +170,15 @@ public:
     //
     // The observer is a function object with the following signature:
     //
-    // void observer(Event event, const Line* delta, unsigned int index, unsigned int depth);
+    // void observer(Event event, const Line* delta, unsigned int depth);
     //
-    //  * event = DELTA_LINE        delta != nullptr            index is set        depth is set
+    //  * event = DELTA_LINE        delta != nullptr            depth is set
     //
     //      A line of the output grid has been updated, the delta between the previous value of that line
-    //      and the new one is given in delta. The index is the index of the row or column in the grid,
-    //      depending on the type of the delta line.
+    //      and the new one is given in delta.
     //      The depth is set to zero initially, then it is the same value as that of the last BRANCHING event.
     //
-    //  * event = BRANCHING         delta = nullptr             index = 0u          depth > 0
+    //  * event = BRANCHING         delta = nullptr             depth > 0
     //
     //      This event occurs when the algorithm is branching between several alternative solutions, or
     //      when it is going back to an earlier branch. Upon starting a new branch the depth is increased
@@ -187,12 +188,12 @@ public:
     //      NB: There is no BRANCHING event sent at the beginning of the solving process (depth = 0),
     //          therefore the depth of the first BRANCHING event is always 1.
     //
-    //  * event = SOLVED_GRID       delta = nullptr             index = 0u          depth is set
+    //  * event = SOLVED_GRID       delta = nullptr             depth is set
     //
     //      A solution grid has been found. The sum of all the delta lines up until that stage is the solved grid.
     //
     enum class Event { DELTA_LINE, BRANCHING, SOLVED_GRID };
-    using Observer = std::function<void(Event,const Line*,unsigned int,unsigned int)>;
+    using Observer = std::function<void(Event,const Line*,unsigned int)>;
 
     virtual void set_observer(Observer observer) = 0;
 };

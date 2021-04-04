@@ -11,7 +11,7 @@ GridObserver::GridObserver(size_t width, size_t height)
     grids.emplace_back(width, height);
 }
 
-void GridObserver::operator()(picross::Solver::Event event, const picross::Line* delta, unsigned int index, unsigned int depth)
+void GridObserver::operator()(picross::Solver::Event event, const picross::Line* delta, unsigned int depth)
 {
     const auto width = grids[0].get_width();
     const auto height = grids[0].get_height();
@@ -36,6 +36,7 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
     case picross::Solver::Event::DELTA_LINE:
     {
         assert(depth == current_depth);
+        const size_t index = delta->get_index();
         picross::OutputGrid& grid = grids.at(current_depth);
         if (delta->get_type() == picross::Line::ROW)
         {
@@ -65,5 +66,5 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
     }
 
     assert(current_depth < grids.size());
-    callback(event, delta, index, depth, grids.at(current_depth));
+    callback(event, delta, depth, grids.at(current_depth));
 }

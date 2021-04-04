@@ -11,10 +11,10 @@ public:
     explicit GridObserver(size_t width, size_t height);
     virtual ~GridObserver() = default;
 
-    void operator()(picross::Solver::Event event, const picross::Line* delta, unsigned int index, unsigned int depth);
+    void operator()(picross::Solver::Event event, const picross::Line* delta, unsigned int depth);
 
 private:
-    virtual void callback(picross::Solver::Event event, const picross::Line* delta, unsigned int index, unsigned int depth, const picross::OutputGrid& grid) = 0;
+    virtual void callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const picross::OutputGrid& grid) = 0;
 
 private:
     std::vector<picross::OutputGrid> grids;

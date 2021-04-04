@@ -91,7 +91,7 @@ public:
     bool solve();
 private:
     bool all_lines_completed() const;
-    bool set_line(const Line& line, unsigned int index);
+    bool set_line(const Line& line);
     bool single_line_pass(Line::Type type, unsigned int index);
     bool full_grid_pass();
     bool set_w_reduce_flag(size_t x, size_t y, Tile::Type t);
