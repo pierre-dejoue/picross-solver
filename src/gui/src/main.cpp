@@ -8,6 +8,7 @@
 #include <cassert>
 #include <exception>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <mutex>
 #include <sstream>
@@ -24,6 +25,8 @@
 #include <picross/picross.h>
 #include <picross/picross_io.h>
 
+#include "picross_file.h"
+
 
 namespace
 {
@@ -33,109 +36,12 @@ void glfw_error_callback(int error, const char* description)
     std::cerr << "Glfw Error " << error << ": " << description << std::endl;
 }
 
-struct PicrossFile
-{
-    explicit PicrossFile(const std::string& path)
-        : filePath(path)
-        , isFileOpen(false)
-        , isWindowOpen(true)
-    {}
-
-    std::string filePath;
-    bool isFileOpen;
-    bool isWindowOpen;
-    std::mutex textBufferLock;
-    ImGuiTextBuffer textBuffer;
-};
-
-void picrossSolveGrids(PicrossFile* picrossFile)
-{
-    assert(picrossFile != nullptr);
-
-    std::vector<picross::InputGrid> grids_to_solve = picross::parse_input_file(picrossFile->filePath, [picrossFile](const std::string& msg, picross::ExitCode)
-    {
-        std::lock_guard<std::mutex> lock(picrossFile->textBufferLock);
-        picrossFile->textBuffer.append(msg.c_str());
-    });
-
-    const auto solver = picross::get_ref_solver();
-    unsigned count_grids = 0u;
-
-    for (const auto& grid_input : grids_to_solve)
-    {
-        {
-            std::lock_guard<std::mutex> lock(picrossFile->textBufferLock);
-            picrossFile->textBuffer.appendf("GRID %d: %s\n", ++count_grids, grid_input.name.c_str());
-        }
-
-        /* Sanity check of the input data */
-        bool check;
-        std::string check_msg;
-        std::tie(check, check_msg) = picross::check_grid_input(grid_input);
-        if (check)
-        {
-            std::vector<picross::OutputGrid> solutions = solver->solve(grid_input);
-            if (solutions.empty())
-            {
-                std::lock_guard<std::mutex> lock(picrossFile->textBufferLock);
-                picrossFile->textBuffer.appendf(" > Could not solve that grid :-(\n");
-            }
-            else
-            {
-                {
-                    std::lock_guard<std::mutex> lock(picrossFile->textBufferLock);
-                    picrossFile->textBuffer.appendf(" > Found %d solution(s) :\n", solutions.size());
-                }
-                for (const auto& solution : solutions)
-                {
-                    assert(solution.is_solved());
-                    std::ostringstream oss;
-                    oss << solution << std::endl;
-                    {
-                        std::lock_guard<std::mutex> lock(picrossFile->textBufferLock);
-                        picrossFile->textBuffer.append(oss.str().c_str());
-                    }
-                }
-            }
-        }
-        else
-        {
-            std::lock_guard<std::mutex> lock(picrossFile->textBufferLock);
-            picrossFile->textBuffer.appendf(" > Invalid grid. Error message: %s\n", check_msg.c_str());
-        }
-    }
-}
-
-void picrossFileWindow(PicrossFile& picrossFile)
-{
-    ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin(picrossFile.filePath.c_str(), &picrossFile.isWindowOpen))
-    {
-        ImGui::End();
-        return;
-    }
-
-    if (!picrossFile.isFileOpen)
-    {
-        picrossFile.isFileOpen = true;
-        std::thread th(picrossSolveGrids, &picrossFile);
-        th.detach();
-    }
-
-    {
-        std::lock_guard<std::mutex> lock(picrossFile.textBufferLock);
-        ImGui::TextUnformatted(picrossFile.textBuffer.begin(), picrossFile.textBuffer.end());
-    }
-    ImGui::End();
-
-}
-
 } // Anonymous namespace
 
 
 int main(int argc, char *argv[])
 {
-    // Setup window
+    // Setup main window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
@@ -159,7 +65,7 @@ int main(int argc, char *argv[])
     ImGui_ImplOpenGL2_Init();
 
     // Main loop
-    std::vector<std::unique_ptr<PicrossFile>> openPicrossFiles;
+    std::vector<std::unique_ptr<PicrossFile>> picross_files;
 
     while (!glfwWindowShouldClose(window))
     {
@@ -186,7 +92,7 @@ int main(int argc, char *argv[])
                     for (const auto path : paths)
                     {
                         std::cout << "User selected file " << path << "\n";
-                        openPicrossFiles.emplace_back(std::make_unique<PicrossFile>(path));
+                        picross_files.emplace_back(std::make_unique<PicrossFile>(path));
                     }
                 }
                 if (ImGui::MenuItem("Quit", "Alt+F4"))
@@ -198,18 +104,12 @@ int main(int argc, char *argv[])
             ImGui::EndMainMenuBar();
         }
 
-        // Picross files windows
-        for (auto it = std::begin(openPicrossFiles); it != std::end(openPicrossFiles);)
+        // Picross files windows (one window per grid, so possibly multiple windows per file)
+        for (auto it = std::begin(picross_files); it != std::end(picross_files);)
         {
-            if ((*it)->isWindowOpen)
-            {
-                picrossFileWindow(**it);
-                it++;
-            }
-            else
-            {
-                it = openPicrossFiles.erase(it);
-            }
+            bool canBeErased = false;
+            (*it)->visit_windows(canBeErased);
+            it = canBeErased ? picross_files.erase(it) : std::next(it);
         }
 
         // Dear Imgui Demo

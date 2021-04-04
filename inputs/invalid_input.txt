@@ -89,3 +89,6 @@ COLUMNS
 [ ]
 [ 3 ]
 [ 3 ]
+
+# Syntax error
+GRILL Beaf
