@@ -194,7 +194,7 @@ public:
     enum class Event { DELTA_LINE, BRANCHING, SOLVED_GRID };
     using Observer = std::function<void(Event,const Line*,unsigned int,unsigned int)>;
 
-    virtual void setObserver(Observer observer) = 0;
+    virtual void set_observer(Observer observer) = 0;
 };
 
 

@@ -120,7 +120,7 @@ class RefSolver : public Solver
 {
 public:
     Solver::Solutions solve(const InputGrid& grid_input, GridStats* stats) const override;
-    void setObserver(Observer observer) override;
+    void set_observer(Observer observer) override;
 private:
     Observer observer;
 };

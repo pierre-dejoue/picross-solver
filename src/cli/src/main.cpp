@@ -20,9 +20,9 @@
 #include <picross/picross.h>
 #include <picross/picross_io.h>
 
+#include <console_observer.h>
 #include <duration_meas.h>
 
-#include "observer.h"
 
 /*******************************************************************************
  * MAIN()
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
                 ConsoleObserver obs(width, height, std::cout);
                 if (args["verbose"])
                 {
-                    solver->setObserver(obs);
+                    solver->set_observer(obs);
                 }
 
                 /* Solve the grid */

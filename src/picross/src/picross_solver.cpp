@@ -944,7 +944,7 @@ Solver::Solutions RefSolver::solve(const InputGrid& grid_input, GridStats* stats
 }
 
 
-void RefSolver::setObserver(Observer observer)
+void RefSolver::set_observer(Observer observer)
 {
     this->observer = std::move(observer);
 }

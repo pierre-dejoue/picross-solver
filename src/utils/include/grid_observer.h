@@ -1,21 +1,22 @@
 #pragma once
 
 #include <cstddef>
-#include <ostream>
 #include <vector>
 
 #include <picross/picross.h>
 
-
-class ConsoleObserver
+class GridObserver
 {
 public:
-    explicit ConsoleObserver(size_t width, size_t height, std::ostream& ostream);
+    explicit GridObserver(size_t width, size_t height);
+    virtual ~GridObserver() = default;
 
     void operator()(picross::Solver::Event event, const picross::Line* delta, unsigned int index, unsigned int depth);
 
 private:
-    std::ostream& ostream;
+    virtual void callback(picross::Solver::Event event, const picross::Line* delta, unsigned int index, unsigned int depth, const picross::OutputGrid& grid) = 0;
+
+private:
     std::vector<picross::OutputGrid> grids;
     size_t current_depth;
 };
