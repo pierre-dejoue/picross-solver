@@ -6,6 +6,45 @@
 #include <sstream>
 #include <utility>
 
+namespace
+{
+    constexpr unsigned int GridTile = 24;
+
+    constexpr ImU32 ColorGridBack = IM_COL32(255, 255, 255, 255);
+    constexpr ImU32 ColorGridOutline = IM_COL32(224, 224, 224, 255);
+
+    constexpr ImU32 ColorTileBorder = IM_COL32(20, 90, 116, 255);
+    constexpr ImU32 ColorTileFilled = IM_COL32(91, 94, 137, 255);
+    constexpr ImU32 ColorTileEmpty = IM_COL32(216, 216, 216, 255);
+
+    void draw_background_grid(ImDrawList* draw_list, ImVec2 tl_corner, size_t width, size_t height, bool outline = false)
+    {
+        const ImVec2 br_corner = ImVec2(tl_corner.x + static_cast<float>(width * GridTile), tl_corner.y + static_cast<float>(height * GridTile));
+        draw_list->AddRectFilled(tl_corner, br_corner, ColorGridBack);
+        if (outline)
+        {
+            for (size_t i = 0u; i <= width; ++i)
+            {
+                const float x = static_cast<float>(i * GridTile);
+                draw_list->AddLine(ImVec2(tl_corner.x + x, tl_corner.y), ImVec2(tl_corner.x + x, br_corner.y), ColorGridOutline);
+            }
+            for (size_t j = 0u; j <= height; ++j)
+            {
+                const float y = static_cast<float>(j * GridTile);
+                draw_list->AddLine(ImVec2(tl_corner.x, tl_corner.y + y), ImVec2(br_corner.x, tl_corner.y + y), ColorGridOutline);
+            }
+        }
+    }
+
+    void draw_tile(ImDrawList* draw_list, ImVec2 tl_corner, size_t i, size_t j, ImU32 fill_color, float rounding = 0.f)
+    {
+        const ImVec2 tl_tile_corner = ImVec2(tl_corner.x + static_cast<float>(i * GridTile + 1), tl_corner.y + static_cast<float>(j * GridTile + 1));
+        const ImVec2 br_tile_corner = ImVec2(tl_tile_corner.x + static_cast<float>(GridTile - 1), tl_tile_corner.y + static_cast<float>(GridTile - 1));
+        draw_list->AddRectFilled(tl_tile_corner, br_tile_corner, fill_color, rounding);
+        draw_list->AddRect(tl_tile_corner, br_tile_corner, ColorTileBorder, rounding);
+    }
+}
+
 GridWindow::GridWindow(PicrossFile& file, picross::InputGrid&& grid)
     : file(file)
     , grid(std::move(grid))
@@ -27,7 +66,10 @@ GridWindow::~GridWindow()
 
 void GridWindow::visit(bool& canBeErased)
 {
-    ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
+    const size_t width = grid.cols.size();
+    const size_t height = grid.rows.size();
+
+    ImGui::SetNextWindowSize(ImVec2(20 + static_cast<float>(width * GridTile), 100 + static_cast<float>(height * GridTile)), ImGuiCond_Once);
 
     bool isWindowOpen = true;
     if (!ImGui::Begin(title.c_str(), &isWindowOpen))
@@ -72,9 +114,20 @@ void GridWindow::visit(bool& canBeErased)
             {
                 const auto& solution = solutions.at(idx);
                 assert(solution.is_solved());
-                std::ostringstream oss;
-                oss << solution;
-                ImGui::TextUnformatted(oss.str().c_str());
+
+                ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                assert(draw_list);
+                ImVec2 grid_tl_corner = ImGui::GetCursorScreenPos();
+                draw_background_grid(draw_list, grid_tl_corner, width, height, true);
+
+                for (size_t i = 0u; i < width; ++i)
+                    for (size_t j = 0u; j < height; ++j)
+                    {
+                        const auto tile = solution.get(i, j);
+                        const auto fill_color = tile == picross::Tile::ONE ? ColorTileFilled : ColorTileEmpty;
+                        draw_tile(draw_list, grid_tl_corner, i, j, fill_color);
+                    }
+
                 ImGui::EndTabItem();
             }
         }

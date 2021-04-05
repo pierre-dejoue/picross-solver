@@ -64,9 +64,12 @@ int main(int argc, char *argv[])
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL2_Init();
 
+    // Style
+    ImGui::StyleColorsClassic();
+    ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = ImColor(29, 75, 99, 255);
+
     // Main loop
     std::vector<std::unique_ptr<PicrossFile>> picross_files;
-
     while (!glfwWindowShouldClose(window))
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -120,7 +123,7 @@ int main(int argc, char *argv[])
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        const ImVec4 clear_color = ImVec4(0.35f, 0.55f, 0.60f, 1.00f);
+        const auto clear_color = static_cast<ImVec4>(ImColor(35, 92, 121, 255));
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
