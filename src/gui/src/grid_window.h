@@ -28,8 +28,10 @@ private:
     picross::InputGrid grid;
     std::string title;
     std::thread solver_thread;
-    std::mutex text_buffer_lock;
+    std::mutex lock_mutex;
     ImGuiTextBuffer text_buffer;
+    std::vector<picross::OutputGrid> solutions;
+    std::vector<std::string> tabs;
 };
 
 
