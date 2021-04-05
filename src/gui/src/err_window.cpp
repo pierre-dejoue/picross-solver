@@ -13,10 +13,10 @@ ErrWindow::ErrWindow(PicrossFile& file)
 
 void ErrWindow::visit(bool& canBeErased)
 {
-    ImGui::SetNextWindowSize(ImVec2(640, 300), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSizeConstraints(ImVec2(0, 300), ImVec2(FLT_MAX, 600));
 
     bool isWindowOpen;
-    if (!ImGui::Begin(title.c_str(), &isWindowOpen))
+    if (!ImGui::Begin(title.c_str(), &isWindowOpen, ImGuiWindowFlags_AlwaysAutoResize))
     {
         // Collapsed
         canBeErased = !isWindowOpen;
@@ -35,5 +35,5 @@ void ErrWindow::visit(bool& canBeErased)
 void ErrWindow::print(const std::string& msg)
 {
     std::lock_guard<std::mutex> lock(text_buffer_lock);
-    text_buffer.append(msg.c_str());
+    text_buffer.appendf("%s\n", msg.c_str());
 }
