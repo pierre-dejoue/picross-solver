@@ -78,6 +78,10 @@ Run the CLI on an example file:
 
 `./build/msvc141x64/bin/Release/picross_cli.exe inputs/example_input.txt`
 
+### Snapshots
+
+![Solution of the Fish grid](./doc/img/grid-solution-fish.png)
+
 ## License
 
 [![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](./LICENSE)
