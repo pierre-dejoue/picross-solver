@@ -27,13 +27,14 @@ void GridWindow::visit(bool& canBeErased)
     ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
 
     bool isWindowOpen = true;
-    if (!ImGui::Begin(title.c_str(), &isWindowOpen) || !isWindowOpen)
+    if (!ImGui::Begin(title.c_str(), &isWindowOpen))
     {
-        canBeErased = true;
+        // Collapsed
+        canBeErased = !isWindowOpen;
         ImGui::End();
         return;
     }
-    canBeErased = false;
+    canBeErased = !isWindowOpen;
 
     {
         std::lock_guard<std::mutex> lock(text_buffer_lock);
