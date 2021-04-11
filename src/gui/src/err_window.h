@@ -24,5 +24,3 @@ private:
     std::mutex text_buffer_lock;
     ImGuiTextBuffer text_buffer;
 };
-
-

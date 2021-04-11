@@ -26,6 +26,7 @@
 #include <picross/picross_io.h>
 
 #include "picross_file.h"
+#include "settings.h"
 
 
 namespace
@@ -70,6 +71,7 @@ int main(int argc, char *argv[])
 
     // Main loop
     std::vector<std::unique_ptr<PicrossFile>> picross_files;
+    Settings settings;
     while (!glfwWindowShouldClose(window))
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -111,8 +113,14 @@ int main(int argc, char *argv[])
         for (auto it = std::begin(picross_files); it != std::end(picross_files);)
         {
             bool canBeErased = false;
-            (*it)->visit_windows(canBeErased);
+            (*it)->visit_windows(canBeErased, settings);
             it = canBeErased ? picross_files.erase(it) : std::next(it);
+        }
+
+        // Settings window
+        {
+            bool canBeErased = false;
+            settings.visit_windows(canBeErased);
         }
 
         // Dear Imgui Demo

@@ -13,6 +13,8 @@ set(GUI_SOURCES
     src/grid_window.cpp
     src/main.cpp
     src/picross_file.cpp
+    src/settings.cpp
+    src/settings_window.cpp
 )
 
 file(GLOB GUI_HEADERS src/*.h)

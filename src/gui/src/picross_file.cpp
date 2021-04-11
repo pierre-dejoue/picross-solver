@@ -21,7 +21,7 @@ const std::string& PicrossFile::get_file_path() const
     return file_path;
 }
 
-void PicrossFile::visit_windows(bool& canBeErased)
+void PicrossFile::visit_windows(bool& canBeErased, Settings& settings)
 {
     canBeErased = false;
     if (!is_file_open)
@@ -46,7 +46,7 @@ void PicrossFile::visit_windows(bool& canBeErased)
         for (auto it = std::begin(windows); it != std::end(windows);)
         {
             bool windowCanBeErased = false;
-            (*it)->visit(windowCanBeErased);
+            (*it)->visit(windowCanBeErased, settings);
             canBeErased &= windowCanBeErased;
             it = windowCanBeErased ? windows.erase(it) : std::next(it);
         }

@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+class Settings;
+
 class PicrossFile
 {
 public:
@@ -15,7 +17,7 @@ public:
 
     const std::string& get_file_path() const;
 
-    void visit_windows(bool& canBeErased);
+    void visit_windows(bool& canBeErased, Settings& settings);
 
 private:
     ErrWindow& get_err_window();

@@ -1,14 +1,15 @@
 #pragma once
 
-#include <imgui.h>
-
 #include <picross/picross.h>
+
+#include <imgui.h>
 
 #include <mutex>
 #include <string>
 #include <thread>
 
 class PicrossFile;
+class Settings;
 
 class GridWindow
 {
@@ -18,7 +19,7 @@ public:
     GridWindow(const GridWindow&) = delete;
     GridWindow& operator=(const GridWindow&) = delete;
 
-    void visit(bool& canBeErased);
+    void visit(bool& canBeErased, Settings& settings);
 
 private:
     void solve_picross_grid();
@@ -33,5 +34,3 @@ private:
     std::vector<picross::OutputGrid> solutions;
     std::vector<std::string> tabs;
 };
-
-

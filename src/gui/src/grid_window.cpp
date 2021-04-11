@@ -2,6 +2,7 @@
 
 #include "err_window.h"
 #include "picross_file.h"
+#include "settings.h"
 
 #include <sstream>
 #include <utility>
@@ -36,10 +37,18 @@ namespace
         }
     }
 
-    void draw_tile(ImDrawList* draw_list, ImVec2 tl_corner, size_t i, size_t j, ImU32 fill_color, float rounding = 0.f)
+    void draw_tile(ImDrawList* draw_list, ImVec2 tl_corner, size_t i, size_t j, ImU32 fill_color, float size_ratio = 1.f, float rounding_ratio = 0.f)
     {
-        const ImVec2 tl_tile_corner = ImVec2(tl_corner.x + static_cast<float>(i * GridTile + 1), tl_corner.y + static_cast<float>(j * GridTile + 1));
-        const ImVec2 br_tile_corner = ImVec2(tl_tile_corner.x + static_cast<float>(GridTile - 1), tl_tile_corner.y + static_cast<float>(GridTile - 1));
+        assert(0.f < size_ratio && size_ratio <= 1.f);
+        assert(0.f <= rounding_ratio && rounding_ratio <= 1.f);
+        const float padding = static_cast<float>(GridTile - 1) * 0.5f * (1.f - size_ratio);
+        const float rounding = static_cast<float>(GridTile - 1) * 0.5f * rounding_ratio;
+        const ImVec2 tl_tile_corner = ImVec2(
+            tl_corner.x + static_cast<float>(i * GridTile + 1) + padding,
+            tl_corner.y + static_cast<float>(j * GridTile + 1) + padding);
+        const ImVec2 br_tile_corner = ImVec2(
+            tl_corner.x + static_cast<float>((i+1) * GridTile) - padding,
+            tl_corner.y + static_cast<float>((j+1) * GridTile) - padding);
         draw_list->AddRectFilled(tl_tile_corner, br_tile_corner, fill_color, rounding);
         draw_list->AddRect(tl_tile_corner, br_tile_corner, ColorTileBorder, rounding);
     }
@@ -64,7 +73,7 @@ GridWindow::~GridWindow()
     solver_thread.join();
 }
 
-void GridWindow::visit(bool& canBeErased)
+void GridWindow::visit(bool& canBeErased, Settings& settings)
 {
     const size_t width = grid.cols.size();
     const size_t height = grid.rows.size();
@@ -110,6 +119,7 @@ void GridWindow::visit(bool& canBeErased)
     {
         for (unsigned int idx = 0u; idx < solutions.size(); ++idx)
         {
+            const Settings::Tile& tile_settings = settings.read_tile_settings();
             if (ImGui::BeginTabItem(tabs.at(idx).c_str()))
             {
                 const auto& solution = solutions.at(idx);
@@ -125,7 +135,7 @@ void GridWindow::visit(bool& canBeErased)
                     {
                         const auto tile = solution.get(i, j);
                         const auto fill_color = tile == picross::Tile::ONE ? ColorTileFilled : ColorTileEmpty;
-                        draw_tile(draw_list, grid_tl_corner, i, j, fill_color);
+                        draw_tile(draw_list, grid_tl_corner, i, j, fill_color, tile_settings.size_ratio, tile_settings.rounding_ratio);
                     }
 
                 ImGui::EndTabItem();
