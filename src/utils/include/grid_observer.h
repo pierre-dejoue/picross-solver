@@ -14,7 +14,7 @@ public:
     void operator()(picross::Solver::Event event, const picross::Line* delta, unsigned int depth);
 
 private:
-    virtual void callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const picross::OutputGrid& grid) = 0;
+    virtual void observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const picross::OutputGrid& grid) = 0;
 
 private:
     std::vector<picross::OutputGrid> grids;

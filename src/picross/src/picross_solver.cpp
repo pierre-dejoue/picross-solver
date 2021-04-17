@@ -344,7 +344,7 @@ OutputGrid& OutputGrid::operator=(OutputGrid&& other)
     assert(width == other.width);
     assert(height == other.height);
     assert(name == other.name);
-    grid == std::move(other.grid);
+    grid = std::move(other.grid);
     return *this;
 }
 

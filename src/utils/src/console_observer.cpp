@@ -10,7 +10,7 @@ ConsoleObserver::ConsoleObserver(size_t width, size_t height, std::ostream& ostr
 {
 }
 
-void ConsoleObserver::callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const picross::OutputGrid& grid)
+void ConsoleObserver::observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const picross::OutputGrid& grid)
 {
     ostream << event;
     switch (event)

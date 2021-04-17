@@ -1,7 +1,6 @@
 #include "grid_window.h"
 
 #include "err_window.h"
-#include "picross_file.h"
 #include "settings.h"
 
 #include <sstream>
@@ -52,19 +51,34 @@ namespace
         draw_list->AddRectFilled(tl_tile_corner, br_tile_corner, fill_color, rounding);
         draw_list->AddRect(tl_tile_corner, br_tile_corner, ColorTileBorder, rounding);
     }
+} // Anonymous namespace
+
+GridWindow::LineEvent::LineEvent(picross::Solver::Event event, const picross::Line* delta, const picross::OutputGrid& grid)
+    : event(event)
+    , delta()
+    , grid(grid)
+{
+    if (delta)
+    {
+        this->delta = std::make_unique<picross::Line>(*delta);
+    }
 }
 
-GridWindow::GridWindow(PicrossFile& file, picross::InputGrid&& grid)
-    : file(file)
+GridWindow::GridWindow(picross::InputGrid&& grid, const std::string& source)
+    : GridObserver(grid.cols.size(), grid.rows.size())
     , grid(std::move(grid))
     , title()
     , solver_thread()
-    , lock_mutex()
+    , text_buffer_mutex()
     , text_buffer()
     , solutions()
+    , alloc_new_solution(true)
     , tabs()
+    , line_event()
+    , line_cv()
+    , line_mutex()
 {
-    title = this->grid.name + " (" + file.get_file_path() + ")";
+    title = this->grid.name + " (" + source + ")";
     std::swap(solver_thread, std::thread(&GridWindow::solve_picross_grid, this));
 }
 
@@ -90,15 +104,25 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     }
     canBeErased = !isWindowOpen;
 
+    // Process last observer event
+    const bool observer_event = [this]()
+    {
+        std::lock_guard<std::mutex> lock(line_mutex);
+        return static_cast<bool>(line_event);
+    }();
+    if (observer_event)
+    {
+        process_line_event();
+    }
+
     // Text
     {
-        std::lock_guard<std::mutex> lock(lock_mutex);
+        std::lock_guard<std::mutex> lock(text_buffer_mutex);
         ImGui::TextUnformatted(text_buffer.begin(), text_buffer.end());
     }
 
     // Solutions tabs
     {
-        std::lock_guard<std::mutex> lock(lock_mutex);
         if (solutions.empty())
         {
             // No solutions, or not yet computed
@@ -108,13 +132,6 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     }
 
     // Solutions vector was swapped once, therefore can now being accessed without lock
-    if (tabs.empty())
-    {
-        for (unsigned int idx = 1u; idx <= solutions.size(); ++idx)
-        {
-            tabs.emplace_back("Solution " + std::to_string(idx));
-        }
-    }
     if (ImGui::BeginTabBar("##TabBar"))
     {
         for (unsigned int idx = 0u; idx < solutions.size(); ++idx)
@@ -123,7 +140,7 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
             if (ImGui::BeginTabItem(tabs.at(idx).c_str()))
             {
                 const auto& solution = solutions.at(idx);
-                assert(solution.is_solved());
+                assert(idx + 1 == solutions.size() || solution.is_solved());
 
                 ImDrawList* draw_list = ImGui::GetWindowDrawList();
                 assert(draw_list);
@@ -134,6 +151,8 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
                     for (size_t j = 0u; j < height; ++j)
                     {
                         const auto tile = solution.get(i, j);
+                        if (tile == picross::Tile::UNKNOWN)
+                            continue;
                         const auto fill_color = tile == picross::Tile::ONE ? ColorTileFilled : ColorTileEmpty;
                         draw_tile(draw_list, grid_tl_corner, i, j, fill_color, tile_settings.size_ratio, tile_settings.rounding_ratio);
                     }
@@ -147,6 +166,61 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     ImGui::End();
 }
 
+void GridWindow::observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const picross::OutputGrid& grid)
+{
+    // Wait until the previous line event has been consumed
+    std::unique_lock<std::mutex> lock(line_mutex);
+    line_cv.wait(lock, [this] { return !this->line_event; });
+
+    // Store new event
+    line_event = std::make_unique<LineEvent>(event, delta, grid);
+}
+
+void GridWindow::process_line_event()
+{
+    assert(line_event);
+
+    // Initial solution
+    if (alloc_new_solution)
+    {
+        alloc_new_solution = false;
+        solutions.emplace_back(std::move(line_event->grid));
+    }
+    else
+    {
+        solutions.back() = std::move(line_event->grid);
+    }
+
+    switch (line_event->event)
+    {
+    case picross::Solver::Event::BRANCHING:
+        break;
+
+    case picross::Solver::Event::DELTA_LINE:
+        break;
+
+    case picross::Solver::Event::SOLVED_GRID:
+        alloc_new_solution = true;              // Allocate new solution on next event
+        break;
+
+    default:
+        throw std::invalid_argument("Unknown Solver::Event");
+    }
+
+    // Adjust number of tabs
+    if (tabs.size() < solutions.size())
+    {
+        tabs.emplace_back("Solution " + std::to_string(tabs.size() + 1));
+    }
+    assert(tabs.size() == solutions.size());
+
+    // Ready for next event
+    std::lock_guard<std::mutex> lock(line_mutex);
+    line_event.reset();
+    line_cv.notify_one();
+}
+
+// Solver thread
 void GridWindow::solve_picross_grid()
 {
     const auto solver = picross::get_ref_solver();
@@ -158,21 +232,22 @@ void GridWindow::solve_picross_grid()
     std::tie(check, check_msg) = picross::check_grid_input(grid);
     if (check)
     {
+        solver->set_observer(std::reference_wrapper<GridObserver>(*this));
         std::vector<picross::OutputGrid> local_solutions = solver->solve(grid);
-        std::lock_guard<std::mutex> lock(lock_mutex);
         if (local_solutions.empty())
         {
+            std::lock_guard<std::mutex> lock(text_buffer_mutex);
             text_buffer.appendf("Could not solve that grid :-(\n");
         }
         else
         {
-            // No text
-            std::swap(solutions, local_solutions);
+            // Solutions are filled by the observer
+            assert(local_solutions.size() == solutions.size());
         }
     }
     else
     {
-        std::lock_guard<std::mutex> lock(lock_mutex);
+        std::lock_guard<std::mutex> lock(text_buffer_mutex);
         text_buffer.appendf("Invalid grid. Error message: %s\n", check_msg.c_str());
     }
 }

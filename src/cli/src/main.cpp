@@ -10,6 +10,7 @@
  ******************************************************************************/
 #include <cassert>
 #include <exception>
+#include <functional>
 #include <iostream>
 #include <sstream>
 #include <tuple>
@@ -114,7 +115,7 @@ int main(int argc, char *argv[])
                 ConsoleObserver obs(width, height, std::cout);
                 if (args["verbose"])
                 {
-                    solver->set_observer(obs);
+                    solver->set_observer(std::reference_wrapper<ConsoleObserver>(obs));
                 }
 
                 /* Solve the grid */

@@ -24,6 +24,7 @@ add_executable(picross_solver ${GUI_SOURCES} ${GUI_HEADERS})
 target_link_libraries(picross_solver
     PRIVATE
     picross
+    utils
     imgui
     portable_file_dialogs
 )
