@@ -104,15 +104,19 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     }
     canBeErased = !isWindowOpen;
 
-    // Process last observer event
-    const bool observer_event = [this]()
+    // Fetch last observer event
+    std::unique_ptr<LineEvent> local_event;
     {
         std::lock_guard<std::mutex> lock(line_mutex);
-        return static_cast<bool>(line_event);
-    }();
-    if (observer_event)
+        std::swap(line_event, local_event);
+    }
+    if (local_event)
     {
-        process_line_event();
+        // Unblock the waiting solver thread
+        line_cv.notify_one();
+
+        // Process observer event
+        process_line_event(local_event.get());
     }
 
     // Text
@@ -168,30 +172,36 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
 
 void GridWindow::observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const picross::OutputGrid& grid)
 {
-    // Wait until the previous line event has been consumed
-    std::unique_lock<std::mutex> lock(line_mutex);
-    line_cv.wait(lock, [this] { return !this->line_event; });
+    auto local_event = std::make_unique<LineEvent>(event, delta, grid);
 
-    // Store new event
-    line_event = std::make_unique<LineEvent>(event, delta, grid);
+    {
+        std::unique_lock<std::mutex> lock(line_mutex);
+
+        // Wait until the previous line event has been consumed
+        line_cv.wait(lock, [this]() -> bool { return !this->line_event; });
+
+        // Store new event
+        assert(!line_event);
+        std::swap(line_event, local_event);
+    }
 }
 
-void GridWindow::process_line_event()
+void GridWindow::process_line_event(LineEvent* event)
 {
-    assert(line_event);
+    assert(event);
 
     // Initial solution
     if (alloc_new_solution)
     {
         alloc_new_solution = false;
-        solutions.emplace_back(std::move(line_event->grid));
+        solutions.emplace_back(std::move(event->grid));
     }
     else
     {
-        solutions.back() = std::move(line_event->grid);
+        solutions.back() = std::move(event->grid);
     }
 
-    switch (line_event->event)
+    switch (event->event)
     {
     case picross::Solver::Event::BRANCHING:
         break;
@@ -213,11 +223,6 @@ void GridWindow::process_line_event()
         tabs.emplace_back("Solution " + std::to_string(tabs.size() + 1));
     }
     assert(tabs.size() == solutions.size());
-
-    // Ready for next event
-    std::lock_guard<std::mutex> lock(line_mutex);
-    line_event.reset();
-    line_cv.notify_one();
 }
 
 // Solver thread
