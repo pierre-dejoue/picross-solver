@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
     std::vector<picross::InputGrid> grids_to_solve = picross::parse_input_file(filename, [](const std::string& msg, picross::ExitCode code)
     {
-        std::cerr << msg << std::endl;
+        std::cout << msg << std::endl;
         if (code != 0)
         {
             exit(code);

@@ -1,3 +1,4 @@
+Parsing error "Invalid token GRILL (parsing_state = COLUMN_SECTION)" on line 94: GRILL Beaf
 GRID 1: Fish
  > Invalid grid. Error message: Number of filled tiles on rows (153) and columns (154) do not match.
 
