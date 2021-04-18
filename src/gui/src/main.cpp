@@ -123,8 +123,10 @@ int main(int argc, char *argv[])
             settings.visit_windows(canBeErased);
         }
 
+#if PICROSS_GUI_IMGUI_DEMO
         // Dear Imgui Demo
         ImGui::ShowDemoWindow();
+#endif
 
         // Rendering
         ImGui::Render();

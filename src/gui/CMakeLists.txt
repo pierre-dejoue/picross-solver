@@ -2,6 +2,8 @@
 # Build the graphical application
 #
 
+option(PICROSS_GUI_IMGUI_DEMO "Show ImGUI demo window" OFF)
+
 # Dependencies
 find_package(OpenGL REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
@@ -20,6 +22,10 @@ set(GUI_SOURCES
 file(GLOB GUI_HEADERS src/*.h)
 
 add_executable(picross_solver ${GUI_SOURCES} ${GUI_HEADERS})
+
+if (PICROSS_GUI_IMGUI_DEMO)
+    add_compile_definitions(PICROSS_GUI_IMGUI_DEMO)
+endif()
 
 target_link_libraries(picross_solver
     PRIVATE
