@@ -76,7 +76,7 @@ cmake --build . --config Release
 
 Run the CLI on an example file:
 
-`./build/msvc141x64/bin/Release/picross_cli.exe inputs/example_input.txt`
+`./build/msvc141x64/bin/Release/picross_solver_cli.exe inputs/example_input.txt`
 
 ### Snapshots
 
