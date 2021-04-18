@@ -176,7 +176,9 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
         for (unsigned int idx = 0u; idx < solutions.size(); ++idx)
         {
             const Settings::Tile& tile_settings = settings.read_tile_settings();
-            if (ImGui::BeginTabItem(tabs.at(idx).c_str()))
+            const auto last_idx = idx == solutions.size() - 1;
+            const ImGuiTabItemFlags tab_flags = (solver_thread_active && last_idx) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
+            if (ImGui::BeginTabItem(tabs.at(idx).c_str(), nullptr, tab_flags))
             {
                 const auto& solution = solutions.at(idx);
                 assert(idx + 1 == solutions.size() || solution.is_solved());
