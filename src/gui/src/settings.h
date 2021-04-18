@@ -16,11 +16,13 @@ public:
     };
     struct TileLimits
     {
+        Limits<int> size_enum;
         Limits<float> rounding_ratio;
         Limits<float> size_ratio;
     };
     struct Tile
     {
+        int size_enum;
         float rounding_ratio;
         float size_ratio;
     };

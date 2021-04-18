@@ -8,6 +8,10 @@ namespace
     {
         Settings::TileLimits result;
 
+        result.size_enum.default = 1;
+        result.size_enum.min = 0;
+        result.size_enum.max = 2;
+
         result.rounding_ratio.default = 0.f;
         result.rounding_ratio.min = 0.f;
         result.rounding_ratio.max = 1.f;
@@ -36,6 +40,7 @@ const Settings::Tile& Settings::read_tile_settings()
     if (!tile_settings)
     {
         tile_settings = std::make_unique<Tile>();
+        tile_settings->size_enum = read_tile_settings_limits().size_enum.default;
         tile_settings->rounding_ratio = read_tile_settings_limits().rounding_ratio.default;
         tile_settings->size_ratio = read_tile_settings_limits().size_ratio.default;
     }
