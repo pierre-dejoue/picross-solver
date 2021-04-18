@@ -3,6 +3,7 @@
 #include "err_window.h"
 #include "settings.h"
 
+#include <iostream>
 #include <sstream>
 #include <utility>
 
@@ -69,22 +70,26 @@ GridWindow::GridWindow(picross::InputGrid&& grid, const std::string& source)
     , grid(std::move(grid))
     , title()
     , solver_thread()
+    , solver_thread_start(true)
+    , solver_thread_completed(false)
     , text_buffer_mutex()
     , text_buffer()
     , solutions()
-    , alloc_new_solution(true)
+    , allocate_new_solution(false)
     , tabs()
     , line_event()
     , line_cv()
     , line_mutex()
 {
     title = this->grid.name + " (" + source + ")";
-    std::swap(solver_thread, std::thread(&GridWindow::solve_picross_grid, this));
 }
 
 GridWindow::~GridWindow()
 {
-    solver_thread.join();
+    if (solver_thread.joinable())
+    {
+        solver_thread.join();
+    }
 }
 
 void GridWindow::visit(bool& canBeErased, Settings& settings)
@@ -104,19 +109,49 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     }
     canBeErased = !isWindowOpen;
 
-    // Fetch last observer event
-    std::unique_ptr<LineEvent> local_event;
-    {
-        std::lock_guard<std::mutex> lock(line_mutex);
-        std::swap(line_event, local_event);
-    }
-    if (local_event)
-    {
-        // Unblock the waiting solver thread
-        line_cv.notify_one();
+    // Solver thread state
+    const bool solver_thread_active = solver_thread.joinable();
 
-        // Process observer event
-        process_line_event(local_event.get());
+    // Trigger solver thread
+    if (solver_thread_start)
+    {
+        assert(!solver_thread_active);
+        reset_solution();
+        solver_thread_completed = false;
+        std::swap(solver_thread, std::thread(&GridWindow::solve_picross_grid, this));
+        solver_thread_start = false;
+    }
+    // If solver thread is active
+    else if (solver_thread_active)
+    {
+        if (solver_thread_completed)
+        {
+            solver_thread.join();
+            std::swap(solver_thread, std::thread());
+            assert(!solver_thread.joinable());
+            std::cerr << "End of solver thread for grid: " << grid.name << std::endl;
+        }
+
+        // Fetch the last observer event
+        std::unique_ptr<LineEvent> local_event;
+        {
+            std::lock_guard<std::mutex> lock(line_mutex);
+            std::swap(line_event, local_event);
+        }
+        if (local_event)
+        {
+            // Unblock the waiting solver thread
+            line_cv.notify_one();
+
+            // Process observer event
+            process_line_event(local_event.get());
+        }
+    }
+
+    // Reset button
+    if (ImGui::Button("Solve again") && !solver_thread_active)
+    {
+        solver_thread_start = true;     // Triggered for next frame
     }
 
     // Text
@@ -170,6 +205,17 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     ImGui::End();
 }
 
+void GridWindow::reset_solution()
+{
+    assert(!solver_thread.joinable());
+    allocate_new_solution = false;
+    solutions.clear();
+    tabs.clear();
+    observer_clear();
+    line_event.reset();
+    text_buffer.clear();
+}
+
 void GridWindow::observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const picross::OutputGrid& grid)
 {
     auto local_event = std::make_unique<LineEvent>(event, delta, grid);
@@ -191,9 +237,9 @@ void GridWindow::process_line_event(LineEvent* event)
     assert(event);
 
     // Initial solution
-    if (alloc_new_solution)
+    if (allocate_new_solution)
     {
-        alloc_new_solution = false;
+        allocate_new_solution = false;
         solutions.emplace_back(std::move(event->grid));
     }
     else
@@ -210,7 +256,7 @@ void GridWindow::process_line_event(LineEvent* event)
         break;
 
     case picross::Solver::Event::SOLVED_GRID:
-        alloc_new_solution = true;              // Allocate new solution on next event
+        allocate_new_solution = true;              // Allocate new solution on next event
         break;
 
     default:
@@ -228,6 +274,8 @@ void GridWindow::process_line_event(LineEvent* event)
 // Solver thread
 void GridWindow::solve_picross_grid()
 {
+    assert(!solver_thread_completed);
+
     const auto solver = picross::get_ref_solver();
     unsigned count_grids = 0u;
 
@@ -237,6 +285,7 @@ void GridWindow::solve_picross_grid()
     std::tie(check, check_msg) = picross::check_grid_input(grid);
     if (check)
     {
+        allocate_new_solution = true;   // Flag to allocate a new solution on the next observer callback
         solver->set_observer(std::reference_wrapper<GridObserver>(*this));
         std::vector<picross::OutputGrid> local_solutions = solver->solve(grid);
         if (local_solutions.empty())
@@ -255,4 +304,6 @@ void GridWindow::solve_picross_grid()
         std::lock_guard<std::mutex> lock(text_buffer_mutex);
         text_buffer.appendf("Invalid grid. Error message: %s\n", check_msg.c_str());
     }
+
+    solver_thread_completed = true;
 }
