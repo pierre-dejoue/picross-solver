@@ -1,4 +1,5 @@
-# https://www.nonograms.org/nonograms/i/6361
+# Source: https://www.nonograms.org/nonograms/i/6361
+# 25x40
 GRID Giraffe
 ROWS
 [ 12 10 ]
