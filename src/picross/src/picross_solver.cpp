@@ -513,12 +513,7 @@ bool WorkGrid::set_line(const Line& line)
 {
     bool changed = false;
     const size_t index = line.get_index();
-    if (observer)
-    {
-        const Line origin_line = get_line(line.get_type(), index);
-        const Line delta = line_delta(origin_line, line);
-        observer(Solver::Event::DELTA_LINE, &delta, nested_level);
-    }
+    const Line origin_line = get_line(line.get_type(), index);
     const auto width = static_cast<unsigned int>(get_width());
     const auto height = static_cast<unsigned int>(get_height());
     if (line.get_type() == Line::ROW && line.size() == width)
@@ -532,6 +527,11 @@ bool WorkGrid::set_line(const Line& line)
     else
     {
         throw std::invalid_argument("WorkGrid::set_line: wrong arguments");
+    }
+    if (observer && changed)
+    {
+        const Line delta = line_delta(origin_line, line);
+        observer(Solver::Event::DELTA_LINE, &delta, nested_level);
     }
     return changed;
 }
