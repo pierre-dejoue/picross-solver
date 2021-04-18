@@ -78,6 +78,7 @@ struct GridStats
     unsigned int total_lines_added_and_filtered = 0u;
     unsigned int nb_full_grid_pass_calls = 0u;
     unsigned int nb_single_line_pass_calls = 0u;
+    unsigned int nb_observer_callback_calls = 0u;
 };
 
 

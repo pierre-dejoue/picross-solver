@@ -117,6 +117,11 @@ int main(int argc, char *argv[])
                 {
                     solver->set_observer(std::reference_wrapper<ConsoleObserver>(obs));
                 }
+                else
+                {
+                    // Set a dummy observer just to collect stats
+                    solver->set_observer([](picross::Solver::Event, const picross::Line*, unsigned int) {});
+                }
 
                 /* Solve the grid */
                 picross::GridStats stats;

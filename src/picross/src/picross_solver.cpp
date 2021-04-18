@@ -940,6 +940,7 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
     ostream << "  " << stats.nb_single_line_pass_calls << " calls to single_line_pass()." << std::endl;
     ostream << "  " << stats.nb_reduce_line_calls << " calls to reduce_line(). Max list size/total nb of lines reduced: " << stats.max_reduce_list_size << "/" << stats.total_lines_reduced << std::endl;
     ostream << "  " << stats.nb_add_and_filter_calls << " calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: " << stats.max_add_and_filter_list_size << "/" << stats.total_lines_added_and_filtered << std::endl;
+    ostream << "  " << stats.nb_observer_callback_calls << " calls to observer callback." << std::endl;
 
     return ostream;
 }
@@ -955,7 +956,20 @@ Solver::Solutions RefSolver::solve(const InputGrid& grid_input, GridStats* stats
         std::swap(*stats, GridStats());
     }
 
-    const bool success = WorkGrid(grid_input, &solutions, stats, observer).solve();
+    Observer observer_wrapper;
+    if (observer)
+    {
+        observer_wrapper = [stats, this](Solver::Event event, const Line* delta, unsigned int depth)
+        {
+            if (stats != nullptr)
+            {
+                stats->nb_observer_callback_calls++;
+            }
+            this->observer(event, delta, depth);
+        };
+    }
+
+    const bool success = WorkGrid(grid_input, &solutions, stats, std::move(observer_wrapper)).solve();
 
     assert(success == (solutions.size() > 0u));
     return solutions;

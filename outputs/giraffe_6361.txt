@@ -49,6 +49,7 @@ Grid 25x40:
   249 calls to single_line_pass().
   241 calls to reduce_line(). Max list size/total nb of lines reduced: 27132/122782
   7409 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 31/47213
+  242 calls to observer callback.
 
 
 
