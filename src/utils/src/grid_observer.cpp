@@ -68,3 +68,12 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
     assert(current_depth < grids.size());
     observer_callback(event, delta, depth, grids.at(current_depth));
 }
+
+void GridObserver::observer_clear()
+{
+    assert(!grids.empty());
+    grids.erase(grids.begin() + 1, grids.end());
+    assert(grids.size() == 1);
+    grids[0].reset();
+    current_depth = 0u;
+}

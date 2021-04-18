@@ -13,6 +13,9 @@ public:
 
     void operator()(picross::Solver::Event event, const picross::Line* delta, unsigned int depth);
 
+protected:
+    void observer_clear();
+
 private:
     virtual void observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const picross::OutputGrid& grid) = 0;
 

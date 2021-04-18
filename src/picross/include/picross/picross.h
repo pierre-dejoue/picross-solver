@@ -135,6 +135,7 @@ public:
 
     Tile::Type get(size_t x, size_t y) const;
     void set(size_t x, size_t y, Tile::Type t);
+    void reset();
 
     Line get_line(Line::Type type, size_t index) const;
 

@@ -324,8 +324,9 @@ OutputGrid::OutputGrid(size_t width, size_t height, const std::string& name) :
     width(width),
     height(height),
     name(name),
-    grid(height * width, Tile::UNKNOWN)
+    grid()
 {
+    reset();
 }
 
 
@@ -374,6 +375,12 @@ void OutputGrid::set(size_t x, size_t y, Tile::Type t)
     if (x >= width) { throw std::invalid_argument("OutputGrid::set: x is out of range"); }
     if (y >= height) { throw std::invalid_argument("OutputGrid::set: y is out of range"); }
     grid[x * height + y] = t;
+}
+
+
+void OutputGrid::reset()
+{
+    std::swap(grid, std::vector<Tile::Type>(height * width, Tile::UNKNOWN));
 }
 
 
