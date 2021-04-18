@@ -215,7 +215,12 @@ void GridWindow::reset_solution()
     tabs.clear();
     observer_clear();
     line_event.reset();
+
+    // Clear text buffer and print out the grid size
+    const size_t width = grid.cols.size();
+    const size_t height = grid.rows.size();
     text_buffer.clear();
+    text_buffer.appendf("Grid %dx%d\n", width, height);
 }
 
 void GridWindow::observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const picross::OutputGrid& grid)
