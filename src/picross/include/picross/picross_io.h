@@ -24,9 +24,10 @@ namespace picross
 using ExitCode = int;
 using ErrorHandler = std::function<void(const std::string&, ExitCode)>;
 
-
-/*******************************************************************************
- * Picross file format:
+/******************************************************************************
+ * File parser
+ *
+ * Native file format:
  *
  *      # comment           <--- lines starting with # are ignored
  *      GRID name           <--- marker for the beginning of a new grid
@@ -34,12 +35,25 @@ using ErrorHandler = std::function<void(const std::string&, ExitCode)>;
  *      [ 1 2 3 ]           <--- constraint on one line (here a row)
  *      ...
  *      COLUMNS             <--- marker for columns
+ *      [ ]                 <--- an empty constraint
  *      ...
  *
- * NB: Empty lines are skipped
- * NB: Grid name is optional
+ *   NB: Multiple grids can be declared in a single file
+ *   NB: The GRID marker is mandatory before the ROWS and COLUMNS sections, however the grid name is optional
+ *   NB: ROWS and COLUMNS sections are independent and can be in any order
+ *   NB: Empty lines are skipped
  *
  ******************************************************************************/
 std::vector<InputGrid> parse_input_file(const std::string& filepath, const ErrorHandler& error_handler) noexcept;
+
+/******************************************************************************
+ * File parser
+ *
+ * NON file format (originally by Steve Simpson):
+ *
+ *   https://github.com/mikix/nonogram-db/blob/master/FORMAT.md
+ *
+ ******************************************************************************/
+std::vector<InputGrid> parse_input_file_non_format(const std::string& filepath, const ErrorHandler& error_handler) noexcept;
 
 } // namespace picross

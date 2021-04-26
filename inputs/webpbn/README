@@ -1,0 +1,102 @@
+		    SAMPLE PAINT-BY-NUMBER PUZZLE SET
+		     Version 8 - September 23, 2013
+                                Jan Wolter
+
+This archive contains descriptions of the sample paint-by-number / nonogram
+puzzles used as a test set in my "Survey of Paint-by-Number Puzzle Solvers"
+which can be found at http://webpbn.com/survey/
+
+Versions of this archive are available in many different formats from
+
+	http://webpbn.com/survey/puzzles/
+
+The format used in this archive is described in the README-FORMAT file
+included here.
+
+Puzzles with names of the format "webpbn-DDDDD" can also be obtained from the
+webpbn export page at http://webpbn.com/export.cgi , but there is a chance
+that puzzles on webpbn could be alterned by their designers, so this archive
+is the prefered source for the test set.
+
+Archives for file formats that support color puzzles will include not only
+the black and white puzzle sample set, but the multicolor sample set as
+well.  The multicolor puzzles have file names starting 'webpbn-color-'.
+
+Most puzzles are drawn from the webpbn.com puzzle site, which is an on-line
+community where users create, share, and solve paint-by-number puzzles.  It
+is the policy of that site that, by default, the copyright for all puzzles
+is retained by the designer of that puzzle, and that though puzzles posted
+there may be downloaded from that site for personal use, they may not be
+redistributed freely.
+
+Some, but not all, of the authors of puzzle included in this sample set have
+given explicit permission for these puzzles to be freely redistributed,  These
+puzzles may be treated as if they are under something like a Creative Commons
+attribution license - so they can be reused and distributed freely as long as
+the attribution of the puzzles is retained.
+
+       PUZZLES THAT MAY BE FREELY REDISTRIBUTED:
+
+       Filename            Short Title   Copyright Holder
+       -----------         -----------   ----------------
+       webpbn-00001        Dancer        Jan Wolter
+       webpbn-00006        Cat           Jan Wolter
+       webpbn-00016        Knot          Jan Wolter
+       webpbn-00021        Skid          Jan Wolter
+       webpbn-00023        Edge          Jan Wolter
+       webpbn-00027        Bucks         Jan Wolter
+       webpbn-00065        Mum           Jan Wolter
+       webpbn-00436        Petro         Jan Wolter
+       webpbn-00529        Swing         Jan Wolter
+       webpbn-00803        Light         Robert Kummerfeldt
+       webpbn-01611        Merka         Nancy Snyder
+       webpbn-06574        Forever       Gator
+       webpbn-color-00047  Map           Jan Wolter
+       webpbn-color-00220  Onions        Jan Wolter
+       knotty              Knotty        Joe Cooke
+       faase               Faase         Kerrin Mansfield
+
+For all puzzles NOT in the list above, it should be assumed that the authors
+have only given permission to upload the puzzle from the webpbn.com site for
+personal use.  If you want to share the puzzle with someone else, direct them
+to this archive or the webpbn site.
+
+       PUZZLES THAT MAY *NOT* BE FREELY REDISTRIBUTED:
+
+       Filename            Short Title   Copyright Holder
+       -----------         -----------   ----------------
+       webpbn-01694        Tragic        Nancy Snyder
+       webpbn-02040        Hot           Nancy Snyder
+       webpbn-02413        Smoke         Marcus
+       webpbn-02556        Flag          Harris Harris
+       webpbn-02712        Lion          Marto Benwa
+       webpbn-03541        Signed        Adam Nielson
+       webpbn-04645        M&M           Sanane Samanye
+       webpbn-07604        DiCap         Adam Nielson
+       webpbn-09892        Nature        Asta Paka
+       webpbn-10088        Marley        Shelly Havok
+       webpbn-10810        Center        Bo Na
+       webpbn-12548        Sierp         Joshua Nolan
+       webpbn-18297        Thing         Juliane
+       webpbn-22336        Gettys        Byron Walter
+       meow                Meow          Rose Brock
+       webpbn-color-00672  Web           Anita Lewis
+       webpbn-color-01503  Bob           Sylvain
+       webpbn-color-02073  Peanut        Jennifer Jones
+       webpbn-color-02257  JarJar        Nancy Snyder
+       webpbn-color-02498  Gecko         Harris Harris
+       webpbn-color-02814  Comet         Nancy Snyder
+       webpbn-color-02817  Shark         Nancy Snyder
+       webpbn-color-02940  Babe          Steve Johnson
+       webpbn-color-02684  Censored      Harris Harris
+       webpbn-color-02984  Heart         Susan Little
+       webpbn-color-03149  Ex            Susan Little
+       webpbn-color-03620  Addition      Susan Little
+       webpbn-color-04364  Snowman       MMD
+       webpbn-color-04445  Pinup         Ro Kali
+       webpbn-color-04809  EFB           Frederik Gravgaard
+
+These puzzles in this archive are not by any means 'typical' puzzles.  They
+represent a spectrum of difficulty, ranging from very easy to extremely
+difficult.  Many have multiple solutions.  Many puzzles have been included
+in the set specifically because they cause problems for specific solvers.

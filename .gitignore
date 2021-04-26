@@ -1,4 +1,5 @@
 build/
+inputs/sample-simpson/
 *.slo
 *.lo
 *.o

@@ -5,6 +5,7 @@
 set(LIB_SOURCES
     src/console_observer.cpp
     src/grid_observer.cpp
+    src/strings.cpp
 )
 
 file(GLOB LIB_HEADERS include/*.h src/*.h)

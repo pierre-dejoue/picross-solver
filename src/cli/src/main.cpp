@@ -23,6 +23,7 @@
 
 #include <console_observer.h>
 #include <duration_meas.h>
+#include <strings.h>
 
 
 /*******************************************************************************
@@ -81,15 +82,17 @@ int main(int argc, char *argv[])
     /***************************************************************************
      * II - Parse input file
      **************************************************************************/
-
-    std::vector<picross::InputGrid> grids_to_solve = picross::parse_input_file(filename, [](const std::string& msg, picross::ExitCode code)
+    const auto err_handler = [](const std::string& msg, picross::ExitCode code)
     {
         std::cout << msg << std::endl;
         if (code != 0)
         {
             exit(code);
         }
-    });
+    };
+    const std::vector<picross::InputGrid> grids_to_solve = str_tolower(file_extension(filename)) == "non"
+        ? picross::parse_input_file_non_format(filename, err_handler)
+        : picross::parse_input_file(filename, err_handler);
 
     /***************************************************************************
      * III - Solve Picross puzzles
