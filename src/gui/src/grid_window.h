@@ -33,7 +33,7 @@ public:
     void visit(bool& canBeErased, Settings& settings);
 
 private:
-    void reset_solution();
+    void reset_solutions();
     void observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const picross::OutputGrid& grid) override;
     void process_line_event(LineEvent* event);
     void solve_picross_grid();
@@ -47,6 +47,7 @@ private:
     std::mutex text_buffer_mutex;
     ImGuiTextBuffer text_buffer;
     std::vector<picross::OutputGrid> solutions;
+    unsigned int valid_solutions;
     bool allocate_new_solution;
     std::vector<std::string> tabs;
     std::unique_ptr<LineEvent> line_event;

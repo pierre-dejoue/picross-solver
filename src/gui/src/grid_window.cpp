@@ -73,6 +73,7 @@ GridWindow::GridWindow(picross::InputGrid&& grid, const std::string& source)
     , text_buffer_mutex()
     , text_buffer()
     , solutions()
+    , valid_solutions(0)
     , allocate_new_solution(false)
     , tabs()
     , line_event()
@@ -118,7 +119,7 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     if (solver_thread_start)
     {
         assert(!solver_thread_active);
-        reset_solution();
+        reset_solutions();
         solver_thread_completed = false;
         std::swap(solver_thread, std::thread(&GridWindow::solve_picross_grid, this));
         solver_thread_start = false;
@@ -128,13 +129,14 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     {
         if (solver_thread_completed)
         {
+            // The solver thread being over does not mean that all observer events have been processed
             solver_thread.join();
             std::swap(solver_thread, std::thread());
             assert(!solver_thread.joinable());
             std::cerr << "End of solver thread for grid: " << grid.name << std::endl;
         }
 
-        // Fetch the last observer event
+        // Fetch the latest observer event
         std::unique_ptr<LineEvent> local_event;
         {
             std::lock_guard<std::mutex> lock(line_mutex);
@@ -148,6 +150,14 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
             // Process observer event
             process_line_event(local_event.get());
         }
+    }
+    // Remove the last solution if not valid
+    else if (valid_solutions < solutions.size())
+    {
+        assert(solver_thread_completed);
+        assert(!line_event);
+        solutions.erase(solutions.end() - 1);
+        tabs.erase(tabs.end() - 1);
     }
 
     // Reset button
@@ -208,10 +218,11 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     ImGui::End();
 }
 
-void GridWindow::reset_solution()
+void GridWindow::reset_solutions()
 {
     assert(!solver_thread.joinable());
     allocate_new_solution = false;
+    valid_solutions = 0;
     solutions.clear();
     tabs.clear();
     observer_clear();
@@ -264,6 +275,7 @@ void GridWindow::process_line_event(LineEvent* event)
         break;
 
     case picross::Solver::Event::SOLVED_GRID:
+        valid_solutions++;
         allocate_new_solution = true;              // Allocate new solution on next event
         break;
 
@@ -304,7 +316,6 @@ void GridWindow::solve_picross_grid()
         else
         {
             // Solutions are filled by the observer
-            assert(local_solutions.size() == solutions.size());
         }
     }
     else
