@@ -5,6 +5,18 @@
 
 #include <picross/picross.h>
 
+class ObserverGrid : public picross::OutputGrid
+{
+public:
+    ObserverGrid(size_t width, size_t height, const std::string& name = "");
+
+    void set(size_t x, size_t y, picross::Tile::Type t, unsigned int d);
+    unsigned int get_depth(size_t x, size_t y) const;
+
+private:
+    std::vector<unsigned int>           depth_grid;
+};
+
 class GridObserver
 {
 public:
@@ -17,9 +29,9 @@ protected:
     void observer_clear();
 
 private:
-    virtual void observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const picross::OutputGrid& grid) = 0;
+    virtual void observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const ObserverGrid& grid) = 0;
 
 private:
-    std::vector<picross::OutputGrid> grids;
+    std::vector<ObserverGrid> grids;
     size_t current_depth;
 };

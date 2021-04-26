@@ -52,7 +52,7 @@ namespace
     }
 } // Anonymous namespace
 
-GridWindow::LineEvent::LineEvent(picross::Solver::Event event, const picross::Line* delta, const picross::OutputGrid& grid)
+GridWindow::LineEvent::LineEvent(picross::Solver::Event event, const picross::Line* delta, const ObserverGrid& grid)
     : event(event)
     , delta()
     , grid(grid)
@@ -235,7 +235,7 @@ void GridWindow::reset_solutions()
     text_buffer.appendf("Grid %dx%d\n", width, height);
 }
 
-void GridWindow::observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const picross::OutputGrid& grid)
+void GridWindow::observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const ObserverGrid& grid)
 {
     auto local_event = std::make_unique<LineEvent>(event, delta, grid);
 

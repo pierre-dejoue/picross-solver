@@ -18,11 +18,11 @@ class GridWindow : public GridObserver
 public:
     struct LineEvent
     {
-        LineEvent(picross::Solver::Event event, const picross::Line* delta, const picross::OutputGrid& grid);
+        LineEvent(picross::Solver::Event event, const picross::Line* delta, const ObserverGrid& grid);
 
         picross::Solver::Event event;
         std::unique_ptr<picross::Line> delta;
-        picross::OutputGrid grid;
+        ObserverGrid grid;
     };
 public:
     GridWindow(picross::InputGrid&& grid, const std::string& source);
@@ -34,7 +34,7 @@ public:
 
 private:
     void reset_solutions();
-    void observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const picross::OutputGrid& grid) override;
+    void observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const ObserverGrid& grid) override;
     void process_line_event(LineEvent* event);
     void solve_picross_grid();
 
@@ -46,7 +46,7 @@ private:
     std::atomic<bool> solver_thread_completed;
     std::mutex text_buffer_mutex;
     ImGuiTextBuffer text_buffer;
-    std::vector<picross::OutputGrid> solutions;
+    std::vector<ObserverGrid> solutions;
     unsigned int valid_solutions;
     bool allocate_new_solution;
     std::vector<std::string> tabs;

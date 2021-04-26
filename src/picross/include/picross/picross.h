@@ -141,8 +141,11 @@ public:
     Line get_line(Line::Type type, size_t index) const;
 
     bool is_solved() const;
-private:
+
+protected:
     const size_t                                width, height;
+
+private:
     const std::string                           name;
     std::vector<Tile::Type>                     grid;            // 2D array of tiles
 };
