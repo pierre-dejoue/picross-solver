@@ -4,8 +4,7 @@
 #include <ostream>
 
 #include <picross/picross.h>
-
-#include <grid_observer.h>
+#include <utils/grid_observer.h>
 
 
 class ConsoleObserver final : public GridObserver

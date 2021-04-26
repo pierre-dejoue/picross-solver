@@ -1,4 +1,4 @@
-#include <grid_observer.h>
+#include <utils/grid_observer.h>
 
 #include <cassert>
 #include <exception>

@@ -20,10 +20,9 @@
 
 #include <picross/picross.h>
 #include <picross/picross_io.h>
-
-#include <console_observer.h>
-#include <duration_meas.h>
-#include <strings.h>
+#include <utils/console_observer.h>
+#include <utils/duration_meas.h>
+#include <utils/strings.h>
 
 
 /*******************************************************************************

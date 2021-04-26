@@ -1,7 +1,7 @@
 #pragma once
 
 #include <picross/picross.h>
-#include <grid_observer.h>
+#include <utils/grid_observer.h>
 
 #include <imgui.h>
 
