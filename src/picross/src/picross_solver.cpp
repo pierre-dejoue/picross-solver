@@ -469,8 +469,8 @@ WorkGrid::WorkGrid(const WorkGrid& parent, unsigned int nested_level) :
     line_to_be_reduced[Line::ROW] = parent.line_to_be_reduced[Line::ROW];
     line_to_be_reduced[Line::COL] = parent.line_to_be_reduced[Line::COL];
 
-    nb_alternatives[Line::ROW].resize(get_height(), 0u);
-    nb_alternatives[Line::COL].resize(get_width(), 0u);
+    nb_alternatives[Line::ROW] = parent.nb_alternatives[Line::ROW];
+    nb_alternatives[Line::COL] = parent.nb_alternatives[Line::COL];
 
     // Stats
     if (stats != nullptr && nested_level > stats->max_nested_level)
@@ -709,6 +709,7 @@ bool WorkGrid::guess() const
         if (!new_grid.set_line(guess_line)) { throw std::logic_error("WorkGrid::guess: no change in the new grid, will cause infinite loop."); }
         new_grid.line_completed[guess_line.get_type()].at(guess_line_index) = true;
         new_grid.line_to_be_reduced[guess_line.get_type()].at(guess_line_index) = false;
+        new_grid.nb_alternatives[guess_line.get_type()].at(guess_line_index) = 0u;
 
         // Solve the new grid!
         flag_solution_found |= new_grid.solve();
