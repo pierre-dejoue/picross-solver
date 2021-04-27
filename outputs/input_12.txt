@@ -403201,10 +403201,10 @@ Grid 8x8:
    #      
   #       
 
-  Max nested level: 7
+  Max branching depth: 7
     > The solving of the grid required an hypothesis on 28961 row(s) or column(s).
-    > Max/total nb of alternatives being tested: 8/69280
-  Max theoretical nb of alternatives on a line: 8
+    > Total nunmber of alternatives being tested: 69280
+    > Max nunmber of alternatives by depth: 8 7 6 5 4 3 2
   138561 calls to full_grid_pass().
   288480 calls to single_line_pass().
   288464 calls to reduce_line(). Max list size/total nb of lines reduced: 7/507536

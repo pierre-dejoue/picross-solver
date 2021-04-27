@@ -23,8 +23,7 @@ Grid 22x20:
            ######       
                         
 
-  Max nested level: 0
-  Max theoretical nb of alternatives on a line: 3003
+  Max branching depth: 0
   21 calls to full_grid_pass().
   276 calls to single_line_pass().
   257 calls to reduce_line(). Max list size/total nb of lines reduced: 1912/19968
@@ -60,10 +59,10 @@ Grid 10x10:
   ###       
   ###       
 
-  Max nested level: 1
+  Max branching depth: 1
     > The solving of the grid required an hypothesis on 1 row(s) or column(s).
-    > Max/total nb of alternatives being tested: 6/6
-  Max theoretical nb of alternatives on a line: 36
+    > Total nunmber of alternatives being tested: 6
+    > Max nunmber of alternatives by depth: 6
   19 calls to full_grid_pass().
   178 calls to single_line_pass().
   154 calls to reduce_line(). Max list size/total nb of lines reduced: 29/869

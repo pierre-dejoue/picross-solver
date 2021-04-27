@@ -1,0 +1,28 @@
+GRID 1: Nonrepresentational Test Pattern
+ > Found 1 solution(s):
+
+Grid 10x11:
+     #      
+   ###      
+   #        
+  ##        
+       #    
+     ###    
+     ###    
+       #    
+         ## 
+         ## 
+        ####
+
+  Max branching depth: 2
+    > The solving of the grid required an hypothesis on 2 row(s) or column(s).
+    > Total nunmber of alternatives being tested: 11
+    > Max nunmber of alternatives by depth: 7 4
+  17 calls to full_grid_pass().
+  222 calls to single_line_pass().
+  192 calls to reduce_line(). Max list size/total nb of lines reduced: 21/921
+  256 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 11/2073
+  110 calls to observer callback.
+
+
+

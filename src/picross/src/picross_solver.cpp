@@ -652,10 +652,6 @@ bool WorkGrid::solve()
 
             if (min_alt == 0u) { throw std::logic_error("WorkGrid::solve: no min value, this should not happen!"); }
 
-            // Some stats
-            if (stats != nullptr && min_alt > stats->guess_max_alternatives)  { stats->guess_max_alternatives = min_alt; }
-            if (stats != nullptr)                                             { stats->guess_total_alternatives += min_alt; }
-
             // Select one row or one column with the minimal number of alternatives.
             const Constraint* line_constraint = nullptr;
             auto alternative_it = std::find_if (nb_alternatives[Line::ROW].cbegin(), nb_alternatives[Line::ROW].cend(), [min_alt](unsigned int alt) { return alt == min_alt; });
@@ -680,6 +676,7 @@ bool WorkGrid::solve()
 
             assert(line_constraint != nullptr);
             guess_list_of_all_alternatives = line_constraint->build_all_possible_lines(get_line(guess_line_type, guess_line_index), stats);
+            assert(guess_list_of_all_alternatives.size() == min_alt);
 
             // Guess!
             return guess();
@@ -699,7 +696,16 @@ bool WorkGrid::guess() const
      * creating a new instance of the grid class on which the function WorkGrid::solve() is called.
      */
     bool flag_solution_found = false;
-    if (stats != nullptr) { stats->guess_total_calls++; }
+    if (stats != nullptr)
+    {
+        stats->guess_total_calls++;
+        const auto nb_alternatives = static_cast<unsigned int>(guess_list_of_all_alternatives.size());
+        stats->guess_total_alternatives += nb_alternatives;
+        if (stats->guess_max_nb_alternatives_by_depth.size() < nested_level + 1)
+            stats->guess_max_nb_alternatives_by_depth.resize(nested_level + 1);
+        auto& max_nb_alternatives = stats->guess_max_nb_alternatives_by_depth[nested_level];
+        max_nb_alternatives = std::max(max_nb_alternatives, nb_alternatives);
+    }
     for (const Line& guess_line : guess_list_of_all_alternatives)
     {
         // Allocate a new work grid. Use the shallow copy.
@@ -784,9 +790,7 @@ int Constraint::theoretical_nb_alternatives(unsigned int line_size, GridStats * 
     if (line_size < min_line_size)  { throw std::logic_error("Constraint::theoretical_nb_alternatives: line_size < min_line_size"); }
     unsigned int nb_zeros = line_size - min_line_size;
 
-    unsigned int nb_alternatives = nb_alternatives_for_fixed_nb_of_partitions(nb_zeros, static_cast<unsigned int>(sets_of_ones.size()) + 1);
-    if (stats != nullptr && nb_alternatives > stats->max_theoretical_nb_alternatives) {  stats->max_theoretical_nb_alternatives = nb_alternatives; }
-
+    const unsigned int nb_alternatives = nb_alternatives_for_fixed_nb_of_partitions(nb_zeros, static_cast<unsigned int>(sets_of_ones.size()) + 1);
     return nb_alternatives;
 }
 
@@ -930,13 +934,18 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input)
 
 std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
 {
-    ostream << "  Max nested level: " << stats.max_nested_level << std::endl;
+    ostream << "  Max branching depth: " << stats.max_nested_level << std::endl;
     if (stats.max_nested_level > 0u)
     {
         ostream << "    > The solving of the grid required an hypothesis on " << stats.guess_total_calls << " row(s) or column(s)." << std::endl;
-        ostream << "    > Max/total nb of alternatives being tested: " << stats.guess_max_alternatives << "/" << stats.guess_total_alternatives << std::endl;
+        ostream << "    > Total nunmber of alternatives being tested: " << stats.guess_total_alternatives << std::endl;
+        ostream << "    > Max nunmber of alternatives by depth:";
+        for (const auto& max_alternatives : stats.guess_max_nb_alternatives_by_depth)
+        {
+            ostream << " " << max_alternatives;
+        }
+        ostream << std::endl;
     }
-    ostream << "  Max theoretical nb of alternatives on a line: " << stats.max_theoretical_nb_alternatives << std::endl;
     ostream << "  " << stats.nb_full_grid_pass_calls << " calls to full_grid_pass()." << std::endl;
     ostream << "  " << stats.nb_single_line_pass_calls << " calls to single_line_pass()." << std::endl;
     ostream << "  " << stats.nb_reduce_line_calls << " calls to reduce_line(). Max list size/total nb of lines reduced: " << stats.max_reduce_list_size << "/" << stats.total_lines_reduced << std::endl;
