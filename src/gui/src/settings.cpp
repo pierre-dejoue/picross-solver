@@ -20,6 +20,10 @@ namespace
         result.size_ratio.min = 0.001f;
         result.size_ratio.max = 1.f;
 
+        result.show_branching.default = true;
+        result.show_branching.min = false;
+        result.show_branching.max = true;
+
         return result;
     }
 }  // Anonymous namespace
@@ -43,6 +47,7 @@ const Settings::Tile& Settings::read_tile_settings()
         tile_settings->size_enum = read_tile_settings_limits().size_enum.default;
         tile_settings->rounding_ratio = read_tile_settings_limits().rounding_ratio.default;
         tile_settings->size_ratio = read_tile_settings_limits().size_ratio.default;
+        tile_settings->show_branching = read_tile_settings_limits().show_branching.default;
     }
     assert(tile_settings);
     return *tile_settings;

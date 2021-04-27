@@ -42,6 +42,8 @@ void SettingsWindow::visit(bool& canBeErased)
 
         ImGui::SliderFloat("Size ratio", &tile_settings->size_ratio, limits.size_ratio.min, limits.size_ratio.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 
+        ImGui::Checkbox("Show branching", &tile_settings->show_branching);
+
         ImGui::Unindent();
     }
 

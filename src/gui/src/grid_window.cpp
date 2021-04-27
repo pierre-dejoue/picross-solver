@@ -12,9 +12,39 @@ namespace
     constexpr ImU32 ColorGridBack = IM_COL32(255, 255, 255, 255);
     constexpr ImU32 ColorGridOutline = IM_COL32(224, 224, 224, 255);
 
+    // Default tile colors (branching depth = 0)
     constexpr ImU32 ColorTileBorder = IM_COL32(20, 90, 116, 255);
     constexpr ImU32 ColorTileFilled = IM_COL32(91, 94, 137, 255);
-    constexpr ImU32 ColorTileEmpty = IM_COL32(216, 216, 216, 255);
+    constexpr ImU32 ColorTileEmpty = IM_COL32(216, 216, 224, 255);
+
+    // Branching colors
+    constexpr unsigned int DepthColors = 3;
+
+    constexpr ImU32 ColorTileDepth1Border = IM_COL32(116, 20, 90, 255);
+    constexpr ImU32 ColorTileDepth1Filled = IM_COL32(137, 91, 94, 255);
+    constexpr ImU32 ColorTileDepth1Empty = IM_COL32(224, 216, 216, 255);
+
+    constexpr ImU32 ColorTileDepth2Border = IM_COL32(90, 116, 20, 255);
+    constexpr ImU32 ColorTileDepth2Filled = IM_COL32(94, 137, 91, 255);
+    constexpr ImU32 ColorTileDepth2Empty = IM_COL32(216, 224, 216, 255);
+
+    const ImU32& get_color_tile_border(unsigned int depth = 0)
+    {
+        static const ImU32 Colors[3] = { ColorTileBorder, ColorTileDepth1Border, ColorTileDepth2Border };
+        return Colors[depth % DepthColors];
+    }
+
+    const ImU32& get_color_tile_filled(unsigned int depth = 0)
+    {
+        static const ImU32 Colors[3] = { ColorTileFilled, ColorTileDepth1Filled, ColorTileDepth2Filled };
+        return Colors[depth % DepthColors];
+    }
+
+    const ImU32& get_color_tile_empty(unsigned int depth = 0)
+    {
+        static const ImU32 Colors[3] = { ColorTileEmpty, ColorTileDepth1Empty, ColorTileDepth2Empty };
+        return Colors[depth % DepthColors];
+    }
 
     void draw_background_grid(ImDrawList* draw_list, ImVec2 tl_corner, size_t tile_size, size_t width, size_t height, bool outline = false)
     {
@@ -35,7 +65,7 @@ namespace
         }
     }
 
-    void draw_tile(ImDrawList* draw_list, ImVec2 tl_corner, size_t tile_size, size_t i, size_t j, ImU32 fill_color, float size_ratio = 1.f, float rounding_ratio = 0.f)
+    void draw_tile(ImDrawList* draw_list, ImVec2 tl_corner, size_t tile_size, size_t i, size_t j, bool filled, unsigned int depth = 0, float size_ratio = 1.f, float rounding_ratio = 0.f)
     {
         assert(0.f < size_ratio && size_ratio <= 1.f);
         assert(0.f <= rounding_ratio && rounding_ratio <= 1.f);
@@ -47,8 +77,8 @@ namespace
         const ImVec2 br_tile_corner = ImVec2(
             tl_corner.x + static_cast<float>((i+1) * tile_size) - padding,
             tl_corner.y + static_cast<float>((j+1) * tile_size) - padding);
-        draw_list->AddRectFilled(tl_tile_corner, br_tile_corner, fill_color, rounding);
-        draw_list->AddRect(tl_tile_corner, br_tile_corner, ColorTileBorder, rounding);
+        draw_list->AddRectFilled(tl_tile_corner, br_tile_corner, filled ? get_color_tile_filled(depth) : get_color_tile_empty(depth), rounding);
+        draw_list->AddRect(tl_tile_corner, br_tile_corner, get_color_tile_border(depth), rounding);
     }
 } // Anonymous namespace
 
@@ -203,10 +233,12 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
                     for (size_t j = 0u; j < height; ++j)
                     {
                         const auto tile = solution.get(i, j);
+                        const auto depth = tile_settings.show_branching && solver_thread_active && idx + 1 == solutions.size()
+                            ? solution.get_depth(i, j)
+                            : 0;
                         if (tile == picross::Tile::UNKNOWN)
                             continue;
-                        const auto fill_color = tile == picross::Tile::ONE ? ColorTileFilled : ColorTileEmpty;
-                        draw_tile(draw_list, grid_tl_corner, tile_size, i, j, fill_color, tile_settings.size_ratio, tile_settings.rounding_ratio);
+                        draw_tile(draw_list, grid_tl_corner, tile_size, i, j, tile == picross::Tile::ONE, depth, tile_settings.size_ratio, tile_settings.rounding_ratio);
                     }
 
                 ImGui::EndTabItem();

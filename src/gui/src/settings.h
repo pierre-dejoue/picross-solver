@@ -19,12 +19,14 @@ public:
         Limits<int> size_enum;
         Limits<float> rounding_ratio;
         Limits<float> size_ratio;
+        Limits<bool> show_branching;
     };
     struct Tile
     {
         int size_enum;
         float rounding_ratio;
         float size_ratio;
+        bool show_branching;
     };
 public:
     Settings();
