@@ -11,7 +11,6 @@
 #include <picross/picross.h>
 
 
-#include <list>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -41,7 +40,7 @@ namespace Tile
  * Line related functions
  */
 bool is_all_one_color(const Line& line, Tile::Type color);
-void add_and_filter_lines(std::list<Line>& lines, const Line& known_tiles, GridStats* stats);
+void add_and_filter_lines(std::vector<Line>& lines, const Line& known_tiles, GridStats* stats);
 std::string str_line(const Line& line);
 std::string str_line_type(Line::Type type);
 Line line_delta(const Line& line1, const Line& line2);
@@ -60,7 +59,7 @@ public:
     unsigned int max_segment_size() const;                      // Max segment size
     unsigned int get_min_line_size() const { return min_line_size; }
     int theoretical_nb_alternatives(unsigned int line_size, GridStats * stats) const;
-    std::list<Line> build_all_possible_lines(const Line& known_tiles, GridStats * stats) const;
+    std::vector<Line> build_all_possible_lines(const Line& known_tiles, GridStats * stats) const;
     std::pair<Line, unsigned int> reduce_and_count_alternatives(const Line& filter_line, GridStats * stats) const;
     void print(std::ostream& ostream) const;
 private:
@@ -107,7 +106,7 @@ private:
     std::vector<bool>                           line_completed[2];
     std::vector<bool>                           line_to_be_reduced[2];
     std::vector<unsigned int>                   nb_alternatives[2];
-    std::list<Line>                             guess_list_of_all_alternatives;
+    std::vector<Line>                           guess_list_of_all_alternatives;
     unsigned int                                nested_level;    // nested_level is incremented by function Grid::guess()
 };
 

@@ -14,7 +14,6 @@
 #include <exception>
 #include <functional>
 #include <iomanip>
-#include <list>
 #include <memory>
 #include <numeric>
 #include <ostream>
@@ -247,7 +246,7 @@ Line line_delta(const Line& line1, const Line& line2)
 /* Add (with Tile::add) a filter line to each line in a list. If the addition fails,
  * the offending line is discarded from the list
  */
-void add_and_filter_lines(std::list<Line>& lines, const Line& known_tiles, GridStats* stats)
+void add_and_filter_lines(std::vector<Line>& lines, const Line& known_tiles, GridStats* stats)
 {
     // Stats
     if (stats != nullptr)
@@ -258,11 +257,11 @@ void add_and_filter_lines(std::list<Line>& lines, const Line& known_tiles, GridS
          if (list_size > stats->max_add_and_filter_list_size) { stats->max_add_and_filter_list_size = list_size; }
     }
 
-    std::list<Line>::iterator it = lines.begin();
+    auto it = lines.begin();
     while(it != lines.end())
     {
-        const bool match = it->add(known_tiles);
-        it = match ? std::next(it) : lines.erase(it);
+        const bool compatible = it->add(known_tiles);
+        it = compatible ? std::next(it) : lines.erase(it);
     }
 }
 
@@ -808,7 +807,7 @@ int Constraint::theoretical_nb_alternatives(unsigned int line_size, GridStats * 
 }
 
 
-std::list<Line> Constraint::build_all_possible_lines(const Line& known_tiles, GridStats* stats) const
+std::vector<Line> Constraint::build_all_possible_lines(const Line& known_tiles, GridStats* stats) const
 {
     if (known_tiles.get_type() != type) { throw std::invalid_argument("Constraint::build_all_possible_lines: Wrong filter line type"); }
     const size_t index = known_tiles.get_index();
@@ -817,16 +816,16 @@ std::list<Line> Constraint::build_all_possible_lines(const Line& known_tiles, Gr
     if (known_tiles.size() < min_line_size) { throw std::logic_error("Constraint::build_all_possible_lines: line_size < min_line_size"); }
     unsigned int nb_zeros = known_tiles.size() - min_line_size;
 
-    std::list<Line> return_list;
+    std::vector<Line> result;
     std::vector<Tile::Type> new_tile_vect(known_tiles.size(), Tile::ZERO);
 
     if (segs_of_ones.size() == 0)
     {
         // Return a list with only one all-zero line
-        return_list.emplace_back(type, index, new_tile_vect);
+        result.emplace_back(type, index, new_tile_vect);
 
         // Filter the return_list against input line
-        add_and_filter_lines(return_list, known_tiles, stats);
+        add_and_filter_lines(result, known_tiles, stats);
     }
     else if (segs_of_ones.size() == 1)
     {
@@ -837,11 +836,11 @@ std::list<Line> Constraint::build_all_possible_lines(const Line& known_tiles, Gr
             for (unsigned int idx = 0u; idx < n; idx++)                                      { new_tile_vect.at(idx)   = Tile::ZERO; }
             for (unsigned int idx = 0u; idx < segs_of_ones[0]; idx++)                        { new_tile_vect.at(n+idx) = Tile::ONE;  }
             for (unsigned int idx = n + segs_of_ones[0]; idx < known_tiles.size(); idx++)    { new_tile_vect.at(idx) = Tile::ZERO; }
-            return_list.emplace_back(type, index, new_tile_vect);
+            result.emplace_back(type, index, new_tile_vect);
         }
 
         // Filter the return_list against known_tiles
-        if (!is_all_one_color(known_tiles, Tile::UNKNOWN)) { add_and_filter_lines(return_list, known_tiles, stats); }
+        if (!is_all_one_color(known_tiles, Tile::UNKNOWN)) { add_and_filter_lines(result, known_tiles, stats); }
     }
     else
     {
@@ -868,13 +867,13 @@ std::list<Line> Constraint::build_all_possible_lines(const Line& known_tiles, Gr
                 std::vector<Tile::Type> end_filter_vect(known_tiles.get_tiles().cbegin() + begin_size, known_tiles.get_tiles().cend());
                 Line end_filter(type, index, end_filter_vect);
 
-                std::list<Line> recursive_list = recursive_constraint.build_all_possible_lines(end_filter, stats);
+                std::vector<Line> recursive_list = recursive_constraint.build_all_possible_lines(end_filter, stats);
 
                 // Finally, construct the return_list based on the contents of the recursive_list.
                 for (const Line& line : recursive_list)
                 {
                     std::copy(line.get_tiles().cbegin(), line.get_tiles().cend(), new_tile_vect.begin() + begin_size);
-                    return_list.emplace_back(type, index, new_tile_vect);
+                    result.emplace_back(type, index, new_tile_vect);
                 }
             }
             else
@@ -885,7 +884,7 @@ std::list<Line> Constraint::build_all_possible_lines(const Line& known_tiles, Gr
         // Filtering is already done, no need to call add_and_filter_lines()
     }
 
-    return return_list;
+    return result;
 }
 
 
