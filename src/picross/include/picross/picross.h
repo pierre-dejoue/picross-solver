@@ -69,7 +69,7 @@ struct GridStats
     unsigned int guess_total_calls = 0u;
     unsigned int guess_total_alternatives = 0u;
     std::vector<unsigned int> guess_max_nb_alternatives_by_depth;
-    unsigned int nb_reduce_line_calls = 0u;
+    unsigned int nb_reduce_list_of_lines_calls = 0u;
     unsigned int max_reduce_list_size = 0u;
     unsigned int total_lines_reduced = 0u;
     unsigned int nb_add_and_filter_calls = 0u;

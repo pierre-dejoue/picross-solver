@@ -40,8 +40,8 @@ namespace Tile
  * Line related functions
  */
 bool is_all_one_color(const Line& line, Tile::Type color);
-void add_and_filter_lines(std::list<Line>& lines, const Line& filter_line, GridStats* stats);
-Line reduce_line(const std::list<Line>& all_alternatives, GridStats* stats);
+void add_and_filter_lines(std::list<Line>& lines, const Line& known_tiles, GridStats* stats);
+Line reduce_list_of_lines(const std::list<Line>& all_alternatives, GridStats* stats);
 std::string str_line(const Line& line);
 std::string str_line_type(Line::Type type);
 Line line_delta(const Line& line1, const Line& line2);
@@ -56,15 +56,15 @@ public:
     Constraint(Line::Type type, const InputGrid::Constraint& vect);
 public:
     unsigned int nb_filled_tiles() const;                       // Total number of filled tiles
-    size_t nb_blocks() const { return sets_of_ones.size(); }
-    unsigned int max_block_size() const;                        // Max size of a group of contiguous filled tiles
+    size_t nb_segments() const { return segs_of_ones.size(); }  // Number of segments of contiguous filled tiles
+    unsigned int max_segment_size() const;                      // Max segment size
     unsigned int get_min_line_size() const { return min_line_size; }
     int theoretical_nb_alternatives(unsigned int line_size, GridStats * stats) const;
-    std::list<Line> build_all_possible_lines(const Line& filter_line, GridStats * stats) const;
+    std::list<Line> build_all_possible_lines(const Line& known_tiles, GridStats * stats) const;
     void print(std::ostream& ostream) const;
 private:
     Line::Type type;                                            // Row or column
-    InputGrid::Constraint sets_of_ones;                         // Size of the continuing blocks of filled tiles
+    InputGrid::Constraint segs_of_ones;                         // Size of the contiguous blocks of filled tiles
     unsigned int min_line_size;
 };
 
