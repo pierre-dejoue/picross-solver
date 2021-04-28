@@ -109,6 +109,7 @@ GridWindow::GridWindow(picross::InputGrid&& grid, const std::string& source)
     , line_event()
     , line_cv()
     , line_mutex()
+    , max_nb_solutions(0u)
 {
     title = this->grid.name + " (" + source + ")";
 }
@@ -126,6 +127,9 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     const size_t width = grid.cols.size();
     const size_t height = grid.rows.size();
     const Settings::Tile& tile_settings = settings.read_tile_settings();
+    const Settings::Solver& solver_settings = settings.read_solver_settings();
+
+    max_nb_solutions = solver_settings.limit_solutions ? static_cast<unsigned int>(solver_settings.max_nb_solutions) : 0u;
 
     static const std::vector<size_t> TileSizes = { 12, 18, 24 };
     const size_t tile_size = TileSizes.at(static_cast<size_t>(tile_settings.size_enum));
@@ -339,7 +343,7 @@ void GridWindow::solve_picross_grid()
     {
         allocate_new_solution = true;   // Flag to allocate a new solution on the next observer callback
         solver->set_observer(std::reference_wrapper<GridObserver>(*this));
-        std::vector<picross::OutputGrid> local_solutions = solver->solve(grid);
+        std::vector<picross::OutputGrid> local_solutions = solver->solve(grid, max_nb_solutions);
         if (local_solutions.empty())
         {
             std::lock_guard<std::mutex> lock(text_buffer_mutex);

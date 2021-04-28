@@ -55,6 +55,13 @@ struct InputGrid
 };
 
 
+/*
+ * Sanity check of the constraints of the input grid:
+ *
+ * - Non-zero height and width
+ * - Same number of filled tiles on the rows and columns
+ * - The height and width are sufficient to cope with the individual constraints
+ */
 std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input);
 
 
@@ -65,6 +72,8 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input);
  */
 struct GridStats
 {
+    unsigned int nb_solutions = 0u;
+    unsigned int max_nb_solutions = 0u;
     unsigned int max_nested_level = 0u;
     unsigned int guess_total_calls = 0u;
     unsigned int guess_total_alternatives = 0u;
@@ -169,8 +178,11 @@ public:
     //
     // Main method called to solve a grid
     //
+    // By default the solver will look for all the solutions of the input grid.
+    // The otional argument max_nb_solutions can be used to limit the number of solutions discovered by the algorithm.
+    //
     using Solutions = std::vector<OutputGrid>;
-    virtual Solutions solve(const InputGrid& grid_input) const = 0;
+    virtual Solutions solve(const InputGrid& grid_input, unsigned int max_nb_solutions = 0u) const = 0;
 
     //
     // Set an optional observer on the solver
@@ -216,6 +228,12 @@ public:
 
 
 std::ostream& operator<<(std::ostream& ostream, Solver::Event event);
+
+
+/*
+ * Validation method: returns true iff the input grid is valid and has a unique solution.
+ */
+std::pair<bool, std::string> validate_input_grid(const Solver& solver, const InputGrid& grid_input);
 
 
 /*

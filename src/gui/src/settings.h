@@ -28,6 +28,17 @@ public:
         float size_ratio;
         bool show_branching;
     };
+    struct SolverLimits
+    {
+        Limits<bool> limit_solutions;
+        Limits<int> max_nb_solutions;
+    };
+    struct Solver
+    {
+        bool limit_solutions;
+        int max_nb_solutions;
+    };
+
 public:
     Settings();
 
@@ -36,6 +47,11 @@ public:
     const Tile& read_tile_settings();
     static const TileLimits& read_tile_settings_limits();
 
+    // Solver settings
+    Solver* get_solver_settings();
+    const Solver& read_solver_settings();
+    static const SolverLimits& read_solver_settings_limits();
+
     void visit_windows(bool& canBeErased);
 
 private:
@@ -43,5 +59,6 @@ private:
 
 private:
     std::unique_ptr<Tile> tile_settings;
+    std::unique_ptr<Solver> solver_settings;
     std::unique_ptr<SettingsWindow> settings_window;
 };

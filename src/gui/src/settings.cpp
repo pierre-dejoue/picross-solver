@@ -1,6 +1,7 @@
 #include "settings.h"
 
 #include <cassert>
+#include <limits>
 
 namespace
 {
@@ -26,10 +27,26 @@ namespace
 
         return result;
     }
+
+    Settings::SolverLimits solver_settings_limits()
+    {
+        Settings::SolverLimits result;
+
+        result.limit_solutions.default = false;
+        result.limit_solutions.min = false;
+        result.limit_solutions.max = true;
+
+        result.max_nb_solutions.default = 1;
+        result.max_nb_solutions.min = 1;
+        result.max_nb_solutions.max = std::numeric_limits<int>::max();
+
+        return result;
+    }
 }  // Anonymous namespace
 
 Settings::Settings()
     : tile_settings()
+    , solver_settings()
 {
 }
 
@@ -59,10 +76,34 @@ const Settings::TileLimits& Settings::read_tile_settings_limits()
     return result;
 }
 
+Settings::Solver* Settings::get_solver_settings()
+{
+    return solver_settings.get();
+}
+
+const Settings::Solver& Settings::read_solver_settings()
+{
+    // Create if not existing
+    if (!solver_settings)
+    {
+        solver_settings = std::make_unique<Solver>();
+        solver_settings->limit_solutions = read_solver_settings_limits().limit_solutions.default;
+        solver_settings->max_nb_solutions = read_solver_settings_limits().max_nb_solutions.default;
+    }
+    assert(solver_settings);
+    return *solver_settings;
+}
+
+const Settings::SolverLimits& Settings::read_solver_settings_limits()
+{
+    static Settings::SolverLimits result = solver_settings_limits();
+    return result;
+}
+
 void Settings::visit_windows(bool& canBeErased)
 {
     canBeErased = false;
-    if(tile_settings || settings_window)
+    if (tile_settings || solver_settings || settings_window)
     {
         auto& settings_window_ref = get_settings_window();
         bool windowCanBeErased = false;

@@ -47,5 +47,25 @@ void SettingsWindow::visit(bool& canBeErased)
         ImGui::Unindent();
     }
 
+    Settings::Solver* solver_settings = settings.get_solver_settings();
+    if (solver_settings)
+    {
+        const auto& limits = settings.read_solver_settings_limits();
+
+        ImVec2 spacing = { 10.f, 10.f };
+        ImGui::Dummy(spacing);
+        ImGui::BulletText("Solver settings");
+        ImGui::Indent();
+
+        ImGui::Checkbox("Max number of solutions", &solver_settings->limit_solutions);
+        if (solver_settings->limit_solutions)
+        {
+            ImGui::SameLine();
+            ImGui::InputInt("", &solver_settings->max_nb_solutions);
+        }
+
+        ImGui::Unindent();
+    }
+
     ImGui::End();
 }

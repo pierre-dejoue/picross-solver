@@ -36,14 +36,17 @@ int main(int argc, char *argv[])
     argagg::parser argparser
     {{
       {
-        "help", {"-h", "--help"},
-        "Print usage note and exit", 0},
+        "help", { "-h", "--help" },
+        "Print usage note and exit", 0 },
       {
-        "no-timing", {"--no-timing"},
-        "Do not print out timing measurements", 0},
+        "no-timing", { "--no-timing" },
+        "Do not print out timing measurements", 0 },
       {
-        "verbose", {"-v", "--verbose"},
-        "Print additional debug information", 0}
+        "verbose", { "-v", "--verbose" },
+        "Print additional debug information", 0 },
+      {
+        "max-nb-solutions", { "--max-nb-solutions" },
+        "Limit the number of solutions returned per grid", 1 }
     }};
 
     std::ostringstream usage_note;
@@ -69,6 +72,8 @@ int main(int argc, char *argv[])
         std::cerr << usage_note.str();
         exit(0);
     }
+
+    const auto max_nb_solutions = args["max-nb-solutions"].as<unsigned int>(0u);
 
     // Positional arguments
     if (args.pos.size() != 1u)
@@ -132,7 +137,7 @@ int main(int argc, char *argv[])
                 std::vector<picross::OutputGrid> solutions;
                 {
                     DurationMeas<float, std::milli> meas_ms(time_ms);
-                    solutions = solver->solve(grid_input);
+                    solutions = solver->solve(grid_input, max_nb_solutions);
                 }
 
                 /* Display solutions */

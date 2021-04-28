@@ -89,14 +89,14 @@ public:
 private:
     WorkGrid(const WorkGrid& parent, unsigned int nested_level);
 public:
-    bool solve();
+    bool solve(unsigned int max_nb_solutions = 0u);
 private:
     bool all_lines_completed() const;
     bool set_line(const Line& line);
     bool single_line_pass(Line::Type type, unsigned int index);
     bool full_grid_pass();
     bool set_w_reduce_flag(size_t x, size_t y, Tile::Type t);
-    bool guess() const;
+    bool guess(unsigned int max_nb_solutions) const;
     bool valid_solution() const;
     void save_solution() const;
     unsigned int nb_alternatives_for_fixed_nb_of_partitions(unsigned int nb_cells, unsigned int nb_partitions);
@@ -121,7 +121,7 @@ private:
 class RefSolver : public Solver
 {
 public:
-    Solver::Solutions solve(const InputGrid& grid_input) const override;
+    Solver::Solutions solve(const InputGrid& grid_input, unsigned int max_nb_solutions) const override;
     void set_observer(Observer observer) override;
     void set_stats(GridStats& stats) override;
 private:

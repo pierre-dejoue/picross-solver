@@ -628,7 +628,7 @@ bool WorkGrid::all_lines_completed() const
 }
 
 
-bool WorkGrid::solve()
+bool WorkGrid::solve(unsigned int max_nb_solutions)
 {
     try
     {
@@ -687,7 +687,7 @@ bool WorkGrid::solve()
             assert(guess_list_of_all_alternatives.size() == min_alt);
 
             // Guess!
-            return guess();
+            return guess(max_nb_solutions);
         }
     }
     catch(PicrossGridCannotBeSolved&)
@@ -698,7 +698,7 @@ bool WorkGrid::solve()
 }
 
 
-bool WorkGrid::guess() const
+bool WorkGrid::guess(unsigned int max_nb_solutions) const
 {
     assert(guess_list_of_all_alternatives.size() > 0u);
     /* This function will test a range of alternatives for one particular line of the grid, each time
@@ -733,8 +733,11 @@ bool WorkGrid::guess() const
         new_grid.line_to_be_reduced[guess_line_type][guess_line_index] = false;
         new_grid.nb_alternatives[guess_line_type][guess_line_index] = 0u;
 
+        if (max_nb_solutions > 0u && saved_solutions->size() >= max_nb_solutions)
+            break;
+
         // Solve the new grid!
-        flag_solution_found |= new_grid.solve();
+        flag_solution_found |= new_grid.solve(max_nb_solutions);
     }
     return flag_solution_found;
 }
@@ -753,6 +756,7 @@ bool WorkGrid::valid_solution() const
 void WorkGrid::save_solution() const
 {
     assert(valid_solution());
+    if (stats != nullptr) { stats->nb_solutions++; }
 
     // Shallow copy of only the grid data
     saved_solutions->emplace_back(static_cast<const OutputGrid&>(*this));
@@ -1114,7 +1118,7 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input)
     if (nb_tiles_on_rows != nb_tiles_on_cols)
     {
         std::ostringstream oss;
-        oss << "Number of filled tiles on rows (" << nb_tiles_on_rows << ") and columns (" <<  nb_tiles_on_cols << ") do not match." << std::endl;
+        oss << "Number of filled tiles on rows (" << nb_tiles_on_rows << ") and columns (" <<  nb_tiles_on_cols << ") do not match" << std::endl;
         return std::make_pair(false, oss.str());
     }
     return std::make_pair(true, std::string());
@@ -1123,6 +1127,12 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input)
 
 std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
 {
+    ostream << "  Number of solutions found: " << stats.nb_solutions;
+    if (stats.max_nb_solutions > 0)
+    {
+        ostream << "/" << stats.max_nb_solutions;
+    }
+    ostream << std::endl;
     ostream << "  Max branching depth: " << stats.max_nested_level << std::endl;
     if (stats.max_nested_level > 0u)
     {
@@ -1144,7 +1154,7 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
 }
 
 
-Solver::Solutions RefSolver::solve(const InputGrid& grid_input) const
+Solver::Solutions RefSolver::solve(const InputGrid& grid_input, unsigned int max_nb_solutions) const
 {
     Solutions solutions;
 
@@ -1152,6 +1162,8 @@ Solver::Solutions RefSolver::solve(const InputGrid& grid_input) const
     {
         /* Reset stats */
         std::swap(*stats, GridStats());
+
+        stats->max_nb_solutions = max_nb_solutions;
     }
 
     Observer observer_wrapper;
@@ -1167,7 +1179,7 @@ Solver::Solutions RefSolver::solve(const InputGrid& grid_input) const
         };
     }
 
-    const bool success = WorkGrid(grid_input, &solutions, stats, std::move(observer_wrapper)).solve();
+    const bool success = WorkGrid(grid_input, &solutions, stats, std::move(observer_wrapper)).solve(max_nb_solutions);
 
     assert(success == (solutions.size() > 0u));
     return solutions;
@@ -1203,6 +1215,32 @@ std::ostream& operator<<(std::ostream& ostream, Solver::Event event)
         throw std::invalid_argument("Unknown Solver::Event");
     }
     return ostream;
+}
+
+
+std::pair<bool, std::string> validate_input_grid(const Solver& solver, const InputGrid& grid_input)
+{
+    bool check;
+    std::string check_msg;
+    std::tie(check, check_msg) = picross::check_grid_input(grid_input);
+
+    if (!check)
+    {
+        return std::make_pair(false, check_msg);
+    }
+
+    const auto solutions = solver.solve(grid_input, 2);
+
+    if (solutions.empty())
+    {
+        return std::make_pair(false, "No solution could be found");
+    }
+    else if (solutions.size() > 1)
+    {
+        return std::make_pair(false, "The grid does not have a unique solution");
+    }
+
+    return std::make_pair(true, std::string());
 }
 
 

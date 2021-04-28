@@ -53,4 +53,5 @@ private:
     std::unique_ptr<LineEvent> line_event;
     std::condition_variable line_cv;
     std::mutex line_mutex;
+    unsigned int max_nb_solutions;
 };
