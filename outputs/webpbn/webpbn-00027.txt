@@ -26,11 +26,12 @@ Grid 27x23:
   #   #        #   #  ##   ##
   #####        #####    ###  
 
+  Number of solutions found: 1
   Max branching depth: 2
     > The solving of the grid required an hypothesis on 2 row(s) or column(s).
     > Total nunmber of alternatives being tested: 4
     > Max nunmber of alternatives by depth: 2 2
-  17 calls to full_grid_pass().
+  16 calls to full_grid_pass().
   213 calls to single_line_pass().
   3 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 8/23
   136 calls to observer callback.

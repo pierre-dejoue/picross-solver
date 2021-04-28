@@ -5777,11 +5777,12 @@ Grid 6x6:
    #  # 
   # #   
 
+  Number of solutions found: 722
   Max branching depth: 8
     > The solving of the grid required an hypothesis on 658 row(s) or column(s).
     > Total nunmber of alternatives being tested: 1451
     > Max nunmber of alternatives by depth: 10 4 3 4 3 3 2 2
-  3275 calls to full_grid_pass().
+  2661 calls to full_grid_pass().
   6933 calls to single_line_pass().
   683 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 4/2070
   7515 calls to observer callback.

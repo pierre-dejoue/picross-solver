@@ -13,8 +13,9 @@ Grid 10x10:
   #        #
   ##########
 
+  Number of solutions found: 1
   Max branching depth: 0
-  4 calls to full_grid_pass().
+  3 calls to full_grid_pass().
   40 calls to single_line_pass().
   0 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 0/0
   27 calls to observer callback.
@@ -46,8 +47,9 @@ Grid 20x20:
      #  ############# 
       ### ########### 
 
+  Number of solutions found: 1
   Max branching depth: 0
-  7 calls to full_grid_pass().
+  6 calls to full_grid_pass().
   156 calls to single_line_pass().
   0 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 0/0
   118 calls to observer callback.
@@ -79,6 +81,7 @@ Grid 20x20:
       #######    #### 
        ### ##    #    
 
+  Number of solutions found: 1
   Max branching depth: 0
   19 calls to full_grid_pass().
   294 calls to single_line_pass().
@@ -112,6 +115,7 @@ Grid 22x20:
            ######       
                         
 
+  Number of solutions found: 1
   Max branching depth: 0
   21 calls to full_grid_pass().
   276 calls to single_line_pass().
@@ -143,6 +147,7 @@ Grid 8x8:
   ##  ##  
   ##  ##  
 
+  Number of solutions found: 2
   Max branching depth: 1
     > The solving of the grid required an hypothesis on 1 row(s) or column(s).
     > Total nunmber of alternatives being tested: 10
@@ -205,6 +210,7 @@ Grid 6x6:
   ##    
   ##    
 
+  Number of solutions found: 6
   Max branching depth: 2
     > The solving of the grid required an hypothesis on 4 row(s) or column(s).
     > Total nunmber of alternatives being tested: 13
@@ -263,11 +269,12 @@ Grid 20x20:
   #        #          
   ##########          
 
+  Number of solutions found: 2
   Max branching depth: 1
     > The solving of the grid required an hypothesis on 1 row(s) or column(s).
     > Total nunmber of alternatives being tested: 10
     > Max nunmber of alternatives by depth: 10
-  33 calls to full_grid_pass().
+  31 calls to full_grid_pass().
   465 calls to single_line_pass().
   1 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 16/16
   243 calls to observer callback.
@@ -301,11 +308,12 @@ Grid 10x10:
   ###       
   ###       
 
+  Number of solutions found: 2
   Max branching depth: 1
     > The solving of the grid required an hypothesis on 1 row(s) or column(s).
     > Total nunmber of alternatives being tested: 6
     > Max nunmber of alternatives by depth: 6
-  19 calls to full_grid_pass().
+  17 calls to full_grid_pass().
   178 calls to single_line_pass().
   0 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 0/0
   112 calls to observer callback.
@@ -337,8 +345,9 @@ Grid 25x20:
    #      #                
    #       #               
 
+  Number of solutions found: 1
   Max branching depth: 0
-  16 calls to full_grid_pass().
+  15 calls to full_grid_pass().
   249 calls to single_line_pass().
   0 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 0/0
   142 calls to observer callback.
@@ -370,8 +379,9 @@ Grid 25x20:
     #             #   #### 
      #            # #      
 
+  Number of solutions found: 1
   Max branching depth: 0
-  9 calls to full_grid_pass().
+  8 calls to full_grid_pass().
   226 calls to single_line_pass().
   0 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 0/0
   150 calls to observer callback.

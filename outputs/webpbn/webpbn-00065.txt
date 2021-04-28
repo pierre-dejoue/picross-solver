@@ -43,6 +43,7 @@ Grid 34x40:
             ####      ####          
                 ######              
 
+  Number of solutions found: 1
   Max branching depth: 6
     > The solving of the grid required an hypothesis on 19 row(s) or column(s).
     > Total nunmber of alternatives being tested: 177

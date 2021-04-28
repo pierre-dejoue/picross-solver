@@ -43,6 +43,7 @@ Grid 25x40:
   #####    #  ####    #  ##
   ######  #########  ######
 
+  Number of solutions found: 1
   Max branching depth: 0
   12 calls to full_grid_pass().
   249 calls to single_line_pass().

@@ -403201,11 +403201,12 @@ Grid 8x8:
    #      
   #       
 
+  Number of solutions found: 40320
   Max branching depth: 7
     > The solving of the grid required an hypothesis on 28961 row(s) or column(s).
     > Total nunmber of alternatives being tested: 69280
     > Max nunmber of alternatives by depth: 8 7 6 5 4 3 2
-  138561 calls to full_grid_pass().
+  98241 calls to full_grid_pass().
   288480 calls to single_line_pass().
   28960 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 8/231680
   288480 calls to observer callback.
