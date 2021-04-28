@@ -20,8 +20,7 @@ Grid 10x11:
     > Max nunmber of alternatives by depth: 7 4
   17 calls to full_grid_pass().
   222 calls to single_line_pass().
-  192 calls to reduce_line(). Max list size/total nb of lines reduced: 21/921
-  256 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 11/2073
+  1 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 8/8
   110 calls to observer callback.
 
 

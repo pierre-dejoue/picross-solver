@@ -26,8 +26,7 @@ Grid 22x20:
   Max branching depth: 0
   21 calls to full_grid_pass().
   276 calls to single_line_pass().
-  257 calls to reduce_line(). Max list size/total nb of lines reduced: 1912/19968
-  3584 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 19/16235
+  0 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 0/0
   155 calls to observer callback.
 
 
@@ -65,8 +64,7 @@ Grid 10x10:
     > Max nunmber of alternatives by depth: 6
   19 calls to full_grid_pass().
   178 calls to single_line_pass().
-  154 calls to reduce_line(). Max list size/total nb of lines reduced: 29/869
-  184 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 10/1420
+  0 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 0/0
   112 calls to observer callback.
 
 
