@@ -617,8 +617,11 @@ bool WorkGrid::full_grid_pass()
 bool WorkGrid::all_lines_completed() const
 {
     const bool all_rows = std::all_of(line_completed[Line::ROW].cbegin(), line_completed[Line::ROW].cend(), [](bool b) { return b; });
-    const bool all_cols = std::all_of(line_completed[Line::COL].cbegin(), line_completed[Line::COL].cend(), [](bool b) { return b; }); ;
-    return all_rows || all_cols;
+    const bool all_cols = std::all_of(line_completed[Line::COL].cbegin(), line_completed[Line::COL].cend(), [](bool b) { return b; });
+
+    // The logical and is important here: in the case of an hypothesis is made on a row (resp. a column), it is marked as completed
+    // but the constraints on the columns (resp. the rows) may not be all OK.
+    return all_rows && all_cols;
 }
 
 
@@ -626,13 +629,18 @@ bool WorkGrid::solve()
 {
     try
     {
-        while(full_grid_pass())
+        bool grid_changed = false;
+        bool grid_completed = false;
+        do
         {
-            // While the reduce method is successful, use it to find the filled and empty tiles.
-        }
+            // While the reduce method is making progress, call it!
+            grid_changed = full_grid_pass();
+            grid_completed = all_lines_completed();
+
+        } while (!grid_completed && grid_changed);
 
         // Are we done?
-        if (all_lines_completed())
+        if (grid_completed)
         {
             if (observer)
             {
@@ -662,10 +670,10 @@ bool WorkGrid::solve()
 
             // Select one row or one column with the minimal number of alternatives.
             const Constraint* line_constraint = nullptr;
-            auto alternative_it = std::find_if (nb_alternatives[Line::ROW].cbegin(), nb_alternatives[Line::ROW].cend(), [min_alt](unsigned int alt) { return alt == min_alt; });
+            auto alternative_it = std::find_if(nb_alternatives[Line::ROW].cbegin(), nb_alternatives[Line::ROW].cend(), [min_alt](unsigned int alt) { return alt == min_alt; });
             if (alternative_it == nb_alternatives[Line::ROW].end())
             {
-                alternative_it = std::find_if (nb_alternatives[Line::COL].cbegin(), nb_alternatives[Line::COL].cend(), [min_alt](unsigned int alt) { return alt == min_alt; });
+                alternative_it = std::find_if(nb_alternatives[Line::COL].cbegin(), nb_alternatives[Line::COL].cend(), [min_alt](unsigned int alt) { return alt == min_alt; });
                 if (alternative_it == nb_alternatives[Line::COL].end())
                 {
                     // Again, this should not happen.
