@@ -170,12 +170,12 @@ public:
     // Main method called to solve a grid
     //
     using Solutions = std::vector<OutputGrid>;
-
-    virtual Solutions solve(const InputGrid& grid_input, GridStats* stats = nullptr) const = 0;
+    virtual Solutions solve(const InputGrid& grid_input) const = 0;
 
     //
-    // It is possible to set an observer on the solver. That object will be notified when certain
-    // events happen, allowing the user to follow the process step by step.
+    // Set an optional observer on the solver
+    //
+    // It will be notified of certain events, allowing the user to follow the solving process step by step.
     //
     // The observer is a function object with the following signature:
     //
@@ -203,8 +203,15 @@ public:
     //
     enum class Event { DELTA_LINE, BRANCHING, SOLVED_GRID };
     using Observer = std::function<void(Event,const Line*,unsigned int)>;
-
     virtual void set_observer(Observer observer) = 0;
+
+
+    //
+    // Set optional stats
+    //
+    // The stat object is reset at the beginning of each call to Solver::solve()
+    //
+    virtual void set_stats(GridStats& stats) = 0;
 };
 
 

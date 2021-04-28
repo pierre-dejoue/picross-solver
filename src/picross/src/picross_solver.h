@@ -121,10 +121,12 @@ private:
 class RefSolver : public Solver
 {
 public:
-    Solver::Solutions solve(const InputGrid& grid_input, GridStats* stats) const override;
+    Solver::Solutions solve(const InputGrid& grid_input) const override;
     void set_observer(Observer observer) override;
+    void set_stats(GridStats& stats) override;
 private:
     Observer observer;
+    GridStats* stats;
 };
 
 } // namespace picross

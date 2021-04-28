@@ -127,11 +127,12 @@ int main(int argc, char *argv[])
 
                 /* Solve the grid */
                 picross::GridStats stats;
+                solver->set_stats(stats);
                 std::chrono::duration<float, std::milli> time_ms;
                 std::vector<picross::OutputGrid> solutions;
                 {
                     DurationMeas<float, std::milli> meas_ms(time_ms);
-                    solutions = solver->solve(grid_input, &stats);
+                    solutions = solver->solve(grid_input);
                 }
 
                 /* Display solutions */

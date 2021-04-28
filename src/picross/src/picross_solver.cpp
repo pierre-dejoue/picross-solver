@@ -1144,7 +1144,7 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
 }
 
 
-Solver::Solutions RefSolver::solve(const InputGrid& grid_input, GridStats* stats) const
+Solver::Solutions RefSolver::solve(const InputGrid& grid_input) const
 {
     Solutions solutions;
 
@@ -1157,11 +1157,11 @@ Solver::Solutions RefSolver::solve(const InputGrid& grid_input, GridStats* stats
     Observer observer_wrapper;
     if (observer)
     {
-        observer_wrapper = [stats, this](Solver::Event event, const Line* delta, unsigned int depth)
+        observer_wrapper = [this](Solver::Event event, const Line* delta, unsigned int depth)
         {
-            if (stats != nullptr)
+            if (this->stats != nullptr)
             {
-                stats->nb_observer_callback_calls++;
+                this->stats->nb_observer_callback_calls++;
             }
             this->observer(event, delta, depth);
         };
@@ -1177,6 +1177,12 @@ Solver::Solutions RefSolver::solve(const InputGrid& grid_input, GridStats* stats
 void RefSolver::set_observer(Observer observer)
 {
     this->observer = std::move(observer);
+}
+
+
+void RefSolver::set_stats(GridStats& stats)
+{
+    this->stats = &stats;
 }
 
 
