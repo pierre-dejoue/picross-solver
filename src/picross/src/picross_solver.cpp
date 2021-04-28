@@ -267,28 +267,6 @@ void add_and_filter_lines(std::list<Line>& lines, const Line& known_tiles, GridS
 }
 
 
-/* Reduce a list of lines and return one line that comprises the information common to all */
-Line reduce_list_of_lines(const std::list<Line>& all_alternatives, GridStats * stats)
-{
-    // Stats
-    if (stats != nullptr)
-    {
-         const auto list_size = static_cast<unsigned int>(all_alternatives.size());
-         stats->nb_reduce_list_of_lines_calls++;
-         stats->total_lines_reduced += list_size;
-         if (list_size > stats->max_reduce_list_size) { stats->max_reduce_list_size = list_size; }
-    }
-
-    if (all_alternatives.empty()) { throw std::invalid_argument("Cannot reduce an empty list of lines"); }
-    Line new_line = all_alternatives.front();
-    for (std::list<Line>::const_iterator line = ++all_alternatives.begin(); line != all_alternatives.end(); line++)
-    {
-        new_line.reduce(*line);
-    }
-    return new_line;
-}
-
-
 bool is_all_one_color(const Line& line, Tile::Type color)
 {
     return std::all_of(line.get_tiles().cbegin(), line.get_tiles().cend(), [color](const Tile::Type t) { return t == color; });
@@ -899,7 +877,7 @@ std::list<Line> Constraint::build_all_possible_lines(const Line& known_tiles, Gr
                 // The beginning of the line does not match the known_tiles. Do nothing.
             }
         }
-        // Filtering is already done, no need to call add_and_filter_lines()..
+        // Filtering is already done, no need to call add_and_filter_lines()
     }
 
     return return_list;
@@ -1084,7 +1062,6 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
     }
     ostream << "  " << stats.nb_full_grid_pass_calls << " calls to full_grid_pass()." << std::endl;
     ostream << "  " << stats.nb_single_line_pass_calls << " calls to single_line_pass()." << std::endl;
-    ostream << "  " << stats.nb_reduce_list_of_lines_calls << " calls to reduce_list_of_lines(). Max list size/total nb of lines reduced: " << stats.max_reduce_list_size << "/" << stats.total_lines_reduced << std::endl;
     ostream << "  " << stats.nb_add_and_filter_calls << " calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: " << stats.max_add_and_filter_list_size << "/" << stats.total_lines_added_and_filtered << std::endl;
     ostream << "  " << stats.nb_observer_callback_calls << " calls to observer callback." << std::endl;
 

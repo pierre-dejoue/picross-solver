@@ -42,7 +42,6 @@ namespace Tile
  */
 bool is_all_one_color(const Line& line, Tile::Type color);
 void add_and_filter_lines(std::list<Line>& lines, const Line& known_tiles, GridStats* stats);
-Line reduce_list_of_lines(const std::list<Line>& all_alternatives, GridStats* stats);
 std::string str_line(const Line& line);
 std::string str_line_type(Line::Type type);
 Line line_delta(const Line& line1, const Line& line2);
