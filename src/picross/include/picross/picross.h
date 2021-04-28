@@ -93,22 +93,27 @@ class Line
 {
 public:
     using Type = unsigned int;
+    using Container = std::vector<Tile::Type>;
     static constexpr Type ROW = 0u, COL = 1u;
 public:
-    Line(Type type, size_t index, const std::vector<Tile::Type>& tiles);
-    Line(Type type, size_t index, std::vector<Tile::Type>&& tiles);
+    Line(Type type, size_t index, size_t size, Tile::Type init_tile = Tile::UNKNOWN);
+    Line(const Line& other, Tile::Type init_tile);
+    Line(Type type, size_t index, const Container& tiles);
+    Line(Type type, size_t index, Container&& tiles);
 public:
     Type get_type() const;
     size_t get_index() const;
-    const std::vector<Tile::Type>& get_tiles() const;
+    const Container& get_tiles() const;
+    Container& get_tiles();
     size_t size() const;
     Tile::Type at(size_t idx) const;
-    bool add(const Line& line);
-    void reduce(const Line& line);
+    bool compatible(const Line& other) const;
+    bool add(const Line& other);
+    void reduce(const Line& other);
 private:
     Type type;
     size_t index;
-    std::vector<Tile::Type> tiles;
+    Container tiles;
 };
 
 

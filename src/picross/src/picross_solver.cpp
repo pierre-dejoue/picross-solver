@@ -105,7 +105,21 @@ namespace Tile
 } // end namespace Tile
 
 
-Line::Line(Line::Type type, size_t index, const std::vector<Tile::Type>& tiles) :
+Line::Line(Line::Type type, size_t index, size_t size, Tile::Type init_tile) :
+    type(type),
+    index(index),
+    tiles(size, init_tile)
+{
+}
+
+
+Line::Line(const Line& other, Tile::Type init_tile) :
+    Line(other.type, other.index, other.size(), init_tile)
+{
+}
+
+
+Line::Line(Line::Type type, size_t index, const Line::Container& tiles) :
     type(type),
     index(index),
     tiles(tiles)
@@ -113,7 +127,7 @@ Line::Line(Line::Type type, size_t index, const std::vector<Tile::Type>& tiles) 
 }
 
 
-Line::Line(Line::Type type, size_t index, std::vector<Tile::Type>&& tiles) :
+Line::Line(Line::Type type, size_t index, Line::Container&& tiles) :
     type(type),
     index(index),
     tiles(std::move(tiles))
@@ -133,7 +147,13 @@ size_t Line::get_index() const
 }
 
 
-const std::vector<Tile::Type>& Line::get_tiles() const
+const Line::Container& Line::get_tiles() const
+{
+    return tiles;
+}
+
+
+Line::Container& Line::get_tiles()
 {
     return tiles;
 }
@@ -150,50 +170,58 @@ Tile::Type Line::at(size_t idx) const
     return tiles.at(idx);
 }
 
+/* Line::compatible() tests if two lines are compatible with each other
+ */
+bool Line::compatible(const Line& other) const
+{
+    if (other.type != type) { throw std::invalid_argument("compatible: Line type mismatch"); }
+    if (other.index != index) { throw std::invalid_argument("compatible: Line index mismatch"); }
+    if (other.tiles.size() != tiles.size()) { throw std::invalid_argument("compatible: Line size mismatch"); }
+    for (size_t idx = 0u; idx < tiles.size(); ++idx)
+    {
+        if (!Tile::compatible(other.tiles.at(idx), tiles[idx]))
+        {
+            return false;
+        }
+    }
+    return true;
+}
 
-/* Line::add combines the information of two lines into a single one.
- * Return false if the lines do not match (e.g. a tile is empty in one line and filled in in the other).
+/* Line::add() combines the information of two lines into a single one.
+ * Return false if the lines are not compatible, in which case 'this' is not modified.
  *
  * Example:
  *         line1:    ....##??????
  *         line2:    ..????##..??
  * line1 + line2:    ....####..??
  */
-bool Line::add(const Line& line)
+bool Line::add(const Line& other)
 {
-    if (line.type != type)                 { throw std::invalid_argument("add: Line type mismatch"); }
-    if (line.index != index)               { throw std::invalid_argument("add: Line index mismatch"); }
-    if (line.tiles.size() != tiles.size()) { throw std::invalid_argument("add: Line size mismatch"); }
-    bool valid = true;
-    for (size_t idx = 0u; idx < tiles.size(); ++idx)
-    {
-        if (!Tile::compatible(line.tiles.at(idx), tiles[idx]))
-        {
-            valid = false;
-            break;
-        }
-    }
+    if (other.type != type)                 { throw std::invalid_argument("add: Line type mismatch"); }
+    if (other.index != index)               { throw std::invalid_argument("add: Line index mismatch"); }
+    if (other.tiles.size() != tiles.size()) { throw std::invalid_argument("add: Line size mismatch"); }
+    const bool valid = compatible(other);
     if (valid)
     {
-        std::transform(tiles.cbegin(), tiles.cend(), line.tiles.cbegin(), tiles.begin(), Tile::add);
+        std::transform(tiles.cbegin(), tiles.cend(), other.tiles.cbegin(), tiles.begin(), Tile::add);
     }
     return valid;
 }
 
 
-/* Line::reduce captures the information that is common to two lines.
+/* Line::reduce() captures the information that is common to two lines.
  *
  * Example:
  *         line1:    ??..######..
  *         line2:    ??....######
  * line1 ^ line2:    ??..??####??
  */
-void Line::reduce(const Line& line)
+void Line::reduce(const Line& other)
 {
-    if (line.type != type)                 { throw std::invalid_argument("reduce: Line type mismatch"); }
-    if (line.index != index)               { throw std::invalid_argument("reduce: Line index mismatch"); }
-    if (line.tiles.size() != tiles.size()) { throw std::invalid_argument("reduce: Line size mismatch"); }
-    std::transform(tiles.begin(), tiles.end(), line.tiles.begin(), tiles.begin(), Tile::reduce);
+    if (other.type != type)                 { throw std::invalid_argument("reduce: Line type mismatch"); }
+    if (other.index != index)               { throw std::invalid_argument("reduce: Line index mismatch"); }
+    if (other.tiles.size() != tiles.size()) { throw std::invalid_argument("reduce: Line size mismatch"); }
+    std::transform(tiles.begin(), tiles.end(), other.tiles.begin(), tiles.begin(), Tile::reduce);
 }
 
 
@@ -566,8 +594,11 @@ bool WorkGrid::single_line_pass(Line::Type type, unsigned int index)
     }
 
     // Compute all possible lines that match the data already present in the grid and the line constraints
-    std::list<Line> all_lines = line_constraint->build_all_possible_lines(known_tiles, stats);
-    nb_alternatives[type].at(index) = static_cast<unsigned int>(all_lines.size());
+    const auto reduction = line_constraint->reduce_and_count_alternatives(known_tiles, stats);
+    const Line& reduced_line = reduction.first;
+    const auto count = reduction.second;
+
+    nb_alternatives[type].at(index) = count;
 
     // If the list of all lines is empty, it means the grid data is contradictory. Throw an exception.
     if (nb_alternatives[type].at(index) == 0) { throw PicrossGridCannotBeSolved(); }
@@ -576,8 +607,7 @@ bool WorkGrid::single_line_pass(Line::Type type, unsigned int index)
     if (nb_alternatives[type].at(index) == 1) { line_completed[type].at(index) = true; }
 
     // In any case, update the grid data with the reduced line resulting from list all_lines
-    const Line new_line = reduce_list_of_lines(all_lines, stats);
-    bool changed = set_line(new_line);
+    bool changed = set_line(reduced_line);
 
     // This line does not need to be reduced until one of the tiles is modified.
     line_to_be_reduced[type][index] = false;
@@ -797,11 +827,11 @@ int Constraint::theoretical_nb_alternatives(unsigned int line_size, GridStats * 
 
 std::list<Line> Constraint::build_all_possible_lines(const Line& known_tiles, GridStats* stats) const
 {
-    if (known_tiles.get_type() != type) { throw std::invalid_argument("Wrong filter line type"); }
+    if (known_tiles.get_type() != type) { throw std::invalid_argument("Constraint::build_all_possible_lines: Wrong filter line type"); }
     const size_t index = known_tiles.get_index();
 
     // Number of zeros to add to the minimal size line.
-    if (known_tiles.size() < min_line_size) { throw std::logic_error("Constraint::build_all_possible_lines_with_size: line_size < min_line_size"); }
+    if (known_tiles.size() < min_line_size) { throw std::logic_error("Constraint::build_all_possible_lines: line_size < min_line_size"); }
     unsigned int nb_zeros = known_tiles.size() - min_line_size;
 
     std::list<Line> return_list;
@@ -873,6 +903,112 @@ std::list<Line> Constraint::build_all_possible_lines(const Line& known_tiles, Gr
     }
 
     return return_list;
+}
+
+
+namespace
+{
+// Helper class to recursively build all the possible alternatives of a Line, given a constraint
+class BuildLineAlternatives
+{
+public:
+    BuildLineAlternatives(const InputGrid::Constraint& segs_of_ones, const Line& known_tiles)
+        : segs_of_ones(segs_of_ones)
+        , known_tiles(known_tiles)
+        , reduced_line()
+    {
+    }
+
+    unsigned int build_alternatives(const Line& alternative, unsigned int remaining_zeros, size_t line_idx = 0u, size_t constraint_idx = 0u)
+    {
+        assert(alternative.get_type() == known_tiles.get_type());
+        assert(alternative.size() == known_tiles.size());
+
+        unsigned int nb_alternatives = 0u;
+
+        // If the last segment of ones was reached, pad end of line with zero, chack compatibility then reduce
+        if (constraint_idx == segs_of_ones.size())
+        {
+            Line next_alternative(alternative);
+            Line::Container& next_tiles = next_alternative.get_tiles();
+            assert(next_tiles.size() - line_idx == remaining_zeros);
+            for (unsigned int c = 0u; c < remaining_zeros; c++) { next_tiles[line_idx++] = Tile::ZERO; }
+
+            nb_alternatives += filter_and_reduce(next_alternative);
+        }
+        // Else, fill in the next segment of ones, then call recursively
+        else
+        {
+            const auto& nb_ones = segs_of_ones[constraint_idx];
+            for (unsigned int pre_zeros = 0u; pre_zeros <= remaining_zeros; pre_zeros++)
+            {
+                Line next_alternative(alternative);
+                auto next_line_idx = line_idx;
+                Line::Container& next_tiles = next_alternative.get_tiles();
+                for (unsigned int c = 0u; c < pre_zeros; c++) { next_tiles[next_line_idx++] = Tile::ZERO; }
+                for (unsigned int c = 0u; c < nb_ones; c++)   { next_tiles[next_line_idx++] = Tile::ONE; }
+                if (constraint_idx + 1 < segs_of_ones.size()) { next_tiles[next_line_idx++] = Tile::ZERO; }
+
+                if (next_alternative.compatible(known_tiles))
+                {
+                    nb_alternatives += build_alternatives(next_alternative, remaining_zeros - pre_zeros, next_line_idx, constraint_idx + 1);
+                }
+            }
+        }
+
+        return nb_alternatives;
+    };
+
+    Line get_reduced_line()
+    {
+        if (reduced_line)
+            return *reduced_line;
+        else
+            return Line(known_tiles, Tile::UNKNOWN);
+    }
+
+private:
+    unsigned int filter_and_reduce(const Line& alternative)
+    {
+        assert(std::none_of(alternative.get_tiles().cbegin(), alternative.get_tiles().cend(), [](const Tile::Type& t) { return t == Tile::UNKNOWN; }));
+        if (alternative.compatible(known_tiles))
+        {
+            if (!reduced_line)
+            {
+                reduced_line = std::make_unique<Line>(alternative);
+            }
+            else
+            {
+                reduced_line->reduce(alternative);
+            }
+            return 1u;
+        }
+        return 0u;
+    }
+
+private:
+    const InputGrid::Constraint& segs_of_ones;
+    const Line& known_tiles;
+    std::unique_ptr<Line> reduced_line;
+};
+
+}  // namespace
+
+
+std::pair<Line, unsigned int> Constraint::reduce_and_count_alternatives(const Line& known_tiles, GridStats * stats) const
+{
+    if (known_tiles.get_type() != type) { throw std::invalid_argument("Constraint::reduce_and_count_alternatives: Wrong filter line type"); }
+    const size_t index = known_tiles.get_index();
+
+    // Number of zeros to add to the minimal size line.
+    if (known_tiles.size() < min_line_size) { throw std::logic_error("Constraint::reduce_and_count_alternatives: line_size < min_line_size"); }
+    unsigned int nb_zeros = known_tiles.size() - min_line_size;
+
+    BuildLineAlternatives builder(segs_of_ones, known_tiles);
+    Line seed_alternative(known_tiles, Tile::UNKNOWN);
+    unsigned int nb_alternatives = builder.build_alternatives(seed_alternative, nb_zeros);
+
+    return std::make_pair(builder.get_reduced_line(), nb_alternatives);
 }
 
 

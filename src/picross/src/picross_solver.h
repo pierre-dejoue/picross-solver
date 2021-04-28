@@ -15,6 +15,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 
@@ -61,6 +62,7 @@ public:
     unsigned int get_min_line_size() const { return min_line_size; }
     int theoretical_nb_alternatives(unsigned int line_size, GridStats * stats) const;
     std::list<Line> build_all_possible_lines(const Line& known_tiles, GridStats * stats) const;
+    std::pair<Line, unsigned int> reduce_and_count_alternatives(const Line& filter_line, GridStats * stats) const;
     void print(std::ostream& ostream) const;
 private:
     Line::Type type;                                            // Row or column
