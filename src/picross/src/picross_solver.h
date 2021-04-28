@@ -58,7 +58,6 @@ public:
     size_t nb_segments() const { return segs_of_ones.size(); }  // Number of segments of contiguous filled tiles
     unsigned int max_segment_size() const;                      // Max segment size
     unsigned int get_min_line_size() const { return min_line_size; }
-    int theoretical_nb_alternatives(unsigned int line_size, GridStats * stats) const;
     std::vector<Line> build_all_possible_lines(const Line& known_tiles, GridStats * stats) const;
     std::pair<Line, unsigned int> reduce_and_count_alternatives(const Line& filter_line, GridStats * stats) const;
     void print(std::ostream& ostream) const;
@@ -97,6 +96,7 @@ private:
     bool set_w_reduce_flag(size_t x, size_t y, Tile::Type t);
     bool guess() const;
     void save_solution() const;
+    unsigned int nb_alternatives_for_fixed_nb_of_partitions(unsigned int nb_cells, unsigned int nb_partitions);
 private:
     std::vector<Constraint>                     rows;
     std::vector<Constraint>                     cols;
@@ -108,6 +108,7 @@ private:
     std::vector<unsigned int>                   nb_alternatives[2];
     std::vector<Line>                           guess_list_of_all_alternatives;
     unsigned int                                nested_level;    // nested_level is incremented by function Grid::guess()
+    std::vector<unsigned int>                   cache_binomial_numbers;
 };
 
 
