@@ -107,8 +107,6 @@ private:
     std::vector<bool>                           line_completed[2];
     std::vector<bool>                           line_to_be_reduced[2];
     std::vector<unsigned int>                   nb_alternatives[2];
-    Line::Type                                  guess_line_type;
-    unsigned int                                guess_line_index;
     std::list<Line>                             guess_list_of_all_alternatives;
     unsigned int                                nested_level;    // nested_level is incremented by function Grid::guess()
 };

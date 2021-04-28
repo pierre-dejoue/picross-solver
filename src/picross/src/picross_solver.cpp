@@ -655,43 +655,32 @@ bool WorkGrid::solve()
             // Find the row or column not yet solved with the minimal alternative lines.
             // That is the min of all alternatives greater or equal to 2.
             unsigned int min_alt = 0u;
+            Line::Type found_line_type = Line::ROW;
+            unsigned int found_line_index = 0u;
             for (const auto& type : { Line::ROW, Line::COL })
             {
-                for (const unsigned int val : nb_alternatives[type])
+                for (unsigned int idx = 0u; idx < nb_alternatives[type].size(); idx++)
                 {
-                    if (val >= 2u && (min_alt < 2u || val < min_alt))
+                    const auto nb_alt = nb_alternatives[type][idx];
+                    if (nb_alt >= 2u && (min_alt < 2u || nb_alt < min_alt))
                     {
-                        min_alt = val;
+                        min_alt = nb_alt;
+                        found_line_type = type;
+                        found_line_index = idx;
                     }
                 }
             }
 
-            if (min_alt == 0u) { throw std::logic_error("WorkGrid::solve: no min value, this should not happen!"); }
-
-            // Select one row or one column with the minimal number of alternatives.
-            const Constraint* line_constraint = nullptr;
-            auto alternative_it = std::find_if(nb_alternatives[Line::ROW].cbegin(), nb_alternatives[Line::ROW].cend(), [min_alt](unsigned int alt) { return alt == min_alt; });
-            if (alternative_it == nb_alternatives[Line::ROW].end())
+            if (min_alt == 0u)
             {
-                alternative_it = std::find_if(nb_alternatives[Line::COL].cbegin(), nb_alternatives[Line::COL].cend(), [min_alt](unsigned int alt) { return alt == min_alt; });
-                if (alternative_it == nb_alternatives[Line::COL].end())
-                {
-                    // Again, this should not happen.
-                    throw std::logic_error("WorkGrid::solve: alternative_it = alternatives[Line::COL].end(). Impossible!");
-                }
-                guess_line_type = Line::COL;
-                guess_line_index = static_cast<unsigned int>(alternative_it - nb_alternatives[Line::COL].cbegin());
-                line_constraint = &(cols.at(guess_line_index));
-            }
-            else
-            {
-                guess_line_type = Line::ROW;
-                guess_line_index = static_cast<unsigned int>(alternative_it - nb_alternatives[Line::ROW].cbegin());
-                line_constraint = &(rows.at(guess_line_index));
+                throw std::logic_error("WorkGrid::solve: no min alternatives value, this should not happen!");
             }
 
-            assert(line_constraint != nullptr);
-            guess_list_of_all_alternatives = line_constraint->build_all_possible_lines(get_line(guess_line_type, guess_line_index), stats);
+            // Select the row or column with the minimal number of alternatives
+            const Constraint& line_constraint = found_line_type == Line::ROW ? rows.at(found_line_index) : cols.at(found_line_index);
+            const Line known_tiles = get_line(found_line_type, found_line_index);
+
+            guess_list_of_all_alternatives = line_constraint.build_all_possible_lines(known_tiles, stats);
             assert(guess_list_of_all_alternatives.size() == min_alt);
 
             // Guess!
@@ -708,10 +697,11 @@ bool WorkGrid::solve()
 
 bool WorkGrid::guess() const
 {
+    assert(guess_list_of_all_alternatives.size() > 0u);
     /* This function will test a range of alternatives for one particular line of the grid, each time
      * creating a new instance of the grid class on which the function WorkGrid::solve() is called.
      */
-    bool flag_solution_found = false;
+
     if (stats != nullptr)
     {
         stats->guess_total_calls++;
@@ -722,16 +712,23 @@ bool WorkGrid::guess() const
         auto& max_nb_alternatives = stats->guess_max_nb_alternatives_by_depth[nested_level];
         max_nb_alternatives = std::max(max_nb_alternatives, nb_alternatives);
     }
+
+    const Line::Type guess_line_type = guess_list_of_all_alternatives.front().get_type();
+    const unsigned int guess_line_index = guess_list_of_all_alternatives.front().get_index();
+    bool flag_solution_found = false;
     for (const Line& guess_line : guess_list_of_all_alternatives)
     {
         // Allocate a new work grid. Use the shallow copy.
         WorkGrid new_grid(*this, nested_level + 1);
 
         // Set one line in the new_grid according to the hypothesis we made. That line is then complete
-        if (!new_grid.set_line(guess_line)) { throw std::logic_error("WorkGrid::guess: no change in the new grid, will cause infinite loop."); }
-        new_grid.line_completed[guess_line.get_type()].at(guess_line_index) = true;
-        new_grid.line_to_be_reduced[guess_line.get_type()].at(guess_line_index) = false;
-        new_grid.nb_alternatives[guess_line.get_type()].at(guess_line_index) = 0u;
+        if (!new_grid.set_line(guess_line))
+        {
+            throw std::logic_error("WorkGrid::guess: no change in the new grid, will cause infinite loop.");
+        }
+        new_grid.line_completed[guess_line_type][guess_line_index] = true;
+        new_grid.line_to_be_reduced[guess_line_type][guess_line_index] = false;
+        new_grid.nb_alternatives[guess_line_type][guess_line_index] = 0u;
 
         // Solve the new grid!
         flag_solution_found |= new_grid.solve();
