@@ -258,6 +258,10 @@ bool is_all_one_color(const Line& line, Tile::Type color)
     return std::all_of(line.get_tiles().cbegin(), line.get_tiles().cend(), [color](const Tile::Type t) { return t == color; });
 }
 
+bool is_fully_defined(const Line& line)
+{
+    return std::none_of(line.get_tiles().cbegin(), line.get_tiles().cend(), [](const Tile::Type t) { return t == Tile::UNKNOWN; });
+}
 
 std::string str_line(const Line& line)
 {
@@ -736,9 +740,19 @@ bool WorkGrid::guess() const
 }
 
 
-void WorkGrid::save_solution() const
+bool WorkGrid::valid_solution() const
 {
     assert(is_solved());
+    bool valid = true;
+    for (unsigned int x = 0u; x < get_width(); x++)  { valid &= cols.at(x).compatible(get_line(Line::COL, x)); }
+    for (unsigned int y = 0u; y < get_height(); y++) { valid &= rows.at(y).compatible(get_line(Line::ROW, y)); }
+    return valid;
+}
+
+
+void WorkGrid::save_solution() const
+{
+    assert(valid_solution());
 
     // Shallow copy of only the grid data
     saved_solutions->emplace_back(static_cast<const OutputGrid&>(*this));
@@ -990,7 +1004,7 @@ public:
 private:
     unsigned int filter_and_reduce(const Line& alternative)
     {
-        assert(std::none_of(alternative.get_tiles().cbegin(), alternative.get_tiles().cend(), [](const Tile::Type& t) { return t == Tile::UNKNOWN; }));
+        assert(is_fully_defined(alternative));
         if (alternative.compatible(known_tiles))
         {
             if (!reduced_line)
@@ -1029,6 +1043,25 @@ std::pair<Line, unsigned int> Constraint::reduce_and_count_alternatives(const Li
     unsigned int nb_alternatives = builder.build_alternatives(seed_alternative, nb_zeros);
 
     return std::make_pair(builder.get_reduced_line(), nb_alternatives);
+}
+
+bool Constraint::compatible(const Line& line) const
+{
+    assert(is_fully_defined(line));
+    const auto& tiles = line.get_tiles();
+    InputGrid::Constraint line_segs_of_ones;
+    unsigned int idx = 0u;
+    while (idx < tiles.size())
+    {
+        while (idx < tiles.size() && tiles[idx] == Tile::ZERO) { idx++; }
+        unsigned int seg_sz = 0u;
+        while (idx < tiles.size() && tiles[idx] == Tile::ONE) { idx++; seg_sz++; }
+        if (seg_sz > 0)
+        {
+            line_segs_of_ones.push_back(seg_sz);
+        }
+    }
+    return segs_of_ones == line_segs_of_ones;
 }
 
 

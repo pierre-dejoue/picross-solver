@@ -40,6 +40,7 @@ namespace Tile
  * Line related functions
  */
 bool is_all_one_color(const Line& line, Tile::Type color);
+bool is_fully_defined(const Line& line);
 void add_and_filter_lines(std::vector<Line>& lines, const Line& known_tiles, GridStats* stats);
 std::string str_line(const Line& line);
 std::string str_line_type(Line::Type type);
@@ -60,6 +61,7 @@ public:
     unsigned int get_min_line_size() const { return min_line_size; }
     std::vector<Line> build_all_possible_lines(const Line& known_tiles, GridStats * stats) const;
     std::pair<Line, unsigned int> reduce_and_count_alternatives(const Line& filter_line, GridStats * stats) const;
+    bool compatible(const Line& line) const;
     void print(std::ostream& ostream) const;
 private:
     Line::Type type;                                            // Row or column
@@ -95,6 +97,7 @@ private:
     bool full_grid_pass();
     bool set_w_reduce_flag(size_t x, size_t y, Tile::Type t);
     bool guess() const;
+    bool valid_solution() const;
     void save_solution() const;
     unsigned int nb_alternatives_for_fixed_nb_of_partitions(unsigned int nb_cells, unsigned int nb_partitions);
 private:
