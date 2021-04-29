@@ -280,6 +280,20 @@ std::string str_line_type(Line::Type type)
 }
 
 
+bool operator==(const Line& lhs, const Line& rhs)
+{
+    return lhs.get_type() == rhs.get_type()
+        && lhs.get_index() == rhs.get_index()
+        && lhs.get_tiles() == rhs.get_tiles();
+}
+
+
+bool operator!=(const Line& lhs, const Line& rhs)
+{
+    return !(lhs == rhs);
+}
+
+
 std::ostream& operator<<(std::ostream& ostream, const Line& line)
 {
     std::ios prev_iostate(nullptr);
@@ -424,6 +438,57 @@ std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid)
 }
 
 
+BinomialCoefficientsCache::Rep BinomialCoefficientsCache::overflowValue()
+{
+    return std::numeric_limits<Rep>::max();
+}
+
+
+unsigned int BinomialCoefficientsCache::nb_alternatives_for_fixed_nb_of_partitions(unsigned int nb_elts, unsigned int nb_buckets)
+{
+    assert(nb_buckets > 0u);
+    const unsigned int k = nb_buckets - 1;
+    const unsigned int n = nb_elts + k;
+    if (k == 0u || n == k)
+    {
+        return 1u;
+    }
+    assert(k >= 1u && n >= 2u);
+
+    // Index in the binomial number cache
+    const unsigned int idx = (n - 2)*(n - 1) / 2 + (k - 1);
+
+    if (idx >= binomial_numbers.size())
+    {
+        binomial_numbers.resize(idx + 1, 0u);
+    }
+
+    auto& binomial_number = binomial_numbers[idx];
+    if (binomial_number > 0u)
+    {
+        return binomial_numbers[idx];
+    }
+    else
+    {
+        static const Rep MAX = overflowValue();
+
+        Rep accumulator = 0u;
+        for (unsigned int e = 0u; e <= nb_elts; e++)
+        {
+            const Rep partial = nb_alternatives_for_fixed_nb_of_partitions(e, nb_buckets - 1u);
+            if (accumulator > MAX - partial)
+            {
+                accumulator = MAX;
+                break;
+            }
+            accumulator += partial;
+        }
+        binomial_number = accumulator;
+        return accumulator;
+    }
+}
+
+
 WorkGrid::WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats, Solver::Observer observer) :
     OutputGrid(grid.cols.size(), grid.rows.size(), grid.name),
     rows(row_constraints_from(grid)),
@@ -432,7 +497,7 @@ WorkGrid::WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStat
     stats(stats),
     observer(std::move(observer)),
     nested_level(0u),
-    cache_binomial_numbers()
+    binomial(new BinomialCoefficientsCache())
 {
     assert(cols.size() == get_width());
     assert(rows.size() == get_height());
@@ -441,8 +506,8 @@ WorkGrid::WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStat
     // Other initializations
     line_completed[Line::ROW].resize(get_height(), false);
     line_completed[Line::COL].resize(get_width(), false);
-    line_to_be_reduced[Line::ROW].resize(get_height(), true);
-    line_to_be_reduced[Line::COL].resize(get_width(), true);
+    line_to_be_reduced[Line::ROW].resize(get_height(), false);
+    line_to_be_reduced[Line::COL].resize(get_width(), false);
     nb_alternatives[Line::ROW].resize(get_height(), 0u);
     nb_alternatives[Line::COL].resize(get_width(), 0u);
 }
@@ -457,7 +522,7 @@ WorkGrid::WorkGrid(const WorkGrid& parent, unsigned int nested_level) :
     stats(parent.stats),
     observer(parent.observer),
     nested_level(nested_level),
-    cache_binomial_numbers()
+    binomial(nullptr)               // only used on the first pass on the grid threfore on nested_level == 0
 {
     assert(nested_level > 0u);
 
@@ -486,10 +551,8 @@ WorkGrid::WorkGrid(const WorkGrid& parent, unsigned int nested_level) :
 
 bool WorkGrid::set_w_reduce_flag(size_t x, size_t y, Tile::Type t)
 {
-    if (t != get(x, y))
+    if (t != Tile::UNKNOWN && get(x, y) == Tile::UNKNOWN)
     {
-        assert(get(x, y) == Tile::UNKNOWN);
-
         // modify grid
         set(x, y, t);
 
@@ -502,6 +565,7 @@ bool WorkGrid::set_w_reduce_flag(size_t x, size_t y, Tile::Type t)
     }
     else
     {
+        assert(Tile::compatible(get(x, y), t));
         return false;
     }
 }
@@ -514,72 +578,100 @@ bool WorkGrid::set_line(const Line& line)
     const Line origin_line = get_line(line.get_type(), index);
     const auto width = static_cast<unsigned int>(get_width());
     const auto height = static_cast<unsigned int>(get_height());
-    if (line.get_type() == Line::ROW && line.size() == width)
+    if (line.get_type() == Line::ROW)
     {
+        assert(line.size() == width);
         for (unsigned int x = 0u; x < width; x++) { changed |= set_w_reduce_flag(x, index, line.at(x)); }
-    }
-    else if (line.get_type() == Line::COL && line.size() == height)
-    {
-        for (unsigned int y = 0u; y < height; y++) { changed |= set_w_reduce_flag(index, y, line.at(y)); }
     }
     else
     {
-        throw std::invalid_argument("WorkGrid::set_line: wrong arguments");
+        assert(line.get_type() == Line::COL);
+        assert(line.size() == height);
+        for (unsigned int y = 0u; y < height; y++) { changed |= set_w_reduce_flag(index, y, line.at(y)); }
     }
     if (observer && changed)
     {
-        const Line delta = line_delta(origin_line, line);
+        const Line delta = line_delta(origin_line, get_line(line.get_type(), index));
         observer(Solver::Event::DELTA_LINE, &delta, nested_level);
     }
     return changed;
 }
 
 
+// On the first pass of the grid, assume that the color of every tile in the line is unknown
+// and compute the trivial reduction and number of alternatives
+bool WorkGrid::single_line_initial_pass(Line::Type type, unsigned int index)
+{
+    const Constraint& constraint = type == Line::ROW ? rows.at(index) : cols.at(index);
+
+    const auto line_size = static_cast<unsigned int>(type == Line::ROW ? get_width() : get_height());
+
+    assert(binomial);
+    Line reduced_line(type, index, line_size);  // All Tile::UNKNOWN
+
+    // Compute the trivial reduction if it exists and the number of alternatives
+    const auto pair = constraint.line_trivial_reduction(reduced_line, *binomial);
+
+    const bool changed = pair.first;
+    const auto nb_alt = pair.second;
+    assert(nb_alt > 0u);
+    nb_alternatives[type][index] = nb_alt;
+
+    if (stats != nullptr) { stats->max_initial_nb_alternatives = std::max(stats->max_initial_nb_alternatives, nb_alt); }
+
+    // If the reduced line is not compatible with the information already present in the grid
+    // then the row and column constraints are contradictory.
+    if (!get_line(type, index).compatible(reduced_line)) { throw PicrossGridCannotBeSolved(); }
+
+    // Set line
+    set_line(reduced_line);
+
+    if (nb_alt == 1u)
+    {
+        // Line is completed
+        line_completed[type][index] = true;
+        line_to_be_reduced[type][index] = false;
+    }
+    else
+    {
+        // During a normal pass line_to_be_reduced is set to false after a line reduction has been performed.
+        // Here since we are computing a trivial reduction assuming the initial line is completly unknown we
+        // are ignoring tiles that are possibly already set. In such a case, we need to redo a reduction
+        // on the next full grid pass.
+        const Line new_line = get_line(type, index);
+        if (reduced_line == new_line)
+        {
+            line_completed[type][index] = false;
+            line_to_be_reduced[type][index] = false;
+        }
+        else
+        {
+            line_completed[type][index] = is_fully_defined(new_line);
+            line_to_be_reduced[type][index] = !line_completed[type][index];
+        }
+    }
+
+    return changed;
+}
+
 bool WorkGrid::single_line_pass(Line::Type type, unsigned int index)
 {
     assert(line_completed[type][index] == false);
     assert(line_to_be_reduced[type][index] == true);
 
+    if (stats != nullptr) { stats->nb_single_line_pass_calls++; }
+
     const Constraint& line_constraint = type == Line::ROW ? rows.at(index) : cols.at(index);
-
-    // Stats
-    if (stats != nullptr) { stats->nb_single_line_pass_calls++;  }
-
-    // If the color of every tile in the line is unknown, there is a simple way to determine
-    // if the reduce operation is relevant: max block size must be greater than line_size - min_line_size.
     const Line known_tiles = get_line(type, index);
 
-    if (known_tiles.size() < line_constraint.get_min_line_size())
-    {
-        throw std::logic_error("WorkGrid::single_line_pass: line_size < min_line_size");
-    }
-    const unsigned int nb_zeros = known_tiles.size() - line_constraint.get_min_line_size();
-
-    if (is_all_one_color(known_tiles, Tile::UNKNOWN))
-    {
-        if (0u < line_constraint.max_segment_size() && line_constraint.max_segment_size() <= nb_zeros)
-        {
-            // Cannot reduce this line until one of the tiles is modified.
-            line_to_be_reduced[type][index] = false;
-
-            // We shall compute the number of alternatives anyway (in case we have to make an hypothesis on the grid)
-            nb_alternatives[type][index] = nb_alternatives_for_fixed_nb_of_partitions(nb_zeros, static_cast<unsigned int>(line_constraint.nb_segments()) + 1u);
-
-            // No change made on this line
-            return false;
-        }
-        else
-        {
-            // TODO The reduction is straightforward in that case
-        }
-    }
-
-    // Compute all possible lines that match the data already present in the grid and the line constraints
+    // Reduce all possible lines that match the data already present in the grid and the line constraint
     const auto reduction = line_constraint.reduce_and_count_alternatives(known_tiles, stats);
     const Line& reduced_line = reduction.first;
     const auto count = reduction.second;
 
     nb_alternatives[type][index] = count;
+
+    if (stats != nullptr) { stats->max_nb_alternatives = std::max(stats->max_nb_alternatives, count); }
 
     // If the list of all lines is empty, it means the grid data is contradictory. Throw an exception.
     if (nb_alternatives[type][index] == 0) { throw PicrossGridCannotBeSolved(); }
@@ -598,22 +690,35 @@ bool WorkGrid::single_line_pass(Line::Type type, unsigned int index)
 }
 
 
-bool WorkGrid::full_grid_pass()
+// Reduce all rows or all columns. Return false if no change was made on the grid.
+bool WorkGrid::full_side_pass(Line::Type type, bool first_pass)
 {
-    // Stats
-    if (stats != nullptr) { stats->nb_full_grid_pass_calls++; }
-
-    // Reduce all columns and all rows. Return false if no change was made on the grid.
+    const auto length = type == Line::ROW ? get_height() : get_width();
     bool changed = false;
-    for (unsigned int x = 0u; x < get_width(); x++)
+    if (first_pass)
     {
-        if (line_to_be_reduced[Line::COL][x]) { changed |= single_line_pass(Line::COL, x); }
+        for (unsigned int x = 0u; x < length; x++)
+        {
+            changed |= single_line_initial_pass(type, x);
+        }
     }
-    for (unsigned int y = 0u; y < get_height(); y++)
+    else
     {
-        if (line_to_be_reduced[Line::ROW][y]) { changed |= single_line_pass(Line::ROW, y); }
+        for (unsigned int x = 0u; x < length; x++)
+        {
+            if (line_to_be_reduced[type][x]) { changed |= single_line_pass(type, x); }
+        }
     }
     return changed;
+}
+
+
+// Reduce all columns and all rows. Return false if no change was made on the grid.
+bool WorkGrid::full_grid_pass(bool first_pass)
+{
+    if (stats != nullptr) { stats->nb_full_grid_pass_calls++; }
+
+    return full_side_pass(Line::COL, first_pass) | full_side_pass(Line::ROW, first_pass);
 }
 
 
@@ -622,8 +727,8 @@ bool WorkGrid::all_lines_completed() const
     const bool all_rows = std::all_of(line_completed[Line::ROW].cbegin(), line_completed[Line::ROW].cend(), [](bool b) { return b; });
     const bool all_cols = std::all_of(line_completed[Line::COL].cbegin(), line_completed[Line::COL].cend(), [](bool b) { return b; });
 
-    // The logical and is important here: in the case of an hypothesis is made on a row (resp. a column), it is marked as completed
-    // but the constraints on the columns (resp. the rows) may not be all OK.
+    // The logical AND is important here: in the case an hypothesis is made on a row (resp. a column), it is marked as completed
+    // but the constraints on the columns (resp. the rows) may not be all satisfied.
     return all_rows && all_cols;
 }
 
@@ -632,15 +737,15 @@ bool WorkGrid::solve(unsigned int max_nb_solutions)
 {
     try
     {
-        bool grid_changed = false;
-        bool grid_completed = false;
-        do
+        bool grid_changed = full_grid_pass(nested_level == 0u);     // If nested_level == 0, this is the first pass on the grid
+        bool grid_completed = all_lines_completed();
+
+        while (!grid_completed && grid_changed)
         {
             // While the reduce method is making progress, call it!
             grid_changed = full_grid_pass();
             grid_completed = all_lines_completed();
-
-        } while (!grid_completed && grid_changed);
+        }
 
         // Are we done?
         if (grid_completed)
@@ -762,56 +867,6 @@ void WorkGrid::save_solution() const
     saved_solutions->emplace_back(static_cast<const OutputGrid&>(*this));
 }
 
-/* Returns the number of ways to divide nb_elts into nb_buckets.
- *
- * Equal to the binomial coefficient (n k) with n = nb_elts + nb_buckets - 1  and k = nb_buckets - 1
- *
- * Returns std::numeric_limits<unsigned int>::max() in case of overflow (which happens rapidly)
- */
-unsigned int WorkGrid::nb_alternatives_for_fixed_nb_of_partitions(unsigned int nb_elts, unsigned int nb_buckets)
-{
-    assert(nb_buckets > 0u);
-    const unsigned int k = nb_buckets - 1;
-    const unsigned int n = nb_elts + k;
-    if (k == 0u || n == k)
-    {
-        return 1u;
-    }
-    assert(k >= 1u && n >= 2u);
-
-    // Index in the binomial number cache
-    const unsigned int idx = (n - 2)*(n - 1) / 2 + (k - 1);
-
-    if (idx >= cache_binomial_numbers.size())
-    {
-        cache_binomial_numbers.resize(idx + 1, 0u);
-    }
-
-    auto& binomial_number = cache_binomial_numbers[idx];
-    if (binomial_number > 0u)
-    {
-        return cache_binomial_numbers[idx];
-    }
-    else
-    {
-        static const unsigned int MAX = std::numeric_limits<unsigned int>::max();
-
-        unsigned int accumulator = 0u;
-        for (unsigned int c = 0u; c <= nb_elts; c++)
-        {
-            const unsigned int partial = nb_alternatives_for_fixed_nb_of_partitions(c, nb_buckets - 1u);
-            if (accumulator > MAX - partial)
-            {
-                accumulator = MAX;
-                break;
-            }
-            accumulator += partial;
-        }
-        binomial_number = accumulator;
-        return accumulator;
-    }
-}
-
 
 Constraint::Constraint(Line::Type type, const InputGrid::Constraint& vect) :
     type(type),
@@ -860,6 +915,80 @@ std::ostream& operator<<(std::ostream& ostream, const Constraint& constraint)
 {
     constraint.print(ostream);
     return ostream;
+}
+
+
+/*
+ * Given an uninitialized line compute the trivial reduction and the theoritical number of alternatives
+ *
+ *  - Set the line pass as argument to the trivial reduction, if there is one
+ *  - Return a pair (changed, nb_alternatives)
+ */
+std::pair<bool, unsigned int> Constraint::line_trivial_reduction(Line& line, BinomialCoefficientsCache& binomial_cache) const
+{
+    assert(line.get_type() == type);
+    assert(is_all_one_color(line, Tile::UNKNOWN));
+
+    if (line.size() < min_line_size)
+    {
+        // This can happen if the user does not check the grid with check_grid_input()
+        throw std::logic_error("Constraint::line_trivial_reduction: line.size() < min_line_size");
+    }
+
+    bool changed = false;
+    unsigned int nb_alternatives = 0u;
+
+    const unsigned int nb_zeros = line.size() - min_line_size;
+    Line::Container& tiles = line.get_tiles();
+    unsigned int line_idx = 0u;
+
+    if (max_segment_size() == 0u)
+    {
+        // Blank line
+        for (unsigned int c = 0u; c < line.size(); c++) { tiles[line_idx++] = Tile::ZERO; }
+
+        assert(line_idx == line.size());
+        assert(is_fully_defined(line));
+        changed = true;
+        nb_alternatives = 1;
+    }
+    else if (nb_zeros == 0u)
+    {
+        // The line is fully defined
+        for (unsigned int seg_idx = 0u; seg_idx < segs_of_ones.size(); seg_idx++)
+        {
+            const auto seg_sz = segs_of_ones[seg_idx];
+            const bool last = (seg_idx + 1u == segs_of_ones.size());
+            for (unsigned int c = 0u; c < seg_sz; c++) { tiles[line_idx++] = Tile::ONE; }
+            if (!last)                                 { tiles[line_idx++] = Tile::ZERO; }
+        }
+
+        assert(line_idx == line.size());
+        assert(is_fully_defined(line));
+        changed = true;
+        nb_alternatives = 1;
+    }
+    else
+    {
+        if (max_segment_size() > nb_zeros)
+        {
+            // The reduction is straightforward in that case
+            for (unsigned int seg_idx = 0u; seg_idx < segs_of_ones.size(); seg_idx++)
+            {
+                const auto seg_sz = segs_of_ones[seg_idx];
+                const bool last = (seg_idx + 1u == segs_of_ones.size());
+                for (unsigned int c = 0u; c < seg_sz; c++) { if (c >= nb_zeros) { tiles[line_idx] = Tile::ONE; }; line_idx++; }
+                if (!last)                                 { line_idx++; /* would be Tile::ZERO */ }
+            }
+
+            assert(line_idx + nb_zeros == line.size());
+            assert(!is_all_one_color(line, Tile::UNKNOWN));
+            changed = true;
+        }
+        nb_alternatives = binomial_cache.nb_alternatives_for_fixed_nb_of_partitions(nb_zeros, static_cast<unsigned int>(segs_of_ones.size()) + 1u);
+    }
+
+    return std::make_pair(changed, nb_alternatives);
 }
 
 
@@ -1144,7 +1273,7 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
     ostream << "  Max branching depth: " << stats.max_nested_level << std::endl;
     if (stats.max_nested_level > 0u)
     {
-        ostream << "    > The solving of the grid required an hypothesis on " << stats.guess_total_calls << " row(s) or column(s)." << std::endl;
+        ostream << "    > The solving of the grid required an hypothesis on " << stats.guess_total_calls << " row(s) or column(s)" << std::endl;
         ostream << "    > Total nunmber of alternatives being tested: " << stats.guess_total_alternatives << std::endl;
         ostream << "    > Max nunmber of alternatives by depth:";
         for (const auto& max_alternatives : stats.guess_max_nb_alternatives_by_depth)
@@ -1153,8 +1282,15 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
         }
         ostream << std::endl;
     }
-    ostream << "  " << stats.nb_full_grid_pass_calls << " calls to full_grid_pass()." << std::endl;
-    ostream << "  " << stats.nb_single_line_pass_calls << " calls to single_line_pass()." << std::endl;
+    ostream << "  Max initial number of alternatives on a line: " << stats.max_initial_nb_alternatives;
+    if (stats.max_initial_nb_alternatives == BinomialCoefficientsCache::overflowValue())
+    {
+        ostream << " (overflow!)";
+    }
+    ostream << std::endl;
+    ostream << "  Max number of alternatives during a line reduce: " << stats.max_nb_alternatives << std::endl;
+    ostream << "  " << stats.nb_full_grid_pass_calls << " calls to full_grid_pass()" << std::endl;
+    ostream << "  " << stats.nb_single_line_pass_calls << " calls to single_line_pass()" << std::endl;
     ostream << "  " << stats.nb_add_and_filter_calls << " calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: " << stats.max_add_and_filter_list_size << "/" << stats.total_lines_added_and_filtered << std::endl;
     ostream << "  " << stats.nb_observer_callback_calls << " calls to observer callback." << std::endl;
 

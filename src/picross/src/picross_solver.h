@@ -48,6 +48,35 @@ Line line_delta(const Line& line1, const Line& line2);
 
 
 /*
+ * Utility class used to store already computed binomial number.
+ *
+ * This is to optimize the computation of the number of alternatives on empty lines.
+ */
+class BinomialCoefficientsCache
+{
+public:
+    using Rep = unsigned int;
+
+    BinomialCoefficientsCache() = default;
+    BinomialCoefficientsCache(const BinomialCoefficientsCache& other) = delete;
+    BinomialCoefficientsCache& operator==(const BinomialCoefficientsCache& other) = delete;
+
+    static Rep overflowValue();
+
+    /*
+     * Returns the number of ways to divide nb_elts into nb_buckets.
+     *
+     * Equal to the binomial coefficient (n k) with n = nb_elts + nb_buckets - 1  and k = nb_buckets - 1
+     *
+     * Returns std::numeric_limits<unsigned int>::max() in case of overflow (which happens rapidly)
+     */
+    Rep nb_alternatives_for_fixed_nb_of_partitions(unsigned int nb_cells, unsigned int nb_partitions);
+private:
+    std::vector<Rep> binomial_numbers;
+};
+
+
+/*
  * Constraint class
  */
 class Constraint
@@ -59,6 +88,7 @@ public:
     size_t nb_segments() const { return segs_of_ones.size(); }  // Number of segments of contiguous filled tiles
     unsigned int max_segment_size() const;                      // Max segment size
     unsigned int get_min_line_size() const { return min_line_size; }
+    std::pair<bool, unsigned int> line_trivial_reduction(Line& line, BinomialCoefficientsCache& binomial) const;
     std::vector<Line> build_all_possible_lines(const Line& known_tiles, GridStats * stats) const;
     std::pair<Line, unsigned int> reduce_and_count_alternatives(const Line& filter_line, GridStats * stats) const;
     bool compatible(const Line& line) const;
@@ -93,13 +123,14 @@ public:
 private:
     bool all_lines_completed() const;
     bool set_line(const Line& line);
+    bool single_line_initial_pass(Line::Type type, unsigned int index);
     bool single_line_pass(Line::Type type, unsigned int index);
-    bool full_grid_pass();
+    bool full_side_pass(Line::Type type, bool first_pass = false);
+    bool full_grid_pass(bool first_pass = false);
     bool set_w_reduce_flag(size_t x, size_t y, Tile::Type t);
     bool guess(unsigned int max_nb_solutions) const;
     bool valid_solution() const;
     void save_solution() const;
-    unsigned int nb_alternatives_for_fixed_nb_of_partitions(unsigned int nb_cells, unsigned int nb_partitions);
 private:
     std::vector<Constraint>                     rows;
     std::vector<Constraint>                     cols;
@@ -111,7 +142,7 @@ private:
     std::vector<unsigned int>                   nb_alternatives[2];
     std::vector<Line>                           guess_list_of_all_alternatives;
     unsigned int                                nested_level;    // nested_level is incremented by function Grid::guess()
-    std::vector<unsigned int>                   cache_binomial_numbers;
+    std::unique_ptr<BinomialCoefficientsCache>  binomial;
 };
 
 
