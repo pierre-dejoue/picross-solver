@@ -39,7 +39,7 @@ void PicrossFile::visit_windows(bool& canBeErased, Settings& settings)
         windows.reserve(grids_to_solve.size());
         for (auto& grid : grids_to_solve)
         {
-            windows.push_back(std::make_unique<GridWindow>(std::move(grid), get_file_path()));
+            windows.push_back(std::make_unique<GridWindow>(std::move(grid), file_name(get_file_path())));
         }
     }
     else

@@ -85,8 +85,10 @@ int main(int argc, char *argv[])
     int return_status = 0;
     unsigned int count_grids = 0u;
 
-    for (const std::string& filename : args.pos)
+    for (const std::string& filepath : args.pos)
     {
+        const std::string filename = file_name(filepath);
+
         /***************************************************************************
          * II - Parse input file
          **************************************************************************/
@@ -96,9 +98,9 @@ int main(int argc, char *argv[])
             if (code != 0)
                 return_status = code;
         };
-        const std::vector<picross::InputGrid> grids_to_solve = str_tolower(file_extension(filename)) == "non"
-            ? picross::parse_input_file_non_format(filename, err_handler)
-            : picross::parse_input_file(filename, err_handler);
+        const std::vector<picross::InputGrid> grids_to_solve = str_tolower(file_extension(filepath)) == "non"
+            ? picross::parse_input_file_non_format(filepath, err_handler)
+            : picross::parse_input_file(filepath, err_handler);
 
         /***************************************************************************
          * III - Solve Picross puzzles

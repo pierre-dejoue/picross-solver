@@ -8,7 +8,7 @@ set(LIB_SOURCES
     src/strings.cpp
 )
 
-file(GLOB LIB_HEADERS include/*.h src/*.h)
+file(GLOB LIB_HEADERS include/utils/*.h src/*.h)
 
 add_library(utils STATIC ${LIB_SOURCES} ${LIB_HEADERS})
 
