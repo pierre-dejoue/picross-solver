@@ -371,7 +371,7 @@ std::vector<InputGrid> parse_input_file_generic(const std::string& filepath, con
                 parser.parse_line(std::string(line), result, [line_nb, &line, &error_handler](const std::string& msg, ExitCode code)
                     {
                         std::ostringstream oss;
-                        oss << "Parsing error \"" << msg << "\" on line " << line_nb << ": " << line;
+                        oss << "Parsing error [" << msg << "] on line " << line_nb << ": " << line;
                         error_handler(oss.str(), code);
                     });
             }

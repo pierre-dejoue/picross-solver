@@ -56,13 +56,19 @@ struct InputGrid
 
 
 /*
+ * Return the grid size as a string "WxH" with W the width and H the height
+ */
+std::string get_grid_size(const InputGrid& grid);
+
+
+/*
  * Sanity check of the constraints of the input grid:
  *
  * - Non-zero height and width
  * - Same number of filled tiles on the rows and columns
  * - The height and width are sufficient to cope with the individual constraints
  */
-std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input);
+std::pair<bool, std::string> check_grid_input(const InputGrid& grid);
 
 
 /*

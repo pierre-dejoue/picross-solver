@@ -25,11 +25,49 @@
 #include <utils/strings.h>
 
 
+namespace
+{
+
+    const std::string validation_mode_format = "File,Grid,Size,Valid,Difficulty,Timing (ms),Misc";
+
+    struct ValidationModeData
+    {
+        ValidationModeData();
+
+        std::string filename;
+        std::string grid;
+        std::string size;
+        bool valid;
+        unsigned int max_search_depth;
+        float timing_ms;
+        std::string misc;
+    };
+
+    ValidationModeData::ValidationModeData() : filename(), grid(), size(), valid(false), max_search_depth(0u), timing_ms(0u), misc()
+    {
+    }
+
+    std::ostream& operator<<(std::ostream& ostream, const ValidationModeData& data)
+    {
+        ostream << data.filename << ',';
+        ostream << data.grid << ',';
+        ostream << data.size << ',';
+        ostream << (data.valid ? "OK" : "") << ',';
+        ostream << (data.valid && (data.max_search_depth == 0u) ? "LINE" : "") << ',';
+        ostream << data.timing_ms;
+        if (!data.misc.empty())
+            ostream << ",\"" << data.misc << "\"";
+        return ostream;
+    }
+
+} // namespace
+
 /*******************************************************************************
  * MAIN()
  ******************************************************************************/
 int main(int argc, char *argv[])
 {
+
     /***************************************************************************
      * I - Process command line
      **************************************************************************/
@@ -46,7 +84,10 @@ int main(int argc, char *argv[])
         "Print additional debug information", 0 },
       {
         "max-nb-solutions", { "--max-nb-solutions" },
-        "Limit the number of solutions returned per grid", 1 }
+        "Limit the number of solutions returned per grid", 1 },
+      {
+        "validation-mode", { "--validation" },
+        "Validation mode: Check for unique solution, output one line per grid", 0 }
     }};
 
     std::ostringstream usage_note;
@@ -74,6 +115,7 @@ int main(int argc, char *argv[])
     }
 
     const auto max_nb_solutions = args["max-nb-solutions"].as<unsigned int>(0u);
+    const bool validation_mode = args["validation-mode"];
 
     // Positional arguments
     if (args.pos.empty())
@@ -85,39 +127,55 @@ int main(int argc, char *argv[])
     int return_status = 0;
     unsigned int count_grids = 0u;
 
+    if (validation_mode) { std::cout << validation_mode_format << std::endl; }
+
+    /* Solver */
+    const auto solver = picross::get_ref_solver();
+
+
+    /***************************************************************************
+     * II - Parse input files
+     **************************************************************************/
     for (const std::string& filepath : args.pos)
     {
-        const std::string filename = file_name(filepath);
+        ValidationModeData file_data;
+        file_data.filename = file_name(filepath);
 
-        /***************************************************************************
-         * II - Parse input file
-         **************************************************************************/
-        const auto err_handler = [&return_status, &filename](const std::string& msg, picross::ExitCode code)
+        const picross::ErrorHandler err_handler_classic = [&return_status, &file_data](const std::string& msg, picross::ExitCode code)
         {
-            std::cout << (code == 0 ? "WARNING" : "ERROR" ) << " [" << filename << "]: " << msg << std::endl;
+            std::cout << (code == 0 ? "WARNING" : "ERROR" ) << " [" << file_data.filename << "]: " << msg << std::endl;
             if (code != 0)
                 return_status = code;
         };
+        const picross::ErrorHandler err_handler_validation = [&file_data](const std::string& msg, picross::ExitCode code)
+        {
+            file_data.misc = msg.empty() ? std::to_string(code) : msg;
+        };
+
         const std::vector<picross::InputGrid> grids_to_solve = str_tolower(file_extension(filepath)) == "non"
-            ? picross::parse_input_file_non_format(filepath, err_handler)
-            : picross::parse_input_file(filepath, err_handler);
+            ? picross::parse_input_file_non_format(filepath, (validation_mode ? err_handler_validation : err_handler_classic))
+            : picross::parse_input_file(filepath, (validation_mode ? err_handler_validation : err_handler_classic));
+
+        if (validation_mode && !file_data.misc.empty()) { std::cout << file_data << std::endl; }
+
 
         /***************************************************************************
          * III - Solve Picross puzzles
          **************************************************************************/
-        try
+        for (const auto& grid_input : grids_to_solve)
         {
-            const auto solver = picross::get_ref_solver();
+            ValidationModeData grid_data = file_data;
+            grid_data.grid = grid_input.name;
+            grid_data.size = get_grid_size(grid_input);
 
-            for (const auto& grid_input : grids_to_solve)
+            try
             {
-                std::cout << "GRID " << ++count_grids << ": " << grid_input.name << std::endl;
+                if (!validation_mode) { std::cout << "GRID " << ++count_grids << ": " << grid_input.name << std::endl; }
 
                 /* Sanity check of the input data */
-                bool check;
-                std::string check_msg;
-                std::tie(check, check_msg) = picross::check_grid_input(grid_input);
-                if (check)
+                std::tie(grid_data.valid, grid_data.misc) = picross::check_grid_input(grid_input);
+
+                if (grid_data.valid)
                 {
                     /* Set observer */
                     const auto width = grid_input.cols.size();
@@ -127,61 +185,91 @@ int main(int argc, char *argv[])
                     {
                         solver->set_observer(std::reference_wrapper<ConsoleObserver>(obs));
                     }
-                    else
+                    else if (!validation_mode)
                     {
-                        // Set a dummy observer just to collect stats
+                        // Set a dummy observer just to collect stats on number of observer calls
                         solver->set_observer([](picross::Solver::Event, const picross::Line*, unsigned int) {});
                     }
 
-                    /* Solve the grid */
+                    /* Reset stats */
                     picross::GridStats stats;
                     solver->set_stats(stats);
-                    std::chrono::duration<float, std::milli> time_ms;
-                    std::vector<picross::OutputGrid> solutions;
-                    {
-                        DurationMeas<float, std::milli> meas_ms(time_ms);
-                        solutions = solver->solve(grid_input, max_nb_solutions);
-                    }
 
-                    /* Display solutions */
-                    if (solutions.empty())
+                    std::chrono::duration<float, std::milli> time_ms;
+                    if (validation_mode)
                     {
-                        std::cout << " > Could not solve that grid :-(" << std::endl << std::endl;
+                        /* Validate the grid */
+                        {
+                            DurationMeas<float, std::milli> meas_ms(time_ms);
+                            std::tie(grid_data.valid, grid_data.misc) = picross::validate_input_grid(*solver, grid_input);
+                        }
+                        grid_data.max_search_depth = stats.max_nested_level;
+                        grid_data.timing_ms = time_ms.count();
                     }
                     else
                     {
-                        std::cout << " > Found " << solutions.size() << " solution(s):" << std::endl << std::endl;
-                        for (const auto& solution : solutions)
+                        /* Solve the grid */
+                        std::vector<picross::OutputGrid> solutions;
                         {
-                            assert(solution.is_solved());
-                            std::cout << solution << std::endl;
+                            DurationMeas<float, std::milli> meas_ms(time_ms);
+                            solutions = solver->solve(grid_input, max_nb_solutions);
+                        }
+
+                        /* Display solutions */
+                        if (solutions.empty())
+                        {
+                            std::cout << " > Could not solve that grid :-(" << std::endl << std::endl;
+                        }
+                        else
+                        {
+                            std::cout << " > Found " << solutions.size() << " solution(s):" << std::endl << std::endl;
+                            for (const auto& solution : solutions)
+                            {
+                                assert(solution.is_solved());
+                                std::cout << solution << std::endl;
+                            }
+                        }
+
+                        /* Display stats */
+                        std::cout << stats << std::endl;
+
+                        /* Display timings */
+                        if (!args["no-timing"])
+                        {
+                            std::cout << "  Solver wall time: " << time_ms.count() << "ms" << std::endl;
                         }
                     }
-
-                    /* Display stats */
-                    std::cout << stats << std::endl;
-
-                    /* Display timings */
-                    if (!args["no-timing"])
-                    {
-                        std::cout << "  Solver wall time: " << time_ms.count() << "ms" << std::endl;
-                    }
-
-                    std::cout << std::endl;
+                }
+                else if (!validation_mode)
+                {
+                    std::cout << " > Invalid grid. Error message: " << grid_data.misc << std::endl;
+                }
+            }
+            catch (std::exception& e)
+            {
+                if (validation_mode)
+                {
+                    grid_data.valid = false;
+                    grid_data.misc = "EXCPT " + std::string(e.what());
                 }
                 else
                 {
-                    std::cout << " > Invalid grid. Error message: " << check_msg << std::endl;
+                    std::cout << "EXCPT [" << file_data.filename << "][" << grid_input.name << "]: " << e.what() << std::endl;
+                    return_status = 5;
                 }
-                std::cout << std::endl;
+            }
+
+            if (validation_mode)
+            {
+                std::cout << grid_data << std::endl;
+            }
+            else
+            {
+                std::cout << std::endl << std::endl;
             }
         }
-        catch (std::exception& e)
-        {
-            std::cout << "EXCPT [" << filename << "]: " << e.what() << std::endl;
-            return_status = 5;
-        }
     }
+
 
     /***************************************************************************
      * IV - Exit

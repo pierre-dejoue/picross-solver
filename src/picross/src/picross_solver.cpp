@@ -1069,56 +1069,64 @@ bool Constraint::compatible(const Line& line) const
 }
 
 
-std::pair<bool, std::string> check_grid_input(const InputGrid& grid_input)
+std::string get_grid_size(const InputGrid& grid)
+{
+    std::ostringstream oss;
+    oss << grid.cols.size() << "x" << grid.rows.size();
+    return oss.str();
+}
+
+
+std::pair<bool, std::string> check_grid_input(const InputGrid& grid)
 {
     // Sanity check of the grid input
     //  -> height != 0 and width != 0
     //  -> same number of painted cells on rows and columns
     //  -> for each constraint min_line_size is smaller than the width or height of the row or column, respectively.
 
-    const auto width  = static_cast<unsigned int>(grid_input.cols.size());
-    const auto height = static_cast<unsigned int>(grid_input.rows.size());
+    const auto width  = static_cast<unsigned int>(grid.cols.size());
+    const auto height = static_cast<unsigned int>(grid.rows.size());
 
     if (height == 0u)
     {
         std::ostringstream oss;
-        oss << "Invalid height = " << height << std::endl;
+        oss << "Invalid height = " << height;
         return std::make_pair(false, oss.str());
     }
     if (width == 0u)
     {
         std::ostringstream oss;
-        oss << "Invalid width = " << width << std::endl;
+        oss << "Invalid width = " << width;
         return std::make_pair(false, oss.str());
     }
     unsigned int nb_tiles_on_rows = 0u;
-    for (auto& c = grid_input.rows.begin(); c != grid_input.rows.end(); c++)
+    for (auto& c = grid.rows.begin(); c != grid.rows.end(); c++)
     {
         Constraint row(Line::ROW, *c);
         nb_tiles_on_rows += row.nb_filled_tiles();
         if (row.get_min_line_size() > width)
         {
             std::ostringstream oss;
-            oss << "Width = " << width << " of the grid is too small for constraint: " << row << std::endl;
+            oss << "Width = " << width << " of the grid is too small for constraint: " << row;
             return std::make_pair(false, oss.str());
         }
     }
     unsigned int nb_tiles_on_cols = 0u;
-    for (auto& c = grid_input.cols.begin(); c != grid_input.cols.end(); c++)
+    for (auto& c = grid.cols.begin(); c != grid.cols.end(); c++)
     {
         Constraint col(Line::COL, *c);
         nb_tiles_on_cols += col.nb_filled_tiles();
         if (col.get_min_line_size() > height)
         {
             std::ostringstream oss;
-            oss << "Height = " << height << " of the grid is too small for constraint: " << col << std::endl;
+            oss << "Height = " << height << " of the grid is too small for constraint: " << col;
             return std::make_pair(false, oss.str());
         }
     }
     if (nb_tiles_on_rows != nb_tiles_on_cols)
     {
         std::ostringstream oss;
-        oss << "Number of filled tiles on rows (" << nb_tiles_on_rows << ") and columns (" <<  nb_tiles_on_cols << ") do not match" << std::endl;
+        oss << "Number of filled tiles on rows (" << nb_tiles_on_rows << ") and columns (" <<  nb_tiles_on_cols << ") do not match";
         return std::make_pair(false, oss.str());
     }
     return std::make_pair(true, std::string());
