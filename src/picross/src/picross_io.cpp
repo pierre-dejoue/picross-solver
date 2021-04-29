@@ -386,7 +386,7 @@ std::vector<InputGrid> parse_input_file_generic(const std::string& filepath, con
     catch (std::exception& e)
     {
         std::ostringstream oss;
-        oss << "Unhandled exception: " << e.what();
+        oss << "Unhandled exception during file parsing: " << e.what();
         error_handler(oss.str(), 2);
     }
 
