@@ -3,8 +3,14 @@
 #
 
 set(LIB_SOURCES
+    src/binomial.cpp
+    src/line.cpp
+    src/line_constraint.cpp
+    src/output_grid.cpp
+    src/picross.cpp
     src/picross_io.cpp
-    src/picross_solver.cpp
+    src/solver.cpp
+    src/work_grid.cpp
 )
 
 file(GLOB LIB_HEADERS include/picross/*.h src/*.h)
