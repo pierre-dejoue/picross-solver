@@ -132,7 +132,7 @@ bool WorkGrid::solve(unsigned int max_nb_solutions)
             {
                 for (unsigned int idx = 0u; idx < nb_alternatives[type].size(); idx++)
                 {
-                    const auto nb_alt = nb_alternatives[type][idx];
+                    const auto nb_alt =  line_to_be_reduced[type][idx] ? 0u : nb_alternatives[type][idx];
                     if (nb_alt >= 2u && (min_alt < 2u || nb_alt < min_alt))
                     {
                         min_alt = nb_alt;
@@ -144,7 +144,7 @@ bool WorkGrid::solve(unsigned int max_nb_solutions)
 
             if (min_alt == 0u)
             {
-                throw std::logic_error("WorkGrid::solve: no min alternatives value, this should not happen!");
+                return false;
             }
 
             // Select the row or column with the minimal number of alternatives
@@ -276,6 +276,7 @@ bool WorkGrid::single_line_initial_pass(Line::Type type, unsigned int index)
         {
             line_completed[type][index] = is_fully_defined(new_line);
             line_to_be_reduced[type][index] = !line_completed[type][index];
+            if (line_completed[type][index]) { nb_alternatives[type][index] = 1u;  }
         }
     }
 
@@ -389,7 +390,7 @@ bool WorkGrid::guess(unsigned int max_nb_solutions) const
         }
         new_grid.line_completed[guess_line_type][guess_line_index] = true;
         new_grid.line_to_be_reduced[guess_line_type][guess_line_index] = false;
-        new_grid.nb_alternatives[guess_line_type][guess_line_index] = 0u;
+        new_grid.nb_alternatives[guess_line_type][guess_line_index] = 1u;
 
         if (max_nb_solutions > 0u && saved_solutions->size() >= max_nb_solutions)
             break;
