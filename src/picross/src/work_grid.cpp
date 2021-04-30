@@ -310,6 +310,12 @@ bool WorkGrid::single_line_pass(Line::Type type, unsigned int index)
     // In any case, update the grid data with the reduced line resulting from list all_lines
     bool changed = set_line(reduced_line);
 
+    if (stats != nullptr && changed)
+    {
+        stats->nb_single_line_pass_calls_w_change++;
+        stats->max_nb_alternatives_w_change = std::max(stats->max_nb_alternatives_w_change, count);
+    }
+
     // This line does not need to be reduced until one of the tiles is modified.
     line_to_be_reduced[type][index] = false;
 

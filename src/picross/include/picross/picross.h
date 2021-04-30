@@ -86,12 +86,14 @@ struct GridStats
     std::vector<unsigned int> guess_max_nb_alternatives_by_depth;
     unsigned int max_initial_nb_alternatives = 0u;
     unsigned int max_nb_alternatives = 0u;
+    unsigned int max_nb_alternatives_w_change = 0u;
     unsigned int nb_reduce_list_of_lines_calls = 0u;
     unsigned int max_reduce_list_size = 0u;
     unsigned int total_lines_reduced = 0u;
     unsigned int nb_reduce_and_count_alternatives_calls = 0u;
     unsigned int nb_full_grid_pass_calls = 0u;
     unsigned int nb_single_line_pass_calls = 0u;
+    unsigned int nb_single_line_pass_calls_w_change = 0u;
     unsigned int nb_observer_callback_calls = 0u;
 };
 

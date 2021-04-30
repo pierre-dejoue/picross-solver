@@ -48,12 +48,11 @@ Grid 34x40:
     > The solving of the grid required an hypothesis on 19 row(s) or column(s)
     > Total nunmber of alternatives being tested: 177
     > Max nunmber of alternatives by depth: 3 4 5 16 15 16
-  Max initial number of alternatives on a line: 13037895
-  Max number of alternatives during a line reduce: 3664308
-  646 calls to full_grid_pass()
-  10902 calls to single_line_pass()
-  10902 calls to reduce_and_count_alternatives()
-  6732 calls to observer callback.
+  Max number of alternatives on a line (initial grid pass): 13037895
+  Max number of alternatives in a line reduce (change line/total): 120648/3664308
+  Number of calls to full_grid_pass: 646
+  Number of calls to single_line_pass (change line/total): 6360/10902
+  Number of calls to the observer callback: 6732
 
 
 

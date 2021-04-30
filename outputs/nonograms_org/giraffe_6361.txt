@@ -45,12 +45,11 @@ Grid 25x40:
 
   Number of solutions found: 1
   Max branching depth: 0
-  Max initial number of alternatives on a line: 2035800
-  Max number of alternatives during a line reduce: 98280
-  13 calls to full_grid_pass()
-  213 calls to single_line_pass()
-  213 calls to reduce_and_count_alternatives()
-  192 calls to observer callback.
+  Max number of alternatives on a line (initial grid pass): 2035800
+  Max number of alternatives in a line reduce (change line/total): 98280/98280
+  Number of calls to full_grid_pass: 13
+  Number of calls to single_line_pass (change line/total): 155/213
+  Number of calls to the observer callback: 192
 
 
 

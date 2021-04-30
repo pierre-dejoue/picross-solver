@@ -102,17 +102,16 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
         }
         ostream << std::endl;
     }
-    ostream << "  Max initial number of alternatives on a line: " << stats.max_initial_nb_alternatives;
+    ostream << "  Max number of alternatives on a line (initial grid pass): " << stats.max_initial_nb_alternatives;
     if (stats.max_initial_nb_alternatives == BinomialCoefficientsCache::overflowValue())
     {
         ostream << " (overflow!)";
     }
     ostream << std::endl;
-    ostream << "  Max number of alternatives during a line reduce: " << stats.max_nb_alternatives << std::endl;
-    ostream << "  " << stats.nb_full_grid_pass_calls << " calls to full_grid_pass()" << std::endl;
-    ostream << "  " << stats.nb_single_line_pass_calls << " calls to single_line_pass()" << std::endl;
-    ostream << "  " << stats.nb_reduce_and_count_alternatives_calls << " calls to reduce_and_count_alternatives()" << std::endl;
-    ostream << "  " << stats.nb_observer_callback_calls << " calls to observer callback." << std::endl;
+    ostream << "  Max number of alternatives in a line reduce (change line/total): " << stats.max_nb_alternatives_w_change << "/" << stats.max_nb_alternatives << std::endl;
+    ostream << "  Number of calls to full_grid_pass: " << stats.nb_full_grid_pass_calls << std::endl;
+    ostream << "  Number of calls to single_line_pass (change line/total): " << stats.nb_single_line_pass_calls_w_change << "/" << stats.nb_single_line_pass_calls << std::endl;
+    ostream << "  Number of calls to the observer callback: " << stats.nb_observer_callback_calls << std::endl;
 
     return ostream;
 }

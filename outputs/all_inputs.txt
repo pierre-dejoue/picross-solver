@@ -15,12 +15,11 @@ Grid 10x10:
 
   Number of solutions found: 1
   Max branching depth: 0
-  Max initial number of alternatives on a line: 56
-  Max number of alternatives during a line reduce: 5
-  4 calls to full_grid_pass()
-  26 calls to single_line_pass()
-  26 calls to reduce_and_count_alternatives()
-  28 calls to observer callback.
+  Max number of alternatives on a line (initial grid pass): 56
+  Max number of alternatives in a line reduce (change line/total): 5/5
+  Number of calls to full_grid_pass: 4
+  Number of calls to single_line_pass (change line/total): 21/26
+  Number of calls to the observer callback: 28
 
 
 
@@ -51,12 +50,11 @@ Grid 20x20:
 
   Number of solutions found: 1
   Max branching depth: 0
-  Max initial number of alternatives on a line: 1287
-  Max number of alternatives during a line reduce: 285
-  6 calls to full_grid_pass()
-  126 calls to single_line_pass()
-  126 calls to reduce_and_count_alternatives()
-  114 calls to observer callback.
+  Max number of alternatives on a line (initial grid pass): 1287
+  Max number of alternatives in a line reduce (change line/total): 130/285
+  Number of calls to full_grid_pass: 6
+  Number of calls to single_line_pass (change line/total): 97/126
+  Number of calls to the observer callback: 114
 
 
 
@@ -87,12 +85,11 @@ Grid 20x20:
 
   Number of solutions found: 1
   Max branching depth: 0
-  Max initial number of alternatives on a line: 4368
-  Max number of alternatives during a line reduce: 828
-  20 calls to full_grid_pass()
-  267 calls to single_line_pass()
-  267 calls to reduce_and_count_alternatives()
-  158 calls to observer callback.
+  Max number of alternatives on a line (initial grid pass): 4368
+  Max number of alternatives in a line reduce (change line/total): 828/828
+  Number of calls to full_grid_pass: 20
+  Number of calls to single_line_pass (change line/total): 151/267
+  Number of calls to the observer callback: 158
 
 
 
@@ -123,12 +120,11 @@ Grid 22x20:
 
   Number of solutions found: 1
   Max branching depth: 0
-  Max initial number of alternatives on a line: 4368
-  Max number of alternatives during a line reduce: 1291
-  21 calls to full_grid_pass()
-  251 calls to single_line_pass()
-  251 calls to reduce_and_count_alternatives()
-  155 calls to observer callback.
+  Max number of alternatives on a line (initial grid pass): 4368
+  Max number of alternatives in a line reduce (change line/total): 372/1291
+  Number of calls to full_grid_pass: 21
+  Number of calls to single_line_pass (change line/total): 145/251
+  Number of calls to the observer callback: 155
 
 
 
@@ -160,12 +156,11 @@ Grid 8x8:
     > The solving of the grid required an hypothesis on 1 row(s) or column(s)
     > Total nunmber of alternatives being tested: 10
     > Max nunmber of alternatives by depth: 10
-  Max initial number of alternatives on a line: 10
-  Max number of alternatives during a line reduce: 6
-  27 calls to full_grid_pass()
-  134 calls to single_line_pass()
-  134 calls to reduce_and_count_alternatives()
-  100 calls to observer callback.
+  Max number of alternatives on a line (initial grid pass): 10
+  Max number of alternatives in a line reduce (change line/total): 4/6
+  Number of calls to full_grid_pass: 27
+  Number of calls to single_line_pass (change line/total): 78/134
+  Number of calls to the observer callback: 100
 
 
 
@@ -225,12 +220,11 @@ Grid 6x6:
     > The solving of the grid required an hypothesis on 4 row(s) or column(s)
     > Total nunmber of alternatives being tested: 13
     > Max nunmber of alternatives by depth: 5 3
-  Max initial number of alternatives on a line: 5
-  Max number of alternatives during a line reduce: 4
-  38 calls to full_grid_pass()
-  136 calls to single_line_pass()
-  136 calls to reduce_and_count_alternatives()
-  101 calls to observer callback.
+  Max number of alternatives on a line (initial grid pass): 5
+  Max number of alternatives in a line reduce (change line/total): 2/4
+  Number of calls to full_grid_pass: 38
+  Number of calls to single_line_pass (change line/total): 69/136
+  Number of calls to the observer callback: 101
 
 
 
@@ -286,12 +280,11 @@ Grid 20x20:
     > The solving of the grid required an hypothesis on 1 row(s) or column(s)
     > Total nunmber of alternatives being tested: 10
     > Max nunmber of alternatives by depth: 10
-  Max initial number of alternatives on a line: 816
-  Max number of alternatives during a line reduce: 574
-  23 calls to full_grid_pass()
-  425 calls to single_line_pass()
-  425 calls to reduce_and_count_alternatives()
-  243 calls to observer callback.
+  Max number of alternatives on a line (initial grid pass): 816
+  Max number of alternatives in a line reduce (change line/total): 105/574
+  Number of calls to full_grid_pass: 23
+  Number of calls to single_line_pass (change line/total): 219/425
+  Number of calls to the observer callback: 243
 
 
 
@@ -327,12 +320,11 @@ Grid 10x10:
     > The solving of the grid required an hypothesis on 1 row(s) or column(s)
     > Total nunmber of alternatives being tested: 6
     > Max nunmber of alternatives by depth: 6
-  Max initial number of alternatives on a line: 36
-  Max number of alternatives during a line reduce: 29
-  13 calls to full_grid_pass()
-  158 calls to single_line_pass()
-  158 calls to reduce_and_count_alternatives()
-  112 calls to observer callback.
+  Max number of alternatives on a line (initial grid pass): 36
+  Max number of alternatives in a line reduce (change line/total): 7/29
+  Number of calls to full_grid_pass: 13
+  Number of calls to single_line_pass (change line/total): 98/158
+  Number of calls to the observer callback: 112
 
 
 
@@ -363,12 +355,11 @@ Grid 25x20:
 
   Number of solutions found: 1
   Max branching depth: 0
-  Max initial number of alternatives on a line: 18564
-  Max number of alternatives during a line reduce: 6748
-  15 calls to full_grid_pass()
-  229 calls to single_line_pass()
-  229 calls to reduce_and_count_alternatives()
-  139 calls to observer callback.
+  Max number of alternatives on a line (initial grid pass): 18564
+  Max number of alternatives in a line reduce (change line/total): 286/6748
+  Number of calls to full_grid_pass: 15
+  Number of calls to single_line_pass (change line/total): 131/229
+  Number of calls to the observer callback: 139
 
 
 
@@ -399,12 +390,11 @@ Grid 25x20:
 
   Number of solutions found: 1
   Max branching depth: 0
-  Max initial number of alternatives on a line: 8008
-  Max number of alternatives during a line reduce: 1430
-  9 calls to full_grid_pass()
-  206 calls to single_line_pass()
-  206 calls to reduce_and_count_alternatives()
-  155 calls to observer callback.
+  Max number of alternatives on a line (initial grid pass): 8008
+  Max number of alternatives in a line reduce (change line/total): 1430/1430
+  Number of calls to full_grid_pass: 9
+  Number of calls to single_line_pass (change line/total): 143/206
+  Number of calls to the observer callback: 155
 
 
 

@@ -20,12 +20,11 @@ GRID 5: Impossible
 
   Number of solutions found: 0
   Max branching depth: 0
-  Max initial number of alternatives on a line: 1
-  Max number of alternatives during a line reduce: 0
-  1 calls to full_grid_pass()
-  0 calls to single_line_pass()
-  0 calls to reduce_and_count_alternatives()
-  3 calls to observer callback.
+  Max number of alternatives on a line (initial grid pass): 1
+  Max number of alternatives in a line reduce (change line/total): 0/0
+  Number of calls to full_grid_pass: 1
+  Number of calls to single_line_pass (change line/total): 0/0
+  Number of calls to the observer callback: 3
 
 
 
