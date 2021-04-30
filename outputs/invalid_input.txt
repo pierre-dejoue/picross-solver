@@ -20,9 +20,11 @@ GRID 5: Impossible
 
   Number of solutions found: 0
   Max branching depth: 0
-  1 calls to full_grid_pass().
-  4 calls to single_line_pass().
-  0 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 0/0
+  Max initial number of alternatives on a line: 1
+  Max number of alternatives during a line reduce: 0
+  1 calls to full_grid_pass()
+  0 calls to single_line_pass()
+  0 calls to reduce_and_count_alternatives()
   3 calls to observer callback.
 
 

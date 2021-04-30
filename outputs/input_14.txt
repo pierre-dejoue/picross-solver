@@ -10111,12 +10111,14 @@ Grid 12x12:
 
   Number of solutions found: 722
   Max branching depth: 9
-    > The solving of the grid required an hypothesis on 2599 row(s) or column(s).
+    > The solving of the grid required an hypothesis on 2599 row(s) or column(s)
     > Total nunmber of alternatives being tested: 11519
     > Max nunmber of alternatives by depth: 36 8 8 10 9 9 4 4 3
-  28541 calls to full_grid_pass().
-  192581 calls to single_line_pass().
-  3618 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 8/20833
+  Max initial number of alternatives on a line: 36
+  Max number of alternatives during a line reduce: 28
+  32836 calls to full_grid_pass()
+  192557 calls to single_line_pass()
+  192557 calls to reduce_and_count_alternatives()
   132132 calls to observer callback.
 
 

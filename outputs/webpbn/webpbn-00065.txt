@@ -45,13 +45,15 @@ Grid 34x40:
 
   Number of solutions found: 1
   Max branching depth: 6
-    > The solving of the grid required an hypothesis on 19 row(s) or column(s).
+    > The solving of the grid required an hypothesis on 19 row(s) or column(s)
     > Total nunmber of alternatives being tested: 177
     > Max nunmber of alternatives by depth: 3 4 5 16 15 16
-  482 calls to full_grid_pass().
-  10945 calls to single_line_pass().
-  85 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 29/643
-  6728 calls to observer callback.
+  Max initial number of alternatives on a line: 13037895
+  Max number of alternatives during a line reduce: 3664308
+  646 calls to full_grid_pass()
+  10902 calls to single_line_pass()
+  10902 calls to reduce_and_count_alternatives()
+  6732 calls to observer callback.
 
 
 

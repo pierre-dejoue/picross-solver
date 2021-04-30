@@ -25,9 +25,11 @@ Grid 22x20:
 
   Number of solutions found: 1
   Max branching depth: 0
-  21 calls to full_grid_pass().
-  276 calls to single_line_pass().
-  0 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 0/0
+  Max initial number of alternatives on a line: 4368
+  Max number of alternatives during a line reduce: 1291
+  21 calls to full_grid_pass()
+  251 calls to single_line_pass()
+  251 calls to reduce_and_count_alternatives()
   155 calls to observer callback.
 
 
@@ -61,12 +63,14 @@ Grid 10x10:
 
   Number of solutions found: 2
   Max branching depth: 1
-    > The solving of the grid required an hypothesis on 1 row(s) or column(s).
+    > The solving of the grid required an hypothesis on 1 row(s) or column(s)
     > Total nunmber of alternatives being tested: 6
     > Max nunmber of alternatives by depth: 6
-  17 calls to full_grid_pass().
-  178 calls to single_line_pass().
-  0 calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: 0/0
+  Max initial number of alternatives on a line: 36
+  Max number of alternatives during a line reduce: 29
+  13 calls to full_grid_pass()
+  158 calls to single_line_pass()
+  158 calls to reduce_and_count_alternatives()
   112 calls to observer callback.
 
 
