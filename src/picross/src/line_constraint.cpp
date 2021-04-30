@@ -207,6 +207,22 @@ std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_til
 
 namespace
 {
+    // Specialized for black and white puzzles
+    inline bool partial_compatibility_bw(const Line& lhs, const Line& rhs, unsigned int start_idx, unsigned int end_idx)
+    {
+        const Line::Container& lhs_vect = lhs.get_tiles();
+        const Line::Container& rhs_vect = rhs.get_tiles();
+        for (size_t idx = start_idx; idx < end_idx; ++idx)
+        {
+            if ((lhs_vect[idx] == Tile::ZERO && rhs_vect[idx] == Tile::ONE) ||
+                (lhs_vect[idx] == Tile::ONE && rhs_vect[idx] == Tile::ZERO))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // Helper class to recursively build all the possible alternatives of a Line, given a constraint
     class BuildLineAlternatives
     {
@@ -214,11 +230,12 @@ namespace
         BuildLineAlternatives(const InputGrid::Constraint& segs_of_ones, const Line& known_tiles)
             : segs_of_ones(segs_of_ones)
             , known_tiles(known_tiles)
+            , alternative(known_tiles, Tile::UNKNOWN)
             , reduced_line()
         {
         }
 
-        unsigned int build_alternatives(const Line& alternative, unsigned int remaining_zeros, size_t line_idx = 0u, size_t constraint_idx = 0u)
+        unsigned int build_alternatives(unsigned int remaining_zeros, const size_t line_idx = 0u, const size_t constraint_idx = 0u)
         {
             assert(alternative.get_type() == known_tiles.get_type());
             assert(alternative.size() == known_tiles.size());
@@ -228,29 +245,33 @@ namespace
             // If the last segment of ones was reached, pad end of line with zero, chack compatibility then reduce
             if (constraint_idx == segs_of_ones.size())
             {
-                Line next_alternative(alternative);
-                Line::Container& next_tiles = next_alternative.get_tiles();
+                Line::Container& next_tiles = alternative.get_tiles();
                 assert(next_tiles.size() - line_idx == remaining_zeros);
-                for (unsigned int c = 0u; c < remaining_zeros; c++) { next_tiles[line_idx++] = Tile::ZERO; }
+                auto next_line_idx = line_idx;
+                for (unsigned int c = 0u; c < remaining_zeros; c++) { next_tiles[next_line_idx++] = Tile::ZERO; }
+                assert(next_line_idx == next_tiles.size());
 
-                nb_alternatives += filter_and_reduce(next_alternative);
+                if (partial_compatibility_bw(alternative, known_tiles, line_idx, next_line_idx))
+                {
+                    reduce();
+                    nb_alternatives += 1;
+                }
             }
             // Else, fill in the next segment of ones, then call recursively
             else
             {
                 const auto& nb_ones = segs_of_ones[constraint_idx];
+                Line::Container& next_tiles = alternative.get_tiles();
                 for (unsigned int pre_zeros = 0u; pre_zeros <= remaining_zeros; pre_zeros++)
                 {
-                    Line next_alternative(alternative);
                     auto next_line_idx = line_idx;
-                    Line::Container& next_tiles = next_alternative.get_tiles();
                     for (unsigned int c = 0u; c < pre_zeros; c++) { next_tiles[next_line_idx++] = Tile::ZERO; }
                     for (unsigned int c = 0u; c < nb_ones; c++) { next_tiles[next_line_idx++] = Tile::ONE; }
                     if (constraint_idx + 1 < segs_of_ones.size()) { next_tiles[next_line_idx++] = Tile::ZERO; }
 
-                    if (next_alternative.compatible(known_tiles))
+                    if (partial_compatibility_bw(alternative, known_tiles, line_idx, next_line_idx))
                     {
-                        nb_alternatives += build_alternatives(next_alternative, remaining_zeros - pre_zeros, next_line_idx, constraint_idx + 1);
+                        nb_alternatives += build_alternatives(remaining_zeros - pre_zeros, next_line_idx, constraint_idx + 1);
                     }
                 }
             }
@@ -267,27 +288,24 @@ namespace
         }
 
     private:
-        unsigned int filter_and_reduce(const Line& alternative)
+        inline void reduce()
         {
             assert(is_fully_defined(alternative));
-            if (alternative.compatible(known_tiles))
+            assert(alternative.compatible(known_tiles));
+            if (!reduced_line)
             {
-                if (!reduced_line)
-                {
-                    reduced_line = std::make_unique<Line>(alternative);
-                }
-                else
-                {
-                    reduced_line->reduce(alternative);
-                }
-                return 1u;
+                reduced_line = std::make_unique<Line>(alternative);
             }
-            return 0u;
+            else
+            {
+                reduced_line->reduce(alternative);
+            }
         }
 
     private:
         const InputGrid::Constraint& segs_of_ones;
         const Line& known_tiles;
+        Line alternative;
         std::unique_ptr<Line> reduced_line;
     };
 
@@ -306,8 +324,7 @@ std::pair<Line, unsigned int> LineConstraint::reduce_and_count_alternatives(cons
     unsigned int nb_zeros = known_tiles.size() - min_line_size;
 
     BuildLineAlternatives builder(segs_of_ones, known_tiles);
-    Line seed_alternative(known_tiles, Tile::UNKNOWN);
-    unsigned int nb_alternatives = builder.build_alternatives(seed_alternative, nb_zeros);
+    unsigned int nb_alternatives = builder.build_alternatives(nb_zeros);
 
     return std::make_pair(builder.get_reduced_line(), nb_alternatives);
 }

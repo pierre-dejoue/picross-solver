@@ -96,15 +96,12 @@ Line OutputGrid::get_line(Line::Type type, size_t index) const
             tiles.push_back(get(x, index));
         }
     }
-    else if (type == Line::COL)
+    else
     {
+        assert(type == Line::COL);
         if (index >= width) { throw std::invalid_argument("Line ctor: column index is out of range"); }
         tiles.reserve(height);
         tiles.insert(tiles.cbegin(), grid.data() + index * height, grid.data() + (index + 1) * height);
-    }
-    else
-    {
-        throw std::invalid_argument("Line ctor: wrong type argument");
     }
     return Line(type, index, std::move(tiles));
 }
