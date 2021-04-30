@@ -41,7 +41,6 @@ namespace Tile
  */
 bool is_all_one_color(const Line& line, Tile::Type color);
 bool is_fully_defined(const Line& line);
-void add_and_filter_lines(std::vector<Line>& lines, const Line& known_tiles, GridStats* stats);
 std::string str_line(const Line& line);
 std::string str_line_type(Line::Type type);
 Line line_delta(const Line& line1, const Line& line2);
@@ -89,7 +88,7 @@ public:
     unsigned int max_segment_size() const;                      // Max segment size
     unsigned int get_min_line_size() const { return min_line_size; }
     std::pair<bool, unsigned int> line_trivial_reduction(Line& line, BinomialCoefficientsCache& binomial) const;
-    std::vector<Line> build_all_possible_lines(const Line& known_tiles, GridStats * stats) const;
+    std::vector<Line> build_all_possible_lines(const Line& known_tiles) const;
     std::pair<Line, unsigned int> reduce_and_count_alternatives(const Line& filter_line, GridStats * stats) const;
     bool compatible(const Line& line) const;
     void print(std::ostream& ostream) const;

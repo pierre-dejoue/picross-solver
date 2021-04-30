@@ -230,29 +230,6 @@ Line line_delta(const Line& line1, const Line& line2)
 }
 
 
-/* Add (with Tile::add) a filter line to each line in a list. If the addition fails,
- * the offending line is discarded from the list
- */
-void add_and_filter_lines(std::vector<Line>& lines, const Line& known_tiles, GridStats* stats)
-{
-    // Stats
-    if (stats != nullptr)
-    {
-         const auto list_size = static_cast<unsigned int>(lines.size());
-         stats->nb_add_and_filter_calls++;
-         stats->total_lines_added_and_filtered += list_size;
-         if (list_size > stats->max_add_and_filter_list_size) { stats->max_add_and_filter_list_size = list_size; }
-    }
-
-    auto it = lines.begin();
-    while(it != lines.end())
-    {
-        const bool compatible = it->add(known_tiles);
-        it = compatible ? std::next(it) : lines.erase(it);
-    }
-}
-
-
 bool is_all_one_color(const Line& line, Tile::Type color)
 {
     return std::all_of(line.get_tiles().cbegin(), line.get_tiles().cend(), [color](const Tile::Type t) { return t == color; });
@@ -788,7 +765,7 @@ bool WorkGrid::solve(unsigned int max_nb_solutions)
             const Constraint& line_constraint = found_line_type == Line::ROW ? rows.at(found_line_index) : cols.at(found_line_index);
             const Line known_tiles = get_line(found_line_type, found_line_index);
 
-            guess_list_of_all_alternatives = line_constraint.build_all_possible_lines(known_tiles, stats);
+            guess_list_of_all_alternatives = line_constraint.build_all_possible_lines(known_tiles);
             assert(guess_list_of_all_alternatives.size() == min_alt);
 
             // Guess!
@@ -992,7 +969,7 @@ std::pair<bool, unsigned int> Constraint::line_trivial_reduction(Line& line, Bin
 }
 
 
-std::vector<Line> Constraint::build_all_possible_lines(const Line& known_tiles, GridStats* stats) const
+std::vector<Line> Constraint::build_all_possible_lines(const Line& known_tiles) const
 {
     if (known_tiles.get_type() != type) { throw std::invalid_argument("Constraint::build_all_possible_lines: Wrong filter line type"); }
     const size_t index = known_tiles.get_index();
@@ -1002,15 +979,20 @@ std::vector<Line> Constraint::build_all_possible_lines(const Line& known_tiles, 
     unsigned int nb_zeros = known_tiles.size() - min_line_size;
 
     std::vector<Line> result;
-    std::vector<Tile::Type> new_tile_vect(known_tiles.size(), Tile::ZERO);
+    Line new_line(known_tiles, Tile::UNKNOWN);
+    Line::Container& new_tile_vect = new_line.get_tiles();
 
     if (segs_of_ones.size() == 0)
     {
         // Return a list with only one all-zero line
-        result.emplace_back(type, index, new_tile_vect);
+        unsigned int line_idx = 0u;
+        for (unsigned int c = 0u; c < known_tiles.size(); c++)  { new_tile_vect[line_idx++] = Tile::ZERO; }
 
-        // Filter the return_list against input line
-        add_and_filter_lines(result, known_tiles, stats);
+        // Filter against known_tiles
+        if (new_line.compatible(known_tiles))
+        {
+            result.emplace_back(type, index, new_tile_vect);
+        }
     }
     else if (segs_of_ones.size() == 1)
     {
@@ -1018,46 +1000,44 @@ std::vector<Line> Constraint::build_all_possible_lines(const Line& known_tiles, 
         // NB: in this case nb_zeros = size - segs_of_ones[0]
         for (unsigned int n = 0u; n <= nb_zeros; n++)
         {
-            for (unsigned int idx = 0u; idx < n; idx++)                                      { new_tile_vect.at(idx)   = Tile::ZERO; }
-            for (unsigned int idx = 0u; idx < segs_of_ones[0]; idx++)                        { new_tile_vect.at(n+idx) = Tile::ONE;  }
-            for (unsigned int idx = n + segs_of_ones[0]; idx < known_tiles.size(); idx++)    { new_tile_vect.at(idx) = Tile::ZERO; }
-            result.emplace_back(type, index, new_tile_vect);
-        }
+            unsigned int line_idx = 0u;
+            for (unsigned int c = 0u; c < n; c++)               { new_tile_vect[line_idx++] = Tile::ZERO; }
+            for (unsigned int c = 0u; c < segs_of_ones[0]; c++) { new_tile_vect[line_idx++] = Tile::ONE;  }
+            while(line_idx < known_tiles.size())                { new_tile_vect[line_idx++] = Tile::ZERO; }
 
-        // Filter the return_list against known_tiles
-        if (!is_all_one_color(known_tiles, Tile::UNKNOWN)) { add_and_filter_lines(result, known_tiles, stats); }
+            // Filter against known_tiles
+            if (new_line.compatible(known_tiles))
+            {
+                result.emplace_back(type, index, new_tile_vect);
+            }
+        }
     }
     else
     {
         // For loop on the number of zeros before the first block of ones
         for (unsigned int n = 0u; n <= nb_zeros; n++)
         {
-            for (unsigned int idx = 0u; idx < n; idx++)                  { new_tile_vect.at(idx)   = Tile::ZERO; }
-            for (unsigned int idx = 0u; idx < segs_of_ones[0]; idx++)    { new_tile_vect.at(n+idx) = Tile::ONE;  }
-            const unsigned int begin_size = n + segs_of_ones[0] + 1u;
-            new_tile_vect.at(begin_size - 1u) = Tile::ZERO;
+            unsigned int line_idx = 0u;
+            for (unsigned int c = 0u; c < n; c++)               { new_tile_vect[line_idx++] = Tile::ZERO; }
+            for (unsigned int c = 0u; c < segs_of_ones[0]; c++) { new_tile_vect[line_idx++] = Tile::ONE;  }
+            new_tile_vect[line_idx++] = Tile::ZERO;
 
-            // Add the start of the line (first block of ones) and the beginning of the filter line
-            std::vector<Tile::Type> begin_vect(new_tile_vect.begin(), new_tile_vect.begin() + begin_size);
-            std::vector<Tile::Type> begin_filter_vect(known_tiles.get_tiles().cbegin(), known_tiles.get_tiles().cbegin() + begin_size);
-
-            Line begin_line(type, index, begin_vect);
-            Line begin_filter(type, index, begin_filter_vect);
-            if (begin_line.add(begin_filter))
+            // Filter against known_tiles
+            if (new_line.compatible(known_tiles))
             {
                 // If OK, then go on and recursively call this function to construct the remaining part of the line.
                 std::vector<unsigned int> trim_sets_of_ones(segs_of_ones.begin() + 1, segs_of_ones.end());
                 Constraint recursive_constraint(type, trim_sets_of_ones);
 
-                std::vector<Tile::Type> end_filter_vect(known_tiles.get_tiles().cbegin() + begin_size, known_tiles.get_tiles().cend());
-                Line end_filter(type, index, end_filter_vect);
+                std::vector<Tile::Type> end_known_vect(known_tiles.get_tiles().cbegin() + line_idx, known_tiles.get_tiles().cend());
+                Line end_known_tiles(type, index, std::move(end_known_vect));
 
-                std::vector<Line> recursive_list = recursive_constraint.build_all_possible_lines(end_filter, stats);
+                std::vector<Line> recursive_list = recursive_constraint.build_all_possible_lines(end_known_tiles);
 
                 // Finally, construct the return_list based on the contents of the recursive_list.
                 for (const Line& line : recursive_list)
                 {
-                    std::copy(line.get_tiles().cbegin(), line.get_tiles().cend(), new_tile_vect.begin() + begin_size);
+                    std::copy(line.get_tiles().cbegin(), line.get_tiles().cend(), new_tile_vect.begin() + line_idx);
                     result.emplace_back(type, index, new_tile_vect);
                 }
             }
@@ -1164,6 +1144,8 @@ private:
 
 std::pair<Line, unsigned int> Constraint::reduce_and_count_alternatives(const Line& known_tiles, GridStats * stats) const
 {
+    if (stats != nullptr) { stats->nb_reduce_and_count_alternatives_calls++; }
+
     if (known_tiles.get_type() != type) { throw std::invalid_argument("Constraint::reduce_and_count_alternatives: Wrong filter line type"); }
     const size_t index = known_tiles.get_index();
 
@@ -1291,7 +1273,7 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
     ostream << "  Max number of alternatives during a line reduce: " << stats.max_nb_alternatives << std::endl;
     ostream << "  " << stats.nb_full_grid_pass_calls << " calls to full_grid_pass()" << std::endl;
     ostream << "  " << stats.nb_single_line_pass_calls << " calls to single_line_pass()" << std::endl;
-    ostream << "  " << stats.nb_add_and_filter_calls << " calls to add_and_filter_lines(). Max list size/total nb of lines being added and filtered: " << stats.max_add_and_filter_list_size << "/" << stats.total_lines_added_and_filtered << std::endl;
+    ostream << "  " << stats.nb_reduce_and_count_alternatives_calls << " calls to reduce_and_count_alternatives()" << std::endl;
     ostream << "  " << stats.nb_observer_callback_calls << " calls to observer callback." << std::endl;
 
     return ostream;
