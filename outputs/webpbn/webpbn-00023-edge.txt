@@ -1,4 +1,4 @@
-GRID 1: Nonrepresentational Test Pattern
+GRID 1: Edge Pattern
  > Found 1 solution(s):
 
 Grid 10x11:
