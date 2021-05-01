@@ -18,7 +18,7 @@ namespace picross
 {
 
 
-std::string get_grid_size(const InputGrid& grid)
+std::string grid_size_str(const InputGrid& grid)
 {
     std::ostringstream oss;
     oss << grid.cols.size() << "x" << grid.rows.size();

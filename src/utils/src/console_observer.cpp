@@ -7,6 +7,7 @@
 ConsoleObserver::ConsoleObserver(size_t width, size_t height, std::ostream& ostream)
     : GridObserver(width, height)
     , ostream(ostream)
+    , nb_solved_grids(0u)
 {
 }
 
@@ -24,7 +25,8 @@ void ConsoleObserver::observer_callback(picross::Solver::Event event, const picr
         break;
 
     case picross::Solver::Event::SOLVED_GRID:
-        ostream << " " << grid << std::endl;
+        ostream << " nb " << ++nb_solved_grids << std::endl;
+        ostream << grid << std::endl;
         break;
 
     default:

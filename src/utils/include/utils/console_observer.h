@@ -17,4 +17,5 @@ private:
 
 private:
     std::ostream& ostream;
+    unsigned int nb_solved_grids;
 };

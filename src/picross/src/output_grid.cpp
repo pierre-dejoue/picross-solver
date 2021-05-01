@@ -115,7 +115,6 @@ bool OutputGrid::is_solved() const
 
 std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid)
 {
-    ostream << "Grid " << grid.get_width() << "x" << grid.get_height() << ":" << std::endl;
     for (unsigned int y = 0u; y < grid.get_height(); y++)
     {
         const Line row = grid.get_line(Line::ROW, y);

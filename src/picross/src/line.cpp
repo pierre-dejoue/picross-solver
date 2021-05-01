@@ -23,7 +23,7 @@ namespace Tile
     char str(Type t)
     {
         if (t == UNKNOWN) { return '?'; }
-        if (t == ZERO) { return ' '; }
+        if (t == ZERO) { return '.'; }
         if (t == ONE) { return '#'; }
         std::ostringstream oss;
         oss << "Invalid tile value: " << t;

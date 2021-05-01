@@ -166,11 +166,15 @@ int main(int argc, char *argv[])
         {
             ValidationModeData grid_data = file_data;
             grid_data.grid = grid_input.name;
-            grid_data.size = get_grid_size(grid_input);
+            grid_data.size = grid_size_str(grid_input);
 
             try
             {
-                if (!validation_mode) { std::cout << "GRID " << ++count_grids << ": " << grid_input.name << std::endl; }
+                if (!validation_mode)
+                {
+                    std::cout << "GRID " << ++count_grids << ": " << grid_input.name << std::endl;
+                    std::cout << "  Size: " << grid_data.size << std::endl;
+                }
 
                 /* Sanity check of the input data */
                 std::tie(grid_data.valid, grid_data.misc) = picross::check_grid_input(grid_input);
@@ -218,14 +222,16 @@ int main(int argc, char *argv[])
                         /* Display solutions */
                         if (solutions.empty())
                         {
-                            std::cout << " > Could not solve that grid :-(" << std::endl << std::endl;
+                            std::cout << "  Could not solve that grid :-(" << std::endl << std::endl;
                         }
                         else
                         {
-                            std::cout << " > Found " << solutions.size() << " solution(s):" << std::endl << std::endl;
+                            std::cout << "  Found " << solutions.size() << " solution(s)" << std::endl << std::endl;
+                            int nb = 0;
                             for (const auto& solution : solutions)
                             {
                                 assert(solution.is_solved());
+                                std::cout << "  Nb " << ++nb << ":" << std::endl;
                                 std::cout << solution << std::endl;
                             }
                         }
@@ -236,13 +242,13 @@ int main(int argc, char *argv[])
                         /* Display timings */
                         if (!args["no-timing"])
                         {
-                            std::cout << "  Solver wall time: " << time_ms.count() << "ms" << std::endl;
+                            std::cout << "  Wall time: " << time_ms.count() << "ms" << std::endl;
                         }
                     }
                 }
                 else if (!validation_mode)
                 {
-                    std::cout << " > Invalid grid. Error message: " << grid_data.misc << std::endl;
+                    std::cout << "  Invalid grid. Error message: " << grid_data.misc << std::endl;
                 }
             }
             catch (std::exception& e)

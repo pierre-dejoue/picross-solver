@@ -58,7 +58,7 @@ struct InputGrid
 /*
  * Return the grid size as a string "WxH" with W the width and H the height
  */
-std::string get_grid_size(const InputGrid& grid);
+std::string grid_size_str(const InputGrid& grid);
 
 
 /*
