@@ -36,13 +36,15 @@ namespace
 }  // namespace
 
 
-WorkGrid::WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats, Solver::Observer observer)
+template <typename LineSelectionPolicy>
+WorkGrid<LineSelectionPolicy>::WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats, Solver::Observer observer)
     : OutputGrid(grid.cols.size(), grid.rows.size(), grid.name)
     , rows(row_constraints_from(grid))
     , cols(column_constraints_from(grid))
     , saved_solutions(solutions)
     , stats(stats)
     , observer(std::move(observer))
+    , max_nb_alternatives(LineSelectionPolicy::initial_max_nb_alternatives())
     , nested_level(0u)
     , binomial(new BinomialCoefficientsCache())
 {
@@ -61,13 +63,15 @@ WorkGrid::WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStat
 
 
 // Shallow copy (does not copy the list of alternatives)
-WorkGrid::WorkGrid(const WorkGrid& parent, unsigned int nested_level)
+template <typename LineSelectionPolicy>
+WorkGrid<LineSelectionPolicy>::WorkGrid(const WorkGrid& parent, unsigned int nested_level)
     : OutputGrid(static_cast<const OutputGrid&>(parent))
     , rows(parent.rows)
     , cols(parent.cols)
     , saved_solutions(parent.saved_solutions)
     , stats(parent.stats)
     , observer(parent.observer)
+    , max_nb_alternatives(LineSelectionPolicy::initial_max_nb_alternatives())
     , nested_level(nested_level)
     , binomial(nullptr)               // only used on the first pass on the grid threfore on nested_level == 0
 {
@@ -96,18 +100,27 @@ WorkGrid::WorkGrid(const WorkGrid& parent, unsigned int nested_level)
 }
 
 
-bool WorkGrid::solve(unsigned int max_nb_solutions)
+template <typename LineSelectionPolicy>
+bool WorkGrid<LineSelectionPolicy>::solve(unsigned int max_nb_solutions)
 {
     try
     {
-        bool grid_changed = full_grid_pass(nested_level == 0u);     // If nested_level == 0, this is the first pass on the grid
+        unsigned int skipped_lines = 0u;
+        full_grid_pass(skipped_lines, nested_level == 0u);     // If nested_level == 0, this is the first pass on the grid
         bool grid_completed = all_lines_completed();
 
-        while (!grid_completed && grid_changed)
+        // While the reduce method is making progress, call it!
+        while (!grid_completed)
         {
-            // While the reduce method is making progress, call it!
-            grid_changed = full_grid_pass();
+            bool grid_changed = full_grid_pass(skipped_lines);
             grid_completed = all_lines_completed();
+
+            // Exit loop either if the grid has completed or if the condition to switch the branching search is met
+            if (LineSelectionPolicy::switch_to_branching(max_nb_alternatives, grid_changed, skipped_lines, nested_level))
+                break;
+
+            // Max number of alternatives for the next full grid pass
+            max_nb_alternatives = LineSelectionPolicy::get_max_nb_alternatives(max_nb_alternatives, grid_changed, skipped_lines, nested_level);
         }
 
         // Are we done?
@@ -166,7 +179,8 @@ bool WorkGrid::solve(unsigned int max_nb_solutions)
 }
 
 
-bool WorkGrid::all_lines_completed() const
+template <typename LineSelectionPolicy>
+bool WorkGrid<LineSelectionPolicy>::all_lines_completed() const
 {
     const bool all_rows = std::all_of(line_completed[Line::ROW].cbegin(), line_completed[Line::ROW].cend(), [](bool b) { return b; });
     const bool all_cols = std::all_of(line_completed[Line::COL].cbegin(), line_completed[Line::COL].cend(), [](bool b) { return b; });
@@ -177,7 +191,8 @@ bool WorkGrid::all_lines_completed() const
 }
 
 
-bool WorkGrid::set_w_reduce_flag(size_t x, size_t y, Tile::Type t)
+template <typename LineSelectionPolicy>
+bool WorkGrid<LineSelectionPolicy>::set_w_reduce_flag(size_t x, size_t y, Tile::Type t)
 {
     if (t != Tile::UNKNOWN && get(x, y) == Tile::UNKNOWN)
     {
@@ -199,7 +214,8 @@ bool WorkGrid::set_w_reduce_flag(size_t x, size_t y, Tile::Type t)
 }
 
 
-bool WorkGrid::set_line(const Line& line)
+template <typename LineSelectionPolicy>
+bool WorkGrid<LineSelectionPolicy>::set_line(const Line& line)
 {
     bool changed = false;
     const size_t index = line.get_index();
@@ -228,7 +244,8 @@ bool WorkGrid::set_line(const Line& line)
 
 // On the first pass of the grid, assume that the color of every tile in the line is unknown
 // and compute the trivial reduction and number of alternatives
-bool WorkGrid::single_line_initial_pass(Line::Type type, unsigned int index)
+template <typename LineSelectionPolicy>
+bool WorkGrid<LineSelectionPolicy>::single_line_initial_pass(Line::Type type, unsigned int index)
 {
     const LineConstraint& constraint = type == Line::ROW ? rows.at(index) : cols.at(index);
 
@@ -283,7 +300,9 @@ bool WorkGrid::single_line_initial_pass(Line::Type type, unsigned int index)
     return changed;
 }
 
-bool WorkGrid::single_line_pass(Line::Type type, unsigned int index)
+
+template <typename LineSelectionPolicy>
+bool WorkGrid<LineSelectionPolicy>::single_line_pass(Line::Type type, unsigned int index)
 {
     assert(line_completed[type][index] == false);
     assert(line_to_be_reduced[type][index] == true);
@@ -326,7 +345,8 @@ bool WorkGrid::single_line_pass(Line::Type type, unsigned int index)
 
 
 // Reduce all rows or all columns. Return false if no change was made on the grid.
-bool WorkGrid::full_side_pass(Line::Type type, bool first_pass)
+template <typename LineSelectionPolicy>
+bool WorkGrid<LineSelectionPolicy>::full_side_pass(Line::Type type, unsigned int& skipped_lines, bool first_pass)
 {
     const auto length = type == Line::ROW ? get_height() : get_width();
     bool changed = false;
@@ -341,7 +361,17 @@ bool WorkGrid::full_side_pass(Line::Type type, bool first_pass)
     {
         for (unsigned int x = 0u; x < length; x++)
         {
-            if (line_to_be_reduced[type][x]) { changed |= single_line_pass(type, x); }
+            if (line_to_be_reduced[type][x])
+            {
+                if (nb_alternatives[type][x] <= max_nb_alternatives)
+                {
+                    changed |= single_line_pass(type, x);
+                }
+                else
+                {
+                    skipped_lines++;
+                }
+            }
         }
     }
     return changed;
@@ -349,15 +379,21 @@ bool WorkGrid::full_side_pass(Line::Type type, bool first_pass)
 
 
 // Reduce all columns and all rows. Return false if no change was made on the grid.
-bool WorkGrid::full_grid_pass(bool first_pass)
+// Return true if the grid was changed during the full pass
+template <typename LineSelectionPolicy>
+bool WorkGrid<LineSelectionPolicy>::full_grid_pass(unsigned int& skipped_lines, bool first_pass)
 {
     if (stats != nullptr) { stats->nb_full_grid_pass_calls++; }
 
-    return full_side_pass(Line::COL, first_pass) | full_side_pass(Line::ROW, first_pass);
+    skipped_lines = 0u;
+    const bool grid_changed = full_side_pass(Line::COL, skipped_lines, first_pass) | full_side_pass(Line::ROW, skipped_lines, first_pass);
+
+    return grid_changed;
 }
 
 
-bool WorkGrid::guess(unsigned int max_nb_solutions) const
+template <typename LineSelectionPolicy>
+bool WorkGrid<LineSelectionPolicy>::guess(unsigned int max_nb_solutions) const
 {
     assert(guess_list_of_all_alternatives.size() > 0u);
     /* This function will test a range of alternatives for one particular line of the grid, each time
@@ -402,7 +438,8 @@ bool WorkGrid::guess(unsigned int max_nb_solutions) const
 }
 
 
-bool WorkGrid::valid_solution() const
+template <typename LineSelectionPolicy>
+bool WorkGrid<LineSelectionPolicy>::valid_solution() const
 {
     assert(is_solved());
     bool valid = true;
@@ -412,7 +449,8 @@ bool WorkGrid::valid_solution() const
 }
 
 
-void WorkGrid::save_solution() const
+template <typename LineSelectionPolicy>
+void WorkGrid<LineSelectionPolicy>::save_solution() const
 {
     assert(valid_solution());
     if (stats != nullptr) { stats->nb_solutions++; }
@@ -420,6 +458,11 @@ void WorkGrid::save_solution() const
     // Shallow copy of only the grid data
     saved_solutions->emplace_back(static_cast<const OutputGrid&>(*this));
 }
+
+
+// Template explicit instantiations
+template class WorkGrid<LineSelectionPolicy_Legacy>;
+template class WorkGrid<LineSelectionPolicy_RampUpNbAlternatives>;
 
 
 } // namespace picross

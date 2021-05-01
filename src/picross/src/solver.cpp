@@ -45,7 +45,7 @@ Solver::Solutions RefSolver::solve(const InputGrid& grid_input, unsigned int max
         };
     }
 
-    const bool success = WorkGrid(grid_input, &solutions, stats, std::move(observer_wrapper)).solve(max_nb_solutions);
+    const bool success = WorkGrid<LineSelectionPolicy_RampUpNbAlternatives>(grid_input, &solutions, stats, std::move(observer_wrapper)).solve(max_nb_solutions);
 
     assert(success == (solutions.size() > 0u));
     return solutions;

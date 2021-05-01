@@ -13,7 +13,9 @@
 
 #include <picross/picross.h>
 
+#include <algorithm>
 #include <exception>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -30,10 +32,70 @@ public:
 
 
 /*
+ * Policies that affect how the solver select which lines to reduce
+ */
+struct LineSelectionPolicy_Legacy
+{
+    // Solver initial value of max_nb_alternatives
+    static constexpr unsigned int initial_max_nb_alternatives()
+    {
+        return std::numeric_limits<unsigned int>::max();
+    }
+
+    // get the value for max_nb_alternatives to be used on the next full grid pass
+    static unsigned int get_max_nb_alternatives(unsigned int previous_max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
+    {
+        return std::numeric_limits<unsigned int>::max();
+    }
+
+    // Return true if it is time to move to branching exploration
+    static bool switch_to_branching(unsigned int max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
+    {
+        return !grid_changed;
+    }
+};
+
+struct LineSelectionPolicy_RampUpNbAlternatives
+{
+    static constexpr unsigned int min_nb_alternatives = 1 << 6;
+    static constexpr unsigned int max_nb_alternatives = 1 << 30;
+
+    static constexpr unsigned int initial_max_nb_alternatives()
+    {
+        return min_nb_alternatives;
+    }
+
+    static unsigned int get_max_nb_alternatives(unsigned int previous_max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
+    {
+        unsigned int nb_alternatives = previous_max_nb_alternatives;
+        if (grid_changed && previous_max_nb_alternatives > min_nb_alternatives)
+        {
+            // Decrease max_nb_alternatives
+            nb_alternatives = std::min(nb_alternatives, max_nb_alternatives) >> 2;
+        }
+        else if (!grid_changed && skipped_lines > 0u)
+        {
+            // Increase max_nb_alternatives
+            nb_alternatives = nb_alternatives >= max_nb_alternatives
+                ? std::numeric_limits<unsigned int>::max()
+                : nb_alternatives << 2;
+        }
+        return nb_alternatives;
+    }
+
+    static bool switch_to_branching(unsigned int max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
+    {
+        return !grid_changed && skipped_lines == 0u;
+    }
+};
+
+
+/*
  * WorkGrid class
  *
  *   Working class used to solve a grid.
  */
+template <typename LineSelectionPolicy>
 class WorkGrid final : public OutputGrid
 {
 public:
@@ -52,8 +114,8 @@ private:
     bool set_line(const Line& line);
     bool single_line_initial_pass(Line::Type type, unsigned int index);
     bool single_line_pass(Line::Type type, unsigned int index);
-    bool full_side_pass(Line::Type type, bool first_pass = false);
-    bool full_grid_pass(bool first_pass = false);
+    bool full_side_pass(Line::Type type, unsigned int& skipped_lines, bool first_pass = false);
+    bool full_grid_pass(unsigned int& skipped_lines, bool first_pass = false);
     bool guess(unsigned int max_nb_solutions) const;
     bool valid_solution() const;
     void save_solution() const;
@@ -66,6 +128,7 @@ private:
     std::vector<bool>                           line_completed[2];
     std::vector<bool>                           line_to_be_reduced[2];
     std::vector<unsigned int>                   nb_alternatives[2];
+    unsigned int                                max_nb_alternatives;
     std::vector<Line>                           guess_list_of_all_alternatives;
     unsigned int                                nested_level;    // nested_level is incremented by function Grid::guess()
     std::unique_ptr<BinomialCoefficientsCache>  binomial;
