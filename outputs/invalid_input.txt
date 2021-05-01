@@ -1,22 +1,27 @@
 WARNING [invalid_input.txt]: Parsing error [Invalid token GRILL (parsing_state = COLUMN_SECTION)] on line 94: GRILL Beaf
-GRID 1: Fish
- > Invalid grid. Error message: Number of filled tiles on rows (153) and columns (154) do not match
+GRID 1: Fishy
+  Size: 22x20
+  Invalid grid. Error message: Number of filled tiles on rows (153) and columns (154) do not match
 
 
-GRID 2: Two notes
- > Invalid grid. Error message: Invalid height = 0
+GRID 2: False note
+  Size: 10x0
+  Invalid grid. Error message: Invalid height = 0
 
 
 GRID 3: Ill-formed
- > Invalid grid. Error message: Height = 3 of the grid is too small for constraint: Constraint on a COL: [ 4 ]; min_line_size = 4
+  Size: 3x3
+  Invalid grid. Error message: Height = 3 of the grid is too small for constraint: Constraint on a COL: [ 4 ]; min_line_size = 4
 
 
 GRID 4: Wrong constraint
- > Invalid grid. Error message: Width = 2 of the grid is too small for constraint: Constraint on a ROW: [ 1 1 ]; min_line_size = 3
+  Size: 2x2
+  Invalid grid. Error message: Width = 2 of the grid is too small for constraint: Constraint on a ROW: [ 1 1 ]; min_line_size = 3
 
 
 GRID 5: Impossible
- > Could not solve that grid :-(
+  Size: 3x3
+  Could not solve that grid :-(
 
   Number of solutions found: 0
   Max branching depth: 0

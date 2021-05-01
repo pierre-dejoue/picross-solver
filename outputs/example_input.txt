@@ -1,64 +1,66 @@
 GRID 1: Fish
- > Found 1 solution(s):
+  Size: 22x20
+  Found 1 solution(s)
 
-Grid 22x20:
-                        
-           #####        
-   ##     #    ###      
-  #  #    ##     ##     
-  # ##  ######### #     
-   ##  ## #  ########## 
-       #      #####   ##
-       # # #  ####     #
-       # # #  ###      #
-       #      ##      ##
-        # #  ###      # 
-       #   ########### #
-       ###  #########  #
-         ##  ########  #
-         ##  # ###### ##
-        #    #  ####  # 
-        #####     ## #  
-          ##     ## #   
-           ######       
-                        
+  Nb 1:
+  ......................
+  .........#####........
+  .##.....#....###......
+  #..#....##.....##.....
+  #.##..#########.#.....
+  .##..##.#..##########.
+  .....#......#####...##
+  .....#.#.#..####.....#
+  .....#.#.#..###......#
+  .....#......##......##
+  ......#.#..###......#.
+  .....#...###########.#
+  .....###..#########..#
+  .......##..########..#
+  .......##..#.######.##
+  ......#....#..####..#.
+  ......#####.....##.#..
+  ........##.....##.#...
+  .........######.......
+  ......................
 
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on a line (initial grid pass): 4368
-  Max number of alternatives in a line reduce (change line/total): 372/1291
-  Number of calls to full_grid_pass: 21
-  Number of calls to single_line_pass (change line/total): 145/251
-  Number of calls to the observer callback: 155
+  Max number of alternatives in a line reduce (change line/total): 286/601
+  Number of calls to full_grid_pass: 52
+  Number of calls to single_line_pass (change line/total): 151/235
+  Number of calls to the observer callback: 161
 
 
 
 GRID 2: Two Notes
- > Found 2 solution(s):
+  Size: 10x10
+  Found 2 solution(s)
 
-Grid 10x10:
-    ###     
-    # #     
-    # #     
-  ###       
-  ###       
-         ###
-         # #
-         # #
-       ###  
-       ###  
+  Nb 1:
+  ..###.....
+  ..#.#.....
+  ..#.#.....
+  ###.......
+  ###.......
+  .......###
+  .......#.#
+  .......#.#
+  .....###..
+  .....###..
 
-Grid 10x10:
-         ###
-         # #
-         # #
-       ###  
-       ###  
-    ###     
-    # #     
-    # #     
-  ###       
-  ###       
+  Nb 2:
+  .......###
+  .......#.#
+  .......#.#
+  .....###..
+  .....###..
+  ..###.....
+  ..#.#.....
+  ..#.#.....
+  ###.......
+  ###.......
 
   Number of solutions found: 2
   Max branching depth: 1
@@ -67,7 +69,7 @@ Grid 10x10:
     > Max nunmber of alternatives by depth: 6
   Max number of alternatives on a line (initial grid pass): 36
   Max number of alternatives in a line reduce (change line/total): 7/29
-  Number of calls to full_grid_pass: 13
+  Number of calls to full_grid_pass: 18
   Number of calls to single_line_pass (change line/total): 98/158
   Number of calls to the observer callback: 112
 

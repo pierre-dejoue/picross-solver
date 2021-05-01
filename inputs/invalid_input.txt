@@ -1,5 +1,5 @@
 # Mismatch number of tiles on rows and columns
-GRID Fish
+GRID Fishy
 ROWS
 [ ]
 [ 5 ]
@@ -46,7 +46,7 @@ COLUMNS
 [ 4 4 ]
 
 # Missing rows
-GRID Two notes
+GRID False note
 COLUMNS
 [ 2 ]
 [ 2 ]

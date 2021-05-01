@@ -1,18 +1,19 @@
 GRID 1: Edge Pattern
- > Found 1 solution(s):
+  Size: 10x11
+  Found 1 solution(s)
 
-Grid 10x11:
-     #      
-   ###      
-   #        
-  ##        
-       #    
-     ###    
-     ###    
-       #    
-         ## 
-         ## 
-        ####
+  Nb 1:
+  ...#......
+  .###......
+  .#........
+  ##........
+  .....#....
+  ...###....
+  ...###....
+  .....#....
+  .......##.
+  .......##.
+  ......####
 
   Number of solutions found: 1
   Max branching depth: 2
@@ -21,7 +22,7 @@ Grid 10x11:
     > Max nunmber of alternatives by depth: 7 4
   Max number of alternatives on a line (initial grid pass): 28
   Max number of alternatives in a line reduce (change line/total): 7/21
-  Number of calls to full_grid_pass: 27
+  Number of calls to full_grid_pass: 17
   Number of calls to single_line_pass (change line/total): 87/201
   Number of calls to the observer callback: 110
 

@@ -1,0 +1,36 @@
+GRID 1: The Ugly Duckling
+  Size: 25x20
+  Found 1 solution(s)
+
+  Nb 1:
+  .#################....###
+  ...#..#......#...########
+  .##....#..###############
+  ###....#........#..######
+  #..#..##..######...######
+  #####..###...####.#..####
+  #####.......#.###....##..
+  ####........######..#####
+  ..##.......#########.....
+  ####.#.....###.....####..
+  ######....####.........##
+  #.#####..####............
+  .#.#..######.......##....
+  #.##..##..........####...
+  #...##.##........##.##..#
+  ...#....#.........#######
+  ...#...##..........######
+  ..#.####.........#.######
+  ..#.............#...####.
+  ...#............#.#......
+
+  Number of solutions found: 1
+  Max branching depth: 0
+  Max number of alternatives on a line (initial grid pass): 8008
+  Max number of alternatives in a line reduce (change line/total): 595/671
+  Number of calls to full_grid_pass: 42
+  Number of calls to single_line_pass (change line/total): 167/229
+  Number of calls to the observer callback: 179
+
+
+

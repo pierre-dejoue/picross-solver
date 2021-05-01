@@ -1,0 +1,41 @@
+GRID 1: Two Notes
+  Size: 10x10
+  Found 2 solution(s)
+
+  Nb 1:
+  ..###.....
+  ..#.#.....
+  ..#.#.....
+  ###.......
+  ###.......
+  .......###
+  .......#.#
+  .......#.#
+  .....###..
+  .....###..
+
+  Nb 2:
+  .......###
+  .......#.#
+  .......#.#
+  .....###..
+  .....###..
+  ..###.....
+  ..#.#.....
+  ..#.#.....
+  ###.......
+  ###.......
+
+  Number of solutions found: 2
+  Max branching depth: 1
+    > The solving of the grid required an hypothesis on 1 row(s) or column(s)
+    > Total nunmber of alternatives being tested: 6
+    > Max nunmber of alternatives by depth: 6
+  Max number of alternatives on a line (initial grid pass): 36
+  Max number of alternatives in a line reduce (change line/total): 7/29
+  Number of calls to full_grid_pass: 18
+  Number of calls to single_line_pass (change line/total): 98/158
+  Number of calls to the observer callback: 112
+
+
+

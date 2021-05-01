@@ -1,0 +1,25 @@
+# 10x10 grid based on picross DS level 0-D
+# This grid has two solutions
+GRID Two Notes
+ROWS
+[ 3 ]
+[ 1 1 ]
+[ 1 1 ]
+[ 3 ]
+[ 3 ]
+[ 3 ]
+[ 1 1 ]
+[ 1 1 ]
+[ 3 ]
+[ 3 ]
+COLUMNS
+[ 2 ]
+[ 2 ]
+[ 5 ]
+[ 1 ]
+[ 3 ]
+[ 2 ]
+[ 2 ]
+[ 5 ]
+[ 1 ]
+[ 3 ]

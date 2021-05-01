@@ -1,4 +1,5 @@
-GRID test
+# 12x12 grid with multiple solutions
+GRID Test pattern
 ROWS
 [ 2 2 ]
 [ 2 2 ]
@@ -25,4 +26,3 @@ COLUMNS
 [ 2 2 ]
 [ 2 2 ]
 [ 2 2 ]
-

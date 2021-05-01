@@ -1,0 +1,25 @@
+GRID 1: Asterisk
+  Size: 9x9
+  Found 1 solution(s)
+
+  Nb 1:
+  ####.####
+  ####.####
+  ..##.##..
+  ##.....##
+  ####.####
+  ##.....##
+  ..##.##..
+  ####.####
+  ####.####
+
+  Number of solutions found: 1
+  Max branching depth: 0
+  Max number of alternatives on a line (initial grid pass): 15
+  Max number of alternatives in a line reduce (change line/total): 0/0
+  Number of calls to full_grid_pass: 1
+  Number of calls to single_line_pass (change line/total): 0/0
+  Number of calls to the observer callback: 10
+
+
+
