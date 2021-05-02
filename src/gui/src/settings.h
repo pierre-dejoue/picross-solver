@@ -19,14 +19,12 @@ public:
         Limits<int> size_enum;
         Limits<float> rounding_ratio;
         Limits<float> size_ratio;
-        Limits<bool> show_branching;
     };
     struct Tile
     {
         int size_enum;
         float rounding_ratio;
         float size_ratio;
-        bool show_branching;
     };
     struct SolverLimits
     {
@@ -37,6 +35,14 @@ public:
     {
         bool limit_solutions;
         int max_nb_solutions;
+    };
+    struct AnimationLimits
+    {
+        Limits<bool> show_branching;
+    };
+    struct Animation
+    {
+        bool show_branching;
     };
 
 public:
@@ -52,6 +58,11 @@ public:
     const Solver& read_solver_settings();
     static const SolverLimits& read_solver_settings_limits();
 
+    // Animation settings
+    Animation* get_animation_settings();
+    const Animation& read_animation_settings();
+    static const AnimationLimits& read_animation_settings_limits();
+
     void visit_windows(bool& canBeErased);
 
 private:
@@ -60,5 +71,6 @@ private:
 private:
     std::unique_ptr<Tile> tile_settings;
     std::unique_ptr<Solver> solver_settings;
+    std::unique_ptr<Animation> animation_settings;
     std::unique_ptr<SettingsWindow> settings_window;
 };

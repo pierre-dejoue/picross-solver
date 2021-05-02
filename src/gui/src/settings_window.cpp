@@ -27,7 +27,7 @@ void SettingsWindow::visit(bool& canBeErased)
     {
         const auto& limits = settings.read_tile_settings_limits();
 
-        ImGui::BulletText("Tile settings");
+        ImGui::BulletText("Tiles");
         ImGui::Indent();
 
         ImGui::Text("Size: ");
@@ -42,8 +42,6 @@ void SettingsWindow::visit(bool& canBeErased)
 
         ImGui::SliderFloat("Size ratio", &tile_settings->size_ratio, limits.size_ratio.min, limits.size_ratio.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 
-        ImGui::Checkbox("Show branching", &tile_settings->show_branching);
-
         ImGui::Unindent();
     }
 
@@ -54,7 +52,7 @@ void SettingsWindow::visit(bool& canBeErased)
 
         ImVec2 spacing = { 10.f, 10.f };
         ImGui::Dummy(spacing);
-        ImGui::BulletText("Solver settings");
+        ImGui::BulletText("Solver");
         ImGui::Indent();
 
         ImGui::Checkbox("Max number of solutions", &solver_settings->limit_solutions);
@@ -63,6 +61,19 @@ void SettingsWindow::visit(bool& canBeErased)
             ImGui::SameLine();
             ImGui::InputInt("", &solver_settings->max_nb_solutions);
         }
+
+        ImGui::Unindent();
+    }
+
+    Settings::Animation* animation_settings = settings.get_animation_settings();
+    if (animation_settings)
+    {
+        const auto& limits = settings.read_animation_settings_limits();
+
+        ImGui::BulletText("Animation");
+        ImGui::Indent();
+
+        ImGui::Checkbox("Show branching", &animation_settings->show_branching);
 
         ImGui::Unindent();
     }

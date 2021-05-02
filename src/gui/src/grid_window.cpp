@@ -128,6 +128,7 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     const size_t height = grid.rows.size();
     const Settings::Tile& tile_settings = settings.read_tile_settings();
     const Settings::Solver& solver_settings = settings.read_solver_settings();
+    const Settings::Animation& animation_settings = settings.read_animation_settings();
 
     max_nb_solutions = solver_settings.limit_solutions ? static_cast<unsigned int>(solver_settings.max_nb_solutions) : 0u;
 
@@ -237,7 +238,7 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
                     for (size_t j = 0u; j < height; ++j)
                     {
                         const auto tile = solution.get(i, j);
-                        const auto depth = tile_settings.show_branching && solver_thread_active && idx + 1 == solutions.size()
+                        const auto depth = animation_settings.show_branching && solver_thread_active && idx + 1 == solutions.size()
                             ? solution.get_depth(i, j)
                             : 0;
                         if (tile == picross::Tile::UNKNOWN)

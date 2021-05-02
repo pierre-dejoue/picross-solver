@@ -5,6 +5,7 @@
 
 namespace
 {
+
     Settings::TileLimits tile_settings_limits()
     {
         Settings::TileLimits result;
@@ -21,10 +22,6 @@ namespace
         result.size_ratio.min = 0.001f;
         result.size_ratio.max = 1.f;
 
-        result.show_branching.default = true;
-        result.show_branching.min = false;
-        result.show_branching.max = true;
-
         return result;
     }
 
@@ -32,21 +29,34 @@ namespace
     {
         Settings::SolverLimits result;
 
-        result.limit_solutions.default = false;
+        result.limit_solutions.default = true;
         result.limit_solutions.min = false;
         result.limit_solutions.max = true;
 
-        result.max_nb_solutions.default = 1;
+        result.max_nb_solutions.default = 2;
         result.max_nb_solutions.min = 1;
         result.max_nb_solutions.max = std::numeric_limits<int>::max();
 
         return result;
     }
+
+    Settings::AnimationLimits animation_settings_limits()
+    {
+        Settings::AnimationLimits result;
+
+        result.show_branching.default = true;
+        result.show_branching.min = false;
+        result.show_branching.max = true;
+
+        return result;
+    }
+
 }  // Anonymous namespace
 
 Settings::Settings()
     : tile_settings()
     , solver_settings()
+    , animation_settings()
 {
 }
 
@@ -64,7 +74,6 @@ const Settings::Tile& Settings::read_tile_settings()
         tile_settings->size_enum = read_tile_settings_limits().size_enum.default;
         tile_settings->rounding_ratio = read_tile_settings_limits().rounding_ratio.default;
         tile_settings->size_ratio = read_tile_settings_limits().size_ratio.default;
-        tile_settings->show_branching = read_tile_settings_limits().show_branching.default;
     }
     assert(tile_settings);
     return *tile_settings;
@@ -100,10 +109,33 @@ const Settings::SolverLimits& Settings::read_solver_settings_limits()
     return result;
 }
 
+Settings::Animation* Settings::get_animation_settings()
+{
+    return animation_settings.get();
+}
+
+const Settings::Animation& Settings::read_animation_settings()
+{
+    // Create if not existing
+    if (!animation_settings)
+    {
+        animation_settings = std::make_unique<Animation>();
+        animation_settings->show_branching = read_animation_settings_limits().show_branching.default;
+    }
+    assert(animation_settings);
+    return *animation_settings;
+}
+
+const Settings::AnimationLimits& Settings::read_animation_settings_limits()
+{
+    static Settings::AnimationLimits result = animation_settings_limits();
+    return result;
+}
+
 void Settings::visit_windows(bool& canBeErased)
 {
     canBeErased = false;
-    if (tile_settings || solver_settings || settings_window)
+    if (tile_settings || solver_settings || animation_settings || settings_window)
     {
         auto& settings_window_ref = get_settings_window();
         bool windowCanBeErased = false;
