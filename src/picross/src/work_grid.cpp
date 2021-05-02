@@ -101,80 +101,77 @@ WorkGrid<LineSelectionPolicy>::WorkGrid(const WorkGrid& parent, unsigned int nes
 
 
 template <typename LineSelectionPolicy>
-bool WorkGrid<LineSelectionPolicy>::solve(unsigned int max_nb_solutions)
+Solver::Status WorkGrid<LineSelectionPolicy>::solve(unsigned int max_nb_solutions)
 {
-    try
+    auto status = full_grid_pass(nested_level == 0u);     // If nested_level == 0, this is the first pass on the grid
+    if (status.contradictory)
+        return Solver::Status::CONTRADICTORY_GRID;
+
+    bool grid_completed = all_lines_completed();
+
+    // While the reduce method is making progress, call it!
+    while (!grid_completed)
     {
-        unsigned int skipped_lines = 0u;
-        full_grid_pass(skipped_lines, nested_level == 0u);     // If nested_level == 0, this is the first pass on the grid
-        bool grid_completed = all_lines_completed();
+        status = full_grid_pass();
+        if (status.contradictory)
+            return Solver::Status::CONTRADICTORY_GRID;
 
-        // While the reduce method is making progress, call it!
-        while (!grid_completed)
+        grid_completed = all_lines_completed();
+
+        // Exit loop either if the grid has completed or if the condition to switch the branching search is met
+        if (LineSelectionPolicy::switch_to_branching(max_nb_alternatives, status.grid_changed, status.skipped_lines, nested_level))
+            break;
+
+        // Max number of alternatives for the next full grid pass
+        max_nb_alternatives = LineSelectionPolicy::get_max_nb_alternatives(max_nb_alternatives, status.grid_changed, status.skipped_lines, nested_level);
+    }
+
+    // Are we done?
+    if (grid_completed)
+    {
+        if (observer)
         {
-            bool grid_changed = full_grid_pass(skipped_lines);
-            grid_completed = all_lines_completed();
-
-            // Exit loop either if the grid has completed or if the condition to switch the branching search is met
-            if (LineSelectionPolicy::switch_to_branching(max_nb_alternatives, grid_changed, skipped_lines, nested_level))
-                break;
-
-            // Max number of alternatives for the next full grid pass
-            max_nb_alternatives = LineSelectionPolicy::get_max_nb_alternatives(max_nb_alternatives, grid_changed, skipped_lines, nested_level);
+            observer(Solver::Event::SOLVED_GRID, nullptr, nested_level);
         }
-
-        // Are we done?
-        if (grid_completed)
+        save_solution();
+        return Solver::Status::OK;
+    }
+    // If we are not, we have to make an hypothesis and continue based on that
+    else
+    {
+        // Find the row or column not yet solved with the minimal alternative lines.
+        // That is the min of all alternatives greater or equal to 2.
+        unsigned int min_alt = 0u;
+        Line::Type found_line_type = Line::ROW;
+        unsigned int found_line_index = 0u;
+        for (const auto& type : { Line::ROW, Line::COL })
         {
-            if (observer)
+            for (unsigned int idx = 0u; idx < nb_alternatives[type].size(); idx++)
             {
-                observer(Solver::Event::SOLVED_GRID, nullptr, nested_level);
-            }
-            save_solution();
-            return true;
-        }
-        // If we are not, we have to make an hypothesis and continue based on that
-        else
-        {
-            // Find the row or column not yet solved with the minimal alternative lines.
-            // That is the min of all alternatives greater or equal to 2.
-            unsigned int min_alt = 0u;
-            Line::Type found_line_type = Line::ROW;
-            unsigned int found_line_index = 0u;
-            for (const auto& type : { Line::ROW, Line::COL })
-            {
-                for (unsigned int idx = 0u; idx < nb_alternatives[type].size(); idx++)
+                const auto nb_alt = line_to_be_reduced[type][idx] ? 0u : nb_alternatives[type][idx];
+                if (nb_alt >= 2u && (min_alt < 2u || nb_alt < min_alt))
                 {
-                    const auto nb_alt =  line_to_be_reduced[type][idx] ? 0u : nb_alternatives[type][idx];
-                    if (nb_alt >= 2u && (min_alt < 2u || nb_alt < min_alt))
-                    {
-                        min_alt = nb_alt;
-                        found_line_type = type;
-                        found_line_index = idx;
-                    }
+                    min_alt = nb_alt;
+                    found_line_type = type;
+                    found_line_index = idx;
                 }
             }
-
-            if (min_alt == 0u)
-            {
-                return false;
-            }
-
-            // Select the row or column with the minimal number of alternatives
-            const LineConstraint& line_constraint = found_line_type == Line::ROW ? rows.at(found_line_index) : cols.at(found_line_index);
-            const Line known_tiles = get_line(found_line_type, found_line_index);
-
-            guess_list_of_all_alternatives = line_constraint.build_all_possible_lines(known_tiles);
-            assert(guess_list_of_all_alternatives.size() == min_alt);
-
-            // Guess!
-            return guess(max_nb_solutions);
         }
-    }
-    catch (PicrossGridCannotBeSolved&)
-    {
-        // The puzzle couldn't be solved
-        return false;
+
+        if (min_alt == 0u)
+        {
+            Solver::Status::CONTRADICTORY_GRID;
+        }
+
+        // Select the row or column with the minimal number of alternatives
+        const LineConstraint& line_constraint = found_line_type == Line::ROW ? rows.at(found_line_index) : cols.at(found_line_index);
+        const Line known_tiles = get_line(found_line_type, found_line_index);
+
+        guess_list_of_all_alternatives = line_constraint.build_all_possible_lines(known_tiles);
+        assert(guess_list_of_all_alternatives.size() == min_alt);
+
+        // Guess!
+        return guess(max_nb_solutions);
     }
 }
 
@@ -245,8 +242,9 @@ bool WorkGrid<LineSelectionPolicy>::set_line(const Line& line)
 // On the first pass of the grid, assume that the color of every tile in the line is unknown
 // and compute the trivial reduction and number of alternatives
 template <typename LineSelectionPolicy>
-bool WorkGrid<LineSelectionPolicy>::single_line_initial_pass(Line::Type type, unsigned int index)
+typename WorkGrid<LineSelectionPolicy>::PassStatus WorkGrid<LineSelectionPolicy>::single_line_initial_pass(Line::Type type, unsigned int index)
 {
+    PassStatus status;
     const LineConstraint& constraint = type == Line::ROW ? rows.at(index) : cols.at(index);
 
     const auto line_size = static_cast<unsigned int>(type == Line::ROW ? get_width() : get_height());
@@ -257,7 +255,6 @@ bool WorkGrid<LineSelectionPolicy>::single_line_initial_pass(Line::Type type, un
     // Compute the trivial reduction if it exists and the number of alternatives
     const auto pair = constraint.line_trivial_reduction(reduced_line, *binomial);
 
-    const bool changed = pair.first;
     const auto nb_alt = pair.second;
     assert(nb_alt > 0u);
     nb_alternatives[type][index] = nb_alt;
@@ -266,10 +263,14 @@ bool WorkGrid<LineSelectionPolicy>::single_line_initial_pass(Line::Type type, un
 
     // If the reduced line is not compatible with the information already present in the grid
     // then the row and column constraints are contradictory.
-    if (!get_line(type, index).compatible(reduced_line)) { throw PicrossGridCannotBeSolved(); }
+    if (!get_line(type, index).compatible(reduced_line))
+    {
+        status.contradictory = true;
+        return status;
+    }
 
     // Set line
-    set_line(reduced_line);
+    status.grid_changed = set_line(reduced_line);
 
     if (nb_alt == 1u)
     {
@@ -297,18 +298,19 @@ bool WorkGrid<LineSelectionPolicy>::single_line_initial_pass(Line::Type type, un
         }
     }
 
-    return changed;
+    return status;
 }
 
 
 template <typename LineSelectionPolicy>
-bool WorkGrid<LineSelectionPolicy>::single_line_pass(Line::Type type, unsigned int index)
+typename WorkGrid<LineSelectionPolicy>::PassStatus WorkGrid<LineSelectionPolicy>::single_line_pass(Line::Type type, unsigned int index)
 {
     assert(line_completed[type][index] == false);
     assert(line_to_be_reduced[type][index] == true);
 
     if (stats != nullptr) { stats->nb_single_line_pass_calls++; }
 
+    PassStatus status;
     const LineConstraint& line_constraint = type == Line::ROW ? rows.at(index) : cols.at(index);
     const Line known_tiles = get_line(type, index);
 
@@ -322,15 +324,19 @@ bool WorkGrid<LineSelectionPolicy>::single_line_pass(Line::Type type, unsigned i
     if (stats != nullptr) { stats->max_nb_alternatives = std::max(stats->max_nb_alternatives, count); }
 
     // If the list of all lines is empty, it means the grid data is contradictory. Throw an exception.
-    if (nb_alternatives[type][index] == 0) { throw PicrossGridCannotBeSolved(); }
+    if (nb_alternatives[type][index] == 0)
+    {
+        status.contradictory = true;
+        return status;
+    }
 
     // If the list comprises of only one element, it means we solved that line
     if (nb_alternatives[type][index] == 1) { line_completed[type][index] = true; }
 
     // In any case, update the grid data with the reduced line resulting from list all_lines
-    bool changed = set_line(reduced_line);
+    status.grid_changed = set_line(reduced_line);
 
-    if (stats != nullptr && changed)
+    if (stats != nullptr && status.grid_changed)
     {
         stats->nb_single_line_pass_calls_w_change++;
         stats->max_nb_alternatives_w_change = std::max(stats->max_nb_alternatives_w_change, count);
@@ -339,22 +345,24 @@ bool WorkGrid<LineSelectionPolicy>::single_line_pass(Line::Type type, unsigned i
     // This line does not need to be reduced until one of the tiles is modified.
     line_to_be_reduced[type][index] = false;
 
-    // return true if some tile was modified. False otherwise.
-    return changed;
+    return status;
 }
 
 
 // Reduce all rows or all columns. Return false if no change was made on the grid.
 template <typename LineSelectionPolicy>
-bool WorkGrid<LineSelectionPolicy>::full_side_pass(Line::Type type, unsigned int& skipped_lines, bool first_pass)
+typename WorkGrid<LineSelectionPolicy>::PassStatus WorkGrid<LineSelectionPolicy>::full_side_pass(Line::Type type, bool first_pass)
 {
+    PassStatus status;
     const auto length = type == Line::ROW ? get_height() : get_width();
-    bool changed = false;
+
     if (first_pass)
     {
         for (unsigned int x = 0u; x < length; x++)
         {
-            changed |= single_line_initial_pass(type, x);
+            status += single_line_initial_pass(type, x);
+            if (status.contradictory)
+                break;
         }
     }
     else
@@ -365,35 +373,42 @@ bool WorkGrid<LineSelectionPolicy>::full_side_pass(Line::Type type, unsigned int
             {
                 if (nb_alternatives[type][x] <= max_nb_alternatives)
                 {
-                    changed |= single_line_pass(type, x);
+                    status += single_line_pass(type, x);
+                    if (status.contradictory)
+                        break;
                 }
                 else
                 {
-                    skipped_lines++;
+                    status.skipped_lines++;
                 }
             }
         }
     }
-    return changed;
+    return status;
 }
 
 
 // Reduce all columns and all rows. Return false if no change was made on the grid.
 // Return true if the grid was changed during the full pass
 template <typename LineSelectionPolicy>
-bool WorkGrid<LineSelectionPolicy>::full_grid_pass(unsigned int& skipped_lines, bool first_pass)
+typename WorkGrid<LineSelectionPolicy>::PassStatus WorkGrid<LineSelectionPolicy>::full_grid_pass(bool first_pass)
 {
+    PassStatus status;
     if (stats != nullptr) { stats->nb_full_grid_pass_calls++; }
 
-    skipped_lines = 0u;
-    const bool grid_changed = full_side_pass(Line::COL, skipped_lines, first_pass) | full_side_pass(Line::ROW, skipped_lines, first_pass);
+    // Pass on columns
+    status += full_side_pass(Line::COL, first_pass);
+    if (status.contradictory)
+        return status;
 
-    return grid_changed;
+    // Pass on rows
+    status += full_side_pass(Line::ROW, first_pass);
+    return status;
 }
 
 
 template <typename LineSelectionPolicy>
-bool WorkGrid<LineSelectionPolicy>::guess(unsigned int max_nb_solutions) const
+Solver::Status WorkGrid<LineSelectionPolicy>::guess(unsigned int max_nb_solutions) const
 {
     assert(guess_list_of_all_alternatives.size() > 0u);
     /* This function will test a range of alternatives for one particular line of the grid, each time
@@ -420,10 +435,9 @@ bool WorkGrid<LineSelectionPolicy>::guess(unsigned int max_nb_solutions) const
         WorkGrid new_grid(*this, nested_level + 1);
 
         // Set one line in the new_grid according to the hypothesis we made. That line is then complete
-        if (!new_grid.set_line(guess_line))
-        {
-            throw std::logic_error("WorkGrid::guess: no change in the new grid, will cause infinite loop.");
-        }
+        const bool changed = new_grid.set_line(guess_line);
+        assert(changed);
+        assert(!new_grid.line_completed[guess_line_type][guess_line_index]);
         new_grid.line_completed[guess_line_type][guess_line_index] = true;
         new_grid.line_to_be_reduced[guess_line_type][guess_line_index] = false;
         new_grid.nb_alternatives[guess_line_type][guess_line_index] = 1u;
@@ -432,9 +446,10 @@ bool WorkGrid<LineSelectionPolicy>::guess(unsigned int max_nb_solutions) const
             break;
 
         // Solve the new grid!
-        flag_solution_found |= new_grid.solve(max_nb_solutions);
+        const auto status = new_grid.solve(max_nb_solutions);
+        flag_solution_found |= status == Solver::Status::OK;
     }
-    return flag_solution_found;
+    return flag_solution_found ? Solver::Status::OK : Solver::Status::CONTRADICTORY_GRID;
 }
 
 

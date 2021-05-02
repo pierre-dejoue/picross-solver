@@ -19,7 +19,7 @@ namespace picross
 class RefSolver : public Solver
 {
 public:
-    Solver::Solutions solve(const InputGrid& grid_input, unsigned int max_nb_solutions) const override;
+    std::pair<Solver::Status, Solver::Solutions> solve(const InputGrid& grid_input, unsigned int max_nb_solutions) const override;
     void set_observer(Observer observer) override;
     void set_stats(GridStats& stats) override;
 private:

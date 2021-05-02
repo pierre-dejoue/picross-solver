@@ -23,14 +23,6 @@
 namespace picross
 {
 
-class PicrossGridCannotBeSolved : public std::runtime_error
-{
-public:
-    PicrossGridCannotBeSolved() : std::runtime_error("[PicrossSolver] The current grid cannot be solved")
-    {}
-};
-
-
 /*
  * Policies that affect how the solver select which lines to reduce
  */
@@ -98,6 +90,21 @@ struct LineSelectionPolicy_RampUpNbAlternatives
 template <typename LineSelectionPolicy>
 class WorkGrid final : public OutputGrid
 {
+private:
+    struct PassStatus
+    {
+        bool grid_changed = false;
+        bool contradictory = false;
+        unsigned int skipped_lines = 0u;
+
+        PassStatus& operator+=(const PassStatus& other)
+        {
+            grid_changed |= other.grid_changed;
+            contradictory |= other.contradictory;
+            skipped_lines += other.skipped_lines;
+            return *this;
+        }
+    };
 public:
     WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats = nullptr, Solver::Observer observer = Solver::Observer());
     WorkGrid(const WorkGrid& other) = delete;
@@ -107,16 +114,16 @@ public:
 private:
     WorkGrid(const WorkGrid& parent, unsigned int nested_level);
 public:
-    bool solve(unsigned int max_nb_solutions = 0u);
+    Solver::Status solve(unsigned int max_nb_solutions = 0u);
 private:
     bool all_lines_completed() const;
     bool set_w_reduce_flag(size_t x, size_t y, Tile::Type t);
     bool set_line(const Line& line);
-    bool single_line_initial_pass(Line::Type type, unsigned int index);
-    bool single_line_pass(Line::Type type, unsigned int index);
-    bool full_side_pass(Line::Type type, unsigned int& skipped_lines, bool first_pass = false);
-    bool full_grid_pass(unsigned int& skipped_lines, bool first_pass = false);
-    bool guess(unsigned int max_nb_solutions) const;
+    PassStatus single_line_initial_pass(Line::Type type, unsigned int index);
+    PassStatus single_line_pass(Line::Type type, unsigned int index);
+    PassStatus full_side_pass(Line::Type type, bool first_pass = false);
+    PassStatus full_grid_pass(bool first_pass = false);
+    Solver::Status guess(unsigned int max_nb_solutions) const;
     bool valid_solution() const;
     void save_solution() const;
 private:

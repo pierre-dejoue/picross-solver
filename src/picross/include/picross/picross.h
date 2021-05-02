@@ -192,8 +192,9 @@ public:
     // By default the solver will look for all the solutions of the input grid.
     // The otional argument max_nb_solutions can be used to limit the number of solutions discovered by the algorithm.
     //
+    enum class Status { OK, CONTRADICTORY_GRID };
     using Solutions = std::vector<OutputGrid>;
-    virtual Solutions solve(const InputGrid& grid_input, unsigned int max_nb_solutions = 0u) const = 0;
+    virtual std::pair<Status, Solutions> solve(const InputGrid& grid_input, unsigned int max_nb_solutions = 0u) const = 0;
 
     //
     // Set an optional observer on the solver
@@ -238,13 +239,29 @@ public:
 };
 
 
+std::ostream& operator<<(std::ostream& ostream, Solver::Status status);
 std::ostream& operator<<(std::ostream& ostream, Solver::Event event);
 
 
 /*
- * Validation method: returns true iff the input grid is valid and has a unique solution.
+ * Validation method: check that the input grid is valid and has a unique solution.
+ *
+ * Returns a pair composed of an integer code and an error message. The code is as follows:
+ *
+ *  -1  ERR     The input grid is invalid
+ *   0  ZERO    No solution found
+ *   1  OK      Valid grid with a unique solution
+ *   2  MULT    The solution is not unique
+ *
+ * NB: The case where the input grid's constraint are not compatible is reported as an ERR (-1): contradictory grid.
+ *     An input grid for which the constraints are coherent should have at least one solution. Therefore the validation
+ *     code ZERO (0) can only be returned if the solver just gave up finding a solution.
  */
-std::pair<bool, std::string> validate_input_grid(const Solver& solver, const InputGrid& grid_input);
+using ValidationCode = int;
+std::pair<ValidationCode, std::string> validate_input_grid(const Solver& solver, const InputGrid& grid_input);
+
+
+std::string validation_code_str(ValidationCode code);
 
 
 /*

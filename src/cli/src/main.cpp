@@ -37,13 +37,13 @@ namespace
         std::string filename;
         std::string grid;
         std::string size;
-        bool valid;
+        picross::ValidationCode validation_code;
         unsigned int max_search_depth;
         float timing_ms;
         std::string misc;
     };
 
-    ValidationModeData::ValidationModeData() : filename(), grid(), size(), valid(false), max_search_depth(0u), timing_ms(0u), misc()
+    ValidationModeData::ValidationModeData() : filename(), grid(), size(), validation_code(-1), max_search_depth(0u), timing_ms(0u), misc()
     {
     }
 
@@ -52,8 +52,8 @@ namespace
         ostream << data.filename << ',';
         ostream << data.grid << ',';
         ostream << data.size << ',';
-        ostream << (data.valid ? "OK" : "") << ',';
-        ostream << (data.valid && (data.max_search_depth == 0u) ? "LINE" : "") << ',';
+        ostream << picross::validation_code_str(data.validation_code) << ',';
+        ostream << (data.validation_code == 1 && (data.max_search_depth == 0u) ? "LINE" : "") << ',';
         ostream << data.timing_ms;
         if (!data.misc.empty())
             ostream << ",\"" << data.misc << "\"";
@@ -177,9 +177,11 @@ int main(int argc, char *argv[])
                 }
 
                 /* Sanity check of the input data */
-                std::tie(grid_data.valid, grid_data.misc) = picross::check_grid_input(grid_input);
+                bool input_ok;
+                std::tie(input_ok, grid_data.misc) = picross::check_grid_input(grid_input);
+                grid_data.validation_code = input_ok ? 0 : -1;
 
-                if (grid_data.valid)
+                if (input_ok)
                 {
                     /* Set observer */
                     const auto width = grid_input.cols.size();
@@ -205,7 +207,7 @@ int main(int argc, char *argv[])
                         /* Validate the grid */
                         {
                             DurationMeas<float, std::milli> meas_ms(time_ms);
-                            std::tie(grid_data.valid, grid_data.misc) = picross::validate_input_grid(*solver, grid_input);
+                            std::tie(grid_data.validation_code, grid_data.misc) = picross::validate_input_grid(*solver, grid_input);
                         }
                         grid_data.max_search_depth = stats.max_nested_level;
                         grid_data.timing_ms = time_ms.count();
@@ -213,14 +215,15 @@ int main(int argc, char *argv[])
                     else
                     {
                         /* Solve the grid */
+                        picross::Solver::Status status;
                         std::vector<picross::OutputGrid> solutions;
                         {
                             DurationMeas<float, std::milli> meas_ms(time_ms);
-                            solutions = solver->solve(grid_input, max_nb_solutions);
+                            std::tie(status, solutions) = solver->solve(grid_input, max_nb_solutions);
                         }
 
                         /* Display solutions */
-                        if (solutions.empty())
+                        if (status != picross::Solver::Status::OK)
                         {
                             std::cout << "  Could not solve that grid :-(" << std::endl << std::endl;
                         }
@@ -255,7 +258,7 @@ int main(int argc, char *argv[])
             {
                 if (validation_mode)
                 {
-                    grid_data.valid = false;
+                    grid_data.validation_code = -1;
                     grid_data.misc = "EXCPT " + std::string(e.what());
                 }
                 else

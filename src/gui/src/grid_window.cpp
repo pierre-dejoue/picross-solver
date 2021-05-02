@@ -344,11 +344,18 @@ void GridWindow::solve_picross_grid()
     {
         allocate_new_solution = true;   // Flag to allocate a new solution on the next observer callback
         solver->set_observer(std::reference_wrapper<GridObserver>(*this));
-        std::vector<picross::OutputGrid> local_solutions = solver->solve(grid, max_nb_solutions);
-        if (local_solutions.empty())
+        picross::Solver::Status status;
+        std::vector<picross::OutputGrid> local_solutions;
+        std::tie (status, local_solutions) = solver->solve(grid, max_nb_solutions);
+        if (status != picross::Solver::Status::OK)
         {
             std::lock_guard<std::mutex> lock(text_buffer_mutex);
             text_buffer.appendf("Could not solve that grid :-(\n");
+        }
+        else if (local_solutions.empty())
+        {
+            std::lock_guard<std::mutex> lock(text_buffer_mutex);
+            text_buffer.appendf("No solution could be found\n");
         }
         else
         {
