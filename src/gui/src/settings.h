@@ -39,10 +39,12 @@ public:
     struct AnimationLimits
     {
         Limits<bool> show_branching;
+        Limits<int> speed;
     };
     struct Animation
     {
         bool show_branching;
+        int speed;
     };
 
 public:

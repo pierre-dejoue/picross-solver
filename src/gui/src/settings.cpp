@@ -48,6 +48,10 @@ namespace
         result.show_branching.min = false;
         result.show_branching.max = true;
 
+        result.speed.default = 10;
+        result.speed.min = 0;
+        result.speed.max = 20;
+
         return result;
     }
 
@@ -121,6 +125,7 @@ const Settings::Animation& Settings::read_animation_settings()
     {
         animation_settings = std::make_unique<Animation>();
         animation_settings->show_branching = read_animation_settings_limits().show_branching.default;
+        animation_settings->speed = read_animation_settings_limits().speed.default;
     }
     assert(animation_settings);
     return *animation_settings;

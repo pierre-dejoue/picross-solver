@@ -106,10 +106,11 @@ GridWindow::GridWindow(picross::InputGrid&& grid, const std::string& source)
     , valid_solutions(0)
     , allocate_new_solution(false)
     , tabs()
-    , line_event()
+    , line_events()
     , line_cv()
     , line_mutex()
     , max_nb_solutions(0u)
+    , speed(1u)
 {
     title = this->grid.name + " (" + source + ")";
 }
@@ -129,6 +130,12 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     const Settings::Tile& tile_settings = settings.read_tile_settings();
     const Settings::Solver& solver_settings = settings.read_solver_settings();
     const Settings::Animation& animation_settings = settings.read_animation_settings();
+
+    if (animation_settings.speed != speed)
+    {
+        speed = animation_settings.speed;
+        line_cv.notify_one();
+    }
 
     max_nb_solutions = solver_settings.limit_solutions ? static_cast<unsigned int>(solver_settings.max_nb_solutions) : 0u;
 
@@ -171,26 +178,31 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
             std::cerr << "End of solver thread for grid: " << grid.name << std::endl;
         }
 
-        // Fetch the latest observer event
-        std::unique_ptr<LineEvent> local_event;
+        // Fetch the latest observer events
+        std::vector<LineEvent> local_events;
         {
             std::lock_guard<std::mutex> lock(line_mutex);
-            std::swap(line_event, local_event);
+            if (!line_events.empty())
+            {
+                local_events.reserve(speed);
+                std::swap(local_events, line_events);
+            }
+
         }
-        if (local_event)
+        if (!local_events.empty())
         {
             // Unblock the waiting solver thread
             line_cv.notify_one();
 
             // Process observer event
-            process_line_event(local_event.get());
+            process_line_events(local_events);
         }
     }
     // Remove the last solution if not valid
     else if (valid_solutions < solutions.size())
     {
         assert(solver_thread_completed);
-        assert(!line_event);
+        assert(line_events.empty());
         solutions.erase(solutions.end() - 1);
         tabs.erase(tabs.end() - 1);
     }
@@ -263,7 +275,7 @@ void GridWindow::reset_solutions()
     solutions.clear();
     tabs.clear();
     observer_clear();
-    line_event.reset();
+    line_events.clear();
 
     // Clear text buffer and print out the grid size
     const size_t width = grid.cols.size();
@@ -274,58 +286,56 @@ void GridWindow::reset_solutions()
 
 void GridWindow::observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const ObserverGrid& grid)
 {
-    auto local_event = std::make_unique<LineEvent>(event, delta, grid);
-
+    std::unique_lock<std::mutex> lock(line_mutex);
+    if (line_events.size() >= speed)
     {
-        std::unique_lock<std::mutex> lock(line_mutex);
-
-        // Wait until the previous line event has been consumed
-        line_cv.wait(lock, [this]() -> bool { return !this->line_event; });
-
-        // Store new event
-        assert(!line_event);
-        std::swap(line_event, local_event);
+        // Wait until the previous line events have been consumed
+        line_cv.wait(lock, [this]() -> bool { return this->speed > 0u && this->line_events.empty(); });
     }
+    line_events.emplace_back(event, delta, grid);
 }
 
-void GridWindow::process_line_event(LineEvent* event)
+void GridWindow::process_line_events(std::vector<LineEvent>& events)
 {
-    assert(event);
+    assert(!events.empty());
 
-    // Initial solution
-    if (allocate_new_solution)
+    for (auto& event : events)
     {
-        allocate_new_solution = false;
-        solutions.emplace_back(std::move(event->grid));
+        // Initial solution
+        if (allocate_new_solution)
+        {
+            allocate_new_solution = false;
+            solutions.emplace_back(std::move(event.grid));
+        }
+        else
+        {
+            solutions.back() = std::move(event.grid);
+        }
+
+        switch (event.event)
+        {
+        case picross::Solver::Event::BRANCHING:
+            break;
+
+        case picross::Solver::Event::DELTA_LINE:
+            break;
+
+        case picross::Solver::Event::SOLVED_GRID:
+            valid_solutions++;
+            allocate_new_solution = true;              // Allocate new solution on next event
+            break;
+
+        default:
+            throw std::invalid_argument("Unknown Solver::Event");
+        }
+
+        // Adjust number of tabs
+        if (tabs.size() < solutions.size())
+        {
+            tabs.emplace_back("Solution " + std::to_string(tabs.size() + 1));
+        }
+        assert(tabs.size() == solutions.size());
     }
-    else
-    {
-        solutions.back() = std::move(event->grid);
-    }
-
-    switch (event->event)
-    {
-    case picross::Solver::Event::BRANCHING:
-        break;
-
-    case picross::Solver::Event::DELTA_LINE:
-        break;
-
-    case picross::Solver::Event::SOLVED_GRID:
-        valid_solutions++;
-        allocate_new_solution = true;              // Allocate new solution on next event
-        break;
-
-    default:
-        throw std::invalid_argument("Unknown Solver::Event");
-    }
-
-    // Adjust number of tabs
-    if (tabs.size() < solutions.size())
-    {
-        tabs.emplace_back("Solution " + std::to_string(tabs.size() + 1));
-    }
-    assert(tabs.size() == solutions.size());
 }
 
 // Solver thread

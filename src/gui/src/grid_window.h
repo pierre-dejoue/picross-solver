@@ -35,7 +35,7 @@ public:
 private:
     void reset_solutions();
     void observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const ObserverGrid& grid) override;
-    void process_line_event(LineEvent* event);
+    void process_line_events(std::vector<LineEvent>& events);
     void solve_picross_grid();
 
 private:
@@ -50,8 +50,9 @@ private:
     unsigned int valid_solutions;
     bool allocate_new_solution;
     std::vector<std::string> tabs;
-    std::unique_ptr<LineEvent> line_event;
+    std::vector<LineEvent> line_events;
     std::condition_variable line_cv;
     std::mutex line_mutex;
     unsigned int max_nb_solutions;
+    std::atomic<int> speed;
 };

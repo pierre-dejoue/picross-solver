@@ -75,6 +75,8 @@ void SettingsWindow::visit(bool& canBeErased)
 
         ImGui::Checkbox("Show branching", &animation_settings->show_branching);
 
+        ImGui::SliderInt("speed", &animation_settings->speed, limits.speed.min, limits.speed.max, "%d", ImGuiSliderFlags_AlwaysClamp);
+
         ImGui::Unindent();
     }
 
