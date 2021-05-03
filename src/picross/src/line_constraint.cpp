@@ -309,6 +309,23 @@ namespace
         std::unique_ptr<Line> reduced_line;
     };
 
+
+    InputGrid::Constraint get_constraint_from(const Line& line)
+    {
+        assert(is_fully_defined(line));
+
+        InputGrid::Constraint segs_of_ones;
+        unsigned int count = 0u;
+        for (const auto& tile : line.get_tiles())
+        {
+            if (tile == Tile::ONE)                { count++; }
+            if (tile == Tile::ZERO && count > 0u) { segs_of_ones.push_back(count); count = 0u; }
+        }
+        if (count > 0u) { segs_of_ones.push_back(count); }          // Last but not least
+
+        return segs_of_ones;
+    }
+
 }  // namespace
 
 
@@ -332,20 +349,8 @@ std::pair<Line, unsigned int> LineConstraint::reduce_and_count_alternatives(cons
 bool LineConstraint::compatible(const Line& line) const
 {
     assert(is_fully_defined(line));
-    const auto& tiles = line.get_tiles();
-    InputGrid::Constraint line_segs_of_ones;
-    unsigned int idx = 0u;
-    while (idx < tiles.size())
-    {
-        while (idx < tiles.size() && tiles[idx] == Tile::ZERO) { idx++; }
-        unsigned int seg_sz = 0u;
-        while (idx < tiles.size() && tiles[idx] == Tile::ONE) { idx++; seg_sz++; }
-        if (seg_sz > 0)
-        {
-            line_segs_of_ones.push_back(seg_sz);
-        }
-    }
-    return segs_of_ones == line_segs_of_ones;
+    const auto segments = get_constraint_from(line);
+    return segments == segs_of_ones;
 }
 
 
@@ -364,6 +369,28 @@ std::ostream& operator<<(std::ostream& ostream, const LineConstraint& constraint
 {
     constraint.print(ostream);
     return ostream;
+}
+
+
+InputGrid get_input_grid_from(const OutputGrid& grid)
+{
+    InputGrid result;
+
+    result.name = grid.get_name();
+
+    result.rows.reserve(grid.get_height());
+    for (unsigned int y = 0u; y < grid.get_height(); y++)
+    {
+        result.rows.emplace_back(get_constraint_from(grid.get_line(Line::ROW, y)));
+    }
+
+    result.cols.reserve(grid.get_width());
+    for (unsigned int x = 0u; x < grid.get_width(); x++)
+    {
+        result.cols.emplace_back(get_constraint_from(grid.get_line(Line::COL, x)));
+    }
+
+    return result;
 }
 
 } // namespace picross

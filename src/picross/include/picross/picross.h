@@ -269,4 +269,10 @@ std::string validation_code_str(ValidationCode code);
  */
 std::unique_ptr<Solver> get_ref_solver();
 
+
+/*
+ * Build an InputGrid from an OutputGrid
+ */
+InputGrid get_input_grid_from(const OutputGrid& grid);
+
 } // namespace picross
