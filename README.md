@@ -19,6 +19,7 @@ solution.
  - Two file formats are supported:
    - A native format created for the library
    - Steve Simpson's [NON format](doc/FILE_FORMAT_NON.md)
+ - Battle-tested on a wide range of puzzles: [Performance](doc/PERF.md)
 
 ## Library
 
