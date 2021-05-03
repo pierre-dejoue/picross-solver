@@ -83,6 +83,13 @@ struct LineSelectionPolicy_RampUpNbAlternatives
 
 
 /*
+ * Exception returned by WorkGrid::solve() if the processing was aborted from the outside
+ */
+class PicrossSolverAborted : public std::exception
+{};
+
+
+/*
  * WorkGrid class
  *
  *   Working class used to solve a grid.
@@ -106,7 +113,7 @@ private:
         }
     };
 public:
-    WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats = nullptr, Solver::Observer observer = Solver::Observer());
+    WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats = nullptr, Solver::Observer observer = Solver::Observer(), Solver::Abort abort_function = Solver::Abort());
     WorkGrid(const WorkGrid& other) = delete;
     WorkGrid& operator=(const WorkGrid& other) = delete;
     WorkGrid(WorkGrid&& other) = default;
@@ -132,6 +139,7 @@ private:
     Solver::Solutions*                          saved_solutions; // ptr to a vector where to store solutions
     GridStats*                                  stats;           // if not null, the solver will store some stats in that structure
     Solver::Observer                            observer;        // if not empty, the solver will notify the observer of its progress
+    Solver::Abort                               abort_function;  // if not empty, the solver will regularly call this function and abort its processing if it returns true
     std::vector<bool>                           line_completed[2];
     std::vector<bool>                           line_to_be_reduced[2];
     std::vector<unsigned int>                   nb_alternatives[2];

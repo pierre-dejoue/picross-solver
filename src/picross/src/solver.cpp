@@ -45,7 +45,15 @@ std::pair<Solver::Status, Solver::Solutions> RefSolver::solve(const InputGrid& g
         };
     }
 
-    const auto status = WorkGrid<LineSelectionPolicy_RampUpNbAlternatives>(grid_input, &solutions, stats, std::move(observer_wrapper)).solve(max_nb_solutions);
+    auto status = Status::OK;
+    try
+    {
+        status = WorkGrid<LineSelectionPolicy_RampUpNbAlternatives>(grid_input, &solutions, stats, std::move(observer_wrapper), abort_function).solve(max_nb_solutions);
+    }
+    catch (const PicrossSolverAborted&)
+    {
+        status = Status::ABORTED;
+    }
 
     return std::make_pair(status, std::move(solutions));
 }
@@ -62,6 +70,11 @@ void RefSolver::set_stats(GridStats& stats)
     this->stats = &stats;
 }
 
+void RefSolver::set_abort_function(Abort abort)
+{
+    this->abort_function = std::move(abort);
+}
+
 
 std::ostream& operator<<(std::ostream& ostream, Solver::Status status)
 {
@@ -69,6 +82,9 @@ std::ostream& operator<<(std::ostream& ostream, Solver::Status status)
     {
     case Solver::Status::OK:
         ostream << "OK";
+        break;
+    case Solver::Status::ABORTED:
+        ostream << "ABORTED";
         break;
     case Solver::Status::CONTRADICTORY_GRID:
         ostream << "CONTRADICTORY_GRID";

@@ -37,13 +37,14 @@ namespace
 
 
 template <typename LineSelectionPolicy>
-WorkGrid<LineSelectionPolicy>::WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats, Solver::Observer observer)
+WorkGrid<LineSelectionPolicy>::WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats, Solver::Observer observer, Solver::Abort abort_function)
     : OutputGrid(grid.cols.size(), grid.rows.size(), grid.name)
     , rows(row_constraints_from(grid))
     , cols(column_constraints_from(grid))
     , saved_solutions(solutions)
     , stats(stats)
     , observer(std::move(observer))
+    , abort_function(std::move(abort_function))
     , max_nb_alternatives(LineSelectionPolicy::initial_max_nb_alternatives())
     , nested_level(0u)
     , binomial(new BinomialCoefficientsCache())
@@ -71,6 +72,7 @@ WorkGrid<LineSelectionPolicy>::WorkGrid(const WorkGrid& parent, unsigned int nes
     , saved_solutions(parent.saved_solutions)
     , stats(parent.stats)
     , observer(parent.observer)
+    , abort_function(parent.abort_function)
     , max_nb_alternatives(LineSelectionPolicy::initial_max_nb_alternatives())
     , nested_level(nested_level)
     , binomial(nullptr)               // only used on the first pass on the grid threfore on nested_level == 0
@@ -382,6 +384,7 @@ typename WorkGrid<LineSelectionPolicy>::PassStatus WorkGrid<LineSelectionPolicy>
                     status.skipped_lines++;
                 }
             }
+            if (abort_function && abort_function()) { throw PicrossSolverAborted(); }
         }
     }
     return status;

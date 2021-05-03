@@ -22,9 +22,11 @@ public:
     std::pair<Solver::Status, Solver::Solutions> solve(const InputGrid& grid_input, unsigned int max_nb_solutions) const override;
     void set_observer(Observer observer) override;
     void set_stats(GridStats& stats) override;
+    void set_abort_function(Abort abort) override;
 private:
     Observer observer;
     GridStats* stats;
+    Abort abort_function;
 };
 
 } // namespace picross

@@ -192,7 +192,7 @@ public:
     // By default the solver will look for all the solutions of the input grid.
     // The otional argument max_nb_solutions can be used to limit the number of solutions discovered by the algorithm.
     //
-    enum class Status { OK, CONTRADICTORY_GRID };
+    enum class Status { OK, ABORTED, CONTRADICTORY_GRID };
     using Solutions = std::vector<OutputGrid>;
     virtual std::pair<Status, Solutions> solve(const InputGrid& grid_input, unsigned int max_nb_solutions = 0u) const = 0;
 
@@ -236,6 +236,16 @@ public:
     // The stat object is reset at the beginning of each call to Solver::solve()
     //
     virtual void set_stats(GridStats& stats) = 0;
+
+
+    //
+    // Set an abort function
+    //
+    // If set, the solver will regularly call this function and abort its processing in case it returns true.
+    // The solver will return the fully completed solutions it has already computed.
+    //
+    using Abort = std::function<bool()>;
+    virtual void set_abort_function(Abort abort) = 0;
 };
 
 

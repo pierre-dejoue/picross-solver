@@ -100,6 +100,7 @@ GridWindow::GridWindow(picross::InputGrid&& grid, const std::string& source)
     , solver_thread()
     , solver_thread_start(true)
     , solver_thread_completed(false)
+    , solver_thread_abort(false)
     , text_buffer_mutex()
     , text_buffer()
     , solutions()
@@ -213,9 +214,13 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     }
 
     // Reset button
-    if (ImGui::Button("Solve again") && !solver_thread_active)
+    if (!solver_thread_active && ImGui::Button("Solve again"))
     {
         solver_thread_start = true;     // Triggered for next frame
+    }
+    else if (solver_thread_active && ImGui::Button("Stop"))
+    {
+        solver_thread_abort = true;     // Flag to signal the solver thread to stop its current processing
     }
 
     // Text
@@ -272,9 +277,15 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     ImGui::End();
 }
 
+bool GridWindow::abort_solver_thread() const
+{
+    return solver_thread_abort;
+}
+
 void GridWindow::reset_solutions()
 {
     assert(!solver_thread.joinable());
+    solver_thread_abort = false;
     allocate_new_solution = false;
     valid_solutions = 0;
     solutions.clear();
@@ -362,10 +373,16 @@ void GridWindow::solve_picross_grid()
     if (check)
     {
         solver->set_observer(std::reference_wrapper<GridObserver>(*this));
+        solver->set_abort_function([this]() { return this->abort_solver_thread(); });
         picross::Solver::Status status;
         std::vector<picross::OutputGrid> local_solutions;
         std::tie (status, local_solutions) = solver->solve(grid, max_nb_solutions);
-        if (status != picross::Solver::Status::OK)
+        if (status == picross::Solver::Status::ABORTED)
+        {
+            std::lock_guard<std::mutex> lock(text_buffer_mutex);
+            text_buffer.appendf("Processing aborted\n");
+        }
+        else if (status == picross::Solver::Status::CONTRADICTORY_GRID)
         {
             std::lock_guard<std::mutex> lock(text_buffer_mutex);
             text_buffer.appendf("Could not solve that grid :-(\n");

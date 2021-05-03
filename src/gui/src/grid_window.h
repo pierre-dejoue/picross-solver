@@ -32,6 +32,8 @@ public:
 
     void visit(bool& canBeErased, Settings& settings);
 
+    bool abort_solver_thread() const;
+
 private:
     void reset_solutions();
     void observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const ObserverGrid& grid) override;
@@ -44,6 +46,7 @@ private:
     std::thread solver_thread;
     bool solver_thread_start;
     std::atomic<bool> solver_thread_completed;
+    std::atomic<bool> solver_thread_abort;
     std::mutex text_buffer_mutex;
     ImGuiTextBuffer text_buffer;
     std::vector<ObserverGrid> solutions;
