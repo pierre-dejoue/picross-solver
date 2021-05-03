@@ -118,8 +118,11 @@ GridWindow::GridWindow(picross::InputGrid&& grid, const std::string& source)
 
 GridWindow::~GridWindow()
 {
+    solver_thread_abort = true;
+    line_cv.notify_all();
     if (solver_thread.joinable())
     {
+        std::cerr << "Aborting grid " << grid.name << "..." << std::endl;
         solver_thread.join();
     }
 }
@@ -178,7 +181,7 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
             solver_thread.join();
             std::swap(solver_thread, std::thread());
             assert(!solver_thread.joinable());
-            std::cerr << "End of solver thread for grid: " << grid.name << std::endl;
+            std::cerr << "End of solver thread for grid " << grid.name << std::endl;
         }
 
         // Fetch the latest observer events
@@ -306,7 +309,10 @@ void GridWindow::observer_callback(picross::Solver::Event event, const picross::
     if (line_events.size() >= speed)
     {
         // Wait until the previous line events have been consumed
-        line_cv.wait(lock, [this]() -> bool { return this->speed > 0u && this->line_events.empty(); });
+        line_cv.wait(lock, [this]() -> bool {
+            return (this->speed > 0u && this->line_events.empty())
+                ||  this->abort_solver_thread();
+        });
     }
     line_events.emplace_back(event, delta, grid);
 }

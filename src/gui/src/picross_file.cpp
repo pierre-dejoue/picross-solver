@@ -14,6 +14,7 @@ PicrossFile::PicrossFile(const std::string& path)
 
 PicrossFile::~PicrossFile()
 {
+    windows.clear();
     std::cerr << "End file " << file_path << std::endl;
 }
 

@@ -139,9 +139,10 @@ int main(int argc, char *argv[])
         ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
         glfwMakeContextCurrent(window);
         glfwSwapBuffers(window);
-    }
+    } // while (!glfwWindowShouldClose(window))
 
     // Cleanup
+    picross_files.clear();
     ImGui_ImplOpenGL2_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
