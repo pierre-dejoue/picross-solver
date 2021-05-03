@@ -35,7 +35,7 @@ public:
 private:
     void reset_solutions();
     void observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const ObserverGrid& grid) override;
-    void process_line_events(std::vector<LineEvent>& events);
+    unsigned int process_line_events(std::vector<LineEvent>& events);
     void solve_picross_grid();
 
 private:

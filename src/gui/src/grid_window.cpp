@@ -137,6 +137,8 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
         line_cv.notify_one();
     }
 
+    bool tab_auto_select_last_solution = false;
+
     max_nb_solutions = solver_settings.limit_solutions ? static_cast<unsigned int>(solver_settings.max_nb_solutions) : 0u;
 
     static const std::vector<size_t> TileSizes = { 12, 18, 24 };
@@ -195,7 +197,10 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
             line_cv.notify_one();
 
             // Process observer event
-            process_line_events(local_events);
+            const unsigned int added_solutions = process_line_events(local_events);
+
+            // If we opened a new solution tab, make sure it is auto-selected once
+            tab_auto_select_last_solution = added_solutions > 0;
         }
     }
     // Remove the last solution if not valid
@@ -235,7 +240,7 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
         for (unsigned int idx = 0u; idx < solutions.size(); ++idx)
         {
             const auto last_idx = idx == solutions.size() - 1;
-            const ImGuiTabItemFlags tab_flags = (solver_thread_active && last_idx) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
+            const ImGuiTabItemFlags tab_flags = (tab_auto_select_last_solution && last_idx) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
             if (ImGui::BeginTabItem(tabs.at(idx).c_str(), nullptr, tab_flags))
             {
                 const auto& solution = solutions.at(idx);
@@ -295,16 +300,18 @@ void GridWindow::observer_callback(picross::Solver::Event event, const picross::
     line_events.emplace_back(event, delta, grid);
 }
 
-void GridWindow::process_line_events(std::vector<LineEvent>& events)
+unsigned int GridWindow::process_line_events(std::vector<LineEvent>& events)
 {
     assert(!events.empty());
 
+    unsigned int count_allocated = 0u;
+
     for (auto& event : events)
     {
-        // Initial solution
-        if (allocate_new_solution)
+        if (allocate_new_solution || solutions.empty())
         {
             allocate_new_solution = false;
+            count_allocated++;
             solutions.emplace_back(std::move(event.grid));
         }
         else
@@ -336,6 +343,8 @@ void GridWindow::process_line_events(std::vector<LineEvent>& events)
         }
         assert(tabs.size() == solutions.size());
     }
+
+    return count_allocated;
 }
 
 // Solver thread
@@ -352,7 +361,6 @@ void GridWindow::solve_picross_grid()
     std::tie(check, check_msg) = picross::check_grid_input(grid);
     if (check)
     {
-        allocate_new_solution = true;   // Flag to allocate a new solution on the next observer callback
         solver->set_observer(std::reference_wrapper<GridObserver>(*this));
         picross::Solver::Status status;
         std::vector<picross::OutputGrid> local_solutions;
