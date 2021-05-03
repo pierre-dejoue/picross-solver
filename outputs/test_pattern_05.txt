@@ -1639,13 +1639,13 @@ GRID 1: Katakana
 
   Number of solutions found: 109
   Max branching depth: 8
-    > The solving of the grid required an hypothesis on 92 row(s) or column(s)
-    > Total nunmber of alternatives being tested: 205
-    > Max nunmber of alternatives by depth: 2 2 3 3 4 3 2 2
-  Max number of alternatives on a line (initial grid pass): 84
-  Max number of alternatives in a line reduce (change line/total): 8/36
+    > Hypothesis on 92 lines
+    > Total number of alternatives being tested: 205
+    > Max number of alternatives by branching depth: 2 2 3 3 4 3 2 2
+  Max number of alternatives on an empty line (initial grid pass): 84
+  Max number of alternatives after a line reduce (change/all): 8/36
   Number of calls to full_grid_pass: 346
-  Number of calls to single_line_pass (change line/total): 443/1014
+  Number of calls to single_line_pass (change/all): 443/1014
   Number of calls to the observer callback: 968
 
 

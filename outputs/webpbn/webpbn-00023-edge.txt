@@ -17,13 +17,13 @@ GRID 1: Edge Pattern
 
   Number of solutions found: 1
   Max branching depth: 2
-    > The solving of the grid required an hypothesis on 2 row(s) or column(s)
-    > Total nunmber of alternatives being tested: 11
-    > Max nunmber of alternatives by depth: 7 4
-  Max number of alternatives on a line (initial grid pass): 28
-  Max number of alternatives in a line reduce (change line/total): 7/21
+    > Hypothesis on 2 lines
+    > Total number of alternatives being tested: 11
+    > Max number of alternatives by branching depth: 7 4
+  Max number of alternatives on an empty line (initial grid pass): 28
+  Max number of alternatives after a line reduce (change/all): 7/21
   Number of calls to full_grid_pass: 17
-  Number of calls to single_line_pass (change line/total): 87/201
+  Number of calls to single_line_pass (change/all): 87/201
   Number of calls to the observer callback: 110
 
 

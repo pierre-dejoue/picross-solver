@@ -93,24 +93,24 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
     ostream << "  Max branching depth: " << stats.max_nested_level << std::endl;
     if (stats.max_nested_level > 0u)
     {
-        ostream << "    > The solving of the grid required an hypothesis on " << stats.guess_total_calls << " row(s) or column(s)" << std::endl;
-        ostream << "    > Total nunmber of alternatives being tested: " << stats.guess_total_alternatives << std::endl;
-        ostream << "    > Max nunmber of alternatives by depth:";
+        ostream << "    > Hypothesis on " << stats.guess_total_calls << " lines" << std::endl;
+        ostream << "    > Total number of alternatives being tested: " << stats.guess_total_alternatives << std::endl;
+        ostream << "    > Max number of alternatives by branching depth:";
         for (const auto& max_alternatives : stats.guess_max_nb_alternatives_by_depth)
         {
             ostream << " " << max_alternatives;
         }
         ostream << std::endl;
     }
-    ostream << "  Max number of alternatives on a line (initial grid pass): " << stats.max_initial_nb_alternatives;
+    ostream << "  Max number of alternatives on an empty line (initial grid pass): " << stats.max_initial_nb_alternatives;
     if (stats.max_initial_nb_alternatives == BinomialCoefficientsCache::overflowValue())
     {
         ostream << " (overflow!)";
     }
     ostream << std::endl;
-    ostream << "  Max number of alternatives in a line reduce (change line/total): " << stats.max_nb_alternatives_w_change << "/" << stats.max_nb_alternatives << std::endl;
+    ostream << "  Max number of alternatives after a line reduce (change/all): " << stats.max_nb_alternatives_w_change << "/" << stats.max_nb_alternatives << std::endl;
     ostream << "  Number of calls to full_grid_pass: " << stats.nb_full_grid_pass_calls << std::endl;
-    ostream << "  Number of calls to single_line_pass (change line/total): " << stats.nb_single_line_pass_calls_w_change << "/" << stats.nb_single_line_pass_calls << std::endl;
+    ostream << "  Number of calls to single_line_pass (change/all): " << stats.nb_single_line_pass_calls_w_change << "/" << stats.nb_single_line_pass_calls << std::endl;
     ostream << "  Number of calls to the observer callback: " << stats.nb_observer_callback_calls << std::endl;
 
     return ostream;

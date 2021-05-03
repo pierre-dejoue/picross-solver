@@ -46,13 +46,13 @@ GRID 1: Mum
 
   Number of solutions found: 1
   Max branching depth: 6
-    > The solving of the grid required an hypothesis on 19 row(s) or column(s)
-    > Total nunmber of alternatives being tested: 177
-    > Max nunmber of alternatives by depth: 3 4 5 16 15 16
-  Max number of alternatives on a line (initial grid pass): 13037895
-  Max number of alternatives in a line reduce (change line/total): 120648/309331
+    > Hypothesis on 19 lines
+    > Total number of alternatives being tested: 177
+    > Max number of alternatives by branching depth: 3 4 5 16 15 16
+  Max number of alternatives on an empty line (initial grid pass): 13037895
+  Max number of alternatives after a line reduce (change/all): 120648/309331
   Number of calls to full_grid_pass: 2540
-  Number of calls to single_line_pass (change line/total): 8146/11966
+  Number of calls to single_line_pass (change/all): 8146/11966
   Number of calls to the observer callback: 8518
 
 

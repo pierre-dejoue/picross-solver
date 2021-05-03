@@ -29,13 +29,13 @@ GRID 1: Bucks
 
   Number of solutions found: 1
   Max branching depth: 2
-    > The solving of the grid required an hypothesis on 2 row(s) or column(s)
-    > Total nunmber of alternatives being tested: 4
-    > Max nunmber of alternatives by depth: 2 2
-  Max number of alternatives on a line (initial grid pass): 125970
-  Max number of alternatives in a line reduce (change line/total): 91/191
+    > Hypothesis on 2 lines
+    > Total number of alternatives being tested: 4
+    > Max number of alternatives by branching depth: 2 2
+  Max number of alternatives on an empty line (initial grid pass): 125970
+  Max number of alternatives after a line reduce (change/all): 91/191
   Number of calls to full_grid_pass: 39
-  Number of calls to single_line_pass (change line/total): 118/192
+  Number of calls to single_line_pass (change/all): 118/192
   Number of calls to the observer callback: 142
 
 

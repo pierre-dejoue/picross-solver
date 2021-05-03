@@ -15,10 +15,10 @@ GRID 1: Asterisk
 
   Number of solutions found: 1
   Max branching depth: 0
-  Max number of alternatives on a line (initial grid pass): 28
-  Max number of alternatives in a line reduce (change line/total): 4/4
+  Max number of alternatives on an empty line (initial grid pass): 28
+  Max number of alternatives after a line reduce (change/all): 4/4
   Number of calls to full_grid_pass: 4
-  Number of calls to single_line_pass (change line/total): 17/23
+  Number of calls to single_line_pass (change/all): 17/23
   Number of calls to the observer callback: 19
 
 

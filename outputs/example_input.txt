@@ -26,10 +26,10 @@ GRID 1: Fish
 
   Number of solutions found: 1
   Max branching depth: 0
-  Max number of alternatives on a line (initial grid pass): 4368
-  Max number of alternatives in a line reduce (change line/total): 286/601
+  Max number of alternatives on an empty line (initial grid pass): 4368
+  Max number of alternatives after a line reduce (change/all): 286/601
   Number of calls to full_grid_pass: 52
-  Number of calls to single_line_pass (change line/total): 151/235
+  Number of calls to single_line_pass (change/all): 151/235
   Number of calls to the observer callback: 161
 
 
@@ -64,13 +64,13 @@ GRID 2: Two Notes
 
   Number of solutions found: 2
   Max branching depth: 1
-    > The solving of the grid required an hypothesis on 1 row(s) or column(s)
-    > Total nunmber of alternatives being tested: 6
-    > Max nunmber of alternatives by depth: 6
-  Max number of alternatives on a line (initial grid pass): 36
-  Max number of alternatives in a line reduce (change line/total): 7/29
+    > Hypothesis on 1 lines
+    > Total number of alternatives being tested: 6
+    > Max number of alternatives by branching depth: 6
+  Max number of alternatives on an empty line (initial grid pass): 36
+  Max number of alternatives after a line reduce (change/all): 7/29
   Number of calls to full_grid_pass: 18
-  Number of calls to single_line_pass (change line/total): 98/158
+  Number of calls to single_line_pass (change/all): 98/158
   Number of calls to the observer callback: 112
 
 

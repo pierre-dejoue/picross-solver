@@ -5780,13 +5780,13 @@ GRID 1: Test pattern
 
   Number of solutions found: 722
   Max branching depth: 8
-    > The solving of the grid required an hypothesis on 658 row(s) or column(s)
-    > Total nunmber of alternatives being tested: 1451
-    > Max nunmber of alternatives by depth: 10 4 3 4 3 3 2 2
-  Max number of alternatives on a line (initial grid pass): 10
-  Max number of alternatives in a line reduce (change line/total): 4/7
+    > Hypothesis on 658 lines
+    > Total number of alternatives being tested: 1451
+    > Max number of alternatives by branching depth: 10 4 3 4 3 3 2 2
+  Max number of alternatives on an empty line (initial grid pass): 10
+  Max number of alternatives after a line reduce (change/all): 4/7
   Number of calls to full_grid_pass: 2693
-  Number of calls to single_line_pass (change line/total): 3891/6921
+  Number of calls to single_line_pass (change/all): 3891/6921
   Number of calls to the observer callback: 7515
 
 
