@@ -92,7 +92,7 @@ quantity of memory to store them all. One such example is `Centerpiece` if the s
 
 ### Conclusion
 
-The robustness of the Picross Solver is satisfying in the sense that it correctly finds the solution(s) of a wide variety of puzzles, even hard ones.
+The robustness of the Picross Solver is satisfactory in the sense that it correctly finds the solution(s) of a wide variety of puzzles, even hard ones.
 The limiting factor on the most difficult puzzles is really the processing time.
 
 By design the solver will not start a search (i.e. test several hypothesis with a backtracking technique) before it reaches a state where no further
