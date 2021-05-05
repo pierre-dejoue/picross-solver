@@ -49,7 +49,7 @@ std::pair<Solver::Status, Solver::Solutions> RefSolver::solve(const InputGrid& g
     auto status = Status::OK;
     try
     {
-        status = WorkGrid<LineSelectionPolicy_RampUpNbAlternatives>(grid_input, &solutions, stats, std::move(observer_wrapper), abort_function).solve(max_nb_solutions);
+        status = WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives_EstimateNbAlternatives>(grid_input, &solutions, stats, std::move(observer_wrapper), abort_function).solve(max_nb_solutions);
     }
     catch (const PicrossSolverAborted&)
     {

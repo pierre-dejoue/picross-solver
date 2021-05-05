@@ -16,8 +16,8 @@
 namespace picross
 {
 
-constexpr unsigned int LineSelectionPolicy_RampUpNbAlternatives::min_nb_alternatives;
-constexpr unsigned int LineSelectionPolicy_RampUpNbAlternatives::max_nb_alternatives;
+constexpr unsigned int LineSelectionPolicy_RampUpMaxNbAlternatives::min_nb_alternatives;
+constexpr unsigned int LineSelectionPolicy_RampUpMaxNbAlternatives::max_nb_alternatives;
 
 namespace
 {
@@ -205,6 +205,9 @@ bool WorkGrid<LineSelectionPolicy>::set_w_reduce_flag(size_t x, size_t y, Tile::
         line_to_be_reduced[Line::ROW][y] = true;
         line_to_be_reduced[Line::COL][x] = true;
 
+        LineSelectionPolicy::estimate_nb_alternatives(nb_alternatives[Line::ROW][y]);
+        LineSelectionPolicy::estimate_nb_alternatives(nb_alternatives[Line::COL][x]);
+
         // return true since the grid was modifed.
         return true;
     }
@@ -262,7 +265,6 @@ typename WorkGrid<LineSelectionPolicy>::PassStatus WorkGrid<LineSelectionPolicy>
 
     const auto nb_alt = pair.second;
     assert(nb_alt > 0u);
-    nb_alternatives[type][index] = nb_alt;
 
     if (stats != nullptr) { stats->max_initial_nb_alternatives = std::max(stats->max_initial_nb_alternatives, nb_alt); }
 
@@ -276,6 +278,9 @@ typename WorkGrid<LineSelectionPolicy>::PassStatus WorkGrid<LineSelectionPolicy>
 
     // Set line
     status.grid_changed = set_line(reduced_line);
+
+    // Must be set after set_line (it modifies nb_alternatives)
+    nb_alternatives[type][index] = nb_alt;
 
     if (nb_alt == 1u)
     {
@@ -322,29 +327,31 @@ typename WorkGrid<LineSelectionPolicy>::PassStatus WorkGrid<LineSelectionPolicy>
     // Reduce all possible lines that match the data already present in the grid and the line constraint
     const auto reduction = line_constraint.reduce_and_count_alternatives(known_tiles, stats);
     const Line& reduced_line = reduction.first;
-    const auto count = reduction.second;
+    const auto nb_alt = reduction.second;
 
-    nb_alternatives[type][index] = count;
-
-    if (stats != nullptr) { stats->max_nb_alternatives = std::max(stats->max_nb_alternatives, count); }
+    if (stats != nullptr) { stats->max_nb_alternatives = std::max(stats->max_nb_alternatives, nb_alt); }
 
     // If the list of all lines is empty, it means the grid data is contradictory. Throw an exception.
-    if (nb_alternatives[type][index] == 0)
+    if (nb_alt == 0)
     {
         status.contradictory = true;
         return status;
     }
 
-    // If the list comprises of only one element, it means we solved that line
-    if (nb_alternatives[type][index] == 1) { line_completed[type][index] = true; }
-
     // In any case, update the grid data with the reduced line resulting from list all_lines
     status.grid_changed = set_line(reduced_line);
+
+    // Must be set after set_line (it modifies nb_alternatives)
+    nb_alternatives[type][index] = nb_alt;
+
+    // If the list comprises of only one element, it means we solved that line
+    if (nb_alt == 1) { line_completed[type][index] = true; }
+
 
     if (stats != nullptr && status.grid_changed)
     {
         stats->nb_single_line_pass_calls_w_change++;
-        stats->max_nb_alternatives_w_change = std::max(stats->max_nb_alternatives_w_change, count);
+        stats->max_nb_alternatives_w_change = std::max(stats->max_nb_alternatives_w_change, nb_alt);
     }
 
     // This line does not need to be reduced until one of the tiles is modified.
@@ -483,7 +490,8 @@ void WorkGrid<LineSelectionPolicy>::save_solution() const
 
 // Template explicit instantiations
 template class WorkGrid<LineSelectionPolicy_Legacy>;
-template class WorkGrid<LineSelectionPolicy_RampUpNbAlternatives>;
+template class WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives>;
+template class WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives_EstimateNbAlternatives>;
 
 
 } // namespace picross
