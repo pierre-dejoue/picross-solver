@@ -14,6 +14,7 @@
 #include <stddef.h>
 
 #include <functional>
+#include <map>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -52,6 +53,8 @@ struct InputGrid
     std::string name;
     std::vector<Constraint> rows;
     std::vector<Constraint> cols;
+
+    std::map<std::string, std::string> metadata;      // Optional
 };
 
 

@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cctype>
 #include <fstream>
 #include <sstream>
 
@@ -245,14 +246,9 @@ public:
 
             if (token == "title")
             {
-                const std::string remaining = iss.str();
-                const auto pos0 = remaining.find_first_of('"');
-                const auto pos1 = remaining.find_last_of('"');
-                if (pos0 != std::string::npos && pos1 != std::string::npos)
-                {
-                    assert(pos1 > pos0);
-                    grid.name = remaining.substr(pos0 + 1, pos1 - pos0 - 1);
-                }
+                std::stringbuf remaining;
+                iss >> &remaining;
+                grid.name = extract_text_in_quotes_or_ltrim(remaining.str());
                 valid_line = true;
             }
             else if (token == "width")
@@ -302,8 +298,16 @@ public:
                 // An empty line outside of the rows or columns sections can just be ignored
                 valid_line = true;
             }
-            else if (is_in_ignored_tokens(token))
+            else if (is_metadata_token(token))
             {
+                std::stringbuf remaining;
+                iss >> &remaining;
+                grid.metadata.insert_or_assign(token, extract_text_in_quotes_or_ltrim(remaining.str()));
+                valid_line = true;
+            }
+            else if (is_ignored_token(token))
+            {
+                // Then ignore
                 valid_line = true;
             }
             else
@@ -336,11 +340,35 @@ private:
         return valid_line;
     }
 
-    static bool is_in_ignored_tokens(const std::string& token)
+    static bool is_ignored_token(const std::string& token)
     {
         // Valid tokens for this file format, but ignored by the parser
-        static std::vector<std::string> ignored_tokens = { "catalogue", "by", "license", "copyright", "color", "goal" };
+        static std::vector<std::string> ignored_tokens = { "color", "goal" };
         return std::find(ignored_tokens.cbegin(), ignored_tokens.cend(), token) != ignored_tokens.cend();
+    }
+
+    static bool is_metadata_token(const std::string& token)
+    {
+        // Valid tokens for this file format, but ignored by the parser
+        static std::vector<std::string> metadata_tokens = { "catalogue", "by", "license", "copyright" };
+        return std::find(metadata_tokens.cbegin(), metadata_tokens.cend(), token) != metadata_tokens.cend();
+    }
+
+    static std::string extract_text_in_quotes_or_ltrim(const std::string& str)
+    {
+        const auto pos0 = str.find_first_of('"');
+        const auto pos1 = str.find_last_of('"');
+        if (pos0 != std::string::npos && pos1 != std::string::npos)
+        {
+            // Extract text in quotes
+            assert(pos1 > pos0);
+            return str.substr(pos0 + 1, pos1 - pos0 - 1);
+        }
+        else
+        {
+            // Trim left spaces
+            return std::string(std::find_if(str.cbegin(), str.cend(), [](unsigned char c) { return !std::isspace(c); }), str.cend());
+        }
     }
 private:
     ParsingState parsing_state;
