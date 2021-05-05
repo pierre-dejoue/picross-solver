@@ -12,6 +12,7 @@
 #include <cassert>
 #include <cctype>
 #include <fstream>
+#include <iterator>
 #include <sstream>
 
 
@@ -421,6 +422,37 @@ std::vector<InputGrid> parse_input_file_generic(const std::string& filepath, con
     return result;
 }
 
+void write_constraints_native_format(std::ostream& ostream, const std::vector<InputGrid::Constraint>& constraints)
+{
+    for (const auto& constraint: constraints)
+    {
+        ostream << "[ ";
+        std::copy(constraint.cbegin(), constraint.cend(), std::ostream_iterator<InputGrid::Constraint::value_type>(ostream, " "));
+        ostream << ']' << std::endl;
+    }
+}
+
+void write_constraints_non_format(std::ostream& ostream, const std::vector<InputGrid::Constraint>& constraints)
+{
+    for (const auto& constraint : constraints)
+    {
+        if (constraint.empty())
+        {
+            ostream << 0 << std::endl;
+        }
+        else
+        {
+            std::copy(constraint.cbegin(), std::prev(constraint.cend()), std::ostream_iterator<InputGrid::Constraint::value_type>(ostream, ","));
+            ostream << constraint.back() << std::endl;
+        }
+    }
+}
+
+inline void write_metadata_non_format(std::ostream& ostream, const std::map<std::string, std::string>& meta, const std::string& key, const std::string& quote = "\"")
+{
+    if (meta.count(key)) { ostream << key << ' ' << quote << meta.at(key) << quote << std::endl; }
+}
+
 } // anonymous namespace
 
 std::vector<InputGrid> parse_input_file(const std::string& filepath, const ErrorHandler& error_handler) noexcept
@@ -433,5 +465,38 @@ std::vector<InputGrid> parse_input_file_non_format(const std::string& filepath, 
     return parse_input_file_generic<FileFormat::Non>(filepath, error_handler);
 }
 
+void write_input_grid(std::ostream& ostream, const InputGrid& input_grid)
+{
+    for (const auto& kvp : input_grid.metadata)
+    {
+        ostream << "# " << kvp.first << ' ' << kvp.second << std::endl;
+    }
+    ostream << "GRID " << input_grid.name << std::endl;
+    ostream << "ROWS" << std::endl;
+    write_constraints_native_format(ostream, input_grid.rows);
+    ostream << "COLUMNS" << std::endl;
+    write_constraints_native_format(ostream, input_grid.cols);
+}
+
+
+void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_grid)
+{
+    write_metadata_non_format(ostream, input_grid.metadata, "catalog");
+    ostream << "title \"" << input_grid.name << '\"' << std::endl;
+    write_metadata_non_format(ostream, input_grid.metadata, "by");
+    write_metadata_non_format(ostream, input_grid.metadata, "copyright");
+    write_metadata_non_format(ostream, input_grid.metadata, "license", "");
+
+    ostream << "width " << input_grid.cols.size() << std::endl;
+    ostream << "height " << input_grid.rows.size() << std::endl;
+
+    ostream << std::endl;
+    ostream << "rows" << std::endl;
+    write_constraints_non_format(ostream, input_grid.rows);
+
+    ostream << std::endl;
+    ostream << "cols" << std::endl;
+    write_constraints_non_format(ostream, input_grid.cols);
+}
 
 } // namespace picross

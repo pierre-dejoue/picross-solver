@@ -11,6 +11,7 @@
 
 
 #include <functional>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -55,5 +56,15 @@ std::vector<InputGrid> parse_input_file(const std::string& filepath, const Error
  *
  ******************************************************************************/
 std::vector<InputGrid> parse_input_file_non_format(const std::string& filepath, const ErrorHandler& error_handler) noexcept;
+
+/******************************************************************************
+ * Stream writer, native file format
+ ******************************************************************************/
+void write_input_grid(std::ostream& ostream, const InputGrid& input_grid);
+
+/******************************************************************************
+ * Stream writer, NON file format
+ ******************************************************************************/
+void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_grid);
 
 } // namespace picross
