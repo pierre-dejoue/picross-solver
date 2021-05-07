@@ -27,3 +27,13 @@ std::string file_name(const std::string& filepath)
     else
         return filepath;
 }
+
+std::string file_name_wo_extension(const std::string& filepath)
+{
+    const std::string filename = file_name(filepath);
+    const auto pos = filename.find_last_of('.');
+    if (pos != std::string::npos)
+        return filename.substr(0, pos);
+    else
+        return filename;
+}

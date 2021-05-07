@@ -1,14 +1,10 @@
 #include "err_window.h"
 
-#include "picross_file.h"
-
-ErrWindow::ErrWindow(PicrossFile& file)
-    : file(file)
-    , title()
+ErrWindow::ErrWindow(const std::string& filename)
+    : title("Errors in file " + title)
     , text_buffer_lock()
     , text_buffer()
 {
-    title = "Errors in file " + file.get_file_path();
 }
 
 void ErrWindow::visit(bool& canBeErased)

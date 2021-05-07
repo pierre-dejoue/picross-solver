@@ -11,6 +11,7 @@ include(imgui)
 include(pfd)
 
 set(GUI_SOURCES
+    src/bitmap_file.cpp
     src/err_window.cpp
     src/grid_window.cpp
     src/main.cpp

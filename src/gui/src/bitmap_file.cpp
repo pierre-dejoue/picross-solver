@@ -1,24 +1,25 @@
-#include "picross_file.h"
+#include "bitmap_file.h"
 
-#include <picross/picross_io.h>
+#include <picross/picross.h>
+#include <utils/bitmap_io.h>
 #include <utils/strings.h>
 
 #include <iostream>
 #include <iterator>
 
-PicrossFile::PicrossFile(const std::string& path)
+BitmapFile::BitmapFile(const std::string& path)
     : file_path(path)
     , is_file_open(false)
-    , windows()
+    , window()
 {}
 
-PicrossFile::~PicrossFile()
+BitmapFile::~BitmapFile()
 {
-    windows.clear();
+    window.reset();
     std::cerr << "End file " << file_path << std::endl;
 }
 
-void PicrossFile::visit_windows(bool& canBeErased, Settings& settings)
+void BitmapFile::visit_windows(bool& canBeErased, Settings& settings)
 {
     canBeErased = false;
     if (!is_file_open)
@@ -28,14 +29,11 @@ void PicrossFile::visit_windows(bool& canBeErased, Settings& settings)
         {
             this->get_err_window().print(msg);
         };
-        std::vector<picross::InputGrid> grids_to_solve = str_tolower(file_extension(file_path)) == "non"
-            ? picross::parse_input_file_non_format(file_path, err_handler)
-            : picross::parse_input_file(file_path, err_handler);
-
-        windows.reserve(grids_to_solve.size());
-        for (auto& grid : grids_to_solve)
+        auto output_grid = import_bitmap_pbm(file_path, err_handler);
+        if (output_grid)
         {
-            windows.push_back(std::make_unique<GridWindow>(std::move(grid), file_name(file_path)));
+            auto grid = picross::get_input_grid_from(*output_grid);
+            window = std::make_unique<GridWindow>(std::move(grid), file_name(file_path));
         }
     }
     else
@@ -43,12 +41,15 @@ void PicrossFile::visit_windows(bool& canBeErased, Settings& settings)
         canBeErased = true;
 
         // Grid windows
-        for (auto it = std::begin(windows); it != std::end(windows);)
+        if (window)
         {
             bool windowCanBeErased = false;
-            (*it)->visit(windowCanBeErased, settings);
+            window->visit(windowCanBeErased, settings);
+            if (windowCanBeErased)
+            {
+                window.reset();
+            }
             canBeErased &= windowCanBeErased;
-            it = windowCanBeErased ? windows.erase(it) : std::next(it);
         }
 
         // Error window
@@ -65,7 +66,7 @@ void PicrossFile::visit_windows(bool& canBeErased, Settings& settings)
     }
 }
 
-ErrWindow& PicrossFile::get_err_window()
+ErrWindow& BitmapFile::get_err_window()
 {
     if (!err_window)
     {

@@ -9,7 +9,7 @@ class Settings;
 class SettingsWindow
 {
 public:
-    SettingsWindow(Settings& settings);
+    explicit SettingsWindow(Settings& settings);
     SettingsWindow(const SettingsWindow&) = delete;
     SettingsWindow& operator=(const SettingsWindow&) = delete;
 

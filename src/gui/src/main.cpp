@@ -25,6 +25,7 @@
 #include <picross/picross.h>
 #include <picross/picross_io.h>
 
+#include "bitmap_file.h"
 #include "picross_file.h"
 #include "settings.h"
 
@@ -71,6 +72,7 @@ int main(int argc, char *argv[])
 
     // Main loop
     std::vector<std::unique_ptr<PicrossFile>> picross_files;
+    std::vector<std::unique_ptr<BitmapFile>> bitmap_files;
     Settings settings;
     while (!glfwWindowShouldClose(window))
     {
@@ -93,11 +95,22 @@ int main(int argc, char *argv[])
             {
                 if (ImGui::MenuItem("Open", "Ctrl+O"))
                 {
-                    const auto paths = pfd::open_file("Select a Picross file").result();
+                    const auto paths = pfd::open_file("Select a Picross file", "",
+                        { "Picross file", "*.txt *.non", "All files", "*" }).result();
                     for (const auto path : paths)
                     {
                         std::cout << "User selected file " << path << "\n";
                         picross_files.emplace_back(std::make_unique<PicrossFile>(path));
+                    }
+                }
+                if (ImGui::MenuItem("Import bitmap", "Ctrl+I"))
+                {
+                    const auto paths = pfd::open_file("Select a bitmap file", "",
+                        { "PBM file", "*.pbm", "All files", "*" }).result();
+                    for (const auto path : paths)
+                    {
+                        std::cout << "User selected bitmap " << path << "\n";
+                        bitmap_files.emplace_back(std::make_unique<BitmapFile>(path));
                     }
                 }
                 if (ImGui::MenuItem("Quit", "Alt+F4"))
@@ -115,6 +128,14 @@ int main(int argc, char *argv[])
             bool canBeErased = false;
             (*it)->visit_windows(canBeErased, settings);
             it = canBeErased ? picross_files.erase(it) : std::next(it);
+        }
+
+        // Bitmap files windows
+        for (auto it = std::begin(bitmap_files); it != std::end(bitmap_files);)
+        {
+            bool canBeErased = false;
+            (*it)->visit_windows(canBeErased, settings);
+            it = canBeErased ? bitmap_files.erase(it) : std::next(it);
         }
 
         // Settings window
@@ -143,6 +164,7 @@ int main(int argc, char *argv[])
 
     // Cleanup
     picross_files.clear();
+    bitmap_files.clear();
     ImGui_ImplOpenGL2_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

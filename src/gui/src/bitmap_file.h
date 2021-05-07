@@ -5,15 +5,14 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 class Settings;
 
-class PicrossFile
+class BitmapFile
 {
 public:
-    explicit PicrossFile(const std::string& path);
-    ~PicrossFile();
+    explicit BitmapFile(const std::string& path);
+    ~BitmapFile();
 
     void visit_windows(bool& canBeErased, Settings& settings);
 
@@ -23,6 +22,6 @@ private:
 private:
     std::string file_path;
     bool is_file_open;
-    std::vector<std::unique_ptr<GridWindow>> windows;
+    std::unique_ptr<GridWindow> window;
     std::unique_ptr<ErrWindow> err_window;
 };
