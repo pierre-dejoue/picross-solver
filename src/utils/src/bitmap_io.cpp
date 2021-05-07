@@ -2,7 +2,6 @@
 
 #include <utils/strings.h>
 
-#include <cctype>       // missing in pnm.hpp
 #include <pnm.hpp>
 
 #include <cassert>

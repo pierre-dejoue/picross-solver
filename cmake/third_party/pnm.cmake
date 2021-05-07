@@ -7,8 +7,8 @@ message(STATUS "Third-party: pnm")
 include(FetchContent)
 FetchContent_Declare(
     pnm
-    GIT_REPOSITORY https://github.com/ToruNiina/pnm.git
-    GIT_TAG v1.0.0
+    GIT_REPOSITORY https://github.com/pierre-dejoue/pnm.git
+    GIT_TAG 0a689ee37ef7ba0b9a30dfa79486dbcb5e12582f
 )
 FetchContent_Populate(pnm)
 
