@@ -21,6 +21,8 @@
 
 namespace picross
 {
+namespace io
+{
 
 using ExitCode = int;
 using ErrorHandler = std::function<void(const std::string&, ExitCode)>;
@@ -67,4 +69,5 @@ void write_input_grid(std::ostream& ostream, const InputGrid& input_grid);
  ******************************************************************************/
 void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_grid);
 
+} // namespace io
 } // namespace picross

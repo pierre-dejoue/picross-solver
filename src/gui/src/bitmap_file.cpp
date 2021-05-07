@@ -25,7 +25,7 @@ void BitmapFile::visit_windows(bool& canBeErased, Settings& settings)
     if (!is_file_open)
     {
         is_file_open = true;
-        const auto err_handler = [this](const std::string& msg, picross::ExitCode)
+        const auto err_handler = [this](const std::string& msg, picross::io::ExitCode)
         {
             this->get_err_window().print(msg);
         };

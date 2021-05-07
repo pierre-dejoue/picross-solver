@@ -141,20 +141,20 @@ int main(int argc, char *argv[])
         ValidationModeData file_data;
         file_data.filename = file_name(filepath);
 
-        const picross::ErrorHandler err_handler_classic = [&return_status, &file_data](const std::string& msg, picross::ExitCode code)
+        const picross::io::ErrorHandler err_handler_classic = [&return_status, &file_data](const std::string& msg, picross::io::ExitCode code)
         {
             std::cout << (code == 0 ? "WARNING" : "ERROR" ) << " [" << file_data.filename << "]: " << msg << std::endl;
             if (code != 0)
                 return_status = code;
         };
-        const picross::ErrorHandler err_handler_validation = [&file_data](const std::string& msg, picross::ExitCode code)
+        const picross::io::ErrorHandler err_handler_validation = [&file_data](const std::string& msg, picross::io::ExitCode code)
         {
             file_data.misc = msg.empty() ? std::to_string(code) : msg;
         };
 
         const std::vector<picross::InputGrid> grids_to_solve = str_tolower(file_extension(filepath)) == "non"
-            ? picross::parse_input_file_non_format(filepath, (validation_mode ? err_handler_validation : err_handler_classic))
-            : picross::parse_input_file(filepath, (validation_mode ? err_handler_validation : err_handler_classic));
+            ? picross::io::parse_input_file_non_format(filepath, (validation_mode ? err_handler_validation : err_handler_classic))
+            : picross::io::parse_input_file(filepath, (validation_mode ? err_handler_validation : err_handler_classic));
 
         if (validation_mode && !file_data.misc.empty()) { std::cout << file_data << std::endl; }
 

@@ -24,13 +24,13 @@ void PicrossFile::visit_windows(bool& canBeErased, Settings& settings)
     if (!is_file_open)
     {
         is_file_open = true;
-        const auto err_handler = [this](const std::string& msg, picross::ExitCode)
+        const auto err_handler = [this](const std::string& msg, picross::io::ExitCode)
         {
             this->get_err_window().print(msg);
         };
         std::vector<picross::InputGrid> grids_to_solve = str_tolower(file_extension(file_path)) == "non"
-            ? picross::parse_input_file_non_format(file_path, err_handler)
-            : picross::parse_input_file(file_path, err_handler);
+            ? picross::io::parse_input_file_non_format(file_path, err_handler)
+            : picross::io::parse_input_file(file_path, err_handler);
 
         windows.reserve(grids_to_solve.size());
         for (auto& grid : grids_to_solve)

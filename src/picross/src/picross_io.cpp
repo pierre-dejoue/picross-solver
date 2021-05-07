@@ -18,6 +18,8 @@
 
 namespace picross
 {
+namespace io
+{
 namespace
 {
 
@@ -499,4 +501,5 @@ void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_g
     write_constraints_non_format(ostream, input_grid.cols);
 }
 
+} // namespace io
 } // namespace picross
