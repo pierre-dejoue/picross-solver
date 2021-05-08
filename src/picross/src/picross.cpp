@@ -49,9 +49,9 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid)
         return std::make_pair(false, oss.str());
     }
     unsigned int nb_tiles_on_rows = 0u;
-    for (auto& c = grid.rows.begin(); c != grid.rows.end(); c++)
+    for (const auto& c : grid.rows)
     {
-        LineConstraint row(Line::ROW, *c);
+        LineConstraint row(Line::ROW, c);
         nb_tiles_on_rows += row.nb_filled_tiles();
         if (row.get_min_line_size() > width)
         {
@@ -61,9 +61,9 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid)
         }
     }
     unsigned int nb_tiles_on_cols = 0u;
-    for (auto& c = grid.cols.begin(); c != grid.cols.end(); c++)
+    for (const auto& c : grid.cols)
     {
-        LineConstraint col(Line::COL, *c);
+        LineConstraint col(Line::COL, c);
         nb_tiles_on_cols += col.nb_filled_tiles();
         if (col.get_min_line_size() > height)
         {

@@ -80,7 +80,8 @@ void OutputGrid::set(size_t x, size_t y, Tile::Type t)
 
 void OutputGrid::reset()
 {
-    std::swap(grid, std::vector<Tile::Type>(height * width, Tile::UNKNOWN));
+    auto empty_grid = std::vector<Tile::Type>(height * width, Tile::UNKNOWN);
+    std::swap(grid, empty_grid);
 }
 
 

@@ -27,7 +27,8 @@ std::pair<Solver::Status, Solver::Solutions> RefSolver::solve(const InputGrid& g
     if (stats != nullptr)
     {
         /* Reset stats */
-        std::swap(*stats, GridStats());
+        GridStats new_stats;
+        std::swap(*stats, new_stats);
 
         stats->max_nb_solutions = max_nb_solutions;
     }

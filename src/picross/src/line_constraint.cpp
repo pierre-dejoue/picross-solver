@@ -357,9 +357,9 @@ bool LineConstraint::compatible(const Line& line) const
 void LineConstraint::print(std::ostream& ostream) const
 {
     ostream << "Constraint on a " << str_line_type(type) << ": [ ";
-    for (auto& it = segs_of_ones.begin(); it != segs_of_ones.end(); ++it)
+    for (const auto& seg : segs_of_ones)
     {
-        ostream << *it << " ";
+        ostream << seg << " ";
     }
     ostream << "]; min_line_size = " << min_line_size;
 }

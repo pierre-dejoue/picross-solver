@@ -305,7 +305,7 @@ public:
             {
                 std::stringbuf remaining;
                 iss >> &remaining;
-                grid.metadata.insert_or_assign(token, extract_text_in_quotes_or_ltrim(remaining.str()));
+                grid.metadata.insert({token, extract_text_in_quotes_or_ltrim(remaining.str())});
                 valid_line = true;
             }
             else if (is_ignored_token(token))

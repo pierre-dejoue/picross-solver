@@ -16,6 +16,9 @@
 namespace picross
 {
 
+constexpr unsigned int LineSelectionPolicy_RampUpNbAlternatives::min_nb_alternatives;
+constexpr unsigned int LineSelectionPolicy_RampUpNbAlternatives::max_nb_alternatives;
+
 namespace
 {
     std::vector<LineConstraint> row_constraints_from(const InputGrid& grid)
