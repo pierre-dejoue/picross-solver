@@ -66,6 +66,7 @@ Graphical UI:
 * [GLFW3](http://glfw.sf.net)
 * [Dear ImGui](https://github.com/ocornut/imgui)
 * [Portable File Dialogs](https://github.com/samhocevar/portable-file-dialogs)
+* [PNM++](https://github.com/ToruNiina/pnm)
 
 Command line interface:
 
