@@ -25,7 +25,7 @@ public:
         ObserverGrid grid;
     };
 public:
-    GridWindow(picross::InputGrid&& grid, const std::string& source);
+    GridWindow(picross::InputGrid&& grid, const std::string& source, bool start_thread = true);
     ~GridWindow();
     GridWindow(const GridWindow&) = delete;
     GridWindow& operator=(const GridWindow&) = delete;
@@ -39,6 +39,7 @@ private:
     void observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const ObserverGrid& grid) override;
     unsigned int process_line_events(std::vector<LineEvent>& events);
     void solve_picross_grid();
+    void save_grid();
 
 private:
     picross::InputGrid grid;

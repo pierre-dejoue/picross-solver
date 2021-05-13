@@ -3,6 +3,13 @@
 #include "err_window.h"
 #include "settings.h"
 
+#include <picross/picross_io.h>
+#include <utils/bitmap_io.h>
+#include <utils/picross_file_io.h>
+#include <utils/strings.h>
+
+#include "portable-file-dialogs.h"
+
 #include <iostream>
 #include <sstream>
 #include <utility>
@@ -93,12 +100,12 @@ GridWindow::LineEvent::LineEvent(picross::Solver::Event event, const picross::Li
     }
 }
 
-GridWindow::GridWindow(picross::InputGrid&& grid, const std::string& source)
+GridWindow::GridWindow(picross::InputGrid&& grid, const std::string& source, bool start_thread)
     : GridObserver(grid.cols.size(), grid.rows.size())
     , grid(std::move(grid))
     , title()
     , solver_thread()
-    , solver_thread_start(true)
+    , solver_thread_start(start_thread)
     , solver_thread_completed(false)
     , solver_thread_abort(false)
     , text_buffer_mutex()
@@ -217,13 +224,20 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
     }
 
     // Reset button
-    if (!solver_thread_active && ImGui::Button("Solve again"))
+    if (!solver_thread_active && ImGui::Button("Solve"))
     {
         solver_thread_start = true;     // Triggered for next frame
     }
     else if (solver_thread_active && ImGui::Button("Stop"))
     {
         solver_thread_abort = true;     // Flag to signal the solver thread to stop its current processing
+    }
+
+    // Save button
+    ImGui::SameLine();
+    if (ImGui::Button("Save as"))
+    {
+        save_grid();
     }
 
     // Text
@@ -410,4 +424,36 @@ void GridWindow::solve_picross_grid()
     }
 
     solver_thread_completed = true;
+}
+
+void GridWindow::save_grid()
+{
+    const auto file_path = pfd::save_file(
+        "Select a file", "",
+        { "Picross file", "*.txt",
+          "NON file", "*.non",
+          "Bitmap (*.pbm)", "*.pbm" },
+        pfd::opt::force_overwrite).result();
+
+    if (!file_path.empty())
+    {
+        const auto err_handler = [this](const std::string& msg, picross::io::ExitCode)
+        {
+            std::lock_guard<std::mutex> lock(this->text_buffer_mutex);
+            this->text_buffer.appendf("%s\n", msg);
+        };
+
+        const std::string ext = str_tolower(file_extension(file_path));
+        if (ext == "pbm")
+        {
+            if (!solutions.empty())
+            {
+                export_bitmap_pbm(file_path, solutions[0], err_handler);
+            }
+        }
+        else
+        {
+            save_picross_file(file_path, grid, err_handler);
+        }
+    }
 }

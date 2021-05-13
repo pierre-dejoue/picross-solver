@@ -43,7 +43,7 @@ void export_bitmap_pbm(const std::string& filepath, const picross::OutputGrid& g
         for (unsigned int y = 0u; y < grid.get_height(); y++)
             for (unsigned int x = 0u; x < grid.get_width(); x++)
             {
-                bitmap[x][y] = (grid.get(x, y) != picross::Tile::ZERO);
+                bitmap[y][x] = (grid.get(x, y) != picross::Tile::ZERO);
             }
         pnm::write_pbm_binary(filepath, bitmap);
     }

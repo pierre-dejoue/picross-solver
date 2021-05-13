@@ -9,6 +9,7 @@ set(LIB_SOURCES
     src/bitmap_io.cpp
     src/console_observer.cpp
     src/grid_observer.cpp
+    src/picross_file_io.cpp
     src/strings.cpp
 )
 
