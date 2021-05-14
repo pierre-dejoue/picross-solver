@@ -137,7 +137,16 @@ const Settings::AnimationLimits& Settings::read_animation_settings_limits()
     return result;
 }
 
-void Settings::visit_windows(bool& canBeErased)
+void Settings::open_window()
+{
+    get_settings_window();
+
+    read_tile_settings();
+    read_solver_settings();
+    read_animation_settings();
+}
+
+void Settings::visit_window(bool& canBeErased)
 {
     canBeErased = false;
     if (tile_settings || solver_settings || animation_settings || settings_window)

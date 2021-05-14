@@ -65,7 +65,8 @@ public:
     const Animation& read_animation_settings();
     static const AnimationLimits& read_animation_settings_limits();
 
-    void visit_windows(bool& canBeErased);
+    void open_window();
+    void visit_window(bool& canBeErased);
 
 private:
     SettingsWindow& get_settings_window();

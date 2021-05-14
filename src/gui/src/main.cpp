@@ -70,10 +70,13 @@ int main(int argc, char *argv[])
     ImGui::StyleColorsClassic();
     ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = ImColor(29, 75, 99, 255);
 
+    // Open settings window
+    Settings settings;
+    settings.open_window();
+
     // Main loop
     std::vector<std::unique_ptr<PicrossFile>> picross_files;
     std::vector<std::unique_ptr<BitmapFile>> bitmap_files;
-    Settings settings;
     while (!glfwWindowShouldClose(window))
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -141,7 +144,7 @@ int main(int argc, char *argv[])
         // Settings window
         {
             bool canBeErased = false;
-            settings.visit_windows(canBeErased);
+            settings.visit_window(canBeErased);
         }
 
 #if PICROSS_GUI_IMGUI_DEMO
