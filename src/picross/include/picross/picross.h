@@ -152,29 +152,26 @@ class OutputGrid
 {
 public:
     OutputGrid(size_t width, size_t height, const std::string& name = "");
-    OutputGrid(const OutputGrid& other) = default;
-    OutputGrid(OutputGrid&& other) = default;
-    OutputGrid& operator=(const OutputGrid& other);
-    OutputGrid& operator=(OutputGrid&& other);
+
+    size_t get_width() const { return width; }
+    size_t get_height() const { return height; }
 
     const std::string& get_name() const;
-    size_t get_width() const;
-    size_t get_height() const;
+    void set_name(const std::string& name);
 
     Tile::Type get(size_t x, size_t y) const;
+    Line get_line(Line::Type type, size_t index) const;
+
     void set(size_t x, size_t y, Tile::Type t);
     void reset();
 
-    Line get_line(Line::Type type, size_t index) const;
-
     bool is_solved() const;
 
-protected:
-    const size_t                                width, height;
-
 private:
-    const std::string                           name;
-    std::vector<Tile::Type>                     grid;            // 2D array of tiles
+    size_t                      width;
+    size_t                      height;
+    std::string                 name;
+    std::vector<Tile::Type>     grid;            // 2D array of tiles
 };
 
 

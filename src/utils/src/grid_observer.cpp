@@ -13,12 +13,12 @@ ObserverGrid::ObserverGrid(size_t width, size_t height, const std::string& name)
 void ObserverGrid::set(size_t x, size_t y, picross::Tile::Type t, unsigned int d)
 {
     OutputGrid::set(x, y, t);
-    depth_grid[x * height + y] = d;
+    depth_grid[x * get_height() + y] = d;
 }
 
 unsigned int ObserverGrid::get_depth(size_t x, size_t y) const
 {
-    return depth_grid[x * height + y];
+    return depth_grid[x * get_height() + y];
 }
 
 
