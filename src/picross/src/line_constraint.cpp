@@ -242,7 +242,7 @@ namespace
 
             unsigned int nb_alternatives = 0u;
 
-            // If the last segment of ones was reached, pad end of line with zero, chack compatibility then reduce
+            // If the last segment of ones was reached, pad end of line with zero, check compatibility then reduce
             if (constraint_idx == segs_of_ones.size())
             {
                 Line::Container& next_tiles = alternative.get_tiles();
@@ -262,11 +262,21 @@ namespace
             {
                 const auto& nb_ones = segs_of_ones[constraint_idx];
                 Line::Container& next_tiles = alternative.get_tiles();
-                for (unsigned int pre_zeros = 0u; pre_zeros <= remaining_zeros; pre_zeros++)
+
+                auto next_line_idx = line_idx;
+                for (unsigned int c = 0u; c < nb_ones; c++) { next_tiles[next_line_idx++] = Tile::ONE; }
+                if (constraint_idx + 1 < segs_of_ones.size()) { next_tiles[next_line_idx++] = Tile::ZERO; }
+
+                if (partial_compatibility_bw(alternative, known_tiles, line_idx, next_line_idx))
                 {
-                    auto next_line_idx = line_idx;
-                    for (unsigned int c = 0u; c < pre_zeros; c++) { next_tiles[next_line_idx++] = Tile::ZERO; }
-                    for (unsigned int c = 0u; c < nb_ones; c++) { next_tiles[next_line_idx++] = Tile::ONE; }
+                    nb_alternatives += build_alternatives(remaining_zeros, next_line_idx, constraint_idx + 1);
+                }
+
+                for (unsigned int pre_zeros = 1u; pre_zeros <= remaining_zeros; pre_zeros++)
+                {
+                    next_tiles[line_idx + pre_zeros - 1] = Tile::ZERO;
+                    next_line_idx = line_idx + pre_zeros + nb_ones - 1;
+                    next_tiles[next_line_idx++] = Tile::ONE;
                     if (constraint_idx + 1 < segs_of_ones.size()) { next_tiles[next_line_idx++] = Tile::ZERO; }
 
                     if (partial_compatibility_bw(alternative, known_tiles, line_idx, next_line_idx))
@@ -279,12 +289,9 @@ namespace
             return nb_alternatives;
         };
 
-        Line get_reduced_line()
+        const Line& get_reduced_line()
         {
-            if (reduced_line)
-                return *reduced_line;
-            else
-                return Line(known_tiles, Tile::UNKNOWN);
+            return reduced_line ? *reduced_line : known_tiles;
         }
 
     private:
@@ -303,10 +310,10 @@ namespace
         }
 
     private:
-        const InputGrid::Constraint& segs_of_ones;
-        const Line& known_tiles;
-        Line alternative;
-        std::unique_ptr<Line> reduced_line;
+        const InputGrid::Constraint&    segs_of_ones;
+        const Line&                     known_tiles;
+        Line                            alternative;
+        std::unique_ptr<Line>           reduced_line;
     };
 
 
@@ -329,7 +336,7 @@ namespace
 }  // namespace
 
 
-std::pair<Line, unsigned int> LineConstraint::reduce_and_count_alternatives(const Line& known_tiles, GridStats * stats) const
+std::pair<Line, unsigned int> LineConstraint::reduce_and_count_alternatives(const Line& known_tiles, GridStats* stats) const
 {
     if (stats != nullptr) { stats->nb_reduce_and_count_alternatives_calls++; }
 

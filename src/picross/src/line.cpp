@@ -127,9 +127,9 @@ Tile::Type Line::at(size_t idx) const
  */
 bool Line::compatible(const Line& other) const
 {
-    if (other.type != type) { throw std::invalid_argument("compatible: Line type mismatch"); }
-    if (other.index != index) { throw std::invalid_argument("compatible: Line index mismatch"); }
-    if (other.tiles.size() != tiles.size()) { throw std::invalid_argument("compatible: Line size mismatch"); }
+    assert(other.type == type);
+    assert(other.index == index);
+    assert(other.tiles.size() == tiles.size());
     for (size_t idx = 0u; idx < tiles.size(); ++idx)
     {
         if (!Tile::compatible(other.tiles.at(idx), tiles[idx]))
@@ -150,9 +150,9 @@ bool Line::compatible(const Line& other) const
  */
 bool Line::add(const Line& other)
 {
-    if (other.type != type) { throw std::invalid_argument("add: Line type mismatch"); }
-    if (other.index != index) { throw std::invalid_argument("add: Line index mismatch"); }
-    if (other.tiles.size() != tiles.size()) { throw std::invalid_argument("add: Line size mismatch"); }
+    assert(other.type == type);
+    assert(other.index == index);
+    assert(other.tiles.size() == tiles.size());
     const bool valid = compatible(other);
     if (valid)
     {
@@ -171,9 +171,9 @@ bool Line::add(const Line& other)
  */
 void Line::reduce(const Line& other)
 {
-    if (other.type != type) { throw std::invalid_argument("reduce: Line type mismatch"); }
-    if (other.index != index) { throw std::invalid_argument("reduce: Line index mismatch"); }
-    if (other.tiles.size() != tiles.size()) { throw std::invalid_argument("reduce: Line size mismatch"); }
+    assert(other.type == type);
+    assert(other.index == index);
+    assert(other.tiles.size() == tiles.size());
     std::transform(tiles.begin(), tiles.end(), other.tiles.begin(), tiles.begin(), Tile::reduce);
 }
 
@@ -187,9 +187,9 @@ void Line::reduce(const Line& other)
  */
 Line line_delta(const Line& line1, const Line& line2)
 {
-    if (line1.get_type() != line2.get_type()) { throw std::invalid_argument("line_delta: Line type mismatch"); }
-    if (line1.get_index() != line2.get_index()) { throw std::invalid_argument("line_delta: Line index mismatch"); }
-    if (line1.size() != line2.size()) { throw std::invalid_argument("line_delta: Line size mismatch"); }
+    assert(line1.get_type() == line2.get_type());
+    assert(line1.get_index() == line2.get_index());
+    assert(line1.size() == line2.size());
     std::vector<Tile::Type> delta_tiles;
     delta_tiles.resize(line1.size(), Tile::UNKNOWN);
     std::transform(line1.get_tiles().cbegin(), line1.get_tiles().cend(), line2.get_tiles().cbegin(), delta_tiles.begin(), Tile::delta);
@@ -221,7 +221,7 @@ std::string str_line_type(Line::Type type)
 {
     if (type == Line::ROW) { return "ROW"; }
     if (type == Line::COL) { return "COL"; }
-    assert(0);
+    assert(false);
     return "UNKNOWN";
 }
 
