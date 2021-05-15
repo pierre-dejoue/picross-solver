@@ -483,7 +483,7 @@ void write_input_grid(std::ostream& ostream, const InputGrid& input_grid)
 
 void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_grid)
 {
-    write_metadata_non_format(ostream, input_grid.metadata, "catalog");
+    write_metadata_non_format(ostream, input_grid.metadata, "catalogue");
     ostream << "title \"" << input_grid.name << '\"' << std::endl;
     write_metadata_non_format(ostream, input_grid.metadata, "by");
     write_metadata_non_format(ostream, input_grid.metadata, "copyright");
@@ -497,7 +497,7 @@ void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_g
     write_constraints_non_format(ostream, input_grid.rows);
 
     ostream << std::endl;
-    ostream << "cols" << std::endl;
+    ostream << "columns" << std::endl;
     write_constraints_non_format(ostream, input_grid.cols);
 }
 
