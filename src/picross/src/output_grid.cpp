@@ -79,11 +79,11 @@ Line OutputGrid::get_line(Line::Type type, size_t index) const
 }
 
 
-void OutputGrid::set(size_t x, size_t y, Tile::Type t)
+bool OutputGrid::set(size_t x, size_t y, Tile::Type val)
 {
     if (x >= width) { throw std::out_of_range("OutputGrid::set: x (" + std::to_string(x) + ") is out of range (" + std::to_string(width) + ")"); }
     if (y >= height) { throw std::out_of_range("OutputGrid::set: y (" + std::to_string(y) + ") is out of range (" + std::to_string(height) + ")"); }
-    grid[x * height + y] = t;
+    return Tile::set(grid[x * height + y], val);
 }
 
 

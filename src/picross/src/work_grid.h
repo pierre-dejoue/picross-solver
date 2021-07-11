@@ -146,7 +146,6 @@ public:
     Solver::Status solve(unsigned int max_nb_solutions = 0u);
 private:
     bool all_lines_completed() const;
-    bool set_w_reduce_flag(size_t x, size_t y, Tile::Type t);
     bool set_line(const Line& line);
     PassStatus single_line_initial_pass(Line::Type type, unsigned int index);
     PassStatus single_line_pass(Line::Type type, unsigned int index);

@@ -194,56 +194,56 @@ bool WorkGrid<LineSelectionPolicy>::all_lines_completed() const
 
 
 template <typename LineSelectionPolicy>
-bool WorkGrid<LineSelectionPolicy>::set_w_reduce_flag(size_t x, size_t y, Tile::Type t)
-{
-    if (t != Tile::UNKNOWN && get(x, y) == Tile::UNKNOWN)
-    {
-        // modify grid
-        set(x, y, t);
-
-        // mark the impacted row and column with flag "to be reduced".
-        line_to_be_reduced[Line::ROW][y] = true;
-        line_to_be_reduced[Line::COL][x] = true;
-
-        LineSelectionPolicy::estimate_nb_alternatives(nb_alternatives[Line::ROW][y]);
-        LineSelectionPolicy::estimate_nb_alternatives(nb_alternatives[Line::COL][x]);
-
-        // return true since the grid was modifed.
-        return true;
-    }
-    else
-    {
-        assert(Tile::compatible(get(x, y), t));
-        return false;
-    }
-}
-
-
-template <typename LineSelectionPolicy>
 bool WorkGrid<LineSelectionPolicy>::set_line(const Line& line)
 {
-    bool changed = false;
-    const size_t index = line.get_index();
-    const Line origin_line = get_line(line.get_type(), index);
+    bool line_changed = false;
+    const size_t line_index = line.get_index();
+    const Line origin_line = get_line(line.get_type(), line_index);
     const auto width = static_cast<unsigned int>(get_width());
     const auto height = static_cast<unsigned int>(get_height());
+    assert(line.size() == line.get_type() == Line::ROW ? width : height);
+    const Line::Container& tiles = line.get_tiles();
+
     if (line.get_type() == Line::ROW)
     {
-        assert(line.size() == width);
-        for (unsigned int x = 0u; x < width; x++) { changed |= set_w_reduce_flag(x, index, line.at(x)); }
+        for (unsigned int tile_index = 0u; tile_index < line.size(); tile_index++)
+        {
+            // modify grid
+            const bool tile_changed = set(tile_index, line_index, tiles[tile_index]);
+
+            if (tile_changed)
+            {
+                // mark the impacted column with flag "to be reduced"
+                line_to_be_reduced[Line::COL][tile_index] = true;
+                LineSelectionPolicy::estimate_nb_alternatives(nb_alternatives[Line::COL][tile_index]);
+
+                line_changed = true;
+            }
+        }
     }
     else
     {
-        assert(line.get_type() == Line::COL);
-        assert(line.size() == height);
-        for (unsigned int y = 0u; y < height; y++) { changed |= set_w_reduce_flag(index, y, line.at(y)); }
+        for (unsigned int tile_index = 0u; tile_index < line.size(); tile_index++)
+        {
+            // modify grid
+            const bool tile_changed = set(line_index, tile_index, tiles[tile_index]);
+
+            if (tile_changed)
+            {
+                // mark the impacted row with flag "to be reduced"
+                line_to_be_reduced[Line::ROW][tile_index] = true;
+                LineSelectionPolicy::estimate_nb_alternatives(nb_alternatives[Line::ROW][tile_index]);
+
+                line_changed = true;
+            }
+        }
     }
-    if (observer && changed)
+    if (observer && line_changed)
     {
-        const Line delta = line_delta(origin_line, get_line(line.get_type(), index));
+        const Line delta = line_delta(origin_line, get_line(line.get_type(), line_index));
         observer(Solver::Event::DELTA_LINE, &delta, nested_level);
     }
-    return changed;
+    return line_changed;
 }
 
 

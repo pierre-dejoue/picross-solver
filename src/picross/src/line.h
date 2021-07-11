@@ -9,6 +9,7 @@
 
 #include <picross/picross.h>
 
+#include <cassert>
 #include <exception>
 
 
@@ -43,6 +44,17 @@ namespace Tile
     Type compatible(Type t1, Type t2);
     Type delta(Type t1, Type t2);
     Type reduce(Type t1, Type t2);
+
+    inline bool set(Type& t, Type val)
+    {
+        if (val != Tile::UNKNOWN && t != val)
+        {
+            assert(t == Tile::UNKNOWN);
+            t = val;
+            return true;
+        }
+        return false;
+    }
 }
 
 

@@ -166,7 +166,7 @@ public:
 
     Line get_line(Line::Type type, size_t index) const;
 
-    void set(size_t x, size_t y, Tile::Type t);
+    bool set(size_t x, size_t y, Tile::Type val);
     void reset();
 
     bool is_solved() const;
