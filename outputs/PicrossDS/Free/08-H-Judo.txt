@@ -28,9 +28,9 @@ GRID 1: Judo
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4368
   Max number of alternatives after a line reduce (change/all): 206/495
-  Number of calls to full_grid_pass: 60
-  Number of calls to single_line_pass (change/all): 154/251
-  Number of calls to the observer callback: 161
+  Number of calls to full_grid_pass: 35
+  Number of calls to single_line_pass (change/all): 152/259
+  Number of calls to the observer callback: 159
 
 
 

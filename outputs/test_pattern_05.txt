@@ -1643,10 +1643,10 @@ GRID 1: Katakana
     > Total number of alternatives being tested: 205
     > Max number of alternatives by branching depth: 2 2 3 3 4 3 2 2
   Max number of alternatives on an empty line (initial grid pass): 84
-  Max number of alternatives after a line reduce (change/all): 8/36
-  Number of calls to full_grid_pass: 346
-  Number of calls to single_line_pass (change/all): 443/1014
-  Number of calls to the observer callback: 968
+  Max number of alternatives after a line reduce (change/all): 8/45
+  Number of calls to full_grid_pass: 345
+  Number of calls to single_line_pass (change/all): 448/1028
+  Number of calls to the observer callback: 973
 
 
 

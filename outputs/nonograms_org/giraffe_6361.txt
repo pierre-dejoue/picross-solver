@@ -47,10 +47,10 @@ GRID 1: Giraffe
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 2035800
-  Max number of alternatives after a line reduce (change/all): 204/204
-  Number of calls to full_grid_pass: 45
-  Number of calls to single_line_pass (change/all): 166/242
-  Number of calls to the observer callback: 208
+  Max number of alternatives after a line reduce (change/all): 1064/1064
+  Number of calls to full_grid_pass: 13
+  Number of calls to single_line_pass (change/all): 156/214
+  Number of calls to the observer callback: 198
 
 
 

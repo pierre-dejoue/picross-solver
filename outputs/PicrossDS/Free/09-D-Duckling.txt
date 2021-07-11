@@ -27,10 +27,10 @@ GRID 1: The Ugly Duckling
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 8008
-  Max number of alternatives after a line reduce (change/all): 595/671
-  Number of calls to full_grid_pass: 42
-  Number of calls to single_line_pass (change/all): 167/229
-  Number of calls to the observer callback: 179
+  Max number of alternatives after a line reduce (change/all): 278/710
+  Number of calls to full_grid_pass: 12
+  Number of calls to single_line_pass (change/all): 146/189
+  Number of calls to the observer callback: 158
 
 
 

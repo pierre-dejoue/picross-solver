@@ -27,10 +27,10 @@ GRID 1: Fish
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4368
-  Max number of alternatives after a line reduce (change/all): 286/601
-  Number of calls to full_grid_pass: 52
-  Number of calls to single_line_pass (change/all): 151/235
-  Number of calls to the observer callback: 161
+  Max number of alternatives after a line reduce (change/all): 165/495
+  Number of calls to full_grid_pass: 30
+  Number of calls to single_line_pass (change/all): 152/243
+  Number of calls to the observer callback: 162
 
 
 

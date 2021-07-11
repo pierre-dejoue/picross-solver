@@ -21,9 +21,9 @@ GRID 1: Katakana
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 120
   Max number of alternatives after a line reduce (change/all): 1/1
-  Number of calls to full_grid_pass: 4
-  Number of calls to single_line_pass (change/all): 5/6
-  Number of calls to the observer callback: 28
+  Number of calls to full_grid_pass: 2
+  Number of calls to single_line_pass (change/all): 2/6
+  Number of calls to the observer callback: 25
 
 
 

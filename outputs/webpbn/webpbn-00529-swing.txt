@@ -52,10 +52,10 @@ GRID 1: Swing
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 38567100
-  Max number of alternatives after a line reduce (change/all): 5390/5390
-  Number of calls to full_grid_pass: 99
-  Number of calls to single_line_pass (change/all): 432/561
-  Number of calls to the observer callback: 455
+  Max number of alternatives after a line reduce (change/all): 47792/56614
+  Number of calls to full_grid_pass: 40
+  Number of calls to single_line_pass (change/all): 466/575
+  Number of calls to the observer callback: 489
 
 
 
