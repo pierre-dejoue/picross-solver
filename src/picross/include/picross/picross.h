@@ -160,6 +160,10 @@ public:
     void set_name(const std::string& name);
 
     Tile::Type get(size_t x, size_t y) const;
+
+    template <Line::Type type>
+    Line get_line(size_t index) const;
+
     Line get_line(Line::Type type, size_t index) const;
 
     void set(size_t x, size_t y, Tile::Type t);

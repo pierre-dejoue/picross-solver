@@ -44,26 +44,38 @@ Tile::Type OutputGrid::get(size_t x, size_t y) const
 }
 
 
+template <>
+Line OutputGrid::get_line<Line::ROW>(size_t index) const
+{
+    if (index >= height) { throw std::out_of_range("OutputGrid::get_line: row index (" + std::to_string(index) + ") is out of range (" + std::to_string(height) + ")"); }
+    std::vector<Tile::Type> tiles;
+    tiles.reserve(width);
+    for (unsigned int x = 0u; x < width; x++)
+    {
+        tiles.push_back(get(x, index));
+    }
+    return Line(Line::ROW, index, std::move(tiles));
+}
+
+
+template <>
+Line OutputGrid::get_line<Line::COL>(size_t index) const
+{
+    if (index >= width) { throw std::out_of_range("OutputGrid::get_line: column index (" + std::to_string(index) + ") is out of range (" + std::to_string(width) + ")"); }
+    std::vector<Tile::Type> tiles;
+    tiles.reserve(height);
+    tiles.insert(tiles.cbegin(), grid.data() + index * height, grid.data() + (index + 1) * height);
+    return Line(Line::COL, index, std::move(tiles));
+}
+
+
+// Explicit template instantiations
+template Line OutputGrid::get_line<Line::ROW>(size_t index) const;
+template Line OutputGrid::get_line<Line::COL>(size_t index) const;
+
 Line OutputGrid::get_line(Line::Type type, size_t index) const
 {
-    std::vector<Tile::Type> tiles;
-    if (type == Line::ROW)
-    {
-        if (index >= height) { throw std::out_of_range("OutputGrid::get_line: row index (" + std::to_string(index) + ") is out of range (" + std::to_string(height) + ")"); }
-        tiles.reserve(width);
-        for (unsigned int x = 0u; x < width; x++)
-        {
-            tiles.push_back(get(x, index));
-        }
-    }
-    else
-    {
-        assert(type == Line::COL);
-        if (index >= width) { throw std::out_of_range("OutputGrid::get_line: column index (" + std::to_string(index) + ") is out of range (" + std::to_string(width) + ")"); }
-        tiles.reserve(height);
-        tiles.insert(tiles.cbegin(), grid.data() + index * height, grid.data() + (index + 1) * height);
-    }
-    return Line(type, index, std::move(tiles));
+    return type == Line::ROW ? get_line<Line::ROW>(index) : get_line<Line::COL>(index);
 }
 
 
@@ -92,7 +104,7 @@ std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid)
 {
     for (unsigned int y = 0u; y < grid.get_height(); y++)
     {
-        const Line row = grid.get_line(Line::ROW, y);
+        const Line row = grid.get_line<Line::ROW>(y);
         ostream << "  " << str_line(row) << std::endl;
     }
     return ostream;

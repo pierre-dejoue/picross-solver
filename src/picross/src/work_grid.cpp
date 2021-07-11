@@ -471,8 +471,8 @@ bool WorkGrid<LineSelectionPolicy>::valid_solution() const
 {
     assert(is_solved());
     bool valid = true;
-    for (unsigned int x = 0u; x < get_width(); x++) { valid &= cols.at(x).compatible(get_line(Line::COL, x)); }
-    for (unsigned int y = 0u; y < get_height(); y++) { valid &= rows.at(y).compatible(get_line(Line::ROW, y)); }
+    for (unsigned int x = 0u; x < get_width(); x++) { valid &= cols.at(x).compatible(get_line<Line::COL>(x)); }
+    for (unsigned int y = 0u; y < get_height(); y++) { valid &= rows.at(y).compatible(get_line<Line::ROW>(y)); }
     return valid;
 }
 

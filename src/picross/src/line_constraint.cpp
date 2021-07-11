@@ -388,13 +388,13 @@ InputGrid get_input_grid_from(const OutputGrid& grid)
     result.rows.reserve(grid.get_height());
     for (unsigned int y = 0u; y < grid.get_height(); y++)
     {
-        result.rows.emplace_back(get_constraint_from(grid.get_line(Line::ROW, y)));
+        result.rows.emplace_back(get_constraint_from(grid.get_line<Line::ROW>(y)));
     }
 
     result.cols.reserve(grid.get_width());
     for (unsigned int x = 0u; x < grid.get_width(); x++)
     {
-        result.cols.emplace_back(get_constraint_from(grid.get_line(Line::COL, x)));
+        result.cols.emplace_back(get_constraint_from(grid.get_line<Line::COL>(x)));
     }
 
     return result;
