@@ -3,10 +3,11 @@
 #include <picross/picross_io.h>
 #include <utils/strings.h>
 
+#include <cassert>
 #include <iostream>
 #include <iterator>
 
-PicrossFile::PicrossFile(const std::string& path)
+PicrossFile::PicrossFile(std::string_view path)
     : file_path(path)
     , is_file_open(false)
     , windows()

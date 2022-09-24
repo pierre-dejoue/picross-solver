@@ -4,10 +4,11 @@
 #include <utils/bitmap_io.h>
 #include <utils/strings.h>
 
+#include <cassert>
 #include <iostream>
 #include <iterator>
 
-BitmapFile::BitmapFile(const std::string& path)
+BitmapFile::BitmapFile(std::string_view path)
     : file_path(path)
     , is_file_open(false)
     , window()

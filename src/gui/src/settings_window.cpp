@@ -2,6 +2,8 @@
 
 #include "settings.h"
 
+#include <imgui.h>
+
 SettingsWindow::SettingsWindow(Settings& settings)
     : settings(settings)
     , title("Settings")
@@ -59,7 +61,7 @@ void SettingsWindow::visit(bool& canBeErased)
         if (solver_settings->limit_solutions)
         {
             ImGui::SameLine();
-            ImGui::InputInt("", &solver_settings->max_nb_solutions);
+            ImGui::InputInt("nb_sols", &solver_settings->max_nb_solutions);
         }
 
         ImGui::Unindent();

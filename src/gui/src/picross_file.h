@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 class Settings;
@@ -12,7 +13,7 @@ class Settings;
 class PicrossFile
 {
 public:
-    explicit PicrossFile(const std::string& path);
+    explicit PicrossFile(std::string_view path);
     ~PicrossFile();
 
     void visit_windows(bool& canBeErased, Settings& settings);

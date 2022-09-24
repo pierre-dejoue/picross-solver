@@ -1,18 +1,32 @@
 #include "err_window.h"
 
-ErrWindow::ErrWindow(std::string_view filename)
-    : title(std::string("Errors in file ") + filename.data())
-    , text_buffer_lock()
-    , text_buffer()
+#include <imgui.h>
+
+#include <mutex>
+#include <string>
+
+
+struct ErrWindow::Impl
 {
+    std::string title;
+    std::mutex text_buffer_lock;
+    ImGuiTextBuffer text_buffer;
+};
+
+ErrWindow::ErrWindow(std::string_view filename)
+    : pImpl(std::make_unique<Impl>())
+{
+    pImpl->title = std::string("Errors in file ") + filename.data();
 }
+
+ErrWindow::~ErrWindow() = default;
 
 void ErrWindow::visit(bool& canBeErased)
 {
     ImGui::SetNextWindowSizeConstraints(ImVec2(0, 300), ImVec2(FLT_MAX, 600));
 
     bool isWindowOpen;
-    if (!ImGui::Begin(title.c_str(), &isWindowOpen, ImGuiWindowFlags_AlwaysAutoResize))
+    if (!ImGui::Begin(pImpl->title.c_str(), &isWindowOpen, ImGuiWindowFlags_AlwaysAutoResize))
     {
         // Collapsed
         canBeErased = !isWindowOpen;
@@ -22,14 +36,14 @@ void ErrWindow::visit(bool& canBeErased)
     canBeErased = !isWindowOpen;
 
     {
-        std::lock_guard<std::mutex> lock(text_buffer_lock);
-        ImGui::TextUnformatted(text_buffer.begin(), text_buffer.end());
+        std::lock_guard<std::mutex> lock(pImpl->text_buffer_lock);
+        ImGui::TextUnformatted(pImpl->text_buffer.begin(), pImpl->text_buffer.end());
     }
     ImGui::End();
 }
 
 void ErrWindow::print(std::string_view msg)
 {
-    std::lock_guard<std::mutex> lock(text_buffer_lock);
-    text_buffer.appendf("%s\n", msg.data());
+    std::lock_guard<std::mutex> lock(pImpl->text_buffer_lock);
+    pImpl->text_buffer.appendf("%s\n", msg.data());
 }

@@ -3,12 +3,12 @@
 #include <picross/picross.h>
 #include <utils/grid_observer.h>
 
-#include <imgui.h>
-
 #include <atomic>
 #include <condition_variable>
+#include <memory>
 #include <mutex>
 #include <string>
+#include <string_view>
 #include <thread>
 
 class Settings;
@@ -25,7 +25,7 @@ public:
         ObserverGrid grid;
     };
 public:
-    GridWindow(picross::InputGrid&& grid, const std::string& source, bool start_thread = true);
+    GridWindow(picross::InputGrid&& grid, std::string_view source, bool start_thread = true);
     ~GridWindow();
     GridWindow(const GridWindow&) = delete;
     GridWindow& operator=(const GridWindow&) = delete;
@@ -48,8 +48,8 @@ private:
     bool solver_thread_start;
     std::atomic<bool> solver_thread_completed;
     std::atomic<bool> solver_thread_abort;
-    std::mutex text_buffer_mutex;
-    ImGuiTextBuffer text_buffer;
+    struct TextBufferImpl;
+    std::unique_ptr<TextBufferImpl> text_buffer;
     std::vector<ObserverGrid> solutions;
     unsigned int valid_solutions;
     bool allocate_new_solution;

@@ -10,6 +10,8 @@
 
 #include "portable-file-dialogs.h"
 
+#include <imgui.h>
+
 #include <iostream>
 #include <sstream>
 #include <utility>
@@ -100,7 +102,13 @@ GridWindow::LineEvent::LineEvent(picross::Solver::Event event, const picross::Li
     }
 }
 
-GridWindow::GridWindow(picross::InputGrid&& grid, const std::string& source, bool start_thread)
+struct GridWindow::TextBufferImpl
+{
+    std::mutex mutex;
+    ImGuiTextBuffer buffer;
+};
+
+GridWindow::GridWindow(picross::InputGrid&& grid, std::string_view source, bool start_thread)
     : GridObserver(grid.cols.size(), grid.rows.size())
     , grid(std::move(grid))
     , title()
@@ -108,8 +116,7 @@ GridWindow::GridWindow(picross::InputGrid&& grid, const std::string& source, boo
     , solver_thread_start(start_thread)
     , solver_thread_completed(false)
     , solver_thread_abort(false)
-    , text_buffer_mutex()
-    , text_buffer()
+    , text_buffer(std::make_unique<TextBufferImpl>())
     , solutions()
     , valid_solutions(0)
     , allocate_new_solution(false)
@@ -120,7 +127,7 @@ GridWindow::GridWindow(picross::InputGrid&& grid, const std::string& source, boo
     , max_nb_solutions(0u)
     , speed(1u)
 {
-    title = this->grid.name + " (" + source + ")";
+    title = this->grid.name + " (" + source.data() + ")";
 }
 
 GridWindow::~GridWindow()
@@ -242,8 +249,8 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
 
     // Text
     {
-        std::lock_guard<std::mutex> lock(text_buffer_mutex);
-        ImGui::TextUnformatted(text_buffer.begin(), text_buffer.end());
+        std::lock_guard<std::mutex> lock(text_buffer->mutex);
+        ImGui::TextUnformatted(text_buffer->buffer.begin(), text_buffer->buffer.end());
     }
 
     // Solutions tabs
@@ -313,8 +320,8 @@ void GridWindow::reset_solutions()
     // Clear text buffer and print out the grid size
     const size_t width = grid.cols.size();
     const size_t height = grid.rows.size();
-    text_buffer.clear();
-    text_buffer.appendf("Grid %s\n", grid_size_str(grid).c_str());
+    text_buffer->buffer.clear();
+    text_buffer->buffer.appendf("Grid %s\n", grid_size_str(grid).c_str());
 }
 
 void GridWindow::observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const ObserverGrid& grid)
@@ -399,18 +406,18 @@ void GridWindow::solve_picross_grid()
         std::tie (status, local_solutions) = solver->solve(grid, max_nb_solutions);
         if (status == picross::Solver::Status::ABORTED)
         {
-            std::lock_guard<std::mutex> lock(text_buffer_mutex);
-            text_buffer.appendf("Processing aborted\n");
+            std::lock_guard<std::mutex> lock(text_buffer->mutex);
+            text_buffer->buffer.appendf("Processing aborted\n");
         }
         else if (status == picross::Solver::Status::CONTRADICTORY_GRID)
         {
-            std::lock_guard<std::mutex> lock(text_buffer_mutex);
-            text_buffer.appendf("Could not solve that grid :-(\n");
+            std::lock_guard<std::mutex> lock(text_buffer->mutex);
+            text_buffer->buffer.appendf("Could not solve that grid :-(\n");
         }
         else if (local_solutions.empty())
         {
-            std::lock_guard<std::mutex> lock(text_buffer_mutex);
-            text_buffer.appendf("No solution could be found\n");
+            std::lock_guard<std::mutex> lock(text_buffer->mutex);
+            text_buffer->buffer.appendf("No solution could be found\n");
         }
         else
         {
@@ -419,8 +426,8 @@ void GridWindow::solve_picross_grid()
     }
     else
     {
-        std::lock_guard<std::mutex> lock(text_buffer_mutex);
-        text_buffer.appendf("Invalid grid. Error message: %s\n", check_msg.c_str());
+        std::lock_guard<std::mutex> lock(text_buffer->mutex);
+        text_buffer->buffer.appendf("Invalid grid. Error message: %s\n", check_msg.c_str());
     }
 
     solver_thread_completed = true;
@@ -439,8 +446,8 @@ void GridWindow::save_grid()
     {
         const auto err_handler = [this](std::string_view msg, picross::io::ExitCode)
         {
-            std::lock_guard<std::mutex> lock(this->text_buffer_mutex);
-            this->text_buffer.appendf("%s\n", msg);
+            std::lock_guard<std::mutex> lock(this->text_buffer->mutex);
+            this->text_buffer->buffer.appendf("%s\n", msg);
         };
 
         const std::string ext = str_tolower(file_extension(file_path));

@@ -5,13 +5,14 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 class Settings;
 
 class BitmapFile
 {
 public:
-    explicit BitmapFile(const std::string& path);
+    explicit BitmapFile(std::string_view path);
     ~BitmapFile();
 
     void visit_windows(bool& canBeErased, Settings& settings);
