@@ -8,7 +8,7 @@ include(FetchContent)
 FetchContent_Declare(
     pnm
     GIT_REPOSITORY https://github.com/ToruNiina/pnm.git
-    GIT_TAG be7ea4f5ad140c4c073e6e8c8575301be257f7aa
+    GIT_TAG v1.0.1
 )
 FetchContent_Populate(pnm)
 
