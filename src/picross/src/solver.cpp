@@ -1,7 +1,7 @@
 /*******************************************************************************
  * PICROSS SOLVER
  *
- * Copyright (c) 2010-2021 Pierre DEJOUE
+ * Copyright (c) 2010-2022 Pierre DEJOUE
  ******************************************************************************/
 #include "solver.h"
 
@@ -49,7 +49,9 @@ std::pair<Solver::Status, Solver::Solutions> RefSolver::solve(const InputGrid& g
     auto status = Status::OK;
     try
     {
-        status = WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives_EstimateNbAlternatives>(grid_input, &solutions, stats, std::move(observer_wrapper), abort_function).solve(max_nb_solutions);
+        WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives_EstimateNbAlternatives> work_grid(grid_input, std::move(observer_wrapper), abort_function);
+        work_grid.set_stats(stats);
+        status = work_grid.solve(solutions, max_nb_solutions);
     }
     catch (const PicrossSolverAborted&)
     {

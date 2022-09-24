@@ -1,7 +1,7 @@
 /*******************************************************************************
  * PICROSS SOLVER
  *
- * Copyright (c) 2010-2021 Pierre DEJOUE
+ * Copyright (c) 2010-2022 Pierre DEJOUE
  ******************************************************************************/
 #include <picross/picross.h>
 
@@ -9,6 +9,7 @@
 #include "picross_solver_version.h"
 
 #include <algorithm>
+#include <cassert>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -102,6 +103,7 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
     {
         ostream << "    > Hypothesis on " << stats.guess_total_calls << " lines" << std::endl;
         ostream << "    > Total number of alternatives being tested: " << stats.guess_total_alternatives << std::endl;
+        assert(stats.guess_max_nb_alternatives_by_depth.size() == stats.max_nested_level);
         ostream << "    > Max number of alternatives by branching depth:";
         for (const auto& max_alternatives : stats.guess_max_nb_alternatives_by_depth)
         {

@@ -135,7 +135,7 @@ private:
         }
     };
 public:
-    WorkGrid(const InputGrid& grid, Solver::Solutions* solutions, GridStats* stats = nullptr, Solver::Observer observer = Solver::Observer(), Solver::Abort abort_function = Solver::Abort());
+    WorkGrid(const InputGrid& grid, Solver::Observer observer = Solver::Observer(), Solver::Abort abort_function = Solver::Abort());
     WorkGrid(const WorkGrid& other) = delete;
     WorkGrid& operator=(const WorkGrid& other) = delete;
     WorkGrid(WorkGrid&& other) = default;
@@ -143,7 +143,8 @@ public:
 private:
     WorkGrid(const WorkGrid& parent, unsigned int nested_level);
 public:
-    Solver::Status solve(unsigned int max_nb_solutions = 0u);
+    void set_stats(GridStats* stats);
+    Solver::Status solve(Solver::Solutions& solutions, unsigned int max_nb_solutions = 0u);
 private:
     bool all_lines_completed() const;
     bool set_line(const Line& line);
@@ -151,13 +152,12 @@ private:
     PassStatus single_line_pass(Line::Type type, unsigned int index);
     PassStatus full_side_pass(Line::Type type, bool first_pass = false);
     PassStatus full_grid_pass(bool first_pass = false);
-    Solver::Status guess(unsigned int max_nb_solutions) const;
+    Solver::Status guess(Solver::Solutions& solutions, unsigned int max_nb_solutions) const;
     bool valid_solution() const;
-    void save_solution() const;
+    void save_solution(Solver::Solutions& solutions) const;
 private:
     std::vector<LineConstraint>                 rows;
     std::vector<LineConstraint>                 cols;
-    Solver::Solutions*                          saved_solutions; // ptr to a vector where to store solutions
     GridStats*                                  stats;           // if not null, the solver will store some stats in that structure
     Solver::Observer                            observer;        // if not empty, the solver will notify the observer of its progress
     Solver::Abort                               abort_function;  // if not empty, the solver will regularly call this function and abort its processing if it returns true
