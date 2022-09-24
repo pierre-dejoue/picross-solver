@@ -8,21 +8,22 @@
  *
  * Copyright (c) 2010-2021 Pierre DEJOUE
  ******************************************************************************/
-#include <cassert>
-#include <exception>
-#include <functional>
-#include <iostream>
-#include <sstream>
-#include <tuple>
-#include <vector>
-
-#include <argagg/argagg.hpp>
-
 #include <picross/picross.h>
 #include <picross/picross_io.h>
 #include <utils/console_observer.h>
 #include <utils/duration_meas.h>
 #include <utils/strings.h>
+
+#include <argagg/argagg.hpp>
+
+#include <cassert>
+#include <exception>
+#include <functional>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <tuple>
+#include <vector>
 
 
 namespace
@@ -91,8 +92,11 @@ int main(int argc, char *argv[])
     }};
 
     std::ostringstream usage_note;
+    usage_note << "Picross Solver " << picross::get_version_string() << std::endl;
+    usage_note << std::endl;
     usage_note << "Usage:" << std::endl;
     usage_note << "    picross_solver_cli [options] FILES" << std::endl;
+    usage_note << std::endl;
     usage_note << argparser;
 
     argagg::parser_results args;

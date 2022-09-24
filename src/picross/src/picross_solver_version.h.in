@@ -1,0 +1,3 @@
+#pragma once
+
+#define PICROSS_SOLVER_VERSION_STRING "@picross_solver_VERSION@"

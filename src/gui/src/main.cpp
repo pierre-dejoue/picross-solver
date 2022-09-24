@@ -5,16 +5,11 @@
  *
  * Copyright (c) 2021 Pierre DEJOUE
  ******************************************************************************/
-#include <cassert>
-#include <exception>
-#include <iostream>
-#include <iterator>
-#include <memory>
-#include <mutex>
-#include <sstream>
-#include <thread>
-#include <tuple>
-#include <vector>
+#include "bitmap_file.h"
+#include "picross_file.h"
+#include "settings.h"
+
+#include <picross/picross.h>
 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
@@ -22,12 +17,12 @@
 #include <imgui_impl_opengl2.h>
 #include <portable-file-dialogs.h>
 
-#include <picross/picross.h>
-#include <picross/picross_io.h>
-
-#include "bitmap_file.h"
-#include "picross_file.h"
-#include "settings.h"
+#include <cassert>
+#include <iostream>
+#include <iterator>
+#include <memory>
+#include <sstream>
+#include <vector>
 
 
 namespace
@@ -43,11 +38,17 @@ void glfw_error_callback(int error, const char* description)
 
 int main(int argc, char *argv[])
 {
+    // Versions
+    std::stringstream picross_title;
+    picross_title << "Picross Solver " << picross::get_version_string();
+    std::cout << picross_title.str() << std::endl;
+    std::cout << "Dear ImGui " << IMGUI_VERSION << std::endl;
+
     // Setup main window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Picross Solver", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1280, 720, picross_title.str().c_str(), NULL, NULL);
     if (window == NULL)
         return 1;
     glfwMakeContextCurrent(window);

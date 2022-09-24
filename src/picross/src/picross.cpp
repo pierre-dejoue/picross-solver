@@ -6,6 +6,7 @@
 #include <picross/picross.h>
 
 #include "line_constraint.h"
+#include "picross_solver_version.h"
 
 #include <algorithm>
 #include <ostream>
@@ -16,6 +17,12 @@
 
 namespace picross
 {
+
+
+std::string_view get_version_string()
+{
+    return std::string_view(PICROSS_SOLVER_VERSION_STRING);
+}
 
 
 std::string grid_size_str(const InputGrid& grid)

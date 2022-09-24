@@ -17,12 +17,19 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 
 namespace picross
 {
+
+/*
+ * Get the version of the library
+ */
+std::string_view get_version_string();
+
 
 /*
  * Tile namespace

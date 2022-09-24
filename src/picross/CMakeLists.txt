@@ -17,11 +17,14 @@ file(GLOB LIB_HEADERS include/picross/*.h src/*.h)
 
 add_library(picross STATIC ${LIB_SOURCES} ${LIB_HEADERS})
 
+configure_file(src/picross_solver_version.h.in picross_solver_version.h @ONLY)
+
 target_include_directories(picross
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 set_property(TARGET picross PROPERTY FOLDER "libraries")
