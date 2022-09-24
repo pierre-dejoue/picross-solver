@@ -6,13 +6,12 @@
  *   - Data structures
  *   - Solver
  *
- * Copyright (c) 2010-2020 Pierre DEJOUE
+ * Copyright (c) 2010-2022 Pierre DEJOUE
  ******************************************************************************/
 #pragma once
 
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <functional>
 #include <map>
 #include <memory>

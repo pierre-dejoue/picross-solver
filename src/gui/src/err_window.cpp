@@ -1,7 +1,7 @@
 #include "err_window.h"
 
-ErrWindow::ErrWindow(const std::string& filename)
-    : title("Errors in file " + title)
+ErrWindow::ErrWindow(std::string_view filename)
+    : title(std::string("Errors in file ") + filename.data())
     , text_buffer_lock()
     , text_buffer()
 {
@@ -28,8 +28,8 @@ void ErrWindow::visit(bool& canBeErased)
     ImGui::End();
 }
 
-void ErrWindow::print(const std::string& msg)
+void ErrWindow::print(std::string_view msg)
 {
     std::lock_guard<std::mutex> lock(text_buffer_lock);
-    text_buffer.appendf("%s\n", msg.c_str());
+    text_buffer.appendf("%s\n", msg.data());
 }

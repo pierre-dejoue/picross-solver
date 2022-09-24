@@ -14,20 +14,16 @@ solution.
 
 ## Features
 
- - Solver library with no dependency other than C++14
+ - The solver library has no dependencies other than C++17
  - Black and white puzzles only
  - Two file formats are supported:
-   - A native format created for the library
    - Steve Simpson's [NON format](doc/FILE_FORMAT_NON.md)
+   - A native format created for this library
  - Battle-tested on a wide range of puzzles: [Performance](doc/PERF.md)
 
 ## Library
 
 The Picross solver provided as a library
-
-### Dependencies
-
-C++14
 
 ### Build
 

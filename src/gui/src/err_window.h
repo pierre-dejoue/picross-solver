@@ -4,17 +4,18 @@
 
 #include <mutex>
 #include <string>
+#include <string_view>
 
 class ErrWindow
 {
 public:
-    explicit ErrWindow(const std::string& filename);
+    explicit ErrWindow(std::string_view filename);
     ErrWindow(const ErrWindow&) = delete;
     ErrWindow& operator=(const ErrWindow&) = delete;
 
     void visit(bool& canBeErased);
 
-    void print(const std::string& msg);
+    void print(std::string_view msg);
 
 private:
     std::string title;

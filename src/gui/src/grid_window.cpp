@@ -437,7 +437,7 @@ void GridWindow::save_grid()
 
     if (!file_path.empty())
     {
-        const auto err_handler = [this](const std::string& msg, picross::io::ExitCode)
+        const auto err_handler = [this](std::string_view msg, picross::io::ExitCode)
         {
             std::lock_guard<std::mutex> lock(this->text_buffer_mutex);
             this->text_buffer.appendf("%s\n", msg);

@@ -5,14 +5,14 @@
  *
  *   - File IO
  *
- * Copyright (c) 2010-2020 Pierre DEJOUE
+ * Copyright (c) 2010-2022 Pierre DEJOUE
  ******************************************************************************/
 #pragma once
 
 
 #include <functional>
 #include <ostream>
-#include <string>
+#include <string_view>
 #include <vector>
 
 
@@ -25,7 +25,7 @@ namespace io
 {
 
 using ExitCode = int;
-using ErrorHandler = std::function<void(const std::string&, ExitCode)>;
+using ErrorHandler = std::function<void(std::string_view, ExitCode)>;
 
 /******************************************************************************
  * File parser
@@ -47,7 +47,7 @@ using ErrorHandler = std::function<void(const std::string&, ExitCode)>;
  *   NB: Empty lines are skipped
  *
  ******************************************************************************/
-std::vector<InputGrid> parse_input_file(const std::string& filepath, const ErrorHandler& error_handler) noexcept;
+std::vector<InputGrid> parse_input_file(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
 
 /******************************************************************************
  * File parser
@@ -57,7 +57,7 @@ std::vector<InputGrid> parse_input_file(const std::string& filepath, const Error
  *   https://github.com/mikix/nonogram-db/blob/master/FORMAT.md
  *
  ******************************************************************************/
-std::vector<InputGrid> parse_input_file_non_format(const std::string& filepath, const ErrorHandler& error_handler) noexcept;
+std::vector<InputGrid> parse_input_file_non_format(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
 
 /******************************************************************************
  * Stream writer, native file format

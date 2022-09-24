@@ -141,13 +141,13 @@ int main(int argc, char *argv[])
         ValidationModeData file_data;
         file_data.filename = file_name(filepath);
 
-        const picross::io::ErrorHandler err_handler_classic = [&return_status, &file_data](const std::string& msg, picross::io::ExitCode code)
+        const picross::io::ErrorHandler err_handler_classic = [&return_status, &file_data](std::string_view msg, picross::io::ExitCode code)
         {
             std::cout << (code == 0 ? "WARNING" : "ERROR" ) << " [" << file_data.filename << "]: " << msg << std::endl;
             if (code != 0)
                 return_status = code;
         };
-        const picross::io::ErrorHandler err_handler_validation = [&file_data](const std::string& msg, picross::io::ExitCode code)
+        const picross::io::ErrorHandler err_handler_validation = [&file_data](std::string_view msg, picross::io::ExitCode code)
         {
             file_data.misc = msg.empty() ? std::to_string(code) : msg;
         };

@@ -7,7 +7,7 @@ project(picross_solver
 option(PICROSS_BUILD_APP "Build the test application" OFF)
 option(PICROSS_BUILD_CLI "Build the command line app" OFF)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
