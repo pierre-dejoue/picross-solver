@@ -81,18 +81,17 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid);
 
 
 /*
- * GridStats struct
+ * GridStats
  *
- *   A data structure to store some stat related to the solver (optional).
+ *   A data structure to store some stats related to the grid and the solver.
  */
 struct GridStats
 {
     unsigned int nb_solutions = 0u;
-    unsigned int max_nb_solutions = 0u;
-    unsigned int max_nested_level = 0u;
-    unsigned int guess_total_calls = 0u;
-    unsigned int guess_total_alternatives = 0u;
-    std::vector<unsigned int> guess_max_nb_alternatives_by_depth;
+    unsigned int max_nb_solutions = 0u;                                 // max_nb_solutions given as argument to the solver
+    unsigned int max_branching_depth = 0u;                              // max branching depth of the solver (not the solutions)
+    unsigned int nb_branching_calls = 0u;
+    unsigned int total_nb_branching_alternatives = 0u;
     unsigned int max_initial_nb_alternatives = 0u;
     unsigned int max_nb_alternatives = 0u;
     unsigned int max_nb_alternatives_w_change = 0u;
@@ -104,6 +103,7 @@ struct GridStats
     unsigned int nb_single_line_pass_calls = 0u;
     unsigned int nb_single_line_pass_calls_w_change = 0u;
     unsigned int nb_observer_callback_calls = 0u;
+    std::vector<unsigned int> max_nb_alternatives_by_branching_depth;   // vector with max_branching_depth elements
 };
 
 
@@ -200,11 +200,21 @@ public:
     // Main method called to solve a grid
     //
     // By default the solver will look for all the solutions of the input grid.
-    // The otional argument max_nb_solutions can be used to limit the number of solutions discovered by the algorithm.
+    // The optional argument max_nb_solutions can be used to limit the number of solutions discovered by the algorithm.
     //
     enum class Status { OK, ABORTED, CONTRADICTORY_GRID };
-    using Solutions = std::vector<OutputGrid>;
-    virtual std::pair<Status, Solutions> solve(const InputGrid& grid_input, unsigned int max_nb_solutions = 0u) const = 0;
+    struct Solution
+    {
+        OutputGrid grid;
+        unsigned int branching_depth;
+    };
+    using Solutions = std::vector<Solution>;
+    struct Result
+    {
+        Status status;
+        Solutions solutions;
+    };
+    virtual Result solve(const InputGrid& grid_input, unsigned int max_nb_solutions = 0u) const = 0;
 
     //
     // Set an optional observer on the solver
@@ -264,24 +274,34 @@ std::ostream& operator<<(std::ostream& ostream, Solver::Event event);
 
 
 /*
+* Validation code:
+*
+*  -1  ERR     The input grid is invalid
+*   0  ZERO    No solution found
+*   1  OK      Valid grid with a unique solution
+*   2  MULT    The solution is not unique
+*/
+using ValidationCode = int;
+std::string_view validation_code_str(ValidationCode code);
+
+
+/*
  * Validation method: check that the input grid is valid and has a unique solution.
  *
- * Returns a pair composed of an integer code and an error message. The code is as follows:
- *
- *  -1  ERR     The input grid is invalid
- *   0  ZERO    No solution found
- *   1  OK      Valid grid with a unique solution
- *   2  MULT    The solution is not unique
+ * Return the validation code (ERR, ZERO, OK, MULT), the branching depth required to solve it (which determines
+ * if the grid is line solvable or not), and an optional message regarding the grid validation process.
  *
  * NB: The case where the input grid's constraint are not compatible is reported as an ERR (-1): contradictory grid.
  *     An input grid for which the constraints are coherent should have at least one solution. Therefore the validation
  *     code ZERO (0) can only be returned if the solver just gave up finding a solution.
  */
-using ValidationCode = int;
-std::pair<ValidationCode, std::string> validate_input_grid(const Solver& solver, const InputGrid& grid_input);
-
-
-std::string validation_code_str(ValidationCode code);
+struct ValidationResult
+{
+    ValidationCode code;
+    unsigned int branching_depth;
+    std::string msg;
+};
+ValidationResult validate_input_grid(const Solver& solver, const InputGrid& grid_input);
 
 
 /*

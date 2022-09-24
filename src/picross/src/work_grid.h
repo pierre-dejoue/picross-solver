@@ -152,7 +152,7 @@ private:
     PassStatus single_line_pass(Line::Type type, unsigned int index);
     PassStatus full_side_pass(Line::Type type, bool first_pass = false);
     PassStatus full_grid_pass(bool first_pass = false);
-    Solver::Status guess(Solver::Solutions& solutions, unsigned int max_nb_solutions) const;
+    Solver::Status branch(Solver::Solutions& solutions, unsigned int max_nb_solutions) const;
     bool valid_solution() const;
     void save_solution(Solver::Solutions& solutions) const;
 private:
@@ -166,7 +166,7 @@ private:
     std::vector<unsigned int>                   nb_alternatives[2];
     unsigned int                                max_nb_alternatives;
     std::vector<Line>                           guess_list_of_all_alternatives;
-    unsigned int                                nested_level;    // nested_level is incremented by function Grid::guess()
+    unsigned int                                branching_depth;
     std::unique_ptr<BinomialCoefficientsCache>  binomial;
 };
 

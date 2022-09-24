@@ -38,13 +38,12 @@ namespace
         std::string filename;
         std::string grid;
         std::string size;
-        picross::ValidationCode validation_code;
-        unsigned int max_search_depth;
+        picross::ValidationResult validation_result;
         float timing_ms;
         std::string misc;
     };
 
-    ValidationModeData::ValidationModeData() : filename(), grid(), size(), validation_code(-1), max_search_depth(0u), timing_ms(0u), misc()
+    ValidationModeData::ValidationModeData() : filename(), grid(), size(), validation_result{ -1, 0u, "" }, timing_ms(0u), misc()
     {
     }
 
@@ -53,8 +52,8 @@ namespace
         ostream << data.filename << ',';
         ostream << data.grid << ',';
         ostream << data.size << ',';
-        ostream << picross::validation_code_str(data.validation_code) << ',';
-        ostream << (data.validation_code == 1 && (data.max_search_depth == 0u) ? "LINE" : "") << ',';
+        ostream << picross::validation_code_str(data.validation_result.code) << ',';
+        ostream << (data.validation_result.code == 1 && (data.validation_result.branching_depth == 0u) ? "LINE" : "") << ',';
         ostream << data.timing_ms;
         if (!data.misc.empty())
             ostream << ",\"" << data.misc << "\"";
@@ -183,7 +182,7 @@ int main(int argc, char *argv[])
                 /* Sanity check of the input data */
                 bool input_ok;
                 std::tie(input_ok, grid_data.misc) = picross::check_grid_input(grid_input);
-                grid_data.validation_code = input_ok ? 0 : -1;
+                grid_data.validation_result.code = input_ok ? 0 : -1;
 
                 if (input_ok)
                 {
@@ -191,19 +190,18 @@ int main(int argc, char *argv[])
                     const auto width = grid_input.cols.size();
                     const auto height = grid_input.rows.size();
                     ConsoleObserver obs(width, height, std::cout);
-                    if (args["verbose"])
+                    if (!validation_mode)
                     {
-                        solver->set_observer(std::reference_wrapper<ConsoleObserver>(obs));
+                        if (args["verbose"])
+                        {
+                            solver->set_observer(std::reference_wrapper<ConsoleObserver>(obs));
+                        }
+                        else
+                        {
+                            // Set a dummy observer just to collect stats on number of observer calls
+                            solver->set_observer([](picross::Solver::Event, const picross::Line*, unsigned int) {});
+                        }
                     }
-                    else if (!validation_mode)
-                    {
-                        // Set a dummy observer just to collect stats on number of observer calls
-                        solver->set_observer([](picross::Solver::Event, const picross::Line*, unsigned int) {});
-                    }
-
-                    /* Reset stats */
-                    picross::GridStats stats;
-                    solver->set_stats(stats);
 
                     std::chrono::duration<float, std::milli> time_ms;
                     if (validation_mode)
@@ -211,35 +209,38 @@ int main(int argc, char *argv[])
                         /* Validate the grid */
                         {
                             DurationMeas<float, std::milli> meas_ms(time_ms);
-                            std::tie(grid_data.validation_code, grid_data.misc) = picross::validate_input_grid(*solver, grid_input);
+                            grid_data.validation_result = picross::validate_input_grid(*solver, grid_input);
                         }
-                        grid_data.max_search_depth = stats.max_nested_level;
                         grid_data.timing_ms = time_ms.count();
                     }
                     else
                     {
+                        /* Reset stats */
+                        picross::GridStats stats;
+                        solver->set_stats(stats);
+
                         /* Solve the grid */
-                        picross::Solver::Status status;
-                        std::vector<picross::OutputGrid> solutions;
+                        picross::Solver::Result solver_result;
                         {
                             DurationMeas<float, std::milli> meas_ms(time_ms);
-                            std::tie(status, solutions) = solver->solve(grid_input, max_nb_solutions);
+                            solver_result = solver->solve(grid_input, max_nb_solutions);
                         }
 
                         /* Display solutions */
-                        if (status != picross::Solver::Status::OK)
+                        if (solver_result.status != picross::Solver::Status::OK)
                         {
                             std::cout << "  Could not solve that grid :-(" << std::endl << std::endl;
                         }
                         else
                         {
-                            std::cout << "  Found " << solutions.size() << " solution(s)" << std::endl << std::endl;
+                            std::cout << "  Found " << solver_result.solutions.size() << " solution(s)" << std::endl;
+                            std::cout << std::endl;
                             int nb = 0;
-                            for (const auto& solution : solutions)
+                            for (const auto& solution : solver_result.solutions)
                             {
-                                assert(solution.is_solved());
-                                std::cout << "  Nb " << ++nb << ":" << std::endl;
-                                std::cout << solution << std::endl;
+                                assert(solution.grid.is_solved());
+                                std::cout << "  Nb " << ++nb << ": (branching depth: " << solution.branching_depth << ")" << std::endl;
+                                std::cout << solution.grid << std::endl;
                             }
                         }
 
@@ -262,7 +263,7 @@ int main(int argc, char *argv[])
             {
                 if (validation_mode)
                 {
-                    grid_data.validation_code = -1;
+                    grid_data.validation_result.code = -1;
                     grid_data.misc = "EXCPT " + std::string(e.what());
                 }
                 else

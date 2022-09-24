@@ -15,7 +15,7 @@
 #include <string_view>
 #include <vector>
 
-
+#include <picross/picross.h>
 #include <picross/picross.h>
 
 

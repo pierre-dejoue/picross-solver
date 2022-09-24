@@ -401,20 +401,18 @@ void GridWindow::solve_picross_grid()
     {
         solver->set_observer(std::reference_wrapper<GridObserver>(*this));
         solver->set_abort_function([this]() { return this->abort_solver_thread(); });
-        picross::Solver::Status status;
-        std::vector<picross::OutputGrid> local_solutions;
-        std::tie (status, local_solutions) = solver->solve(grid, max_nb_solutions);
-        if (status == picross::Solver::Status::ABORTED)
+        const auto solver_result = solver->solve(grid, max_nb_solutions);
+        if (solver_result.status == picross::Solver::Status::ABORTED)
         {
             std::lock_guard<std::mutex> lock(text_buffer->mutex);
             text_buffer->buffer.appendf("Processing aborted\n");
         }
-        else if (status == picross::Solver::Status::CONTRADICTORY_GRID)
+        else if (solver_result.status == picross::Solver::Status::CONTRADICTORY_GRID)
         {
             std::lock_guard<std::mutex> lock(text_buffer->mutex);
             text_buffer->buffer.appendf("Could not solve that grid :-(\n");
         }
-        else if (local_solutions.empty())
+        else if (solver_result.solutions.empty())
         {
             std::lock_guard<std::mutex> lock(text_buffer->mutex);
             text_buffer->buffer.appendf("No solution could be found\n");

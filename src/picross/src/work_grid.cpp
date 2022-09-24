@@ -42,15 +42,15 @@ void merge_nested_grid_stats(GridStats& stats, const GridStats& nested_stats)
 {
     stats.nb_solutions += nested_stats.nb_solutions;
     // stats.max_nb_solutions
-    stats.max_nested_level = std::max(stats.max_nested_level, nested_stats.max_nested_level);
-    stats.guess_total_calls += nested_stats.guess_total_calls;
-    stats.guess_total_alternatives += nested_stats.guess_total_alternatives;
+    stats.max_branching_depth = std::max(stats.max_branching_depth, nested_stats.max_branching_depth);
+    stats.nb_branching_calls += nested_stats.nb_branching_calls;
+    stats.total_nb_branching_alternatives += nested_stats.total_nb_branching_alternatives;
 
-    stats.guess_max_nb_alternatives_by_depth.resize(stats.max_nested_level, 0u);
-    for (size_t d = 0; d < nested_stats.guess_max_nb_alternatives_by_depth.size(); d++)
+    stats.max_nb_alternatives_by_branching_depth.resize(stats.max_branching_depth, 0u);
+    for (size_t d = 0; d < nested_stats.max_nb_alternatives_by_branching_depth.size(); d++)
     {
-        assert(d < stats.guess_max_nb_alternatives_by_depth.size());
-        stats.guess_max_nb_alternatives_by_depth[d] = std::max(stats.guess_max_nb_alternatives_by_depth[d], nested_stats.guess_max_nb_alternatives_by_depth[d]);
+        assert(d < stats.max_nb_alternatives_by_branching_depth.size());
+        stats.max_nb_alternatives_by_branching_depth[d] = std::max(stats.max_nb_alternatives_by_branching_depth[d], nested_stats.max_nb_alternatives_by_branching_depth[d]);
     }
 
     stats.max_initial_nb_alternatives = std::max(stats.max_initial_nb_alternatives, nested_stats.max_initial_nb_alternatives);
@@ -78,7 +78,7 @@ WorkGrid<LineSelectionPolicy>::WorkGrid(const InputGrid& grid, Solver::Observer 
     , observer(std::move(observer))
     , abort_function(std::move(abort_function))
     , max_nb_alternatives(LineSelectionPolicy::initial_max_nb_alternatives())
-    , nested_level(0u)
+    , branching_depth(0u)
     , binomial(new BinomialCoefficientsCache())
 {
     assert(cols.size() == get_width());
@@ -104,7 +104,7 @@ WorkGrid<LineSelectionPolicy>::WorkGrid(const WorkGrid& parent, unsigned int nes
     , observer(parent.observer)
     , abort_function(parent.abort_function)
     , max_nb_alternatives(LineSelectionPolicy::initial_max_nb_alternatives())
-    , nested_level(nested_level)
+    , branching_depth(nested_level)
     , binomial(nullptr)               // only used on the first pass on the grid threfore on nested_level == 0
 {
     assert(nested_level > 0u);
@@ -130,13 +130,13 @@ void WorkGrid<LineSelectionPolicy>::set_stats(GridStats* stats)
 {
     this->stats = stats;
     if (stats)
-        stats->max_nested_level = nested_level;
+        stats->max_branching_depth = branching_depth;
 }
 
 template <typename LineSelectionPolicy>
 Solver::Status WorkGrid<LineSelectionPolicy>::solve(Solver::Solutions& solutions, unsigned int max_nb_solutions)
 {
-    auto pass_status = full_grid_pass(nested_level == 0u);     // If nested_level == 0, this is the first pass on the grid
+    auto pass_status = full_grid_pass(branching_depth == 0u);     // If nested_level == 0, this is the first pass on the grid
     if (pass_status.contradictory)
         return Solver::Status::CONTRADICTORY_GRID;
 
@@ -152,11 +152,11 @@ Solver::Status WorkGrid<LineSelectionPolicy>::solve(Solver::Solutions& solutions
         grid_completed = all_lines_completed();
 
         // Exit loop either if the grid has completed or if the condition to switch the branching search is met
-        if (LineSelectionPolicy::switch_to_branching(max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines, nested_level))
+        if (LineSelectionPolicy::switch_to_branching(max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines, branching_depth))
             break;
 
         // Max number of alternatives for the next full grid pass
-        max_nb_alternatives = LineSelectionPolicy::get_max_nb_alternatives(max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines, nested_level);
+        max_nb_alternatives = LineSelectionPolicy::get_max_nb_alternatives(max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines, branching_depth);
     }
 
     // Are we done?
@@ -164,7 +164,7 @@ Solver::Status WorkGrid<LineSelectionPolicy>::solve(Solver::Solutions& solutions
     {
         if (observer)
         {
-            observer(Solver::Event::SOLVED_GRID, nullptr, nested_level);
+            observer(Solver::Event::SOLVED_GRID, nullptr, branching_depth);
         }
         save_solution(solutions);
         return Solver::Status::OK;
@@ -201,8 +201,8 @@ Solver::Status WorkGrid<LineSelectionPolicy>::solve(Solver::Solutions& solutions
         guess_list_of_all_alternatives = line_constraint.build_all_possible_lines(known_tiles);
         assert(guess_list_of_all_alternatives.size() == min_alt);
 
-        // Guess!
-        return guess(solutions, max_nb_solutions);
+        // Make a guess
+        return branch(solutions, max_nb_solutions);
     }
 }
 
@@ -267,7 +267,7 @@ bool WorkGrid<LineSelectionPolicy>::set_line(const Line& line)
     if (observer && line_changed)
     {
         const Line delta = line_delta(origin_line, get_line(line.get_type(), line_index));
-        observer(Solver::Event::DELTA_LINE, &delta, nested_level);
+        observer(Solver::Event::DELTA_LINE, &delta, branching_depth);
     }
     return line_changed;
 }
@@ -446,7 +446,7 @@ typename WorkGrid<LineSelectionPolicy>::PassStatus WorkGrid<LineSelectionPolicy>
 
 
 template <typename LineSelectionPolicy>
-Solver::Status WorkGrid<LineSelectionPolicy>::guess(Solver::Solutions& solutions, unsigned int max_nb_solutions) const
+Solver::Status WorkGrid<LineSelectionPolicy>::branch(Solver::Solutions& solutions, unsigned int max_nb_solutions) const
 {
     assert(guess_list_of_all_alternatives.size() > 0u);
     /* This function will test a range of alternatives for one particular line of the grid, each time
@@ -455,12 +455,12 @@ Solver::Status WorkGrid<LineSelectionPolicy>::guess(Solver::Solutions& solutions
 
     if (stats != nullptr)
     {
-        stats->guess_total_calls++;
+        stats->nb_branching_calls++;
         const auto nb_alternatives = static_cast<unsigned int>(guess_list_of_all_alternatives.size());
-        stats->guess_total_alternatives += nb_alternatives;
-        if (stats->guess_max_nb_alternatives_by_depth.size() < nested_level + 1)
-            stats->guess_max_nb_alternatives_by_depth.resize(nested_level + 1, 0u);
-        auto& max_nb_alternatives = stats->guess_max_nb_alternatives_by_depth[nested_level];
+        stats->total_nb_branching_alternatives += nb_alternatives;
+        if (stats->max_nb_alternatives_by_branching_depth.size() < branching_depth + 1)
+            stats->max_nb_alternatives_by_branching_depth.resize(branching_depth + 1, 0u);
+        auto& max_nb_alternatives = stats->max_nb_alternatives_by_branching_depth[branching_depth];
         max_nb_alternatives = std::max(max_nb_alternatives, nb_alternatives);
     }
 
@@ -470,7 +470,7 @@ Solver::Status WorkGrid<LineSelectionPolicy>::guess(Solver::Solutions& solutions
     for (const Line& guess_line : guess_list_of_all_alternatives)
     {
         // Allocate a new work grid. Use the shallow copy.
-        WorkGrid new_grid(*this, nested_level + 1);
+        WorkGrid new_grid(*this, branching_depth + 1);
         Solver::Solutions nested_solutions;
         std::unique_ptr<GridStats> nested_stats;
         if (stats)
@@ -524,7 +524,7 @@ void WorkGrid<LineSelectionPolicy>::save_solution(Solver::Solutions& solutions) 
     if (stats != nullptr) { stats->nb_solutions++; }
 
     // Shallow copy of only the grid data
-    solutions.emplace_back(static_cast<const OutputGrid&>(*this));
+    solutions.emplace_back(Solver::Solution{ static_cast<const OutputGrid&>(*this), branching_depth });
 }
 
 

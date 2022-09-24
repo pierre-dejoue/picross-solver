@@ -98,14 +98,14 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
         ostream << "/" << stats.max_nb_solutions;
     }
     ostream << std::endl;
-    ostream << "  Max branching depth: " << stats.max_nested_level << std::endl;
-    if (stats.max_nested_level > 0u)
+    ostream << "  Max branching depth: " << stats.max_branching_depth << std::endl;
+    if (stats.max_branching_depth > 0u)
     {
-        ostream << "    > Hypothesis on " << stats.guess_total_calls << " lines" << std::endl;
-        ostream << "    > Total number of alternatives being tested: " << stats.guess_total_alternatives << std::endl;
-        assert(stats.guess_max_nb_alternatives_by_depth.size() == stats.max_nested_level);
+        ostream << "    > Hypothesis on " << stats.nb_branching_calls << " lines" << std::endl;
+        ostream << "    > Total number of alternatives being tested: " << stats.total_nb_branching_alternatives << std::endl;
+        assert(stats.max_nb_alternatives_by_branching_depth.size() == stats.max_branching_depth);
         ostream << "    > Max number of alternatives by branching depth:";
-        for (const auto& max_alternatives : stats.guess_max_nb_alternatives_by_depth)
+        for (const auto& max_alternatives : stats.max_nb_alternatives_by_branching_depth)
         {
             ostream << " " << max_alternatives;
         }

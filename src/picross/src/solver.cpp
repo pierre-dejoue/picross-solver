@@ -20,16 +20,15 @@
 namespace picross
 {
 
-std::pair<Solver::Status, Solver::Solutions> RefSolver::solve(const InputGrid& grid_input, unsigned int max_nb_solutions) const
+Solver::Result RefSolver::solve(const InputGrid& grid_input, unsigned int max_nb_solutions) const
 {
-    Solutions solutions;
+    Result result;
 
     if (stats != nullptr)
     {
         /* Reset stats */
         GridStats new_stats;
         std::swap(*stats, new_stats);
-
         stats->max_nb_solutions = max_nb_solutions;
     }
 
@@ -46,19 +45,19 @@ std::pair<Solver::Status, Solver::Solutions> RefSolver::solve(const InputGrid& g
         };
     }
 
-    auto status = Status::OK;
+    result.status = Status::OK;
     try
     {
         WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives_EstimateNbAlternatives> work_grid(grid_input, std::move(observer_wrapper), abort_function);
         work_grid.set_stats(stats);
-        status = work_grid.solve(solutions, max_nb_solutions);
+        result.status = work_grid.solve(result.solutions, max_nb_solutions);
     }
     catch (const PicrossSolverAborted&)
     {
-        status = Status::ABORTED;
+        result.status = Status::ABORTED;
     }
 
-    return std::make_pair(status, std::move(solutions));
+    return result;
 }
 
 
@@ -119,41 +118,56 @@ std::ostream& operator<<(std::ostream& ostream, Solver::Event event)
 }
 
 
-std::pair<int, std::string> validate_input_grid(const Solver& solver, const InputGrid& grid_input)
+ValidationResult validate_input_grid(const Solver& solver, const InputGrid& grid_input)
 {
-    bool check;
-    std::string check_msg;
-    std::tie(check, check_msg) = picross::check_grid_input(grid_input);
+    ValidationResult result;
+
+    const auto [check, check_msg] = picross::check_grid_input(grid_input);
 
     if (!check)
     {
-        return std::make_pair(-1, check_msg);
+        result.code = -1;
+        result.branching_depth = 0;
+        result.msg = check_msg;
+        return result;
     }
 
-    Solver::Status status;
-    Solver::Solutions solutions;
-    std::tie(status, solutions) = solver.solve(grid_input, 2);
+    const auto solver_results = solver.solve(grid_input, 2);
 
-    if (status == Solver::Status::CONTRADICTORY_GRID)
+    if (solver_results.status == Solver::Status::CONTRADICTORY_GRID)
     {
-        return std::make_pair(-1, "Input grid constraints are contradictory");
+        result.code = -1;
+        result.branching_depth = 0;
+        result.msg = "Input grid constraints are contradictory";
+        return result;
     }
 
-    assert(status == Solver::Status::OK);
-    std::string message;
-    if (solutions.empty())
+    assert(solver_results.status == Solver::Status::OK);
+    result.code = static_cast<ValidationCode>(solver_results.solutions.size());
+    result.branching_depth = 0;
+    result.msg = "";
+    if (solver_results.solutions.empty())
     {
-        message = "No solution could be found";
+        assert(result.code == 0);
+        result.msg = "No solution could be found";
     }
-    else if (solutions.size() > 1)
+    else if (solver_results.solutions.size() == 1)
     {
-        message = "The solution is not unique";
+        assert(result.code == 1);
+        result.branching_depth = solver_results.solutions[0].branching_depth;
     }
-    return std::make_pair(static_cast<ValidationCode>(solutions.size()), message);
+    else
+    {
+        result.code = 2;
+        result.branching_depth = solver_results.solutions[0].branching_depth;
+        assert(result.branching_depth != 0);    // If there are multiple solutions the grid is not line solvable
+        result.msg = "The solution is not unique";
+    }
+    return result;
 }
 
 
-std::string validation_code_str(ValidationCode code)
+std::string_view validation_code_str(ValidationCode code)
 {
     if (code < 0)
     {
