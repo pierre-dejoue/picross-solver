@@ -8,7 +8,7 @@ include(FetchContent)
 FetchContent_Declare(
     argagg
     GIT_REPOSITORY https://github.com/vietjtnguyen/argagg.git
-    GIT_TAG 79e4adfa2c6e2bfbe63da05cc668eb9ad5596748
+    GIT_TAG 0.4.7
 )
 FetchContent_Populate(argagg)
 
