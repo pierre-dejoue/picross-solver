@@ -2,7 +2,7 @@ GRID 1: The Ugly Duckling
   Size: 25x20
   Found 1 solution(s)
 
-  Nb 1:
+  Nb 1: (branching depth: 0)
   .#################....###
   ...#..#......#...########
   .##....#..###############

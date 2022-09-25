@@ -1,0 +1,198 @@
+GRID 1: 4-Dom
+  Size: 9x9
+  Found 1 solution(s)
+
+  Nb 1: (branching depth: 2)
+  ......###
+  ........#
+  ....###.#
+  ......#..
+  ..###.#..
+  ....#....
+  ###.#....
+  ..#......
+  ..#......
+
+  Number of solutions found: 1
+  Max branching depth: 2
+    > Hypothesis on 4 lines
+    > Total number of alternatives being tested: 16
+    > Max number of alternatives by branching depth: 7 5
+  Max number of alternatives on an empty line (initial grid pass): 15
+  Max number of alternatives after a line reduce (change/all): 10/10
+  Number of calls to full_grid_pass: 41
+  Number of calls to single_line_pass (change/all): 118/292
+  Number of calls to the observer callback: 151
+
+
+
+GRID 2: 5-Dom
+  Size: 11x11
+  Found 1 solution(s)
+
+  Nb 1: (branching depth: 3)
+  ........###
+  ..........#
+  ......###.#
+  ........#..
+  ....###.#..
+  ......#....
+  ..###.#....
+  ....#......
+  ###.#......
+  ..#........
+  ..#........
+
+  Number of solutions found: 1
+  Max branching depth: 5
+    > Hypothesis on 25 lines
+    > Total number of alternatives being tested: 116
+    > Max number of alternatives by branching depth: 9 7 5 5 2
+  Max number of alternatives on an empty line (initial grid pass): 28
+  Max number of alternatives after a line reduce (change/all): 13/21
+  Number of calls to full_grid_pass: 247
+  Number of calls to single_line_pass (change/all): 767/2095
+  Number of calls to the observer callback: 1000
+
+
+
+GRID 3: 6-Dom
+  Size: 13x13
+  Found 1 solution(s)
+
+  Nb 1: (branching depth: 4)
+  ..........###
+  ............#
+  ........###.#
+  ..........#..
+  ......###.#..
+  ........#....
+  ....###.#....
+  ......#......
+  ..###.#......
+  ....#........
+  ###.#........
+  ..#..........
+  ..#..........
+
+  Number of solutions found: 1
+  Max branching depth: 6
+    > Hypothesis on 188 lines
+    > Total number of alternatives being tested: 873
+    > Max number of alternatives by branching depth: 11 9 7 7 6 5
+  Max number of alternatives on an empty line (initial grid pass): 45
+  Max number of alternatives after a line reduce (change/all): 16/36
+  Number of calls to full_grid_pass: 1786
+  Number of calls to single_line_pass (change/all): 5440/15851
+  Number of calls to the observer callback: 7187
+
+
+
+GRID 4: 7-Dom
+  Size: 15x15
+  Found 1 solution(s)
+
+  Nb 1: (branching depth: 5)
+  ............###
+  ..............#
+  ..........###.#
+  ............#..
+  ........###.#..
+  ..........#....
+  ......###.#....
+  ........#......
+  ....###.#......
+  ......#........
+  ..###.#........
+  ....#..........
+  ###.#..........
+  ..#............
+  ..#............
+
+  Number of solutions found: 1
+  Max branching depth: 8
+    > Hypothesis on 2009 lines
+    > Total number of alternatives being tested: 9905
+    > Max number of alternatives by branching depth: 13 11 9 9 8 7 7 3
+  Max number of alternatives on an empty line (initial grid pass): 66
+  Max number of alternatives after a line reduce (change/all): 28/55
+  Number of calls to full_grid_pass: 18693
+  Number of calls to single_line_pass (change/all): 58707/173281
+  Number of calls to the observer callback: 78518
+
+
+
+GRID 5: 8-Dom
+  Size: 17x17
+  Found 1 solution(s)
+
+  Nb 1: (branching depth: 6)
+  ..............###
+  ................#
+  ............###.#
+  ..............#..
+  ..........###.#..
+  ............#....
+  ........###.#....
+  ..........#......
+  ......###.#......
+  ........#........
+  ....###.#........
+  ......#..........
+  ..###.#..........
+  ....#............
+  ###.#............
+  ..#..............
+  ..#..............
+
+  Number of solutions found: 1
+  Max branching depth: 11
+    > Hypothesis on 22522 lines
+    > Total number of alternatives being tested: 117028
+    > Max number of alternatives by branching depth: 15 13 11 11 10 9 9 8 7 2 2
+  Max number of alternatives on an empty line (initial grid pass): 91
+  Max number of alternatives after a line reduce (change/all): 45/78
+  Number of calls to full_grid_pass: 221636
+  Number of calls to single_line_pass (change/all): 724093/2180712
+  Number of calls to the observer callback: 958150
+
+
+
+GRID 6: 9-Dom
+  Size: 19x19
+  Found 1 solution(s)
+
+  Nb 1: (branching depth: 7)
+  ................###
+  ..................#
+  ..............###.#
+  ................#..
+  ............###.#..
+  ..............#....
+  ..........###.#....
+  ............#......
+  ........###.#......
+  ..........#........
+  ......###.#........
+  ........#..........
+  ....###.#..........
+  ......#............
+  ..###.#............
+  ....#..............
+  ###.#..............
+  ..#................
+  ..#................
+
+  Number of solutions found: 1
+  Max branching depth: 12
+    > Hypothesis on 265028 lines
+    > Total number of alternatives being tested: 1363764
+    > Max number of alternatives by branching depth: 17 15 13 13 12 11 11 10 9 8 4 2
+  Max number of alternatives on an empty line (initial grid pass): 120
+  Max number of alternatives after a line reduce (change/all): 66/105
+  Number of calls to full_grid_pass: 2645867
+  Number of calls to single_line_pass (change/all): 8819197/27255230
+  Number of calls to the observer callback: 11546726
+
+
+

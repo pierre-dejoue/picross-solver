@@ -2,7 +2,7 @@ GRID 1: Fish
   Size: 22x20
   Found 1 solution(s)
 
-  Nb 1:
+  Nb 1: (branching depth: 0)
   ......................
   .........#####........
   .##.....#....###......
@@ -38,7 +38,7 @@ GRID 2: Two Notes
   Size: 10x10
   Found 2 solution(s)
 
-  Nb 1:
+  Nb 1: (branching depth: 1)
   ..###.....
   ..#.#.....
   ..#.#.....
@@ -50,7 +50,7 @@ GRID 2: Two Notes
   .....###..
   .....###..
 
-  Nb 2:
+  Nb 2: (branching depth: 1)
   .......###
   .......#.#
   .......#.#

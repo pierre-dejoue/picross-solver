@@ -1,28 +1,10 @@
-# 12x12 grid with multiple solutions
-GRID Test pattern
+# The smile pattern is not line solvable
+GRID Smile
 ROWS
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
+[ 1 1 ]
+[ 2 ]
 COLUMNS
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
-[ 2 2 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]

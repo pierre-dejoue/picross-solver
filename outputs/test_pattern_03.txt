@@ -2,7 +2,7 @@ GRID 1: Asterisk
   Size: 9x9
   Found 1 solution(s)
 
-  Nb 1:
+  Nb 1: (branching depth: 0)
   ....#....
   ....#....
   ##..#..##
