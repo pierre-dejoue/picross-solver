@@ -80,7 +80,7 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
         break;
 
     default:
-        throw std::invalid_argument("Unknown Solver::Event");
+        assert(0);  // Unknown Solver::Event
     }
 
     assert(current_depth < grids.size());

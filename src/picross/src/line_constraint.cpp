@@ -123,11 +123,11 @@ std::pair<bool, unsigned int> LineConstraint::line_trivial_reduction(Line& line,
 
 std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_tiles) const
 {
-    if (known_tiles.get_type() != type) { throw std::invalid_argument("Constraint::build_all_possible_lines: Wrong filter line type"); }
+    assert(known_tiles.get_type() == type);
     const size_t index = known_tiles.get_index();
 
     // Number of zeros to add to the minimal size line.
-    if (known_tiles.size() < min_line_size) { throw std::logic_error("Constraint::build_all_possible_lines: line_size < min_line_size"); }
+    assert(known_tiles.size() >= min_line_size);
     unsigned int nb_zeros = known_tiles.size() - min_line_size;
 
     std::vector<Line> result;
@@ -254,7 +254,7 @@ namespace
                 if (partial_compatibility_bw(alternative, known_tiles, line_idx, next_line_idx))
                 {
                     reduce();
-                    nb_alternatives += 1;
+                    nb_alternatives++;
                 }
             }
             // Else, fill in the next segment of ones, then call recursively
@@ -340,11 +340,11 @@ std::pair<Line, unsigned int> LineConstraint::reduce_and_count_alternatives(cons
 {
     if (stats != nullptr) { stats->nb_reduce_and_count_alternatives_calls++; }
 
-    if (known_tiles.get_type() != type) { throw std::invalid_argument("Constraint::reduce_and_count_alternatives: Wrong filter line type"); }
+    assert(known_tiles.get_type() == type);
     const size_t index = known_tiles.get_index();
 
     // Number of zeros to add to the minimal size line.
-    if (known_tiles.size() < min_line_size) { throw std::logic_error("Constraint::reduce_and_count_alternatives: line_size < min_line_size"); }
+    assert(known_tiles.size() >= min_line_size);
     unsigned int nb_zeros = known_tiles.size() - min_line_size;
 
     BuildLineAlternatives builder(segs_of_ones, known_tiles);

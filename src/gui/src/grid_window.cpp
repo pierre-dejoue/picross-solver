@@ -371,7 +371,7 @@ unsigned int GridWindow::process_line_events(std::vector<LineEvent>& events)
             break;
 
         default:
-            throw std::invalid_argument("Unknown Solver::Event");
+            assert(0);  // Unknown Solver::Event
         }
 
         // Adjust number of tabs

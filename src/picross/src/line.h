@@ -16,21 +16,6 @@
 namespace picross
 {
 
-class PicrossLineAdditionError : public std::runtime_error
-{
-public:
-    PicrossLineAdditionError() : std::runtime_error("[PicrossSolver] An error was detected adding two lines")
-    {}
-};
-
-class PicrossLineDeltaError : public std::runtime_error
-{
-public:
-    PicrossLineDeltaError() : std::runtime_error("[PicrossSolver] An error was detected computing the delta of two lines")
-    {}
-};
-
-
 /*
  * Tile namespace.
  *

@@ -30,6 +30,6 @@ void ConsoleObserver::observer_callback(picross::Solver::Event event, const picr
         break;
 
     default:
-        throw std::invalid_argument("Unknown Solver::Event");
+        assert(0);  // Unknown Solver::Event
     }
 }

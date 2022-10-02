@@ -419,7 +419,8 @@ typename WorkGrid<LineSelectionPolicy>::PassStatus WorkGrid<LineSelectionPolicy>
                     status.skipped_lines++;
                 }
             }
-            if (abort_function && abort_function()) { throw PicrossSolverAborted(); }
+            if (abort_function && abort_function())
+                throw PicrossSolverAborted();
         }
     }
     return status;

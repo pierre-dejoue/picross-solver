@@ -92,7 +92,7 @@ std::ostream& operator<<(std::ostream& ostream, Solver::Status status)
         ostream << "CONTRADICTORY_GRID";
         break;
     default:
-        throw std::invalid_argument("Unknown Solver::Status");
+        assert(0);  // Unknown Solver::Status
     }
     return ostream;
 }
@@ -112,7 +112,7 @@ std::ostream& operator<<(std::ostream& ostream, Solver::Event event)
         ostream << "SOLVED_GRID";
         break;
     default:
-        throw std::invalid_argument("Unknown Solver::Event");
+        assert(0);  // Unknown Solver::Event
     }
     return ostream;
 }
