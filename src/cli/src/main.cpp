@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
      * I - Process command line
      **************************************************************************/
     argagg::parser argparser
-    {{
+    { {
       {
         "help", { "-h", "--help" },
         "Print usage note and exit", 0 },
@@ -87,8 +87,11 @@ int main(int argc, char *argv[])
         "Limit the number of solutions returned per grid", 1 },
       {
         "validation-mode", { "--validation" },
-        "Validation mode: Check for unique solution, output one line per grid", 0 }
-    }};
+        "Validation mode: Check for unique solution, output one line per grid", 0 },
+      {
+        "line-solver", { "--line-solver" },
+        "Line solver: might output an incomplete solution if the grid is not line solvable", 0 }
+    } };
 
     std::ostringstream usage_note;
     usage_note << "Picross Solver " << picross::get_version_string() << std::endl;
@@ -133,7 +136,7 @@ int main(int argc, char *argv[])
     if (validation_mode) { std::cout << validation_mode_format << std::endl; }
 
     /* Solver */
-    const auto solver = picross::get_ref_solver();
+    const auto solver = args["line-solver"] ? picross::get_line_solver() : picross::get_ref_solver();
 
 
     /***************************************************************************
@@ -229,7 +232,16 @@ int main(int argc, char *argv[])
                         /* Display solutions */
                         if (solver_result.status != picross::Solver::Status::OK)
                         {
-                            std::cout << "  Could not solve that grid :-(" << std::endl << std::endl;
+                            std::cout << "  Could not solve that grid :-(" << std::endl;
+                            if (solver_result.status == picross::Solver::Status::NOT_LINE_SOLVABLE)
+                            {
+                                assert(solver_result.solutions.size() == 1);
+                                const auto& solution = solver_result.solutions.front();
+                                assert(!solution.grid.is_solved());
+                                std::cout << "  Found partial solution" << std::endl;
+                                std::cout << solution.grid << std::endl;
+                            }
+                            std::cout << std::endl;
                         }
                         else
                         {

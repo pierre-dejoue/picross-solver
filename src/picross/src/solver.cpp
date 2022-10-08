@@ -20,7 +20,8 @@
 namespace picross
 {
 
-Solver::Result RefSolver::solve(const InputGrid& grid_input, unsigned int max_nb_solutions) const
+template <bool BranchingAllowed>
+Solver::Result RefSolver<BranchingAllowed>::solve(const InputGrid& grid_input, unsigned int max_nb_solutions) const
 {
     Result result;
 
@@ -48,7 +49,7 @@ Solver::Result RefSolver::solve(const InputGrid& grid_input, unsigned int max_nb
     result.status = Status::OK;
     try
     {
-        WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives_EstimateNbAlternatives> work_grid(grid_input, std::move(observer_wrapper), abort_function);
+        WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives_EstimateNbAlternatives, BranchingAllowed> work_grid(grid_input, std::move(observer_wrapper), abort_function);
         work_grid.set_stats(stats);
         result.status = work_grid.solve(result.solutions, max_nb_solutions);
     }
@@ -61,18 +62,22 @@ Solver::Result RefSolver::solve(const InputGrid& grid_input, unsigned int max_nb
 }
 
 
-void RefSolver::set_observer(Observer observer)
+template <bool BranchingAllowed>
+void RefSolver<BranchingAllowed>::set_observer(Observer observer)
 {
     this->observer = std::move(observer);
 }
 
 
-void RefSolver::set_stats(GridStats& stats)
+template <bool BranchingAllowed>
+void RefSolver<BranchingAllowed>::set_stats(GridStats& stats)
 {
     this->stats = &stats;
 }
 
-void RefSolver::set_abort_function(Abort abort)
+
+template <bool BranchingAllowed>
+void RefSolver<BranchingAllowed>::set_abort_function(Abort abort)
 {
     this->abort_function = std::move(abort);
 }
@@ -90,6 +95,9 @@ std::ostream& operator<<(std::ostream& ostream, Solver::Status status)
         break;
     case Solver::Status::CONTRADICTORY_GRID:
         ostream << "CONTRADICTORY_GRID";
+        break;
+    case Solver::Status::NOT_LINE_SOLVABLE:
+        ostream << "NOT_LINE_SOLVABLE";
         break;
     default:
         assert(0);  // Unknown Solver::Status
@@ -191,8 +199,13 @@ std::string_view validation_code_str(ValidationCode code)
 
 std::unique_ptr<Solver> get_ref_solver()
 {
-    return std::make_unique<RefSolver>();
+    return std::make_unique<RefSolver<>>();
 }
 
+
+std::unique_ptr<Solver> get_line_solver()
+{
+    return std::make_unique<RefSolver<false>>();
+}
 
 } // namespace picross

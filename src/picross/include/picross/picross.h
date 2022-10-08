@@ -196,24 +196,36 @@ class Solver
 public:
     virtual ~Solver() = default;
 
-    //
-    // Main method called to solve a grid
-    //
-    // By default the solver will look for all the solutions of the input grid.
-    // The optional argument max_nb_solutions can be used to limit the number of solutions discovered by the algorithm.
-    //
-    enum class Status { OK, ABORTED, CONTRADICTORY_GRID };
+    // Return status of the solver
+    enum class Status
+    {
+        OK,                     // One or more solution found
+        ABORTED,                // Aborted
+        CONTRADICTORY_GRID,     // Not solvable
+        NOT_LINE_SOLVABLE       // Not line solvable (i.e. not solvable without a branching algorithm)
+    };
+
     struct Solution
     {
         OutputGrid grid;
         unsigned int branching_depth;
     };
     using Solutions = std::vector<Solution>;
+
+    // Solver result
     struct Result
     {
         Status status;
         Solutions solutions;
     };
+
+    //
+    // Main method called to solve a grid
+    //
+    // By default the solver will look for all the solutions of the input grid.
+    // The optional argument max_nb_solutions can be used to limit the number of solutions discovered by the algorithm.
+    //
+
     virtual Result solve(const InputGrid& grid_input, unsigned int max_nb_solutions = 0u) const = 0;
 
     //
@@ -308,6 +320,12 @@ ValidationResult validate_input_grid(const Solver& solver, const InputGrid& grid
  * Factory for the reference grid solver
  */
 std::unique_ptr<Solver> get_ref_solver();
+
+
+/*
+ * Factory for a line solver
+ */
+std::unique_ptr<Solver> get_line_solver();
 
 
 /*

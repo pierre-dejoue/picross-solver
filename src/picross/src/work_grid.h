@@ -116,7 +116,7 @@ class PicrossSolverAborted : public std::exception
  *
  *   Working class used to solve a grid.
  */
-template <typename LineSelectionPolicy>
+template <typename LineSelectionPolicy, bool BranchingAllowed = true>
 class WorkGrid final : public OutputGrid
 {
 private:
@@ -144,6 +144,7 @@ private:
     WorkGrid(const WorkGrid& parent, unsigned int nested_level);
 public:
     void set_stats(GridStats* stats);
+    Solver::Status line_solve(Solver::Solutions& solutions);
     Solver::Status solve(Solver::Solutions& solutions, unsigned int max_nb_solutions = 0u);
 private:
     bool all_lines_completed() const;

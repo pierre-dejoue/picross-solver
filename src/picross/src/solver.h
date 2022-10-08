@@ -16,6 +16,7 @@ namespace picross
 /*
  * Grid Solver: an implementation
  */
+template <bool BranchingAllowed = true>
 class RefSolver : public Solver
 {
 public:
