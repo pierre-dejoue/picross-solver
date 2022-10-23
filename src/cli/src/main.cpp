@@ -199,11 +199,6 @@ int main(int argc, char *argv[])
                         {
                             solver->set_observer(std::reference_wrapper<ConsoleObserver>(obs));
                         }
-                        else
-                        {
-                            // Set a dummy observer just to collect stats on number of observer calls
-                            solver->set_observer([](picross::Solver::Event, const picross::Line*, unsigned int) {});
-                        }
                     }
 
                     std::chrono::duration<float, std::milli> time_ms;

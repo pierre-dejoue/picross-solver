@@ -251,7 +251,7 @@ bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_line(const Line& line)
 {
     bool line_changed = false;
     const size_t line_index = line.index();
-    const Line origin_line = get_line(line.type(), line_index);
+    const Line observer_original_line = observer ? get_line(line.type(), line_index) : Line(Line::ROW, 0, 0);
     assert(line.size() == static_cast<unsigned int>(line.type() == Line::ROW ? width() : height()));
     const Line::Container& tiles = line.tiles();
 
@@ -291,7 +291,7 @@ bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_line(const Line& line)
     }
     if (observer && line_changed)
     {
-        const Line delta = line_delta(origin_line, get_line(line.type(), line_index));
+        const Line delta = line_delta(observer_original_line, get_line(line.type(), line_index));
         observer(Solver::Event::DELTA_LINE, &delta, branching_depth);
     }
     return line_changed;
