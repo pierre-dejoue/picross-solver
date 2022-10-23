@@ -55,7 +55,7 @@ unsigned int LineConstraint::max_segment_size() const
  */
 std::pair<bool, unsigned int> LineConstraint::line_trivial_reduction(Line& line, BinomialCoefficientsCache& binomial_cache) const
 {
-    assert(line.get_type() == type);
+    assert(line.type() == type);
     assert(is_all_one_color(line, Tile::UNKNOWN));
 
     if (line.size() < min_line_size)
@@ -68,7 +68,7 @@ std::pair<bool, unsigned int> LineConstraint::line_trivial_reduction(Line& line,
     unsigned int nb_alternatives = 0u;
 
     const unsigned int nb_zeros = line.size() - min_line_size;
-    Line::Container& tiles = line.get_tiles();
+    Line::Container& tiles = line.tiles();
     unsigned int line_idx = 0u;
 
     if (max_segment_size() == 0u)
@@ -77,7 +77,7 @@ std::pair<bool, unsigned int> LineConstraint::line_trivial_reduction(Line& line,
         for (unsigned int c = 0u; c < line.size(); c++) { tiles[line_idx++] = Tile::ZERO; }
 
         assert(line_idx == line.size());
-        assert(is_fully_defined(line));
+        assert(is_complete(line));
         changed = true;
         nb_alternatives = 1;
     }
@@ -93,7 +93,7 @@ std::pair<bool, unsigned int> LineConstraint::line_trivial_reduction(Line& line,
         }
 
         assert(line_idx == line.size());
-        assert(is_fully_defined(line));
+        assert(is_complete(line));
         changed = true;
         nb_alternatives = 1;
     }
@@ -123,8 +123,8 @@ std::pair<bool, unsigned int> LineConstraint::line_trivial_reduction(Line& line,
 
 std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_tiles) const
 {
-    assert(known_tiles.get_type() == type);
-    const size_t index = known_tiles.get_index();
+    assert(known_tiles.type() == type);
+    const size_t index = known_tiles.index();
 
     // Number of zeros to add to the minimal size line.
     assert(known_tiles.size() >= min_line_size);
@@ -132,7 +132,7 @@ std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_til
 
     std::vector<Line> result;
     Line new_line(known_tiles, Tile::UNKNOWN);
-    Line::Container& new_tile_vect = new_line.get_tiles();
+    Line::Container& new_tile_vect = new_line.tiles();
 
     if (segs_of_ones.size() == 0)
     {
@@ -181,7 +181,7 @@ std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_til
                 std::vector<unsigned int> trim_sets_of_ones(segs_of_ones.begin() + 1, segs_of_ones.end());
                 LineConstraint recursive_constraint(type, trim_sets_of_ones);
 
-                std::vector<Tile::Type> end_known_vect(known_tiles.get_tiles().cbegin() + line_idx, known_tiles.get_tiles().cend());
+                std::vector<Tile::Type> end_known_vect(known_tiles.tiles().cbegin() + line_idx, known_tiles.tiles().cend());
                 Line end_known_tiles(type, index, std::move(end_known_vect));
 
                 std::vector<Line> recursive_list = recursive_constraint.build_all_possible_lines(end_known_tiles);
@@ -189,7 +189,7 @@ std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_til
                 // Finally, construct the return_list based on the contents of the recursive_list.
                 for (const Line& line : recursive_list)
                 {
-                    std::copy(line.get_tiles().cbegin(), line.get_tiles().cend(), new_tile_vect.begin() + line_idx);
+                    std::copy(line.tiles().cbegin(), line.tiles().cend(), new_tile_vect.begin() + line_idx);
                     result.emplace_back(type, index, new_tile_vect);
                 }
             }
@@ -210,8 +210,8 @@ namespace
     // Specialized for black and white puzzles
     inline bool partial_compatibility_bw(const Line& lhs, const Line& rhs, unsigned int start_idx, unsigned int end_idx)
     {
-        const Line::Container& lhs_vect = lhs.get_tiles();
-        const Line::Container& rhs_vect = rhs.get_tiles();
+        const Line::Container& lhs_vect = lhs.tiles();
+        const Line::Container& rhs_vect = rhs.tiles();
         for (size_t idx = start_idx; idx < end_idx; ++idx)
         {
             if ((lhs_vect[idx] == Tile::ZERO && rhs_vect[idx] == Tile::ONE) ||
@@ -237,7 +237,7 @@ namespace
 
         unsigned int build_alternatives(unsigned int remaining_zeros, const size_t line_idx = 0u, const size_t constraint_idx = 0u)
         {
-            assert(alternative.get_type() == known_tiles.get_type());
+            assert(alternative.type() == known_tiles.type());
             assert(alternative.size() == known_tiles.size());
 
             unsigned int nb_alternatives = 0u;
@@ -245,7 +245,7 @@ namespace
             // If the last segment of ones was reached, pad end of line with zero, check compatibility then reduce
             if (constraint_idx == segs_of_ones.size())
             {
-                Line::Container& next_tiles = alternative.get_tiles();
+                Line::Container& next_tiles = alternative.tiles();
                 assert(next_tiles.size() - line_idx == remaining_zeros);
                 auto next_line_idx = line_idx;
                 for (unsigned int c = 0u; c < remaining_zeros; c++) { next_tiles[next_line_idx++] = Tile::ZERO; }
@@ -261,7 +261,7 @@ namespace
             else
             {
                 const auto& nb_ones = segs_of_ones[constraint_idx];
-                Line::Container& next_tiles = alternative.get_tiles();
+                Line::Container& next_tiles = alternative.tiles();
 
                 auto next_line_idx = line_idx;
                 for (unsigned int c = 0u; c < nb_ones; c++) { next_tiles[next_line_idx++] = Tile::ONE; }
@@ -297,7 +297,7 @@ namespace
     private:
         inline void reduce()
         {
-            assert(is_fully_defined(alternative));
+            assert(is_complete(alternative));
             assert(alternative.compatible(known_tiles));
             if (!reduced_line)
             {
@@ -319,11 +319,11 @@ namespace
 
     InputGrid::Constraint get_constraint_from(const Line& line)
     {
-        assert(is_fully_defined(line));
+        assert(is_complete(line));
 
         InputGrid::Constraint segs_of_ones;
         unsigned int count = 0u;
-        for (const auto& tile : line.get_tiles())
+        for (const auto& tile : line.tiles())
         {
             if (tile == Tile::ONE)                { count++; }
             if (tile == Tile::ZERO && count > 0u) { segs_of_ones.push_back(count); count = 0u; }
@@ -340,8 +340,8 @@ std::pair<Line, unsigned int> LineConstraint::reduce_and_count_alternatives(cons
 {
     if (stats != nullptr) { stats->nb_reduce_and_count_alternatives_calls++; }
 
-    assert(known_tiles.get_type() == type);
-    const size_t index = known_tiles.get_index();
+    assert(known_tiles.type() == type);
+    const size_t index = known_tiles.index();
 
     // Number of zeros to add to the minimal size line.
     assert(known_tiles.size() >= min_line_size);
@@ -355,7 +355,7 @@ std::pair<Line, unsigned int> LineConstraint::reduce_and_count_alternatives(cons
 
 bool LineConstraint::compatible(const Line& line) const
 {
-    assert(is_fully_defined(line));
+    assert(is_complete(line));
     const auto segments = get_constraint_from(line);
     return segments == segs_of_ones;
 }
@@ -385,14 +385,14 @@ InputGrid get_input_grid_from(const OutputGrid& grid)
 
     result.name = grid.get_name();
 
-    result.rows.reserve(grid.get_height());
-    for (unsigned int y = 0u; y < grid.get_height(); y++)
+    result.rows.reserve(grid.height());
+    for (unsigned int y = 0u; y < grid.height(); y++)
     {
         result.rows.emplace_back(get_constraint_from(grid.get_line<Line::ROW>(y)));
     }
 
-    result.cols.reserve(grid.get_width());
-    for (unsigned int x = 0u; x < grid.get_width(); x++)
+    result.cols.reserve(grid.width());
+    for (unsigned int x = 0u; x < grid.width(); x++)
     {
         result.cols.emplace_back(get_constraint_from(grid.get_line<Line::COL>(x)));
     }

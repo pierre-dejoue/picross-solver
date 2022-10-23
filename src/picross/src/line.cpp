@@ -58,68 +58,68 @@ namespace Tile
 
 
 Line::Line(Line::Type type, size_t index, size_t size, Tile::Type init_tile) :
-    type(type),
-    index(index),
-    tiles(size, init_tile)
+    m_type(type),
+    m_index(index),
+    m_tiles(size, init_tile)
 {
 }
 
 
 Line::Line(const Line& other, Tile::Type init_tile) :
-    Line(other.type, other.index, other.size(), init_tile)
+    Line(other.m_type, other.m_index, other.size(), init_tile)
 {
 }
 
 
 Line::Line(Line::Type type, size_t index, const Line::Container& tiles) :
-    type(type),
-    index(index),
-    tiles(tiles)
+    m_type(type),
+    m_index(index),
+    m_tiles(tiles)
 {
 }
 
 
 Line::Line(Line::Type type, size_t index, Line::Container&& tiles) :
-    type(type),
-    index(index),
-    tiles(std::move(tiles))
+    m_type(type),
+    m_index(index),
+    m_tiles(std::move(tiles))
 {
 }
 
 
-Line::Type Line::get_type() const
+Line::Type Line::type() const
 {
-    return type;
+    return m_type;
 }
 
 
-size_t Line::get_index() const
+size_t Line::index() const
 {
-    return index;
+    return m_index;
 }
 
 
-const Line::Container& Line::get_tiles() const
+const Line::Container& Line::tiles() const
 {
-    return tiles;
+    return m_tiles;
 }
 
 
-Line::Container& Line::get_tiles()
+Line::Container& Line::tiles()
 {
-    return tiles;
+    return m_tiles;
 }
 
 
 size_t Line::size() const
 {
-    return tiles.size();
+    return m_tiles.size();
 }
 
 
 Tile::Type Line::at(size_t idx) const
 {
-    return tiles.at(idx);
+    return m_tiles.at(idx);
 }
 
 
@@ -127,12 +127,12 @@ Tile::Type Line::at(size_t idx) const
  */
 bool Line::compatible(const Line& other) const
 {
-    assert(other.type == type);
-    assert(other.index == index);
-    assert(other.tiles.size() == tiles.size());
-    for (size_t idx = 0u; idx < tiles.size(); ++idx)
+    assert(other.type() == type());
+    assert(other.index() == index());
+    assert(other.tiles().size() == tiles().size());
+    for (size_t idx = 0u; idx < m_tiles.size(); ++idx)
     {
-        if (!Tile::compatible(other.tiles.at(idx), tiles[idx]))
+        if (!Tile::compatible(other.m_tiles.at(idx), m_tiles[idx]))
         {
             return false;
         }
@@ -150,13 +150,13 @@ bool Line::compatible(const Line& other) const
  */
 bool Line::add(const Line& other)
 {
-    assert(other.type == type);
-    assert(other.index == index);
-    assert(other.tiles.size() == tiles.size());
+    assert(other.type() == type());
+    assert(other.index() == index());
+    assert(other.tiles().size() == tiles().size());
     const bool valid = compatible(other);
     if (valid)
     {
-        std::transform(tiles.cbegin(), tiles.cend(), other.tiles.cbegin(), tiles.begin(), Tile::add);
+        std::transform(std::cbegin(m_tiles), std::cend(m_tiles), std::cbegin(other.m_tiles), std::begin(m_tiles), Tile::add);
     }
     return valid;
 }
@@ -171,10 +171,10 @@ bool Line::add(const Line& other)
  */
 void Line::reduce(const Line& other)
 {
-    assert(other.type == type);
-    assert(other.index == index);
-    assert(other.tiles.size() == tiles.size());
-    std::transform(tiles.begin(), tiles.end(), other.tiles.begin(), tiles.begin(), Tile::reduce);
+    assert(other.type() == type());
+    assert(other.index() == index());
+    assert(other.tiles().size() == tiles().size());
+    std::transform(std::cbegin(m_tiles), std::cend(m_tiles), std::cbegin(other.m_tiles), std::begin(m_tiles), Tile::reduce);
 }
 
 
@@ -185,27 +185,27 @@ void Line::reduce(const Line& other)
  *         line1:    ..????##..??
  *         delta:    ??..##??????
  */
-Line line_delta(const Line& line1, const Line& line2)
+Line line_delta(const Line& lhs, const Line& rhs)
 {
-    assert(line1.get_type() == line2.get_type());
-    assert(line1.get_index() == line2.get_index());
-    assert(line1.size() == line2.size());
+    assert(lhs.type() == rhs.type());
+    assert(lhs.index() == rhs.index());
+    assert(lhs.size() == rhs.size());
     std::vector<Tile::Type> delta_tiles;
-    delta_tiles.resize(line1.size(), Tile::UNKNOWN);
-    std::transform(line1.get_tiles().cbegin(), line1.get_tiles().cend(), line2.get_tiles().cbegin(), delta_tiles.begin(), Tile::delta);
-    return Line(line1.get_type(), line1.get_index(), std::move(delta_tiles));
+    delta_tiles.resize(lhs.size(), Tile::UNKNOWN);
+    std::transform(std::cbegin(lhs.tiles()), std::cend(lhs.tiles()), std::cbegin(rhs.tiles()), std::begin(delta_tiles), Tile::delta);
+    return Line(lhs.type(), lhs.index(), std::move(delta_tiles));
 }
 
 
 bool is_all_one_color(const Line& line, Tile::Type color)
 {
-    return std::all_of(line.get_tiles().cbegin(), line.get_tiles().cend(), [color](const Tile::Type t) { return t == color; });
+    return std::all_of(std::cbegin(line.tiles()), std::cend(line.tiles()), [color](const Tile::Type t) { return t == color; });
 }
 
 
-bool is_fully_defined(const Line& line)
+bool is_complete(const Line& line)
 {
-    return std::none_of(line.get_tiles().cbegin(), line.get_tiles().cend(), [](const Tile::Type t) { return t == Tile::UNKNOWN; });
+    return std::none_of(std::cbegin(line.tiles()), std::cend(line.tiles()), [](const Tile::Type t) { return t == Tile::UNKNOWN; });
 }
 
 
@@ -228,9 +228,9 @@ std::string str_line_type(Line::Type type)
 
 bool operator==(const Line& lhs, const Line& rhs)
 {
-    return lhs.get_type() == rhs.get_type()
-        && lhs.get_index() == rhs.get_index()
-        && lhs.get_tiles() == rhs.get_tiles();
+    return lhs.type() == rhs.type()
+        && lhs.index() == rhs.index()
+        && lhs.tiles() == rhs.tiles();
 }
 
 
@@ -244,7 +244,7 @@ std::ostream& operator<<(std::ostream& ostream, const Line& line)
 {
     std::ios prev_iostate(nullptr);
     prev_iostate.copyfmt(ostream);
-    ostream << str_line_type(line.get_type()) << " " << std::setw(3) << line.get_index() << " " << str_line(line);
+    ostream << str_line_type(line.type()) << " " << std::setw(3) << line.index() << " " << str_line(line);
     ostream.copyfmt(prev_iostate);
     return ostream;
 }

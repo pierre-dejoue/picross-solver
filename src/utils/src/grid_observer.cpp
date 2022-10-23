@@ -13,12 +13,12 @@ ObserverGrid::ObserverGrid(size_t width, size_t height, const std::string& name)
 void ObserverGrid::set(size_t x, size_t y, picross::Tile::Type t, unsigned int d)
 {
     OutputGrid::set(x, y, t);
-    depth_grid[x * get_height() + y] = d;
+    depth_grid[x * height() + y] = d;
 }
 
 unsigned int ObserverGrid::get_depth(size_t x, size_t y) const
 {
-    return depth_grid[x * get_height() + y];
+    return depth_grid[x * height() + y];
 }
 
 
@@ -31,8 +31,8 @@ GridObserver::GridObserver(size_t width, size_t height)
 
 void GridObserver::operator()(picross::Solver::Event event, const picross::Line* delta, unsigned int depth)
 {
-    const auto width = grids[0].get_width();
-    const auto height = grids[0].get_height();
+    const auto width = grids[0].width();
+    const auto height = grids[0].height();
 
     switch (event)
     {
@@ -54,9 +54,9 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
     case picross::Solver::Event::DELTA_LINE:
     {
         assert(depth == current_depth);
-        const size_t index = delta->get_index();
+        const size_t index = delta->index();
         ObserverGrid& grid = grids.at(current_depth);
-        if (delta->get_type() == picross::Line::ROW)
+        if (delta->type() == picross::Line::ROW)
         {
             for (size_t x = 0u; x < width; ++x)
                 if (delta->at(x) != picross::Tile::UNKNOWN)

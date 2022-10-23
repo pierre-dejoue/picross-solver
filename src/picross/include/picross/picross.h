@@ -119,27 +119,33 @@ class Line
 {
 public:
     using Type = unsigned int;
-    using Container = std::vector<Tile::Type>;
     static constexpr Type ROW = 0u, COL = 1u;
+    using Container = std::vector<Tile::Type>;
 public:
     Line(Type type, size_t index, size_t size, Tile::Type init_tile = Tile::UNKNOWN);
     Line(const Line& other, Tile::Type init_tile);
     Line(Type type, size_t index, const Container& tiles);
     Line(Type type, size_t index, Container&& tiles);
+
+    // copyable & moveable
+    Line(const Line&) = default;
+    Line& operator=(const Line&) = default;
+    Line(Line&&) noexcept = default;
+    Line& operator=(Line&&) noexcept = default;
 public:
-    Type get_type() const;
-    size_t get_index() const;
-    const Container& get_tiles() const;
-    Container& get_tiles();
+    Type type() const;
+    size_t index() const;
+    const Container& tiles() const;
+    Container& tiles();
     size_t size() const;
     Tile::Type at(size_t idx) const;
     bool compatible(const Line& other) const;
     bool add(const Line& other);
     void reduce(const Line& other);
 private:
-    Type type;
-    size_t index;
-    Container tiles;
+    Type m_type;
+    size_t m_index;
+    Container m_tiles;
 };
 
 
@@ -159,8 +165,8 @@ class OutputGrid
 public:
     OutputGrid(size_t width, size_t height, const std::string& name = "");
 
-    size_t get_width() const { return width; }
-    size_t get_height() const { return height; }
+    size_t width() const { return m_width; }
+    size_t height() const { return m_height; }
 
     const std::string& get_name() const;
     void set_name(const std::string& name);
@@ -178,10 +184,10 @@ public:
     bool is_solved() const;
 
 private:
-    size_t                      width;
-    size_t                      height;
-    std::string                 name;
-    std::vector<Tile::Type>     grid;            // 2D array of tiles
+    size_t                      m_width;
+    size_t                      m_height;
+    std::string                 m_name;
+    std::vector<Tile::Type>     m_grid;          // 2D array of tiles
 };
 
 

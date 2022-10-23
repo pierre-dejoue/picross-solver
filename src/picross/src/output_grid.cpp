@@ -15,10 +15,10 @@ namespace picross
 {
 
 OutputGrid::OutputGrid(size_t width, size_t height, const std::string& name) :
-    width(width),
-    height(height),
-    name(name),
-    grid()
+    m_width(width),
+    m_height(height),
+    m_name(name),
+    m_grid()
 {
     reset();
 }
@@ -26,31 +26,31 @@ OutputGrid::OutputGrid(size_t width, size_t height, const std::string& name) :
 
 const std::string& OutputGrid::get_name() const
 {
-    return name;
+    return m_name;
 }
 
 
 void OutputGrid::set_name(const std::string& name)
 {
-    this->name = name;
+    this->m_name = name;
 }
 
 
 Tile::Type OutputGrid::get(size_t x, size_t y) const
 {
-    if (x >= width) { throw std::out_of_range("OutputGrid::set: x (" + std::to_string(x) + ") is out of range (" + std::to_string(width) + ")"); }
-    if (y >= height) { throw std::out_of_range("OutputGrid::set: y (" + std::to_string(y) + ") is out of range (" + std::to_string(height) + ")"); }
-    return grid[x * height + y];
+    if (x >= m_width) { throw std::out_of_range("OutputGrid::set: x (" + std::to_string(x) + ") is out of range (" + std::to_string(m_width) + ")"); }
+    if (y >= m_height) { throw std::out_of_range("OutputGrid::set: y (" + std::to_string(y) + ") is out of range (" + std::to_string(m_height) + ")"); }
+    return m_grid[x * m_height + y];
 }
 
 
 template <>
 Line OutputGrid::get_line<Line::ROW>(size_t index) const
 {
-    if (index >= height) { throw std::out_of_range("OutputGrid::get_line: row index (" + std::to_string(index) + ") is out of range (" + std::to_string(height) + ")"); }
+    if (index >= m_height) { throw std::out_of_range("OutputGrid::get_line: row index (" + std::to_string(index) + ") is out of range (" + std::to_string(m_height) + ")"); }
     std::vector<Tile::Type> tiles;
-    tiles.reserve(width);
-    for (unsigned int x = 0u; x < width; x++)
+    tiles.reserve(m_width);
+    for (unsigned int x = 0u; x < m_width; x++)
     {
         tiles.push_back(get(x, index));
     }
@@ -61,10 +61,10 @@ Line OutputGrid::get_line<Line::ROW>(size_t index) const
 template <>
 Line OutputGrid::get_line<Line::COL>(size_t index) const
 {
-    if (index >= width) { throw std::out_of_range("OutputGrid::get_line: column index (" + std::to_string(index) + ") is out of range (" + std::to_string(width) + ")"); }
+    if (index >= m_width) { throw std::out_of_range("OutputGrid::get_line: column index (" + std::to_string(index) + ") is out of range (" + std::to_string(m_width) + ")"); }
     std::vector<Tile::Type> tiles;
-    tiles.reserve(height);
-    tiles.insert(tiles.cbegin(), grid.data() + index * height, grid.data() + (index + 1) * height);
+    tiles.reserve(m_height);
+    tiles.insert(tiles.cbegin(), m_grid.data() + index * m_height, m_grid.data() + (index + 1) * m_height);
     return Line(Line::COL, index, std::move(tiles));
 }
 
@@ -81,28 +81,28 @@ Line OutputGrid::get_line(Line::Type type, size_t index) const
 
 bool OutputGrid::set(size_t x, size_t y, Tile::Type val)
 {
-    if (x >= width) { throw std::out_of_range("OutputGrid::set: x (" + std::to_string(x) + ") is out of range (" + std::to_string(width) + ")"); }
-    if (y >= height) { throw std::out_of_range("OutputGrid::set: y (" + std::to_string(y) + ") is out of range (" + std::to_string(height) + ")"); }
-    return Tile::set(grid[x * height + y], val);
+    if (x >= m_width) { throw std::out_of_range("OutputGrid::set: x (" + std::to_string(x) + ") is out of range (" + std::to_string(m_width) + ")"); }
+    if (y >= m_height) { throw std::out_of_range("OutputGrid::set: y (" + std::to_string(y) + ") is out of range (" + std::to_string(m_height) + ")"); }
+    return Tile::set(m_grid[x * m_height + y], val);
 }
 
 
 void OutputGrid::reset()
 {
-    auto empty_grid = std::vector<Tile::Type>(height * width, Tile::UNKNOWN);
-    std::swap(grid, empty_grid);
+    auto empty_grid = std::vector<Tile::Type>(m_height * m_width, Tile::UNKNOWN);
+    std::swap(m_grid, empty_grid);
 }
 
 
 bool OutputGrid::is_solved() const
 {
-    return std::none_of(grid.cbegin(), grid.cend(), [](const Tile::Type& t) { return t == Tile::UNKNOWN; });
+    return std::none_of(std::cbegin(m_grid), std::cend(m_grid), [](const Tile::Type& t) { return t == Tile::UNKNOWN; });
 }
 
 
 std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid)
 {
-    for (unsigned int y = 0u; y < grid.get_height(); y++)
+    for (unsigned int y = 0u; y < grid.height(); y++)
     {
         const Line row = grid.get_line<Line::ROW>(y);
         ostream << "  " << str_line(row) << std::endl;

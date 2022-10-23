@@ -39,9 +39,9 @@ void export_bitmap_pbm(const std::string& filepath, const picross::OutputGrid& g
 {
     try
     {
-        pnm::pbm_image bitmap(grid.get_width(), grid.get_height());
-        for (unsigned int y = 0u; y < grid.get_height(); y++)
-            for (unsigned int x = 0u; x < grid.get_width(); x++)
+        pnm::pbm_image bitmap(grid.width(), grid.height());
+        for (unsigned int y = 0u; y < grid.height(); y++)
+            for (unsigned int x = 0u; x < grid.width(); x++)
             {
                 bitmap[y][x] = (grid.get(x, y) != picross::Tile::ZERO);
             }

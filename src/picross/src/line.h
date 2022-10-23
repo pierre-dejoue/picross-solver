@@ -47,9 +47,9 @@ namespace Tile
  * Line related functions
  */
 bool is_all_one_color(const Line& line, Tile::Type color);
-bool is_fully_defined(const Line& line);
+bool is_complete(const Line& line);
 std::string str_line(const Line& line);
 std::string str_line_type(Line::Type type);
-Line line_delta(const Line& line1, const Line& line2);
+Line line_delta(const Line& lhs, const Line& rhs);
 
 } // namespace picross

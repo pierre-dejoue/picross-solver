@@ -81,16 +81,16 @@ WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const InputGrid& grid,
     , branching_depth(0u)
     , binomial(new BinomialCoefficientsCache())
 {
-    assert(cols.size() == get_width());
-    assert(rows.size() == get_height());
+    assert(cols.size() == width());
+    assert(rows.size() == height());
 
     // Other initializations
-    line_completed[Line::ROW].resize(get_height(), false);
-    line_completed[Line::COL].resize(get_width(), false);
-    line_to_be_reduced[Line::ROW].resize(get_height(), false);
-    line_to_be_reduced[Line::COL].resize(get_width(), false);
-    nb_alternatives[Line::ROW].resize(get_height(), 0u);
-    nb_alternatives[Line::COL].resize(get_width(), 0u);
+    line_completed[Line::ROW].resize(height(), false);
+    line_completed[Line::COL].resize(width(), false);
+    line_to_be_reduced[Line::ROW].resize(height(), false);
+    line_to_be_reduced[Line::COL].resize(width(), false);
+    nb_alternatives[Line::ROW].resize(height(), 0u);
+    nb_alternatives[Line::COL].resize(width(), 0u);
 }
 
 
@@ -237,8 +237,8 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::solve(Solver::So
 template <typename LineSelectionPolicy, bool BranchingAllowed>
 bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::all_lines_completed() const
 {
-    const bool all_rows = std::all_of(line_completed[Line::ROW].cbegin(), line_completed[Line::ROW].cend(), [](bool b) { return b; });
-    const bool all_cols = std::all_of(line_completed[Line::COL].cbegin(), line_completed[Line::COL].cend(), [](bool b) { return b; });
+    const bool all_rows = std::all_of(std::cbegin(line_completed[Line::ROW]), std::cend(line_completed[Line::ROW]), [](bool b) { return b; });
+    const bool all_cols = std::all_of(std::cbegin(line_completed[Line::COL]), std::cend(line_completed[Line::COL]), [](bool b) { return b; });
 
     // The logical AND is important here: in the case an hypothesis is made on a row (resp. a column), it is marked as completed
     // but the constraints on the columns (resp. the rows) may not be all satisfied.
@@ -250,14 +250,12 @@ template <typename LineSelectionPolicy, bool BranchingAllowed>
 bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_line(const Line& line)
 {
     bool line_changed = false;
-    const size_t line_index = line.get_index();
-    const Line origin_line = get_line(line.get_type(), line_index);
-    const auto width = static_cast<unsigned int>(get_width());
-    const auto height = static_cast<unsigned int>(get_height());
-    assert(line.size() == line.get_type() == Line::ROW ? width : height);
-    const Line::Container& tiles = line.get_tiles();
+    const size_t line_index = line.index();
+    const Line origin_line = get_line(line.type(), line_index);
+    assert(line.size() == static_cast<unsigned int>(line.type() == Line::ROW ? width() : height()));
+    const Line::Container& tiles = line.tiles();
 
-    if (line.get_type() == Line::ROW)
+    if (line.type() == Line::ROW)
     {
         for (unsigned int tile_index = 0u; tile_index < line.size(); tile_index++)
         {
@@ -293,7 +291,7 @@ bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_line(const Line& line)
     }
     if (observer && line_changed)
     {
-        const Line delta = line_delta(origin_line, get_line(line.get_type(), line_index));
+        const Line delta = line_delta(origin_line, get_line(line.type(), line_index));
         observer(Solver::Event::DELTA_LINE, &delta, branching_depth);
     }
     return line_changed;
@@ -308,7 +306,7 @@ typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<Li
     PassStatus status;
     const LineConstraint& constraint = type == Line::ROW ? rows.at(index) : cols.at(index);
 
-    const auto line_size = static_cast<unsigned int>(type == Line::ROW ? get_width() : get_height());
+    const auto line_size = static_cast<unsigned int>(type == Line::ROW ? width() : height());
 
     assert(binomial);
     Line reduced_line(type, index, line_size);  // All Tile::UNKNOWN
@@ -355,7 +353,7 @@ typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<Li
         }
         else
         {
-            line_completed[type][index] = is_fully_defined(new_line);
+            line_completed[type][index] = is_complete(new_line);
             line_to_be_reduced[type][index] = !line_completed[type][index];
             if (line_completed[type][index]) { nb_alternatives[type][index] = 1u;  }
         }
@@ -418,7 +416,7 @@ template <typename LineSelectionPolicy, bool BranchingAllowed>
 typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<LineSelectionPolicy, BranchingAllowed>::full_side_pass(Line::Type type, bool first_pass)
 {
     PassStatus status;
-    const auto length = type == Line::ROW ? get_height() : get_width();
+    const auto length = type == Line::ROW ? height() : width();
 
     if (first_pass)
     {
@@ -492,8 +490,8 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::branch(Solver::S
         max_nb_alternatives = std::max(max_nb_alternatives, nb_alternatives);
     }
 
-    const Line::Type guess_line_type = guess_list_of_all_alternatives.front().get_type();
-    const unsigned int guess_line_index = guess_list_of_all_alternatives.front().get_index();
+    const Line::Type guess_line_type = guess_list_of_all_alternatives.front().type();
+    const unsigned int guess_line_index = guess_list_of_all_alternatives.front().index();
     bool flag_solution_found = false;
     for (const Line& guess_line : guess_list_of_all_alternatives)
     {
@@ -539,8 +537,8 @@ bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::valid_solution() const
 {
     assert(is_solved());
     bool valid = true;
-    for (unsigned int x = 0u; x < get_width(); x++) { valid &= cols.at(x).compatible(get_line<Line::COL>(x)); }
-    for (unsigned int y = 0u; y < get_height(); y++) { valid &= rows.at(y).compatible(get_line<Line::ROW>(y)); }
+    for (unsigned int x = 0u; x < width(); x++) { valid &= cols.at(x).compatible(get_line<Line::COL>(x)); }
+    for (unsigned int y = 0u; y < height(); y++) { valid &= rows.at(y).compatible(get_line<Line::ROW>(y)); }
     return valid;
 }
 
