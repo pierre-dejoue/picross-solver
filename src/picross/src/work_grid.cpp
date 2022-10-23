@@ -247,51 +247,55 @@ bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::all_lines_completed() cons
 
 
 template <typename LineSelectionPolicy, bool BranchingAllowed>
-bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_line(const Line& line)
+bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_line(const Line& line, unsigned int nb_alt)
 {
-    bool line_changed = false;
+    const auto line_type = line.type();
     const size_t line_index = line.index();
     const Line observer_original_line = observer ? get_line(line.type(), line_index) : Line(Line::ROW, 0, 0);
     assert(line.size() == static_cast<unsigned int>(line.type() == Line::ROW ? width() : height()));
     const Line::Container& tiles = line.tiles();
 
-    if (line.type() == Line::ROW)
+    bool line_changed = false;
+    const auto set_tile_func = [this, &line_changed](Line::Type type, unsigned int idx) {
+        // mark the impacted line or column with flag "to be reduced"
+        line_to_be_reduced[type][idx] = true;
+        LineSelectionPolicy::estimate_nb_alternatives(nb_alternatives[type][idx]);
+        line_changed = true;
+    };
+
+    bool line_is_complete = true;
+    if (line_type == Line::ROW)
     {
         for (unsigned int tile_index = 0u; tile_index < line.size(); tile_index++)
         {
-            // modify grid
             const bool tile_changed = set(tile_index, line_index, tiles[tile_index]);
-
+            line_is_complete &= (get(tile_index, line_index) != Tile::UNKNOWN);
             if (tile_changed)
-            {
-                // mark the impacted column with flag "to be reduced"
-                line_to_be_reduced[Line::COL][tile_index] = true;
-                LineSelectionPolicy::estimate_nb_alternatives(nb_alternatives[Line::COL][tile_index]);
-
-                line_changed = true;
-            }
+                set_tile_func(Line::COL, tile_index);
         }
     }
     else
     {
         for (unsigned int tile_index = 0u; tile_index < line.size(); tile_index++)
         {
-            // modify grid
             const bool tile_changed = set(line_index, tile_index, tiles[tile_index]);
-
+            line_is_complete &= (get(line_index, tile_index) != Tile::UNKNOWN);
             if (tile_changed)
-            {
-                // mark the impacted row with flag "to be reduced"
-                line_to_be_reduced[Line::ROW][tile_index] = true;
-                LineSelectionPolicy::estimate_nb_alternatives(nb_alternatives[Line::ROW][tile_index]);
-
-                line_changed = true;
-            }
+                set_tile_func(Line::ROW, tile_index);
         }
     }
+
+    if (nb_alt > 0) { nb_alternatives[line_type][line_index] = nb_alt; }
+
+    line_completed[line_type][line_index] = line_is_complete;
+
+    // Most of the time after a line is set, it does not need to be reduced another time
+    // Exceptions to the rule must be handled by the caller
+    line_to_be_reduced[line_type][line_index] = false;
+
     if (observer && line_changed)
     {
-        const Line delta = line_delta(observer_original_line, get_line(line.type(), line_index));
+        const Line delta = line_delta(observer_original_line, get_line(line_type, line_index));
         observer(Solver::Event::DELTA_LINE, &delta, branching_depth);
     }
     return line_changed;
@@ -328,34 +332,18 @@ typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<Li
     }
 
     // Set line
-    status.grid_changed = set_line(reduced_line);
+    status.grid_changed = set_line(reduced_line, nb_alt);
 
-    // Must be set after set_line (it modifies nb_alternatives)
-    nb_alternatives[type][index] = nb_alt;
-
-    if (nb_alt == 1u)
-    {
-        // Line is completed
-        line_completed[type][index] = true;
-        line_to_be_reduced[type][index] = false;
-    }
-    else
+    if (nb_alt > 1u)
     {
         // During a normal pass line_to_be_reduced is set to false after a line reduction has been performed.
         // Here since we are computing a trivial reduction assuming the initial line is completly unknown we
         // are ignoring tiles that are possibly already set. In such a case, we need to redo a reduction
         // on the next full grid pass.
         const Line new_line = get_line(type, index);
-        if (reduced_line == new_line)
+        if (reduced_line != new_line)
         {
-            line_completed[type][index] = false;
-            line_to_be_reduced[type][index] = false;
-        }
-        else
-        {
-            line_completed[type][index] = is_complete(new_line);
             line_to_be_reduced[type][index] = !line_completed[type][index];
-            if (line_completed[type][index]) { nb_alternatives[type][index] = 1u;  }
         }
     }
 
@@ -390,22 +378,13 @@ typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<Li
     }
 
     // In any case, update the grid data with the reduced line resulting from list all_lines
-    status.grid_changed = set_line(reduced_line);
-
-    // Must be set after set_line (it modifies nb_alternatives)
-    nb_alternatives[type][index] = nb_alt;
-
-    // If the list comprises of only one element, it means we solved that line
-    if (nb_alt == 1) { line_completed[type][index] = true; }
+    status.grid_changed = set_line(reduced_line, nb_alt);
 
     if (stats != nullptr && status.grid_changed)
     {
         stats->nb_single_line_pass_calls_w_change++;
         stats->max_nb_alternatives_w_change = std::max(stats->max_nb_alternatives_w_change, nb_alt);
     }
-
-    // This line does not need to be reduced until one of the tiles is modified.
-    line_to_be_reduced[type][index] = false;
 
     return status;
 }
@@ -503,12 +482,8 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::branch(Solver::S
             nested_stats = std::make_unique<GridStats>();
 
         // Set one line in the new_grid according to the hypothesis we made. That line is then complete
-        const bool changed = new_grid.set_line(guess_line);
+        const bool changed = new_grid.set_line(guess_line, 1u);
         assert(changed);
-        assert(!new_grid.line_completed[guess_line_type][guess_line_index]);
-        new_grid.line_completed[guess_line_type][guess_line_index] = true;
-        new_grid.line_to_be_reduced[guess_line_type][guess_line_index] = false;
-        new_grid.nb_alternatives[guess_line_type][guess_line_index] = 1u;
 
         // Solve the new grid!
         new_grid.set_stats(nested_stats.get());
