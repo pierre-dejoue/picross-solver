@@ -34,14 +34,7 @@ struct FileFormat
 };
 
 template <typename F>
-class FileParser
-{
-public:
-    bool parse_line(const std::string& line_to_parse, std::vector<picross::InputGrid>& grids, const ErrorHandler& error_handler)
-    {
-        error_handler("Invalid file parser", EXIT_ON_INVALID_PARSER);
-    }
-};
+class FileParser;
 
 /******************************************************************************
  * Parser for the NATIVE file format
@@ -63,13 +56,12 @@ public:
     {
     }
 
-    bool parse_line(const std::string& line_to_parse, std::vector<picross::InputGrid>& grids, const ErrorHandler& error_handler)
+    void parse_line(const std::string& line_to_parse, std::vector<picross::InputGrid>& grids, const ErrorHandler& error_handler)
     {
-        bool valid_line = false;
         std::istringstream iss(line_to_parse);
         std::string token;
 
-        /* Copy the first word in 'token' */
+        // Copy the first word in 'token'
         iss >> token;
 
         if (token == "GRID")
@@ -80,14 +72,12 @@ public:
             {
                 grids.back().name = line_to_parse.substr(5u);
             }
-            valid_line = true;
         }
         else if (token == "ROWS")
         {
             if (parsing_state != ParsingState::FILE_START)
             {
                 parsing_state = ParsingState::ROW_SECTION;
-                valid_line = true;
             }
             else
             {
@@ -99,7 +89,6 @@ public:
             if (parsing_state != ParsingState::FILE_START)
             {
                 parsing_state = ParsingState::COLUMN_SECTION;
-                valid_line = true;
             }
             else
             {
@@ -114,7 +103,6 @@ public:
                 unsigned int n;
                 while (iss >> n) { new_row.push_back(n); }
                 grids.back().rows.push_back(std::move(new_row));
-                valid_line = true;
             }
             else if (parsing_state == ParsingState::COLUMN_SECTION)
             {
@@ -122,7 +110,6 @@ public:
                 unsigned int n;
                 while (iss >> n) { new_col.push_back(n); }
                 grids.back().cols.push_back(std::move(new_col));
-                valid_line = true;
             }
             else
             {
@@ -131,20 +118,16 @@ public:
         }
         else if (token == "#")
         {
-            // Comment line
-            valid_line = true;
+            // Comment line are ignored
         }
         else if (token.empty())
         {
-            // Empty line is ignored
-            valid_line = true;
+            // Empty lines are ignored
         }
         else
         {
             error_decorator(error_handler, "Invalid token " + token);
         }
-
-        return valid_line;
     }
 
 private:
@@ -204,9 +187,8 @@ public:
 
     }
 
-    bool parse_line(const std::string& line_to_parse, std::vector<picross::InputGrid>& grids, const ErrorHandler& error_handler)
+    void parse_line(const std::string& line_to_parse, std::vector<picross::InputGrid>& grids, const ErrorHandler& error_handler)
     {
-        bool valid_line = false;
         std::istringstream iss(line_to_parse);
         std::string token;
 
@@ -226,7 +208,7 @@ public:
             else
             {
                 grid.rows.emplace_back();
-                valid_line = parse_constraint_line(iss, grid.rows.back());
+                parse_constraint_line(iss, grid.rows.back());
             }
 
         }
@@ -239,7 +221,7 @@ public:
             else
             {
                 grid.cols.emplace_back();
-                valid_line = parse_constraint_line(iss, grid.cols.back());
+                parse_constraint_line(iss, grid.cols.back());
             }
         }
         if (parsing_state == ParsingState::Default)
@@ -252,17 +234,14 @@ public:
                 std::stringbuf remaining;
                 iss >> &remaining;
                 grid.name = extract_text_in_quotes_or_ltrim(remaining.str());
-                valid_line = true;
             }
             else if (token == "width")
             {
                 iss >> width;
-                valid_line = true;
             }
             else if (token == "height")
             {
                 iss >> height;
-                valid_line = true;
             }
             else if (token == "rows")
             {
@@ -277,7 +256,6 @@ public:
                 else
                 {
                     parsing_state = ParsingState::Rows;
-                    valid_line = true;
                 }
             }
             else if (token == "columns")
@@ -293,39 +271,32 @@ public:
                 else
                 {
                     parsing_state = ParsingState::Columns;
-                    valid_line = true;
                 }
             }
             else if (token.empty())
             {
                 // An empty line outside of the rows or columns sections can just be ignored
-                valid_line = true;
             }
             else if (is_metadata_token(token))
             {
                 std::stringbuf remaining;
                 iss >> &remaining;
                 grid.metadata.insert({token, extract_text_in_quotes_or_ltrim(remaining.str())});
-                valid_line = true;
             }
             else if (is_ignored_token(token))
             {
                 // Then ignore
-                valid_line = true;
             }
             else
             {
                 error_handler("Invalid token " + token, NO_EXIT);
             }
         }
-
-        return valid_line;
     }
 
 private:
-    bool parse_constraint_line(std::istringstream& iss, InputGrid::Constraint& constraint)
+    void parse_constraint_line(std::istringstream& iss, InputGrid::Constraint& constraint)
     {
-        bool valid_line = true;
         unsigned int n;
         unsigned char c;
         while (iss >> n)
@@ -340,7 +311,6 @@ private:
                     break;
             }
         }
-        return valid_line;
     }
 
     static bool is_ignored_token(const std::string& token)
@@ -391,10 +361,10 @@ std::vector<InputGrid> parse_input_file_generic(std::string_view filepath, const
         if (inputstream.is_open())
         {
             FileParser<F> parser;
-            /* Line buffer */
+            // Line buffer
             char line[INPUT_BUFFER_SZ];
             unsigned int line_nb = 0;
-            /* Start parsing */
+            // Start parsing
             while (inputstream.good())
             {
                 line_nb++;
