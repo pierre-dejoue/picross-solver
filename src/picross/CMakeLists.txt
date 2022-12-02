@@ -29,7 +29,7 @@ target_include_directories(picross
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-set_target_warnings(picross OFF)
+set_target_warnings(picross ON)
 
 set_property(TARGET picross PROPERTY FOLDER "libraries")
 
