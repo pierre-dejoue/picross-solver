@@ -33,8 +33,7 @@ namespace Tile
     inline Type add(Type t1, Type t2)
     {
         if (t1 == t2 || t2 == Tile::UNKNOWN) { return t1; }
-        else if (t1 == Tile::UNKNOWN) { return t2; }
-        else { assert(0); }
+        else { assert(t1 == Tile::UNKNOWN); return t2; }
     }
 
     inline Type compatible(Type t1, Type t2)
@@ -45,8 +44,7 @@ namespace Tile
     inline Type delta(Type t1, Type t2)
     {
         if (t1 == t2) { return Tile::UNKNOWN; }
-        else if (t1 == Tile::UNKNOWN) { return t2; }
-        else { assert(0); }
+        else { assert(t1 == Tile::UNKNOWN); return t2; }
     }
 
     inline Type reduce(Type t1, Type t2)

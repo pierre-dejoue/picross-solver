@@ -67,7 +67,7 @@ std::pair<bool, unsigned int> LineConstraint::line_trivial_reduction(Line& line,
     bool changed = false;
     unsigned int nb_alternatives = 0u;
 
-    const unsigned int nb_zeros = line.size() - min_line_size;
+    const unsigned int nb_zeros = static_cast<unsigned int>(line.size()) - min_line_size;
     Line::Container& tiles = line.tiles();
     unsigned int line_idx = 0u;
 
@@ -128,7 +128,7 @@ std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_til
 
     // Number of zeros to add to the minimal size line.
     assert(known_tiles.size() >= min_line_size);
-    unsigned int nb_zeros = known_tiles.size() - min_line_size;
+    unsigned int nb_zeros = static_cast<unsigned int>(known_tiles.size()) - min_line_size;
 
     std::vector<Line> result;
     Line new_line(known_tiles, Tile::UNKNOWN);
@@ -208,7 +208,7 @@ std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_til
 namespace
 {
     // Specialized for black and white puzzles
-    inline bool partial_compatibility_bw(const Line& lhs, const Line& rhs, unsigned int start_idx, unsigned int end_idx)
+    inline bool partial_compatibility_bw(const Line& lhs, const Line& rhs, std::size_t start_idx, std::size_t end_idx)
     {
         const Line::Container& lhs_vect = lhs.tiles();
         const Line::Container& rhs_vect = rhs.tiles();
@@ -287,7 +287,7 @@ namespace
             }
 
             return nb_alternatives;
-        };
+        }
 
         const Line& get_reduced_line()
         {
@@ -341,11 +341,10 @@ std::pair<Line, unsigned int> LineConstraint::reduce_and_count_alternatives(cons
     if (stats != nullptr) { stats->nb_reduce_and_count_alternatives_calls++; }
 
     assert(known_tiles.type() == type);
-    const size_t index = known_tiles.index();
 
     // Number of zeros to add to the minimal size line.
     assert(known_tiles.size() >= min_line_size);
-    unsigned int nb_zeros = known_tiles.size() - min_line_size;
+    unsigned int nb_zeros = static_cast<unsigned int>(known_tiles.size()) - min_line_size;
 
     BuildLineAlternatives builder(segs_of_ones, known_tiles);
     unsigned int nb_alternatives = builder.build_alternatives(nb_zeros);

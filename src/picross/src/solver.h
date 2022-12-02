@@ -25,9 +25,9 @@ public:
     void set_stats(GridStats& stats) override;
     void set_abort_function(Abort abort) override;
 private:
-    Observer observer;
-    GridStats* stats;
-    Abort abort_function;
+    Observer m_observer;
+    GridStats* m_stats;
+    Abort m_abort_function;
 };
 
 } // namespace picross

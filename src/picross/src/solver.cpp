@@ -25,32 +25,32 @@ Solver::Result RefSolver<BranchingAllowed>::solve(const InputGrid& grid_input, u
 {
     Result result;
 
-    if (stats != nullptr)
+    if (m_stats != nullptr)
     {
         /* Reset stats */
         GridStats new_stats;
-        std::swap(*stats, new_stats);
-        stats->max_nb_solutions = max_nb_solutions;
+        std::swap(*m_stats, new_stats);
+        m_stats->max_nb_solutions = max_nb_solutions;
     }
 
     Observer observer_wrapper;
-    if (observer)
+    if (m_observer)
     {
         observer_wrapper = [this](Solver::Event event, const Line* delta, unsigned int depth)
         {
-            if (this->stats != nullptr)
+            if (this->m_stats != nullptr)
             {
-                this->stats->nb_observer_callback_calls++;
+                this->m_stats->nb_observer_callback_calls++;
             }
-            this->observer(event, delta, depth);
+            this->m_observer(event, delta, depth);
         };
     }
 
     result.status = Status::OK;
     try
     {
-        WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives_EstimateNbAlternatives, BranchingAllowed> work_grid(grid_input, std::move(observer_wrapper), abort_function);
-        work_grid.set_stats(stats);
+        WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives_EstimateNbAlternatives, BranchingAllowed> work_grid(grid_input, std::move(observer_wrapper), m_abort_function);
+        work_grid.set_stats(m_stats);
         result.status = work_grid.solve(result.solutions, max_nb_solutions);
     }
     catch (const PicrossSolverAborted&)
@@ -65,21 +65,21 @@ Solver::Result RefSolver<BranchingAllowed>::solve(const InputGrid& grid_input, u
 template <bool BranchingAllowed>
 void RefSolver<BranchingAllowed>::set_observer(Observer observer)
 {
-    this->observer = std::move(observer);
+    this->m_observer = std::move(observer);
 }
 
 
 template <bool BranchingAllowed>
 void RefSolver<BranchingAllowed>::set_stats(GridStats& stats)
 {
-    this->stats = &stats;
+    this->m_stats = &stats;
 }
 
 
 template <bool BranchingAllowed>
 void RefSolver<BranchingAllowed>::set_abort_function(Abort abort)
 {
-    this->abort_function = std::move(abort);
+    this->m_abort_function = std::move(abort);
 }
 
 

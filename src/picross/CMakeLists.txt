@@ -2,6 +2,8 @@
 # Build the library
 #
 
+include(compiler_options)
+
 set(LIB_SOURCES
     src/binomial.cpp
     src/line.cpp
@@ -26,6 +28,8 @@ target_include_directories(picross
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+set_target_warnings(picross OFF)
 
 set_property(TARGET picross PROPERTY FOLDER "libraries")
 

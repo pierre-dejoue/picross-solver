@@ -1,5 +1,6 @@
 build/
 misc/
+.vscode/
 *.slo
 *.lo
 *.o

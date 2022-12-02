@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
     /***************************************************************************
      * II - Parse input files
      **************************************************************************/
-    for (const std::string& filepath : args.pos)
+    for (const char* filepath : args.pos)
     {
         ValidationModeData file_data;
         file_data.filename = file_name(filepath);

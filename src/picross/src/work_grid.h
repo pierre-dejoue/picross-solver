@@ -8,8 +8,8 @@
 #pragma once
 
 #include "binomial.h"
-
 #include "line_constraint.h"
+#include "macros.h"
 
 #include <picross/picross.h>
 
@@ -37,44 +37,53 @@ struct LineSelectionPolicy_Legacy
     // get the value for max_nb_alternatives to be used on the next full grid pass
     static unsigned int get_max_nb_alternatives(unsigned int previous_max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
     {
+        UNUSED(previous_max_nb_alternatives);
+        UNUSED(grid_changed);
+        UNUSED(skipped_lines);
+        UNUSED(search_depth);
         return std::numeric_limits<unsigned int>::max();
     }
 
     // estimate the number of alternatives of a line after a new tile is set
     static void estimate_nb_alternatives(unsigned int& nb_alternatives)
     {
+        UNUSED(nb_alternatives);
         // do not change
     }
 
     // Return true if it is time to move to branching exploration
     static bool switch_to_branching(unsigned int max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
     {
+        UNUSED(max_nb_alternatives);
+        UNUSED(skipped_lines);
+        UNUSED(search_depth);
         return !grid_changed;
     }
 };
 
 struct LineSelectionPolicy_RampUpMaxNbAlternatives
 {
-    static constexpr unsigned int min_nb_alternatives = 1 << 6;
-    static constexpr unsigned int max_nb_alternatives = 1 << 30;
+    static inline constexpr unsigned int Min_nb_alternatives = 1 << 6;
+    static inline constexpr unsigned int Max_nb_alternatives = 1 << 30;
 
     static constexpr unsigned int initial_max_nb_alternatives()
     {
-        return min_nb_alternatives;
+        return Min_nb_alternatives;
     }
 
     static unsigned int get_max_nb_alternatives(unsigned int previous_max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
     {
+        UNUSED(search_depth);
         unsigned int nb_alternatives = previous_max_nb_alternatives;
-        if (grid_changed && previous_max_nb_alternatives > min_nb_alternatives)
+        if (grid_changed && previous_max_nb_alternatives > Min_nb_alternatives)
         {
             // Decrease max_nb_alternatives
-            nb_alternatives = std::min(nb_alternatives, max_nb_alternatives) >> 2;
+            nb_alternatives = std::min(nb_alternatives, Max_nb_alternatives) >> 2;
         }
         else if (!grid_changed && skipped_lines > 0u)
         {
             // Increase max_nb_alternatives
-            nb_alternatives = nb_alternatives >= max_nb_alternatives
+            nb_alternatives = nb_alternatives >= Max_nb_alternatives
                 ? std::numeric_limits<unsigned int>::max()
                 : nb_alternatives << 2;
         }
@@ -84,11 +93,14 @@ struct LineSelectionPolicy_RampUpMaxNbAlternatives
     // estimate the number of alternatives of a line after a new tile is set
     static void estimate_nb_alternatives(unsigned int& nb_alternatives)
     {
+        UNUSED(nb_alternatives);
         // do not change
     }
 
     static bool switch_to_branching(unsigned int max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
     {
+        UNUSED(max_nb_alternatives);
+        UNUSED(search_depth);
         return !grid_changed && skipped_lines == 0u;
     }
 };
@@ -159,7 +171,7 @@ private:
 private:
     std::vector<LineConstraint>                 rows;
     std::vector<LineConstraint>                 cols;
-    GridStats*                                  stats;           // if not null, the solver will store some stats in that structure
+    GridStats*                                  grid_stats;      // if not null, the solver will store some stats in that structure
     Solver::Observer                            observer;        // if not empty, the solver will notify the observer of its progress
     Solver::Abort                               abort_function;  // if not empty, the solver will regularly call this function and abort its processing if it returns true
     std::vector<bool>                           line_completed[2];

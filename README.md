@@ -30,8 +30,8 @@ The Picross solver provided as a library
 With [CMake](https://cmake.org/download/). For example on Windows:
 
 ```
-mkdir -p build/msvc141x64
-cd build/msvc141x64
+mkdir -p ./build
+cd build
 cmake -G "Visual Studio 15 2017 Win64" ../..
 cmake --build . --config Release
 ```
@@ -73,8 +73,8 @@ Command line interface:
 On Windows:
 
 ```
-mkdir -p build/msvc141x64
-cd build/msvc141x64
+mkdir ./build
+cd build
 cmake -G "Visual Studio 15 2017 Win64" -DPICROSS_BUILD_APP=ON -DPICROSS_BUILD_CLI=ON ../..
 cmake --build . --config Release
 ```
@@ -84,7 +84,7 @@ cmake --build . --config Release
 Run the CLI on the example file:
 
 ```
-./build/msvc141x64/bin/Release/picross_solver_cli.exe inputs/example_input.txt
+./build/bin/Release/picross_solver_cli.exe inputs/example_input.txt
 ```
 
 Use the validation mode to test multiple files at once and check the uniqueness of the solution:
@@ -94,7 +94,7 @@ Use the validation mode to test multiple files at once and check the uniqueness 
  - Performance timing
 
 ```
-./build/msvc141x64/bin/Release/picross_solver_cli.exe --validation inputs/PicrossDS/Normal/*
+./build/bin/Release/picross_solver_cli.exe --validation inputs/PicrossDS/Normal/*
 ```
 
 ### Screenshots of the Graphical Interface

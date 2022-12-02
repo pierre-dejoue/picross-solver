@@ -5,6 +5,8 @@
 # Dependencies
 include(argagg)
 
+include(compiler_options)
+
 set(CLI_SOURCES
     src/main.cpp
 )
@@ -19,5 +21,7 @@ target_link_libraries(picross_solver_cli
     picross
     utils
 )
+
+set_target_warnings(picross_solver_cli OFF)
 
 install(TARGETS picross_solver_cli)

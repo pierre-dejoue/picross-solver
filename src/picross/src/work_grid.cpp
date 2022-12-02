@@ -6,6 +6,7 @@
 #include "work_grid.h"
 
 #include "line.h"
+#include "macros.h"
 
 #include <picross/picross.h>
 
@@ -16,9 +17,6 @@
 
 namespace picross
 {
-
-constexpr unsigned int LineSelectionPolicy_RampUpMaxNbAlternatives::min_nb_alternatives;
-constexpr unsigned int LineSelectionPolicy_RampUpMaxNbAlternatives::max_nb_alternatives;
 
 namespace
 {
@@ -74,7 +72,7 @@ WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const InputGrid& grid,
     : OutputGrid(grid.cols.size(), grid.rows.size(), grid.name)
     , rows(row_constraints_from(grid))
     , cols(column_constraints_from(grid))
-    , stats(nullptr)
+    , grid_stats(nullptr)
     , observer(std::move(observer))
     , abort_function(std::move(abort_function))
     , max_nb_alternatives(LineSelectionPolicy::initial_max_nb_alternatives())
@@ -100,7 +98,7 @@ WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const WorkGrid& parent
     : OutputGrid(static_cast<const OutputGrid&>(parent))
     , rows(parent.rows)
     , cols(parent.cols)
-    , stats(nullptr)
+    , grid_stats(nullptr)
     , observer(parent.observer)
     , abort_function(parent.abort_function)
     , max_nb_alternatives(LineSelectionPolicy::initial_max_nb_alternatives())
@@ -128,7 +126,7 @@ WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const WorkGrid& parent
 template <typename LineSelectionPolicy, bool BranchingAllowed>
 void WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_stats(GridStats* stats)
 {
-    this->stats = stats;
+    this->grid_stats = stats;
     if (stats)
         stats->max_branching_depth = branching_depth;
 }
@@ -225,6 +223,7 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::solve(Solver::So
         }
         else  // No branching allowed
         {
+            UNUSED(max_nb_solutions);
             // Store the incomplete solution
             save_solution(solutions);
         }
@@ -266,7 +265,7 @@ bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_line(const Line& line,
     bool line_is_complete = true;
     if (line_type == Line::ROW)
     {
-        for (unsigned int tile_index = 0u; tile_index < line.size(); tile_index++)
+        for (auto tile_index = 0u; tile_index < line.size(); tile_index++)
         {
             const bool tile_changed = set(tile_index, line_index, tiles[tile_index]);
             line_is_complete &= (get(tile_index, line_index) != Tile::UNKNOWN);
@@ -276,7 +275,7 @@ bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_line(const Line& line,
     }
     else
     {
-        for (unsigned int tile_index = 0u; tile_index < line.size(); tile_index++)
+        for (auto tile_index = 0u; tile_index < line.size(); tile_index++)
         {
             const bool tile_changed = set(line_index, tile_index, tiles[tile_index]);
             line_is_complete &= (get(line_index, tile_index) != Tile::UNKNOWN);
@@ -321,7 +320,7 @@ typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<Li
     const auto nb_alt = pair.second;
     assert(nb_alt > 0u);
 
-    if (stats != nullptr) { stats->max_initial_nb_alternatives = std::max(stats->max_initial_nb_alternatives, nb_alt); }
+    if (grid_stats != nullptr) { grid_stats->max_initial_nb_alternatives = std::max(grid_stats->max_initial_nb_alternatives, nb_alt); }
 
     // If the reduced line is not compatible with the information already present in the grid
     // then the row and column constraints are contradictory.
@@ -357,18 +356,18 @@ typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<Li
     assert(line_completed[type][index] == false);
     assert(line_to_be_reduced[type][index] == true);
 
-    if (stats != nullptr) { stats->nb_single_line_pass_calls++; }
+    if (grid_stats != nullptr) { grid_stats->nb_single_line_pass_calls++; }
 
     PassStatus status;
     const LineConstraint& line_constraint = type == Line::ROW ? rows.at(index) : cols.at(index);
     const Line known_tiles = get_line(type, index);
 
     // Reduce all possible lines that match the data already present in the grid and the line constraint
-    const auto reduction = line_constraint.reduce_and_count_alternatives(known_tiles, stats);
+    const auto reduction = line_constraint.reduce_and_count_alternatives(known_tiles, grid_stats);
     const Line& reduced_line = reduction.first;
     const auto nb_alt = reduction.second;
 
-    if (stats != nullptr) { stats->max_nb_alternatives = std::max(stats->max_nb_alternatives, nb_alt); }
+    if (grid_stats != nullptr) { grid_stats->max_nb_alternatives = std::max(grid_stats->max_nb_alternatives, nb_alt); }
 
     // If the list of all lines is empty, it means the grid data is contradictory. Throw an exception.
     if (nb_alt == 0)
@@ -380,10 +379,10 @@ typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<Li
     // In any case, update the grid data with the reduced line resulting from list all_lines
     status.grid_changed = set_line(reduced_line, nb_alt);
 
-    if (stats != nullptr && status.grid_changed)
+    if (grid_stats != nullptr && status.grid_changed)
     {
-        stats->nb_single_line_pass_calls_w_change++;
-        stats->max_nb_alternatives_w_change = std::max(stats->max_nb_alternatives_w_change, nb_alt);
+        grid_stats->nb_single_line_pass_calls_w_change++;
+        grid_stats->max_nb_alternatives_w_change = std::max(grid_stats->max_nb_alternatives_w_change, nb_alt);
     }
 
     return status;
@@ -437,7 +436,7 @@ template <typename LineSelectionPolicy, bool BranchingAllowed>
 typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<LineSelectionPolicy, BranchingAllowed>::full_grid_pass(bool first_pass)
 {
     PassStatus status;
-    if (stats != nullptr) { stats->nb_full_grid_pass_calls++; }
+    if (grid_stats != nullptr) { grid_stats->nb_full_grid_pass_calls++; }
 
     // Pass on columns
     status += full_side_pass(Line::COL, first_pass);
@@ -458,19 +457,17 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::branch(Solver::S
      * creating a new instance of the grid class on which the function WorkGrid<LineSelectionPolicy, BranchingAllowed>::solve() is called.
      */
 
-    if (stats != nullptr)
+    if (grid_stats != nullptr)
     {
-        stats->nb_branching_calls++;
-        const auto nb_alternatives = static_cast<unsigned int>(guess_list_of_all_alternatives.size());
-        stats->total_nb_branching_alternatives += nb_alternatives;
-        if (stats->max_nb_alternatives_by_branching_depth.size() < branching_depth + 1)
-            stats->max_nb_alternatives_by_branching_depth.resize(branching_depth + 1, 0u);
-        auto& max_nb_alternatives = stats->max_nb_alternatives_by_branching_depth[branching_depth];
-        max_nb_alternatives = std::max(max_nb_alternatives, nb_alternatives);
+        grid_stats->nb_branching_calls++;
+        const auto nb_alts = static_cast<unsigned int>(guess_list_of_all_alternatives.size());
+        grid_stats->total_nb_branching_alternatives += nb_alts;
+        if (grid_stats->max_nb_alternatives_by_branching_depth.size() < branching_depth + 1)
+            grid_stats->max_nb_alternatives_by_branching_depth.resize(branching_depth + 1, 0u);
+        auto& max_nb_alts = grid_stats->max_nb_alternatives_by_branching_depth[branching_depth];
+        max_nb_alts = std::max(max_nb_alts, nb_alts);
     }
 
-    const Line::Type guess_line_type = guess_list_of_all_alternatives.front().type();
-    const unsigned int guess_line_index = guess_list_of_all_alternatives.front().index();
     bool flag_solution_found = false;
     for (const Line& guess_line : guess_list_of_all_alternatives)
     {
@@ -478,7 +475,7 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::branch(Solver::S
         WorkGrid new_grid(*this, branching_depth + 1);
         Solver::Solutions nested_solutions;
         std::unique_ptr<GridStats> nested_stats;
-        if (stats)
+        if (grid_stats)
             nested_stats = std::make_unique<GridStats>();
 
         // Set one line in the new_grid according to the hypothesis we made. That line is then complete
@@ -489,10 +486,10 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::branch(Solver::S
         new_grid.set_stats(nested_stats.get());
         const auto status = new_grid.solve(nested_solutions, max_nb_solutions);
 
-        if (stats)
+        if (grid_stats)
         {
             assert(nested_stats);
-            merge_nested_grid_stats(*stats, *nested_stats);
+            merge_nested_grid_stats(*grid_stats, *nested_stats);
         }
 
         flag_solution_found |= status == Solver::Status::OK;
@@ -524,7 +521,7 @@ void WorkGrid<LineSelectionPolicy, BranchingAllowed>::save_solution(Solver::Solu
     if constexpr (BranchingAllowed)
     {
         assert(valid_solution());
-        if (stats != nullptr) { stats->nb_solutions++; }
+        if (grid_stats != nullptr) { grid_stats->nb_solutions++; }
     }
     else
     {
