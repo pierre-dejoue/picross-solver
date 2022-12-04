@@ -16,6 +16,7 @@ set(LIB_SOURCES
 file(GLOB LIB_HEADERS include/utils/*.h src/*.h)
 
 add_library(utils STATIC ${LIB_SOURCES} ${LIB_HEADERS})
+add_library(picross::utils ALIAS utils)
 
 if(MSVC)
     # Correct definition of macro __cplusplus on Visual Studio, required by third party pnm
@@ -30,7 +31,7 @@ target_include_directories(utils
 
 target_link_libraries(utils
     PRIVATE
-    picross
+    picross::picross
     pnm++
 )
 

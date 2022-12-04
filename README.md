@@ -50,6 +50,10 @@ Or, package the library:
 cpack -G ZIP -C Release
 ```
 
+### CMake Integration
+
+The library CMake's build export the following target: `picross::picross`
+
 ## Test Applications
 
 A CLI and a GUI applications built on top of the solver library

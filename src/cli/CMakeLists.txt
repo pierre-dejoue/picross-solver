@@ -17,9 +17,9 @@ add_executable(picross_solver_cli ${CLI_SOURCES} ${CLI_HEADERS})
 
 target_link_libraries(picross_solver_cli
     PRIVATE
+    picross::picross
+    picross::utils
     argagg-lib
-    picross
-    utils
 )
 
 set_target_warnings(picross_solver_cli OFF)

@@ -4,6 +4,8 @@
 
 include(compiler_options)
 
+configure_file(src/picross_solver_version.h.in picross_solver_version.h @ONLY)
+
 set(LIB_SOURCES
     src/binomial.cpp
     src/line.cpp
@@ -18,12 +20,12 @@ set(LIB_SOURCES
 file(GLOB LIB_HEADERS include/picross/*.h src/*.h)
 
 add_library(picross STATIC ${LIB_SOURCES} ${LIB_HEADERS})
-
-configure_file(src/picross_solver_version.h.in picross_solver_version.h @ONLY)
+add_library(picross::picross ALIAS picross)
 
 target_include_directories(picross
     PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_BINARY_DIR}
@@ -33,6 +35,7 @@ set_target_warnings(picross ON)
 
 set_property(TARGET picross PROPERTY FOLDER "libraries")
 
-install(TARGETS picross)
+install(TARGETS picross EXPORT picross_project)
+install(EXPORT picross_project NAMESPACE picross:: DESTINATION lib/picross)
 install(DIRECTORY include/picross DESTINATION include)      # Public headers
 install(FILES ${PROJECT_SOURCE_DIR}/LICENSE DESTINATION .)

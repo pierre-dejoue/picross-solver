@@ -30,8 +30,8 @@ endif()
 
 target_link_libraries(picross_solver
     PRIVATE
-    picross
-    utils
+    picross::picross
+    picross::utils
     imgui
     portable_file_dialogs
 )
