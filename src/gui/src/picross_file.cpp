@@ -16,7 +16,7 @@ PicrossFile::PicrossFile(std::string_view path)
 PicrossFile::~PicrossFile()
 {
     windows.clear();
-    std::cerr << "End file " << file_path << std::endl;
+    std::cerr << "Close window for file " << file_path << std::endl;
 }
 
 void PicrossFile::visit_windows(bool& canBeErased, Settings& settings)

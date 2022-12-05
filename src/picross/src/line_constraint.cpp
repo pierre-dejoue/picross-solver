@@ -17,8 +17,10 @@ namespace picross
 
 LineConstraint::LineConstraint(Line::Type type, const InputGrid::Constraint& vect) :
     type(type),
-    segs_of_ones(vect)
+    segs_of_ones()
 {
+    segs_of_ones.reserve(vect.size());
+    std::copy_if(vect.cbegin(), vect.cend(), std::back_inserter(segs_of_ones), [](const auto c) { return c > 0; });
     if (segs_of_ones.size() == 0u)
     {
         min_line_size = 0u;
@@ -378,24 +380,26 @@ std::ostream& operator<<(std::ostream& ostream, const LineConstraint& constraint
 }
 
 
-InputGrid get_input_grid_from(const OutputGrid& grid)
+InputGrid build_input_grid_from(const OutputGrid& grid)
 {
     InputGrid result;
 
-    result.name = grid.get_name();
+    result.m_name = grid.name();
 
-    result.rows.reserve(grid.height());
+    result.m_rows.reserve(grid.height());
     for (unsigned int y = 0u; y < grid.height(); y++)
     {
-        result.rows.emplace_back(get_constraint_from(grid.get_line<Line::ROW>(y)));
+        result.m_rows.emplace_back(get_constraint_from(grid.get_line<Line::ROW>(y)));
     }
 
-    result.cols.reserve(grid.width());
+    result.m_cols.reserve(grid.width());
     for (unsigned int x = 0u; x < grid.width(); x++)
     {
-        result.cols.emplace_back(get_constraint_from(grid.get_line<Line::COL>(x)));
+        result.m_cols.emplace_back(get_constraint_from(grid.get_line<Line::COL>(x)));
     }
 
+    assert(result.width() == grid.width());
+    assert(result.height() == grid.height());
     return result;
 }
 

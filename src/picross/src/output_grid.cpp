@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <utility>
 
 
 namespace picross
@@ -23,12 +24,23 @@ OutputGrid::OutputGrid(size_t width, size_t height, const std::string& name) :
     reset();
 }
 
-
-const std::string& OutputGrid::get_name() const
+OutputGrid& OutputGrid::operator=(const OutputGrid& other)
 {
-    return m_name;
+    const_cast<std::size_t&>(m_width) = other.m_width;
+    const_cast<std::size_t&>(m_height) = other.m_height;
+    m_name = other.m_name;
+    m_grid = other.m_grid;
+    return *this;
 }
 
+OutputGrid& OutputGrid::operator=(OutputGrid&& other) noexcept
+{
+    const_cast<std::size_t&>(m_width) = other.m_width;
+    const_cast<std::size_t&>(m_height) = other.m_height;
+    m_name = std::move(other.m_name);
+    m_grid = std::move(other.m_grid);
+    return *this;
+}
 
 void OutputGrid::set_name(const std::string& name)
 {
@@ -97,6 +109,20 @@ void OutputGrid::reset()
 bool OutputGrid::is_solved() const
 {
     return std::none_of(std::cbegin(m_grid), std::cend(m_grid), [](const Tile::Type& t) { return t == Tile::UNKNOWN; });
+}
+
+
+bool operator==(const OutputGrid& lhs, const OutputGrid& rhs)
+{
+    return lhs.m_width == rhs.m_width
+        && lhs.m_height == rhs.m_height
+        && lhs.m_grid == rhs.m_grid;
+}
+
+
+bool operator!=(const OutputGrid& lhs, const OutputGrid& rhs)
+{
+    return !(lhs == rhs);
 }
 
 

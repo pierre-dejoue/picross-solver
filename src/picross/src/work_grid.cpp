@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iterator>
 #include <memory>
 
 
@@ -23,16 +24,16 @@ namespace
 std::vector<LineConstraint> row_constraints_from(const InputGrid& grid)
 {
     std::vector<LineConstraint> rows;
-    rows.reserve(grid.rows.size());
-    std::transform(grid.rows.cbegin(), grid.rows.cend(), std::back_inserter(rows), [](const InputGrid::Constraint& c) { return LineConstraint(Line::ROW, c); });
+    rows.reserve(grid.m_rows.size());
+    std::transform(grid.m_rows.cbegin(), grid.m_rows.cend(), std::back_inserter(rows), [](const InputGrid::Constraint& c) { return LineConstraint(Line::ROW, c); });
     return rows;
 }
 
 std::vector<LineConstraint> column_constraints_from(const InputGrid& grid)
 {
     std::vector<LineConstraint> cols;
-    cols.reserve(grid.cols.size());
-    std::transform(grid.cols.cbegin(), grid.cols.cend(), std::back_inserter(cols), [](const InputGrid::Constraint& c) { return LineConstraint(Line::COL, c); });
+    cols.reserve(grid.m_cols.size());
+    std::transform(grid.m_cols.cbegin(), grid.m_cols.cend(), std::back_inserter(cols), [](const InputGrid::Constraint& c) { return LineConstraint(Line::COL, c); });
     return cols;
 }
 
@@ -69,7 +70,7 @@ void merge_nested_grid_stats(GridStats& stats, const GridStats& nested_stats)
 
 template <typename LineSelectionPolicy, bool BranchingAllowed>
 WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const InputGrid& grid, Solver::Observer observer, Solver::Abort abort_function)
-    : OutputGrid(grid.cols.size(), grid.rows.size(), grid.name)
+    : OutputGrid(grid.width(), grid.height(), grid.name())
     , rows(row_constraints_from(grid))
     , cols(column_constraints_from(grid))
     , grid_stats(nullptr)
@@ -494,7 +495,9 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::branch(Solver::S
 
         flag_solution_found |= status == Solver::Status::OK;
 
-        solutions.insert(solutions.end(), nested_solutions.begin(), nested_solutions.end());
+        solutions.reserve(solutions.size() + nested_solutions.size());
+        std::move(nested_solutions.begin(), nested_solutions.end(), std::back_inserter(solutions));
+        nested_solutions.clear();       // Entries are now invalidated
 
         // Stop if enough solutions found
         if (max_nb_solutions > 0u && solutions.size() >= max_nb_solutions)

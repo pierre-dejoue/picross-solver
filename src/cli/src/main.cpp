@@ -36,21 +36,21 @@ namespace
         ValidationModeData();
 
         std::string filename;
-        std::string grid;
+        std::string gridname;
         std::string size;
         picross::ValidationResult validation_result;
         float timing_ms;
         std::string misc;
     };
 
-    ValidationModeData::ValidationModeData() : filename(), grid(), size(), validation_result{ -1, 0u, "" }, timing_ms(0u), misc()
+    ValidationModeData::ValidationModeData() : filename(), gridname(), size(), validation_result{ -1, 0u, "" }, timing_ms(0u), misc()
     {
     }
 
     std::ostream& operator<<(std::ostream& ostream, const ValidationModeData& data)
     {
         ostream << data.filename << ',';
-        ostream << data.grid << ',';
+        ostream << data.gridname << ',';
         ostream << data.size << ',';
         ostream << picross::validation_code_str(data.validation_result.code) << ',';
         ostream << (data.validation_result.code == 1 && (data.validation_result.branching_depth == 0u) ? "LINE" : "") << ',';
@@ -171,14 +171,14 @@ int main(int argc, char *argv[])
         for (const auto& grid_input : grids_to_solve)
         {
             ValidationModeData grid_data = file_data;
-            grid_data.grid = grid_input.name;
+            grid_data.gridname = grid_input.name();
             grid_data.size = grid_size_str(grid_input);
 
             try
             {
                 if (!validation_mode)
                 {
-                    std::cout << "GRID " << ++count_grids << ": " << grid_input.name << std::endl;
+                    std::cout << "GRID " << ++count_grids << ": " << grid_input.name() << std::endl;
                     std::cout << "  Size: " << grid_data.size << std::endl;
                 }
 
@@ -190,8 +190,8 @@ int main(int argc, char *argv[])
                 if (input_ok)
                 {
                     /* Set observer */
-                    const auto width = grid_input.cols.size();
-                    const auto height = grid_input.rows.size();
+                    const auto width = grid_input.width();
+                    const auto height = grid_input.height();
                     ConsoleObserver obs(width, height, std::cout);
                     if (!validation_mode)
                     {
@@ -275,7 +275,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    std::cout << "EXCPT [" << file_data.filename << "][" << grid_input.name << "]: " << e.what() << std::endl;
+                    std::cout << "EXCPT [" << file_data.filename << "][" << grid_input.name() << "]: " << e.what() << std::endl;
                     return_status = 5;
                 }
             }

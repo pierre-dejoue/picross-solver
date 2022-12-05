@@ -11,6 +11,7 @@ set(LIB_SOURCES
     src/grid_observer.cpp
     src/picross_file_io.cpp
     src/strings.cpp
+    src/test_helpers.cpp
 )
 
 file(GLOB LIB_HEADERS include/utils/*.h src/*.h)

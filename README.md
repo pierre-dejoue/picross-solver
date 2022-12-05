@@ -30,10 +30,24 @@ The Picross solver provided as a library
 With [CMake](https://cmake.org/download/). For example on Windows:
 
 ```
-mkdir -p ./build
+mkdir ./build
 cd build
-cmake -G "Visual Studio 15 2017 Win64" ../..
+cmake -G "Visual Studio 15 2017 Win64" ..
 cmake --build . --config Release
+```
+
+### Unit Tests
+
+Dependencies:
+
+*  [Catch2](https://github.com/catchorg/Catch2)
+*  [PNM++](https://github.com/ToruNiina/pnm)
+
+Build and run unit tests:
+
+```
+cmake -G "Visual Studio 15 2017 Win64" -DPICROSS_BUILD_TESTS=ON ..
+cmake --build . --config Debug
 ```
 
 ### Install
@@ -60,17 +74,20 @@ A CLI and a GUI applications built on top of the solver library
 
 ### Dependencies
 
+Common to all:
+
+* [PNM++](https://github.com/ToruNiina/pnm)
+
+Command line interface:
+
+* [Argagg](https://github.com/vietjtnguyen/argagg)
+
 Graphical UI:
 
 * OpenGL
 * [GLFW3](http://glfw.sf.net)
 * [Dear ImGui](https://github.com/ocornut/imgui)
 * [Portable File Dialogs](https://github.com/samhocevar/portable-file-dialogs)
-* [PNM++](https://github.com/ToruNiina/pnm)
-
-Command line interface:
-
-* [Argagg](https://github.com/vietjtnguyen/argagg)
 
 ### Build
 
@@ -79,7 +96,7 @@ On Windows:
 ```
 mkdir ./build
 cd build
-cmake -G "Visual Studio 15 2017 Win64" -DPICROSS_BUILD_APP=ON -DPICROSS_BUILD_CLI=ON ../..
+cmake -G "Visual Studio 15 2017 Win64" -DPICROSS_BUILD_APP=ON -DPICROSS_BUILD_CLI=ON ..
 cmake --build . --config Release
 ```
 

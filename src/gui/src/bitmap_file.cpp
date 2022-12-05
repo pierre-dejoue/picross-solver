@@ -17,7 +17,7 @@ BitmapFile::BitmapFile(std::string_view path)
 BitmapFile::~BitmapFile()
 {
     window.reset();
-    std::cerr << "End file " << file_path << std::endl;
+    std::cerr << "Close window for file " << file_path << std::endl;
 }
 
 void BitmapFile::visit_windows(bool& canBeErased, Settings& settings)
@@ -33,7 +33,7 @@ void BitmapFile::visit_windows(bool& canBeErased, Settings& settings)
         auto output_grid = import_bitmap_pbm(file_path, err_handler);
         if (output_grid)
         {
-            auto grid = picross::get_input_grid_from(*output_grid);
+            auto grid = picross::build_input_grid_from(*output_grid);
             window = std::make_unique<GridWindow>(std::move(grid), file_name(file_path));
         }
     }

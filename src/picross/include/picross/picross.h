@@ -55,12 +55,20 @@ struct InputGrid
     // Constraint that applies to a line (row or column)
     // It gives the size of each of the groups of contiguous filled tiles
     using Constraint = std::vector<unsigned int>;
+    using Constraints = std::vector<Constraint>;
 
-    std::string name;
-    std::vector<Constraint> rows;
-    std::vector<Constraint> cols;
+    InputGrid() = default;
+    InputGrid(const Constraints& rows, const Constraints& cols, const std::string& name = std::string{});
+    InputGrid(Constraints&& rows, Constraints&& cols, const std::string& name = std::string{});
 
-    std::map<std::string, std::string> metadata;      // Optional
+    std::size_t width() const { return m_cols.size(); }
+    std::size_t height() const { return m_rows.size(); }
+    const std::string& name() const { return m_name; }
+
+    Constraints                         m_rows;
+    Constraints                         m_cols;
+    std::string                         m_name;
+    std::map<std::string, std::string>  m_metadata;      // Optional
 };
 
 
@@ -122,10 +130,10 @@ public:
     static constexpr Type ROW = 0u, COL = 1u;
     using Container = std::vector<Tile::Type>;
 public:
-    Line(Type type, size_t index, size_t size, Tile::Type init_tile = Tile::UNKNOWN);
+    Line(Type type, std::size_t index, std::size_t size, Tile::Type init_tile = Tile::UNKNOWN);
     Line(const Line& other, Tile::Type init_tile);
-    Line(Type type, size_t index, const Container& tiles);
-    Line(Type type, size_t index, Container&& tiles);
+    Line(Type type, std::size_t index, const Container& tiles);
+    Line(Type type, std::size_t index, Container&& tiles);
 
     // copyable & moveable
     Line(const Line&) = default;
@@ -134,20 +142,19 @@ public:
     Line& operator=(Line&&) noexcept = default;
 public:
     Type type() const;
-    size_t index() const;
+    std::size_t index() const;
     const Container& tiles() const;
     Container& tiles();
-    size_t size() const;
-    Tile::Type at(size_t idx) const;
+    std::size_t size() const;
+    Tile::Type at(std::size_t idx) const;
     bool compatible(const Line& other) const;
     bool add(const Line& other);
     void reduce(const Line& other);
 private:
-    Type m_type;
-    size_t m_index;
-    Container m_tiles;
+    const Type          m_type;
+    const std::size_t   m_index;
+    Container           m_tiles;
 };
-
 
 bool operator==(const Line& lhs, const Line& rhs);
 bool operator!=(const Line& lhs, const Line& rhs);
@@ -163,36 +170,42 @@ std::ostream& operator<<(std::ostream& ostream, const Line& line);
 class OutputGrid
 {
 public:
-    OutputGrid(size_t width, size_t height, const std::string& name = "");
+    OutputGrid(std::size_t width, std::size_t height, const std::string& name = std::string{});
 
-    size_t width() const { return m_width; }
-    size_t height() const { return m_height; }
+    OutputGrid(const OutputGrid&) = default;
+    OutputGrid(OutputGrid&&) noexcept = default;
+    OutputGrid& operator=(const OutputGrid&);
+    OutputGrid& operator=(OutputGrid&&) noexcept;
 
-    const std::string& get_name() const;
+    std::size_t width() const { return m_width; }
+    std::size_t height() const { return m_height; }
+
+    const std::string& name() const { return m_name; }
     void set_name(const std::string& name);
 
-    Tile::Type get(size_t x, size_t y) const;
+    Tile::Type get(std::size_t x, std::size_t y) const;
 
     template <Line::Type type>
-    Line get_line(size_t index) const;
+    Line get_line(std::size_t index) const;
 
-    Line get_line(Line::Type type, size_t index) const;
+    Line get_line(Line::Type type, std::size_t index) const;
 
-    bool set(size_t x, size_t y, Tile::Type val);
+    bool set(std::size_t x, std::size_t y, Tile::Type val);
     void reset();
 
     bool is_solved() const;
 
+    friend bool operator==(const OutputGrid& lhs, const OutputGrid& rhs);
+    friend bool operator!=(const OutputGrid& lhs, const OutputGrid& rhs);
+
 private:
-    size_t                      m_width;
-    size_t                      m_height;
+    const std::size_t           m_width;
+    const std::size_t           m_height;
     std::string                 m_name;
     std::vector<Tile::Type>     m_grid;          // 2D array of tiles
 };
 
-
 std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid);
-
 
 /*
  * Grid solver interface
@@ -231,7 +244,6 @@ public:
     // By default the solver will look for all the solutions of the input grid.
     // The optional argument max_nb_solutions can be used to limit the number of solutions discovered by the algorithm.
     //
-
     virtual Result solve(const InputGrid& grid_input, unsigned int max_nb_solutions = 0u) const = 0;
 
     //
@@ -286,7 +298,6 @@ public:
     virtual void set_abort_function(Abort abort) = 0;
 };
 
-
 std::ostream& operator<<(std::ostream& ostream, Solver::Status status);
 std::ostream& operator<<(std::ostream& ostream, Solver::Event event);
 
@@ -337,6 +348,6 @@ std::unique_ptr<Solver> get_line_solver();
 /*
  * Build an InputGrid from an OutputGrid
  */
-InputGrid get_input_grid_from(const OutputGrid& grid);
+InputGrid build_input_grid_from(const OutputGrid& grid);
 
 } // namespace picross

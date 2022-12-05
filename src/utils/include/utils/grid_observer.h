@@ -20,7 +20,8 @@ private:
 class GridObserver
 {
 public:
-    explicit GridObserver(size_t width, size_t height);
+    GridObserver(size_t width, size_t height);
+    explicit GridObserver(const picross::InputGrid& grid);
     virtual ~GridObserver() = default;
 
     void operator()(picross::Solver::Event event, const picross::Line* delta, unsigned int depth);

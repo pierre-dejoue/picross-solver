@@ -109,7 +109,7 @@ struct GridWindow::TextBufferImpl
 };
 
 GridWindow::GridWindow(picross::InputGrid&& grid, std::string_view source, bool start_thread)
-    : GridObserver(grid.cols.size(), grid.rows.size())
+    : GridObserver(grid)
     , grid(std::move(grid))
     , title()
     , solver_thread()
@@ -127,7 +127,7 @@ GridWindow::GridWindow(picross::InputGrid&& grid, std::string_view source, bool 
     , max_nb_solutions(0u)
     , speed(1u)
 {
-    title = this->grid.name + " (" + source.data() + ")";
+    title = this->grid.name() + " (" + source.data() + ")";
 }
 
 GridWindow::~GridWindow()
@@ -136,15 +136,15 @@ GridWindow::~GridWindow()
     line_cv.notify_all();
     if (solver_thread.joinable())
     {
-        std::cerr << "Aborting grid " << grid.name << "..." << std::endl;
+        std::cerr << "Aborting grid " << grid.name() << "..." << std::endl;
         solver_thread.join();
     }
 }
 
 void GridWindow::visit(bool& canBeErased, Settings& settings)
 {
-    const size_t width = grid.cols.size();
-    const size_t height = grid.rows.size();
+    const size_t width = grid.width();
+    const size_t height = grid.height();
     const Settings::Tile& tile_settings = settings.read_tile_settings();
     const Settings::Solver& solver_settings = settings.read_solver_settings();
     const Settings::Animation& animation_settings = settings.read_animation_settings();
@@ -195,7 +195,7 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
             solver_thread.join();
             std::swap(solver_thread, std::thread());
             assert(!solver_thread.joinable());
-            std::cerr << "End of solver thread for grid " << grid.name << std::endl;
+            std::cerr << "End of solver thread for grid " << grid.name() << std::endl;
         }
 
         // Fetch the latest observer events
@@ -318,8 +318,8 @@ void GridWindow::reset_solutions()
     line_events.clear();
 
     // Clear text buffer and print out the grid size
-    const size_t width = grid.cols.size();
-    const size_t height = grid.rows.size();
+    const size_t width = grid.width();
+    const size_t height = grid.height();
     text_buffer->buffer.clear();
     text_buffer->buffer.appendf("Grid %s\n", grid_size_str(grid).c_str());
 }

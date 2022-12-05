@@ -6,6 +6,7 @@ project(picross_solver
 
 option(PICROSS_BUILD_APP "Build the test application" OFF)
 option(PICROSS_BUILD_CLI "Build the command line app" OFF)
+option(PICROSS_BUILD_TESTS "Build and run unit tests" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -24,7 +25,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 add_subdirectory(src/picross)
 
 # Utility library
-if(PICROSS_BUILD_APP OR PICROSS_BUILD_CLI)
+if(PICROSS_BUILD_APP OR PICROSS_BUILD_CLI OR PICROSS_BUILD_TESTS)
     add_subdirectory(src/utils)
 endif()
 
@@ -36,6 +37,11 @@ endif()
 # Picross CLI
 if(PICROSS_BUILD_CLI)
     add_subdirectory(src/cli)
+endif()
+
+# Tests
+if(PICROSS_BUILD_TESTS)
+    add_subdirectory(src/tests)
 endif()
 
 set(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_SOURCE_DIR}/LICENSE)

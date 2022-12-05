@@ -70,7 +70,7 @@ public:
             grids.emplace_back();
             if (line_to_parse.size() > 5u)
             {
-                grids.back().name = line_to_parse.substr(5u);
+                grids.back().m_name = line_to_parse.substr(5u);
             }
         }
         else if (token == "ROWS")
@@ -102,14 +102,14 @@ public:
                 picross::InputGrid::Constraint new_row;
                 unsigned int n;
                 while (iss >> n) { new_row.push_back(n); }
-                grids.back().rows.push_back(std::move(new_row));
+                grids.back().m_rows.push_back(std::move(new_row));
             }
             else if (parsing_state == ParsingState::COLUMN_SECTION)
             {
                 picross::InputGrid::Constraint new_col;
                 unsigned int n;
                 while (iss >> n) { new_col.push_back(n); }
-                grids.back().cols.push_back(std::move(new_col));
+                grids.back().m_cols.push_back(std::move(new_col));
             }
             else
             {
@@ -201,27 +201,27 @@ public:
 
         if (parsing_state == ParsingState::Rows)
         {
-            if (grid.rows.size() == height)
+            if (grid.m_rows.size() == height)
             {
                 parsing_state = ParsingState::Default;
             }
             else
             {
-                grid.rows.emplace_back();
-                parse_constraint_line(iss, grid.rows.back());
+                grid.m_rows.emplace_back();
+                parse_constraint_line(iss, grid.m_rows.back());
             }
 
         }
         if (parsing_state == ParsingState::Columns)
         {
-            if (grid.cols.size() == width)
+            if (grid.m_cols.size() == width)
             {
                 parsing_state = ParsingState::Default;
             }
             else
             {
-                grid.cols.emplace_back();
-                parse_constraint_line(iss, grid.cols.back());
+                grid.m_cols.emplace_back();
+                parse_constraint_line(iss, grid.m_cols.back());
             }
         }
         if (parsing_state == ParsingState::Default)
@@ -233,7 +233,7 @@ public:
             {
                 std::stringbuf remaining;
                 iss >> &remaining;
-                grid.name = extract_text_in_quotes_or_ltrim(remaining.str());
+                grid.m_name = extract_text_in_quotes_or_ltrim(remaining.str());
             }
             else if (token == "width")
             {
@@ -245,7 +245,7 @@ public:
             }
             else if (token == "rows")
             {
-                if (!grid.rows.empty())
+                if (!grid.m_rows.empty())
                 {
                     error_handler("rows are already defined", NO_EXIT);
                 }
@@ -260,7 +260,7 @@ public:
             }
             else if (token == "columns")
             {
-                if (!grid.cols.empty())
+                if (!grid.m_cols.empty())
                 {
                     error_handler("columns are already defined", NO_EXIT);
                 }
@@ -281,7 +281,7 @@ public:
             {
                 std::stringbuf remaining;
                 iss >> &remaining;
-                grid.metadata.insert({token, extract_text_in_quotes_or_ltrim(remaining.str())});
+                grid.m_metadata.insert({token, extract_text_in_quotes_or_ltrim(remaining.str())});
             }
             else if (is_ignored_token(token))
             {
@@ -439,36 +439,36 @@ std::vector<InputGrid> parse_input_file_non_format(std::string_view filepath, co
 
 void write_input_grid(std::ostream& ostream, const InputGrid& input_grid)
 {
-    for (const auto& kvp : input_grid.metadata)
+    for (const auto& kvp : input_grid.m_metadata)
     {
         ostream << "# " << kvp.first << ' ' << kvp.second << std::endl;
     }
-    ostream << "GRID " << input_grid.name << std::endl;
+    ostream << "GRID " << input_grid.name() << std::endl;
     ostream << "ROWS" << std::endl;
-    write_constraints_native_format(ostream, input_grid.rows);
+    write_constraints_native_format(ostream, input_grid.m_rows);
     ostream << "COLUMNS" << std::endl;
-    write_constraints_native_format(ostream, input_grid.cols);
+    write_constraints_native_format(ostream, input_grid.m_cols);
 }
 
 
 void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_grid)
 {
-    write_metadata_non_format(ostream, input_grid.metadata, "catalogue");
-    ostream << "title \"" << input_grid.name << '\"' << std::endl;
-    write_metadata_non_format(ostream, input_grid.metadata, "by");
-    write_metadata_non_format(ostream, input_grid.metadata, "copyright");
-    write_metadata_non_format(ostream, input_grid.metadata, "license", "");
+    write_metadata_non_format(ostream, input_grid.m_metadata, "catalogue");
+    ostream << "title \"" << input_grid.m_name << '\"' << std::endl;
+    write_metadata_non_format(ostream, input_grid.m_metadata, "by");
+    write_metadata_non_format(ostream, input_grid.m_metadata, "copyright");
+    write_metadata_non_format(ostream, input_grid.m_metadata, "license", "");
 
-    ostream << "width " << input_grid.cols.size() << std::endl;
-    ostream << "height " << input_grid.rows.size() << std::endl;
+    ostream << "width " << input_grid.m_cols.size() << std::endl;
+    ostream << "height " << input_grid.m_rows.size() << std::endl;
 
     ostream << std::endl;
     ostream << "rows" << std::endl;
-    write_constraints_non_format(ostream, input_grid.rows);
+    write_constraints_non_format(ostream, input_grid.m_rows);
 
     ostream << std::endl;
     ostream << "columns" << std::endl;
-    write_constraints_non_format(ostream, input_grid.cols);
+    write_constraints_non_format(ostream, input_grid.m_cols);
 }
 
 } // namespace io

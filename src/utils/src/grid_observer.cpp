@@ -29,6 +29,11 @@ GridObserver::GridObserver(size_t width, size_t height)
     grids.emplace_back(width, height);
 }
 
+GridObserver::GridObserver(const picross::InputGrid& grid)
+    : GridObserver(grid.width(), grid.height())
+{
+}
+
 void GridObserver::operator()(picross::Solver::Event event, const picross::Line* delta, unsigned int depth)
 {
     const auto width = grids[0].width();
@@ -47,7 +52,7 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
         }
         assert(depth > 0u);
         assert(depth < grids.size());
-        grids[depth] = grids[depth - 1];
+        grids.emplace(grids.begin() + depth, grids[depth - 1]);
         current_depth = depth;
         break;
 
