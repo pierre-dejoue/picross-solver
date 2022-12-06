@@ -10,7 +10,7 @@ class ObserverGrid : public picross::OutputGrid
 public:
     ObserverGrid(size_t width, size_t height, const std::string& name = "");
 
-    void set(size_t x, size_t y, picross::Tile::Type t, unsigned int d);
+    void set(size_t x, size_t y, picross::Tile t, unsigned int d);
     unsigned int get_depth(size_t x, size_t y) const;
 
 private:

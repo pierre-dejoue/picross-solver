@@ -289,7 +289,7 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
                             : 0;
                         if (tile == picross::Tile::UNKNOWN)
                             continue;
-                        draw_tile(draw_list, grid_tl_corner, tile_size, i, j, tile == picross::Tile::ONE, depth, tile_settings.size_ratio, tile_settings.rounding_ratio);
+                        draw_tile(draw_list, grid_tl_corner, tile_size, i, j, tile == picross::Tile::FILLED, depth, tile_settings.size_ratio, tile_settings.rounding_ratio);
                     }
 
                 ImGui::EndTabItem();

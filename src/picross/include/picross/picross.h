@@ -24,7 +24,6 @@
 
 namespace picross
 {
-
 /*
  * Get the version of the library
  */
@@ -32,16 +31,14 @@ std::string_view get_version_string();
 
 
 /*
- * Tile namespace
- *
- *   A tile is the base element to construct lines and grids: it can be empty (ZERO) of filled (ONE).
- *   The following namespace defines the constants, types and functions used for the manipulation of tiles.
+ * A tile is the base element to construct lines and grids: it can be empty or filled
  */
-namespace Tile
+enum class Tile
 {
-    using Type = int;
-    constexpr Type UNKNOWN = -1, ZERO = 0, ONE = 1;
-}
+    UNKNOWN = -1,
+    EMPTY = 0,
+    FILLED = 1
+};
 
 
 /*
@@ -128,10 +125,10 @@ class Line
 public:
     using Type = unsigned int;
     static constexpr Type ROW = 0u, COL = 1u;
-    using Container = std::vector<Tile::Type>;
+    using Container = std::vector<Tile>;
 public:
-    Line(Type type, std::size_t index, std::size_t size, Tile::Type init_tile = Tile::UNKNOWN);
-    Line(const Line& other, Tile::Type init_tile);
+    Line(Type type, std::size_t index, std::size_t size, Tile init_tile = Tile::UNKNOWN);
+    Line(const Line& other, Tile init_tile);
     Line(Type type, std::size_t index, const Container& tiles);
     Line(Type type, std::size_t index, Container&& tiles);
 
@@ -146,7 +143,7 @@ public:
     const Container& tiles() const;
     Container& tiles();
     std::size_t size() const;
-    Tile::Type at(std::size_t idx) const;
+    Tile at(std::size_t idx) const;
     bool compatible(const Line& other) const;
     bool add(const Line& other);
     void reduce(const Line& other);
@@ -183,14 +180,14 @@ public:
     const std::string& name() const { return m_name; }
     void set_name(const std::string& name);
 
-    Tile::Type get(std::size_t x, std::size_t y) const;
+    Tile get(std::size_t x, std::size_t y) const;
 
     template <Line::Type type>
     Line get_line(std::size_t index) const;
 
     Line get_line(Line::Type type, std::size_t index) const;
 
-    bool set(std::size_t x, std::size_t y, Tile::Type val);
+    bool set(std::size_t x, std::size_t y, Tile val);
     void reset();
 
     bool is_solved() const;
@@ -199,10 +196,10 @@ public:
     friend bool operator!=(const OutputGrid& lhs, const OutputGrid& rhs);
 
 private:
-    const std::size_t           m_width;
-    const std::size_t           m_height;
-    std::string                 m_name;
-    std::vector<Tile::Type>     m_grid;          // 2D array of tiles
+    const std::size_t       m_width;
+    const std::size_t       m_height;
+    std::string             m_name;
+    std::vector<Tile>       m_grid;          // 2D array of tiles
 };
 
 std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid);
