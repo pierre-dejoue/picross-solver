@@ -192,6 +192,8 @@ public:
 
     bool is_solved() const;
 
+    std::size_t hash() const;
+
     friend bool operator==(const OutputGrid& lhs, const OutputGrid& rhs);
     friend bool operator!=(const OutputGrid& lhs, const OutputGrid& rhs);
 

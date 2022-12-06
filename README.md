@@ -47,7 +47,7 @@ Build and run unit tests:
 
 ```
 cmake -G "Visual Studio 15 2017 Win64" -DPICROSS_BUILD_TESTS=ON ..
-cmake --build . --config Debug
+cmake --build . --target picross_run_utests --config Debug
 ```
 
 ### Install

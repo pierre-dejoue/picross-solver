@@ -9,6 +9,8 @@
 
 #include <algorithm>
 #include <cassert>
+#include <functional>
+#include <type_traits>
 #include <utility>
 
 
@@ -129,8 +131,42 @@ bool OutputGrid::is_solved() const
 }
 
 
+std::size_t OutputGrid::hash() const
+{
+    // Intentionally ignore the name to compute the hash
+    std::size_t result = 0u;
+    result ^= std::hash<std::remove_const_t<decltype(m_width)>>{}(m_width);
+    result ^= std::hash<std::remove_const_t<decltype(m_height)>>{}(m_height);
+
+    // Encode the grid contents with pairs of booleans
+    std::vector<bool> grid_bool;
+    grid_bool.reserve(2 * m_grid.size());
+    for (const Tile tile : m_grid)
+    {
+        if (tile != Tile::UNKNOWN)
+        {
+            grid_bool.push_back(true);
+            grid_bool.push_back(tile != Tile::EMPTY);
+        }
+        else
+        {
+            grid_bool.push_back(false);
+            grid_bool.push_back(false);
+        }
+    }
+    assert(grid_bool.size() == 2 * m_grid.size());
+    assert(grid_bool.size() == 2 * m_width * m_height);
+
+    result ^= std::hash<decltype(grid_bool)>{}(grid_bool);
+
+    return result;
+}
+
+
+
 bool operator==(const OutputGrid& lhs, const OutputGrid& rhs)
 {
+    // Intentionally ignore the name
     return lhs.m_width == rhs.m_width
         && lhs.m_height == rhs.m_height
         && lhs.m_grid == rhs.m_grid;
