@@ -185,35 +185,6 @@ TEST_CASE("Puzzle: Notes", "[solver]")
     CHECK(solution_grids == expected_solutions);
 }
 
-TEST_CASE("Puzzle: Edge", "[solver]")
-{
-    // Edge pattern. Source: webpbn-00023
-    OutputGrid expected = build_output_grid_from(10, 11, R"(
-        ...#......
-        .###......
-        .#........
-        ##........
-        .....#....
-        ...###....
-        ...###....
-        .....#....
-        .......##.
-        .......##.
-        ......####
-    )", "Edge");
-
-    InputGrid puzzle = build_input_grid_from(expected);
-
-    const auto solver = picross::get_ref_solver();
-    const auto result = solver->solve(puzzle);
-
-    CHECK(result.status == Solver::Status::OK);
-    REQUIRE(result.solutions.size() == 1);
-    const auto& solution = result.solutions.front();
-    CHECK(solution.branching_depth > 0);
-    CHECK(solution.grid == expected);
-}
-
 TEST_CASE("Puzzle: Cameraman", "[solver]")
 {
     // PicrossDS/Free/07-O-Cameraman.txt
@@ -278,7 +249,5 @@ TEST_CASE("Puzzle: 4-DOM", "[solver]")
     CHECK(solution.branching_depth > 0);
     CHECK(solution.grid == expected);
 }
-
-
 
 } // namespace picross
