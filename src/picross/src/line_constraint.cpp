@@ -41,47 +41,54 @@ unsigned int LineConstraint::nb_filled_tiles() const
 
 unsigned int LineConstraint::max_segment_size() const
 {
-    // Sets_of_ones vector must not be empty.
-    if (segs_of_ones.empty()) { return 0u; }
-
-    // Compute max
-    return *max_element(segs_of_ones.cbegin(), segs_of_ones.cend());
+    return segs_of_ones.empty() ? 0u : *max_element(segs_of_ones.cbegin(), segs_of_ones.cend());
 }
 
 
 /*
- * Given an uninitialized line compute the trivial reduction and the theoritical number of alternatives
- *
- *  - Set the line pass as argument to the trivial reduction, if there is one
- *  - Return a pair (changed, nb_alternatives)
+ * Given an uninitialized line compute the theoritical number of alternatives
  */
-std::pair<bool, unsigned int> LineConstraint::line_trivial_reduction(Line& line, BinomialCoefficientsCache& binomial_cache) const
+unsigned int LineConstraint::line_trivial_nb_alternatives(unsigned int line_size, BinomialCoefficientsCache& binomial_cache) const
 {
-    assert(line.type() == type);
-    assert(is_all_one_color(line, Tile::UNKNOWN));
-
-    if (line.size() < min_line_size)
+    if (line_size < min_line_size)
     {
         // This can happen if the user does not check the grid with check_grid_input()
-        throw std::logic_error("Constraint::line_trivial_reduction: line.size() < min_line_size");
+        throw std::logic_error("Constraint::line_trivial_reduction: line_size < min_line_size");
     }
 
-    bool changed = false;
-    unsigned int nb_alternatives = 0u;
+    const unsigned int nb_zeros = line_size - min_line_size;
+    const auto nb_altrnatives = binomial_cache.nb_alternatives_for_fixed_nb_of_partitions(nb_zeros, static_cast<unsigned int>(segs_of_ones.size()) + 1u);
+    assert(nb_altrnatives > 0u);
+    return nb_altrnatives;
+}
 
-    const unsigned int nb_zeros = static_cast<unsigned int>(line.size()) - min_line_size;
+/*
+ * Given an uninitialized line compute the trivial reduction
+ */
+Line LineConstraint::line_trivial_reduction(unsigned int line_size, unsigned int index) const
+{
+    Line line(type, index, line_size);
+
+    if (line_size < min_line_size)
+    {
+        // This can happen if the user does not check the grid with check_grid_input()
+        throw std::logic_error("Constraint::line_trivial_reduction: line_size < min_line_size");
+    }
+    const unsigned int nb_zeros = line_size - min_line_size;
+
     Line::Container& tiles = line.tiles();
     unsigned int line_idx = 0u;
 
-    if (max_segment_size() == 0u)
+    const auto max_seg_sz = max_segment_size();
+    if (max_seg_sz == 0u)
     {
         // Blank line
-        for (unsigned int c = 0u; c < line.size(); c++) { tiles[line_idx++] = Tile::EMPTY; }
-
-        assert(line_idx == line.size());
+        for (unsigned int c = 0u; c < line_size; c++)
+        {
+            tiles[line_idx++] = Tile::EMPTY;
+        }
+        assert(line_idx == line_size);
         assert(is_complete(line));
-        changed = true;
-        nb_alternatives = 1;
     }
     else if (nb_zeros == 0u)
     {
@@ -93,33 +100,25 @@ std::pair<bool, unsigned int> LineConstraint::line_trivial_reduction(Line& line,
             for (unsigned int c = 0u; c < seg_sz; c++) { tiles[line_idx++] = Tile::FILLED; }
             if (!last) { tiles[line_idx++] = Tile::EMPTY; }
         }
-
-        assert(line_idx == line.size());
+        assert(line_idx == line_size);
         assert(is_complete(line));
-        changed = true;
-        nb_alternatives = 1;
     }
-    else
+    else if (max_seg_sz > nb_zeros)
     {
-        if (max_segment_size() > nb_zeros)
+        // The reduction is straightforward in that case
+        for (unsigned int seg_idx = 0u; seg_idx < segs_of_ones.size(); seg_idx++)
         {
-            // The reduction is straightforward in that case
-            for (unsigned int seg_idx = 0u; seg_idx < segs_of_ones.size(); seg_idx++)
-            {
-                const auto seg_sz = segs_of_ones[seg_idx];
-                const bool last = (seg_idx + 1u == segs_of_ones.size());
-                for (unsigned int c = 0u; c < seg_sz; c++) { if (c >= nb_zeros) { tiles[line_idx] = Tile::FILLED; }; line_idx++; }
-                if (!last) { line_idx++; /* would be Tile::EMPTY */ }
-            }
-
-            assert(line_idx + nb_zeros == line.size());
-            assert(!is_all_one_color(line, Tile::UNKNOWN));
-            changed = true;
+            const auto seg_sz = segs_of_ones[seg_idx];
+            assert(seg_sz > 0);
+            const bool last = (seg_idx + 1u == segs_of_ones.size());
+            for (unsigned int c = 0u; c < seg_sz; c++) { if (c >= nb_zeros) { tiles[line_idx] = Tile::FILLED; }; line_idx++; }
+            if (!last) { line_idx++; /* would be Tile::EMPTY */ }
         }
-        nb_alternatives = binomial_cache.nb_alternatives_for_fixed_nb_of_partitions(nb_zeros, static_cast<unsigned int>(segs_of_ones.size()) + 1u);
+        assert(line_idx + nb_zeros == line_size);
+        assert(!is_all_one_color(line, Tile::UNKNOWN));
     }
 
-    return std::make_pair(changed, nb_alternatives);
+    return line;
 }
 
 

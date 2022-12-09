@@ -1,6 +1,7 @@
 #include <utils/test_helpers.h>
 
 #include <cassert>
+#include <exception>
 
 namespace picross
 {
@@ -31,11 +32,31 @@ OutputGrid build_output_grid_from(std::size_t width, std::size_t height, std::st
     {
         if (c == '0' || c == '.')
             tiles_vect.push_back(0);
-        if (c == '1' || c == '#')
+        else if (c == '1' || c == '#')
             tiles_vect.push_back(1);
     }
     assert(tiles_vect.size() == (width * height));
     return build_output_grid_from(width, height, tiles_vect, name);
+}
+
+
+Line build_line_from(std::string_view tiles, Line::Type type, unsigned int index)
+{
+    std::vector<Tile> tiles_vect;
+    tiles_vect.reserve(tiles.size());
+    for (const auto c: tiles)
+    {
+        if (c == '.')
+            tiles_vect.push_back(Tile::EMPTY);
+        else if (c == '#')
+            tiles_vect.push_back(Tile::FILLED);
+        else if (c == '?')
+            tiles_vect.push_back(Tile::UNKNOWN);
+        else
+            throw std::invalid_argument("Invalid tile character: " + c);
+    }
+    assert(tiles_vect.size() == tiles.size());
+    return Line(type, index, std::move(tiles_vect));
 }
 
 

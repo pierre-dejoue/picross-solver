@@ -33,7 +33,7 @@ public:
      *
      * Equal to the binomial coefficient (n k) with n = nb_elts + nb_buckets - 1  and k = nb_buckets - 1
      *
-     * Returns std::numeric_limits<unsigned int>::max() in case of overflow (which happens rapidly)
+     * Returns std::numeric_limits<unsigned int>::max() in case of overflow (which can happen rapidly!)
      */
     Rep nb_alternatives_for_fixed_nb_of_partitions(unsigned int nb_cells, unsigned int nb_partitions);
 private:

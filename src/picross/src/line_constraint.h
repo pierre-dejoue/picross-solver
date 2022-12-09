@@ -31,7 +31,8 @@ public:
     size_t nb_segments() const { return segs_of_ones.size(); }  // Number of segments of contiguous filled tiles
     unsigned int max_segment_size() const;                      // Max segment size
     unsigned int get_min_line_size() const { return min_line_size; }
-    std::pair<bool, unsigned int> line_trivial_reduction(Line& line, BinomialCoefficientsCache& binomial) const;
+    unsigned int line_trivial_nb_alternatives(unsigned int line_size, BinomialCoefficientsCache& binomial) const;
+    Line line_trivial_reduction(unsigned int line_size, unsigned int index) const;
     std::vector<Line> build_all_possible_lines(const Line& known_tiles) const;
     std::pair<Line, unsigned int> reduce_and_count_alternatives(const Line& known_tiles, GridStats* stats) const;
     bool compatible(const Line& line) const;

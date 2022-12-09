@@ -9,6 +9,7 @@
 
 namespace picross
 {
+
 // Utility functions to build an OutputGrid from a vector of tiles, or a string, arranged in row-major order:
 
 // The input is a vector<int>:
@@ -22,6 +23,12 @@ OutputGrid build_output_grid_from(std::size_t width, std::size_t height, const s
 // (All other characters are ignored)
 OutputGrid build_output_grid_from(std::size_t width, std::size_t height, std::string_view tiles, std::string_view name = "Test");
 
+// Utility function to build a Line from a string representing the tiles:
+// '.': the tile is empty
+// '#': the tile is filled
+// '?': the tile is unknown
+// All other characters throw
+Line build_line_from(std::string_view tiles, Line::Type type = Line::ROW, unsigned int index = 0);
 
 // Hasher for OutputGrid
 struct OutputGridHasher
@@ -30,4 +37,5 @@ struct OutputGridHasher
 };
 
 using OutputGridSet = std::unordered_set<OutputGrid, OutputGridHasher>;
+
 } // namesapce picross

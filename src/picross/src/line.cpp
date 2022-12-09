@@ -212,9 +212,12 @@ bool is_complete(const Line& line)
 
 std::string str_line(const Line& line)
 {
-    std::string out_str;
-    for (unsigned int idx = 0u; idx < line.size(); idx++) { out_str += Tiles::str(line.at(idx)); }
-    return out_str;
+    std::stringstream ss;
+    for (unsigned int idx = 0u; idx < line.size(); idx++)
+    {
+        ss << Tiles::str(line.at(idx));
+    }
+    return ss.str();
 }
 
 

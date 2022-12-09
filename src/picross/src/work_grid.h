@@ -163,8 +163,9 @@ private:
     bool set_line(const Line& line, unsigned int nb_alt = 0u);
     PassStatus single_line_initial_pass(Line::Type type, unsigned int index);
     PassStatus single_line_pass(Line::Type type, unsigned int index);
-    PassStatus full_side_pass(Line::Type type, bool first_pass = false);
-    PassStatus full_grid_pass(bool first_pass = false);
+    PassStatus full_side_pass(Line::Type type);
+    PassStatus full_grid_initial_pass();
+    PassStatus full_grid_pass();
     Solver::Status branch(Solver::Solutions& solutions, unsigned int max_nb_solutions) const;
     bool valid_solution() const;
     void save_solution(Solver::Solutions& solutions) const;
