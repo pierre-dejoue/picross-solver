@@ -9,6 +9,7 @@ configure_file(src/picross_solver_version.h.in picross_solver_version.h @ONLY)
 set(LIB_SOURCES
     src/binomial.cpp
     src/line.cpp
+    src/line_alternatives.cpp
     src/line_constraint.cpp
     src/output_grid.cpp
     src/picross.cpp

@@ -5,6 +5,8 @@
  ******************************************************************************/
 #include "line.h"
 
+#include <picross/picross.h>
+
 #include <algorithm>
 #include <cassert>
 #include <exception>
@@ -251,6 +253,22 @@ std::ostream& operator<<(std::ostream& ostream, const Line& line)
     ostream << str_line_type(line.type()) << " " << std::setw(3) << line.index() << " " << str_line(line);
     ostream.copyfmt(prev_iostate);
     return ostream;
+}
+
+InputGrid::Constraint get_constraint_from(const Line& line)
+{
+    assert(is_complete(line));
+
+    InputGrid::Constraint segs_of_ones;
+    unsigned int count = 0u;
+    for (const auto& tile : line.tiles())
+    {
+        if (tile == Tile::FILLED) { count++; }
+        if (tile == Tile::EMPTY && count > 0u) { segs_of_ones.push_back(count); count = 0u; }
+    }
+    if (count > 0u) { segs_of_ones.push_back(count); }          // Last but not least
+
+    return segs_of_ones;
 }
 
 } // namespace picross
