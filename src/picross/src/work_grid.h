@@ -9,6 +9,7 @@
 
 #include "binomial.h"
 #include "grid.h"
+#include "line_alternatives.h"
 #include "line_constraint.h"
 #include "macros.h"
 
@@ -117,9 +118,7 @@ struct LineSelectionPolicy_RampUpMaxNbAlternatives_EstimateNbAlternatives :
 };
 
 
-/*
- * Exception returned by WorkGrid::solve() if the processing was aborted from the outside
- */
+// Exception returned by WorkGrid::solve() if the processing was aborted from the outside
 class PicrossSolverAborted : public std::exception
 {};
 
@@ -149,12 +148,13 @@ private:
     };
 public:
     WorkGrid(const InputGrid& grid, Solver::Observer observer = Solver::Observer(), Solver::Abort abort_function = Solver::Abort());
-    WorkGrid(const WorkGrid& other) = delete;
-    WorkGrid& operator=(const WorkGrid& other) = delete;
-    WorkGrid(WorkGrid&& other) = default;
-    WorkGrid& operator=(WorkGrid&& other) = default;
+    // Not copyable nor movable
+    WorkGrid(const WorkGrid&) = delete;
+    WorkGrid(WorkGrid&&) noexcept = delete;
+    WorkGrid& operator=(const WorkGrid&) = delete;
+    WorkGrid& operator=(WorkGrid&&) noexcept = delete;
 private:
-    WorkGrid(const WorkGrid& parent, unsigned int nested_level);
+    WorkGrid(const WorkGrid& parent, unsigned int nested_level);            // Shallow copy
 public:
     void set_stats(GridStats* stats);
     Solver::Status line_solve(Solver::Solutions& solutions);
@@ -171,18 +171,18 @@ private:
     bool valid_solution() const;
     void save_solution(Solver::Solutions& solutions) const;
 private:
-    std::vector<LineConstraint>                 rows;
-    std::vector<LineConstraint>                 cols;
-    GridStats*                                  grid_stats;      // if not null, the solver will store some stats in that structure
-    Solver::Observer                            observer;        // if not empty, the solver will notify the observer of its progress
-    Solver::Abort                               abort_function;  // if not empty, the solver will regularly call this function and abort its processing if it returns true
-    std::vector<bool>                           line_completed[2];
-    std::vector<bool>                           line_to_be_reduced[2];
-    std::vector<unsigned int>                   nb_alternatives[2];
-    unsigned int                                max_nb_alternatives;
-    std::vector<Line>                           guess_list_of_all_alternatives;
-    unsigned int                                branching_depth;
-    std::unique_ptr<BinomialCoefficientsCache>  binomial;
+    std::vector<LineConstraint>                 m_constraints[2];
+    std::vector<LineAlternatives>               m_alternatives[2];
+    std::vector<bool>                           m_line_completed[2];
+    std::vector<bool>                           m_line_to_be_reduced[2];
+    std::vector<unsigned int>                   m_nb_alternatives[2];
+    GridStats*                                  m_grid_stats;        // If not null, the solver will store some stats in that structure
+    Solver::Observer                            m_observer;          // If not empty, the solver will notify the observer of its progress
+    Solver::Abort                               m_abort_function;    // If not empty, the solver will regularly call this function and abort if it returns true
+    unsigned int                                m_max_nb_alternatives;
+    std::vector<Line>                           m_guess_list_of_all_alternatives;
+    unsigned int                                m_branching_depth;
+    std::unique_ptr<BinomialCoefficientsCache>  m_binomial;
 };
 
 

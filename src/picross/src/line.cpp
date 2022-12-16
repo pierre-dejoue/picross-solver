@@ -148,9 +148,9 @@ Tile Line::at(size_t idx) const
  */
 bool Line::compatible(const Line& other) const
 {
-    assert(other.type() == type());
-    assert(other.index() == index());
-    assert(other.tiles().size() == tiles().size());
+    assert(other.m_type == m_type);
+    assert(other.m_index == m_index);
+    assert(other.size() == size());
     for (size_t idx = 0u; idx < m_tiles.size(); ++idx)
     {
         if (!Tiles::compatible(other.m_tiles.at(idx), m_tiles[idx]))
@@ -171,9 +171,9 @@ bool Line::compatible(const Line& other) const
  */
 bool Line::add(const Line& other)
 {
-    assert(other.type() == type());
-    assert(other.index() == index());
-    assert(other.tiles().size() == tiles().size());
+    assert(other.m_type == m_type);
+    assert(other.m_index == m_index);
+    assert(other.size() == size());
     const bool valid = compatible(other);
     if (valid)
     {
@@ -192,9 +192,9 @@ bool Line::add(const Line& other)
  */
 void Line::reduce(const Line& other)
 {
-    assert(other.type() == type());
-    assert(other.index() == index());
-    assert(other.tiles().size() == tiles().size());
+    assert(other.m_type == m_type);
+    assert(other.m_index == m_index);
+    assert(other.size() == size());
     std::transform(std::cbegin(m_tiles), std::cend(m_tiles), std::cbegin(other.m_tiles), std::begin(m_tiles), Tiles::reduce);
 }
 

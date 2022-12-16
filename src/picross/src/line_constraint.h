@@ -11,6 +11,7 @@
 
 #include <picross/picross.h>
 
+#include <cstddef>
 #include <ostream>
 #include <utility>
 #include <vector>
@@ -19,31 +20,28 @@
 namespace picross
 {
 
-/*
- * LineConstraint class
- */
 class LineConstraint
 {
 public:
     LineConstraint(Line::Type type, const InputGrid::Constraint& vect);
 public:
-    unsigned int nb_filled_tiles() const;                       // Total number of filled tiles
-    size_t nb_segments() const { return segs_of_ones.size(); }  // Number of segments of contiguous filled tiles
-    unsigned int max_segment_size() const;                      // Max segment size
-    unsigned int get_min_line_size() const { return min_line_size; }
+    unsigned int nb_filled_tiles() const;
+    std::size_t nb_segments() const { return m_segs_of_ones.size(); }
+    const std::vector<unsigned int>& segments() const { return m_segs_of_ones; }
+    unsigned int min_line_size() const { return m_min_line_size; }
     unsigned int line_trivial_nb_alternatives(unsigned int line_size, BinomialCoefficientsCache& binomial) const;
     Line line_trivial_reduction(unsigned int line_size, unsigned int index) const;
     std::vector<Line> build_all_possible_lines(const Line& known_tiles) const;
-    std::pair<Line, unsigned int> reduce_and_count_alternatives(const Line& known_tiles, GridStats* stats) const;
     bool compatible(const Line& line) const;
-    void print(std::ostream& ostream) const;
 private:
-    Line::Type type;                                            // Row or column
-    InputGrid::Constraint segs_of_ones;                         // Size of the contiguous blocks of filled tiles
-    unsigned int min_line_size;
+    unsigned int max_segment_size() const;
+    void print(std::ostream& ostream) const;
+public:
+    friend std::ostream& operator<<(std::ostream& ostream, const LineConstraint& constraint);
+private:
+    Line::Type                  m_type;                     // Row or column
+    std::vector<unsigned int>   m_segs_of_ones;             // Size of the contiguous blocks of filled tiles
+    unsigned int                m_min_line_size;            // Minimal line size compatible with this constraint
 };
-
-
-std::ostream& operator<<(std::ostream& ostream, const LineConstraint& constraint);
 
 } // namespace picross

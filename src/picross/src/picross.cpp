@@ -74,7 +74,7 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid)
     {
         LineConstraint row(Line::ROW, c);
         nb_tiles_on_rows += row.nb_filled_tiles();
-        if (row.get_min_line_size() > width)
+        if (row.min_line_size() > width)
         {
             std::ostringstream oss;
             oss << "Width = " << width << " of the grid is too small for constraint: " << row;
@@ -86,7 +86,7 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid)
     {
         LineConstraint col(Line::COL, c);
         nb_tiles_on_cols += col.nb_filled_tiles();
-        if (col.get_min_line_size() > height)
+        if (col.min_line_size() > height)
         {
             std::ostringstream oss;
             oss << "Height = " << height << " of the grid is too small for constraint: " << col;

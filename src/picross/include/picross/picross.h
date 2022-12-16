@@ -132,7 +132,7 @@ public:
     Line(Type type, std::size_t index, const Container& tiles);
     Line(Type type, std::size_t index, Container&& tiles);
 
-    // copyable & moveable
+    // copyable & movable
     Line(const Line&) = default;
     Line& operator=(const Line&);
     Line(Line&&) noexcept = default;
