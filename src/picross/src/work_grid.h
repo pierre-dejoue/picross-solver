@@ -8,6 +8,7 @@
 #pragma once
 
 #include "binomial.h"
+#include "grid.h"
 #include "line_constraint.h"
 #include "macros.h"
 
@@ -129,7 +130,7 @@ class PicrossSolverAborted : public std::exception
  *   Working class used to solve a grid.
  */
 template <typename LineSelectionPolicy, bool BranchingAllowed = true>
-class WorkGrid final : public OutputGrid
+class WorkGrid final : public Grid
 {
 private:
     struct PassStatus

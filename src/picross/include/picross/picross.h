@@ -158,6 +158,7 @@ bool operator!=(const Line& lhs, const Line& rhs);
 
 std::ostream& operator<<(std::ostream& ostream, const Line& line);
 
+class Grid;     // Fwd declaration
 
 /*
  * OutputGrid class
@@ -168,43 +169,42 @@ class OutputGrid
 {
 public:
     OutputGrid(std::size_t width, std::size_t height, const std::string& name = std::string{});
+    OutputGrid(const Grid&);
+    OutputGrid(Grid&&);
+    ~OutputGrid();
 
-    OutputGrid(const OutputGrid&) = default;
-    OutputGrid(OutputGrid&&) noexcept = default;
+    OutputGrid(const OutputGrid&);
+    OutputGrid(OutputGrid&&) noexcept;
     OutputGrid& operator=(const OutputGrid&);
     OutputGrid& operator=(OutputGrid&&) noexcept;
 
-    std::size_t width() const { return m_width; }
-    std::size_t height() const { return m_height; }
+    std::size_t width() const;
+    std::size_t height() const;
 
-    const std::string& name() const { return m_name; }
-    void set_name(const std::string& name);
+    const std::string& name() const;
 
-    Tile get(std::size_t x, std::size_t y) const;
+    Tile get_tile(std::size_t x, std::size_t y) const;
 
-    template <Line::Type type>
+    template <Line::Type Type>
     Line get_line(std::size_t index) const;
 
     Line get_line(Line::Type type, std::size_t index) const;
-
-    bool set(std::size_t x, std::size_t y, Tile val);
-    void reset();
 
     bool is_solved() const;
 
     std::size_t hash() const;
 
+    bool set_tile(std::size_t x, std::size_t y, Tile val);
+    void reset();
+
     friend bool operator==(const OutputGrid& lhs, const OutputGrid& rhs);
     friend bool operator!=(const OutputGrid& lhs, const OutputGrid& rhs);
 
+    friend std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid);
 private:
-    const std::size_t       m_width;
-    const std::size_t       m_height;
-    std::string             m_name;
-    std::vector<Tile>       m_grid;          // 2D array of tiles
+    std::unique_ptr<Grid> p_grid;
 };
 
-std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid);
 
 /*
  * Grid solver interface

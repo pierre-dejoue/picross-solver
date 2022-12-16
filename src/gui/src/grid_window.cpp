@@ -283,7 +283,7 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
                 for (size_t i = 0u; i < width; ++i)
                     for (size_t j = 0u; j < height; ++j)
                     {
-                        const auto tile = solution.get(i, j);
+                        const auto tile = solution.get_tile(i, j);
                         const auto depth = animation_settings.show_branching && solver_thread_active && idx + 1 == solutions.size()
                             ? solution.get_depth(i, j)
                             : 0;

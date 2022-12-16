@@ -22,7 +22,7 @@ std::unique_ptr<picross::OutputGrid> import_bitmap_pbm(const std::string& filepa
             std::size_t x = 0u;
             for (const auto& pix : line)
             {
-                output_grid->set(x++, y, pix.value ? picross::Tile::FILLED : picross::Tile::EMPTY);
+                output_grid->set_tile(x++, y, pix.value ? picross::Tile::FILLED : picross::Tile::EMPTY);
             }
             y++;
         }
@@ -43,7 +43,7 @@ void export_bitmap_pbm(const std::string& filepath, const picross::OutputGrid& g
         for (unsigned int y = 0u; y < grid.height(); y++)
             for (unsigned int x = 0u; x < grid.width(); x++)
             {
-                bitmap[y][x] = (grid.get(x, y) != picross::Tile::EMPTY);
+                bitmap[y][x] = (grid.get_tile(x, y) != picross::Tile::EMPTY);
             }
         pnm::write_pbm_binary(filepath, bitmap);
     }

@@ -7,20 +7,22 @@
 
 class ObserverGrid : public picross::OutputGrid
 {
+    friend class GridObserver;
 public:
-    ObserverGrid(size_t width, size_t height, const std::string& name = "");
+    ObserverGrid(std::size_t width, std::size_t height, const std::string& name = "");
 
-    void set(size_t x, size_t y, picross::Tile t, unsigned int d);
-    unsigned int get_depth(size_t x, size_t y) const;
+    unsigned int get_depth(std::size_t x, std::size_t y) const;
 
 private:
-    std::vector<unsigned int>           depth_grid;
+    void set_tile(std::size_t x, std::size_t y, picross::Tile t, unsigned int d);
+
+    std::vector<unsigned int> depth_grid;
 };
 
 class GridObserver
 {
 public:
-    GridObserver(size_t width, size_t height);
+    GridObserver(std::size_t width, std::size_t height);
     explicit GridObserver(const picross::InputGrid& grid);
     virtual ~GridObserver() = default;
 
@@ -34,5 +36,5 @@ private:
 
 private:
     std::vector<ObserverGrid> grids;
-    size_t current_depth;
+    std::size_t current_depth;
 };

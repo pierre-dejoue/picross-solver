@@ -16,7 +16,7 @@ OutputGrid build_output_grid_from(std::size_t width, std::size_t height, const s
         for (std::size_t x = 0u; x < width; x++)
         {
             assert(it != tiles.end());
-            result.set(x, y, *it ? Tile::FILLED : Tile::EMPTY);
+            result.set_tile(x, y, *it ? Tile::FILLED : Tile::EMPTY);
             ++it;
         }
     }

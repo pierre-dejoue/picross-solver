@@ -71,7 +71,7 @@ void merge_nested_grid_stats(GridStats& stats, const GridStats& nested_stats)
 
 template <typename LineSelectionPolicy, bool BranchingAllowed>
 WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const InputGrid& grid, Solver::Observer observer, Solver::Abort abort_function)
-    : OutputGrid(grid.width(), grid.height(), grid.name())
+    : Grid(grid.width(), grid.height(), grid.name())
     , rows(row_constraints_from(grid))
     , cols(column_constraints_from(grid))
     , grid_stats(nullptr)
@@ -97,7 +97,7 @@ WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const InputGrid& grid,
 // Shallow copy (does not copy the list of alternatives)
 template <typename LineSelectionPolicy, bool BranchingAllowed>
 WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const WorkGrid& parent, unsigned int nested_level)
-    : OutputGrid(static_cast<const OutputGrid&>(parent))
+    : Grid(static_cast<const Grid&>(parent))
     , rows(parent.rows)
     , cols(parent.cols)
     , grid_stats(nullptr)
