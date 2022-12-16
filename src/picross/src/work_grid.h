@@ -130,7 +130,7 @@ class PicrossSolverAborted : public std::exception
  *   Working class used to solve a grid.
  */
 template <typename LineSelectionPolicy, bool BranchingAllowed = true>
-class WorkGrid final : public Grid
+class WorkGrid final : private Grid
 {
 private:
     struct PassStatus

@@ -29,9 +29,9 @@ public:
     Tile get(std::size_t x, std::size_t y) const;
 
     template <Line::Type type>
-    Line get_line(std::size_t index) const;
+    const Line& get_line(std::size_t index) const;
 
-    Line get_line(Line::Type type, std::size_t index) const;
+    const Line& get_line(Line::Type type, std::size_t index) const;
 
     bool set(std::size_t x, std::size_t y, Tile val);
     void reset();
@@ -47,7 +47,8 @@ private:
     const std::size_t       m_width;
     const std::size_t       m_height;
     const std::string       m_name;
-    std::vector<Tile>       m_grid;
+    std::vector<Line>       m_rows;
+    std::vector<Line>       m_cols;
 };
 
 std::ostream& operator<<(std::ostream& ostream, const Grid& grid);

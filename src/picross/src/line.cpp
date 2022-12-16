@@ -90,6 +90,24 @@ Line::Line(Line::Type type, size_t index, Line::Container&& tiles) :
 }
 
 
+Line& Line::operator=(const Line& other)
+{
+    const_cast<Line::Type&>(m_type) = other.m_type;
+    const_cast<std::size_t&>(m_index) = other.m_index;
+    m_tiles = other.m_tiles;
+    return *this;
+}
+
+
+Line& Line::operator=(Line&& other) noexcept
+{
+    const_cast<Line::Type&>(m_type) = other.m_type;
+    const_cast<std::size_t&>(m_index) = other.m_index;
+    m_tiles = std::move(other.m_tiles);
+    return *this;
+}
+
+
 Line::Type Line::type() const
 {
     return m_type;

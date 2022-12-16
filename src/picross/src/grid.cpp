@@ -29,13 +29,23 @@ namespace Tiles
 } // namespace
 
 
-Grid::Grid(size_t width, size_t height, const std::string& name)
+Grid::Grid(std::size_t width, std::size_t height, const std::string& name)
     : m_width(width)
     , m_height(height)
     , m_name(name)
-    , m_grid()
+    , m_rows()
+    , m_cols()
 {
-    reset();
+    m_rows.reserve(height);
+    for (std::size_t row_idx = 0; row_idx < height; row_idx++)
+    {
+        m_rows.emplace_back(Line::ROW, row_idx, width, Tile::UNKNOWN);
+    }
+    m_cols.reserve(width);
+    for (std::size_t col_idx = 0; col_idx < width; col_idx++)
+    {
+        m_cols.emplace_back(Line::COL, col_idx, height, Tile::UNKNOWN);
+    }
 }
 
 Grid& Grid::operator=(const Grid& other)
@@ -43,7 +53,8 @@ Grid& Grid::operator=(const Grid& other)
     const_cast<std::size_t&>(m_width) = other.m_width;
     const_cast<std::size_t&>(m_height) = other.m_height;
     const_cast<std::string&>(m_name) = other.m_name;
-    m_grid = other.m_grid;
+    m_rows = other.m_rows;
+    m_cols = other.m_cols;
     return *this;
 }
 
@@ -52,7 +63,8 @@ Grid& Grid::operator=(Grid&& other) noexcept
     const_cast<std::size_t&>(m_width) = other.m_width;
     const_cast<std::size_t&>(m_height) = other.m_height;
     const_cast<std::string&>(m_name) = std::move(other.m_name);
-    m_grid = std::move(other.m_grid);
+    m_rows = std::move(other.m_rows);
+    m_cols = std::move(other.m_cols);
     return *this;
 }
 
@@ -60,33 +72,25 @@ Tile Grid::get(size_t x, size_t y) const
 {
     assert(x < m_width);
     assert(y < m_height);
-    return m_grid[x * m_height + y];
+    assert(m_rows[y].tiles()[x] == m_cols[x].tiles()[y]);
+    return m_rows[y].tiles()[x];
 }
 
 template <>
-Line Grid::get_line<Line::ROW>(size_t index) const
+const Line& Grid::get_line<Line::ROW>(size_t index) const
 {
     assert(index < m_height);
-    std::vector<Tile> tiles;
-    tiles.reserve(m_width);
-    for (unsigned int x = 0u; x < m_width; x++)
-    {
-        tiles.push_back(get(x, index));
-    }
-    return Line(Line::ROW, index, std::move(tiles));
+    return m_rows[index];
 }
 
 template <>
-Line Grid::get_line<Line::COL>(size_t index) const
+const Line& Grid::get_line<Line::COL>(size_t index) const
 {
     assert(index < m_width);
-    std::vector<Tile> tiles;
-    tiles.reserve(m_height);
-    tiles.insert(tiles.cbegin(), m_grid.data() + index * m_height, m_grid.data() + (index + 1) * m_height);
-    return Line(Line::COL, index, std::move(tiles));
+    return m_cols[index];
 }
 
-Line Grid::get_line(Line::Type type, size_t index) const
+const Line& Grid::get_line(Line::Type type, size_t index) const
 {
     return type == Line::ROW ? get_line<Line::ROW>(index) : get_line<Line::COL>(index);
 }
@@ -95,18 +99,24 @@ bool Grid::set(size_t x, size_t y, Tile val)
 {
     assert(x < m_width);
     assert(y < m_height);
-    return Tiles::set(m_grid[x * m_height + y], val);
+    Tiles::set(m_rows[y].tiles()[x], val);
+    return Tiles::set(m_cols[x].tiles()[y], val);
 }
 
 void Grid::reset()
 {
-    auto empty_grid = std::vector<Tile>(m_height * m_width, Tile::UNKNOWN);
-    std::swap(m_grid, empty_grid);
+    for (std::size_t row_idx = 0; row_idx < m_height; row_idx++)
+    for (std::size_t col_idx = 0; col_idx < m_width; col_idx++)
+    {
+        m_rows[row_idx].tiles()[col_idx] = m_cols[col_idx].tiles()[row_idx] = Tile::UNKNOWN;
+    }
 }
 
 bool Grid::is_solved() const
 {
-    return std::none_of(std::cbegin(m_grid), std::cend(m_grid), [](const Tile& t) { return t == Tile::UNKNOWN; });
+    return std::all_of(std::cbegin(m_rows), std::cend(m_rows), [](const Line& line) {
+        return std::none_of(std::cbegin(line.tiles()), std::cend(line.tiles()), [](const Tile& t) { return t == Tile::UNKNOWN; });
+    });
 }
 
 std::size_t Grid::hash() const
@@ -118,21 +128,21 @@ std::size_t Grid::hash() const
 
     // Encode the grid contents with pairs of booleans
     std::vector<bool> grid_bool;
-    grid_bool.reserve(2 * m_grid.size());
-    for (const Tile tile : m_grid)
-    {
-        if (tile != Tile::UNKNOWN)
+    grid_bool.reserve(2 * m_width * m_height);
+    for (const Line& row : m_rows)
+        for (const Tile tile : row.tiles())
         {
-            grid_bool.push_back(true);
-            grid_bool.push_back(tile != Tile::EMPTY);
+            if (tile != Tile::UNKNOWN)
+            {
+                grid_bool.push_back(true);
+                grid_bool.push_back(tile != Tile::EMPTY);
+            }
+            else
+            {
+                grid_bool.push_back(false);
+                grid_bool.push_back(false);
+            }
         }
-        else
-        {
-            grid_bool.push_back(false);
-            grid_bool.push_back(false);
-        }
-    }
-    assert(grid_bool.size() == 2 * m_grid.size());
     assert(grid_bool.size() == 2 * m_width * m_height);
 
     result ^= std::hash<decltype(grid_bool)>{}(grid_bool);
@@ -145,7 +155,7 @@ bool operator==(const Grid& lhs, const Grid& rhs)
     // Intentionally ignore the name
     return lhs.m_width == rhs.m_width
         && lhs.m_height == rhs.m_height
-        && lhs.m_grid == rhs.m_grid;
+        && lhs.m_rows == rhs.m_rows;
 }
 
 bool operator!=(const Grid& lhs, const Grid& rhs)
@@ -157,7 +167,7 @@ std::ostream& operator<<(std::ostream& ostream, const Grid& grid)
 {
     for (unsigned int y = 0u; y < grid.height(); y++)
     {
-        const Line row = grid.get_line<Line::ROW>(y);
+        const Line& row = grid.get_line<Line::ROW>(y);
         ostream << "  " << str_line(row) << std::endl;
     }
     return ostream;

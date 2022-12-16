@@ -134,9 +134,9 @@ public:
 
     // copyable & moveable
     Line(const Line&) = default;
-    Line& operator=(const Line&) = default;
+    Line& operator=(const Line&);
     Line(Line&&) noexcept = default;
-    Line& operator=(Line&&) noexcept = default;
+    Line& operator=(Line&&) noexcept;
 public:
     Type type() const;
     std::size_t index() const;

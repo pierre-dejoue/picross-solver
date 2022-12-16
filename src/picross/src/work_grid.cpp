@@ -214,7 +214,7 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::solve(Solver::So
             {
                 // Select the row or column with the minimal number of alternatives
                 const LineConstraint& line_constraint = found_line_type == Line::ROW ? rows.at(found_line_index) : cols.at(found_line_index);
-                const Line known_tiles = get_line(found_line_type, found_line_index);
+                const Line& known_tiles = get_line(found_line_type, found_line_index);
 
                 guess_list_of_all_alternatives = line_constraint.build_all_possible_lines(known_tiles);
                 assert(guess_list_of_all_alternatives.size() == min_alt);
@@ -254,9 +254,10 @@ bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::all_lines_completed() cons
 template <typename LineSelectionPolicy, bool BranchingAllowed>
 bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_line(const Line& line, unsigned int nb_alt)
 {
+    static const Line DEFAULT_LINE(Line::ROW, 0, 0);
     const auto line_type = line.type();
     const size_t line_index = line.index();
-    const Line observer_original_line = observer ? get_line(line.type(), line_index) : Line(Line::ROW, 0, 0);
+    const Line observer_original_line = observer ? get_line(line.type(), line_index) : DEFAULT_LINE;
     assert(line.size() == static_cast<unsigned int>(line.type() == Line::ROW ? width() : height()));
     const Line::Container& tiles = line.tiles();
 
@@ -344,8 +345,7 @@ typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<Li
         // Here since we are computing a trivial reduction assuming the initial line is completely unknown we
         // are ignoring tiles that are possibly already set. In such a case, we need to redo a reduction
         // on the next full grid pass.
-        const Line new_line = get_line(type, index);
-        if (reduced_line != new_line)
+        if (reduced_line != get_line(type, index))
         {
             line_to_be_reduced[type][index] = !line_completed[type][index];
         }
@@ -365,7 +365,7 @@ typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<Li
 
     PassStatus status;
     const LineConstraint& line_constraint = type == Line::ROW ? rows.at(index) : cols.at(index);
-    const Line known_tiles = get_line(type, index);
+    const Line& known_tiles = get_line(type, index);
 
     // Reduce all possible lines that match the data already present in the grid and the line constraint
     const auto [reduced_line, nb_alt] = line_constraint.reduce_and_count_alternatives(known_tiles, grid_stats);
@@ -531,8 +531,8 @@ bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::valid_solution() const
 {
     assert(is_solved());
     bool valid = true;
-    for (unsigned int x = 0u; x < width(); x++) { valid &= cols.at(x).compatible(get_line<Line::COL>(x)); }
-    for (unsigned int y = 0u; y < height(); y++) { valid &= rows.at(y).compatible(get_line<Line::ROW>(y)); }
+    for (unsigned int x = 0u; x < width(); x++) { valid &= cols[x].compatible(get_line<Line::COL>(x)); }
+    for (unsigned int y = 0u; y < height(); y++) { valid &= rows[y].compatible(get_line<Line::ROW>(y)); }
     return valid;
 }
 
