@@ -29,6 +29,7 @@ OutputGrid build_output_grid_from(std::size_t width, std::size_t height, std::st
 // '?': the tile is unknown
 // All other characters throw
 Line build_line_from(std::string_view tiles, Line::Type type = Line::ROW, unsigned int index = 0);
+Line build_line_from(char tile, std::size_t count, Line::Type type = Line::ROW, unsigned int index = 0);
 
 // Hasher for OutputGrid
 struct OutputGridHasher

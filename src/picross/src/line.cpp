@@ -153,7 +153,7 @@ bool Line::compatible(const Line& other) const
     assert(other.size() == size());
     for (size_t idx = 0u; idx < m_tiles.size(); ++idx)
     {
-        if (!Tiles::compatible(other.m_tiles.at(idx), m_tiles[idx]))
+        if (!Tiles::compatible(other.m_tiles[idx], m_tiles[idx]))
         {
             return false;
         }
@@ -277,16 +277,24 @@ InputGrid::Constraint get_constraint_from(const Line& line)
 {
     assert(is_complete(line));
 
-    InputGrid::Constraint segs_of_ones;
+    InputGrid::Constraint segments;
     unsigned int count = 0u;
     for (const auto& tile : line.tiles())
     {
         if (tile == Tile::FILLED) { count++; }
-        if (tile == Tile::EMPTY && count > 0u) { segs_of_ones.push_back(count); count = 0u; }
+        if (tile == Tile::EMPTY && count > 0u) { segments.push_back(count); count = 0u; }
     }
-    if (count > 0u) { segs_of_ones.push_back(count); }          // Last but not least
+    if (count > 0u) { segments.push_back(count); }          // Last but not least
 
-    return segs_of_ones;
+    return segments;
+}
+
+Line operator+(const Line& lhs, const Line& rhs)
+{
+    Line sum = lhs;
+    const bool valid = sum.add(rhs);
+    assert(valid);
+    return sum;
 }
 
 } // namespace picross

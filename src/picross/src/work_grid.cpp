@@ -31,12 +31,12 @@ std::vector<LineConstraint> build_constraints_from(Line::Type type, const InputG
     return output;
 }
 
-std::vector<LineAlternatives> build_line_alternatives_from(Line::Type type, const std::vector<LineConstraint>& constraints, const Grid& grid)
+std::vector<LineAlternatives> build_line_alternatives_from(Line::Type type, const std::vector<LineConstraint>& constraints, const Grid& grid, BinomialCoefficientsCache& binomial)
 {
     std::vector<LineAlternatives> output;
     output.reserve(constraints.size());
     std::size_t idx = 0;
-    std::transform(constraints.cbegin(), constraints.cend(), std::back_inserter(output), [type, &grid, &idx](const auto& c) { return LineAlternatives(c, grid.get_line(type, idx++)); });
+    std::transform(constraints.cbegin(), constraints.cend(), std::back_inserter(output), [type, &grid, &idx, &binomial](const auto& c) { return LineAlternatives(c, grid.get_line(type, idx++), binomial); });
     return output;
 }
 
@@ -85,12 +85,14 @@ WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const InputGrid& grid,
     , m_max_nb_alternatives(LineSelectionPolicy::initial_max_nb_alternatives())
     , m_guess_list_of_all_alternatives()
     , m_branching_depth(0u)
-    , m_binomial(new BinomialCoefficientsCache())
+    , m_binomial(std::make_shared<BinomialCoefficientsCache>())
 {
+    assert(m_binomial);
+
     m_constraints[Line::ROW] = build_constraints_from(Line::ROW, grid);
     m_constraints[Line::COL] = build_constraints_from(Line::COL, grid);
-    m_alternatives[Line::ROW] = build_line_alternatives_from(Line::ROW, m_constraints[Line::ROW], static_cast<const Grid&>(*this));
-    m_alternatives[Line::COL] = build_line_alternatives_from(Line::COL, m_constraints[Line::COL], static_cast<const Grid&>(*this));
+    m_alternatives[Line::ROW] = build_line_alternatives_from(Line::ROW, m_constraints[Line::ROW], static_cast<const Grid&>(*this), *m_binomial);
+    m_alternatives[Line::COL] = build_line_alternatives_from(Line::COL, m_constraints[Line::COL], static_cast<const Grid&>(*this), *m_binomial);
     m_line_completed[Line::ROW].resize(height(), false);
     m_line_completed[Line::COL].resize(width(), false);
     m_line_to_be_reduced[Line::ROW].resize(height(), false);
@@ -117,14 +119,15 @@ WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const WorkGrid& parent
     , m_abort_function(parent.m_abort_function)
     , m_max_nb_alternatives(LineSelectionPolicy::initial_max_nb_alternatives())
     , m_branching_depth(nested_level)
-    , m_binomial(nullptr)               // only used on the first pass on the grid threfore on nested_level == 0
+    , m_binomial(parent.m_binomial)
 {
     assert(nested_level > 0u);
+    assert(m_binomial);
 
     m_constraints[Line::ROW] = parent.m_constraints[Line::ROW];
     m_constraints[Line::COL] = parent.m_constraints[Line::COL];
-    m_alternatives[Line::ROW] = build_line_alternatives_from(Line::ROW, m_constraints[Line::ROW], static_cast<const Grid&>(*this));
-    m_alternatives[Line::COL] = build_line_alternatives_from(Line::COL, m_constraints[Line::COL], static_cast<const Grid&>(*this));
+    m_alternatives[Line::ROW] = build_line_alternatives_from(Line::ROW, m_constraints[Line::ROW], static_cast<const Grid&>(*this), *m_binomial);
+    m_alternatives[Line::COL] = build_line_alternatives_from(Line::COL, m_constraints[Line::COL], static_cast<const Grid&>(*this), *m_binomial);
     m_line_completed[Line::ROW] = parent.m_line_completed[Line::ROW];
     m_line_completed[Line::COL] = parent.m_line_completed[Line::COL];
     m_line_to_be_reduced[Line::ROW] = parent.m_line_to_be_reduced[Line::ROW];

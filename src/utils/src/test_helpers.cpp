@@ -60,6 +60,12 @@ Line build_line_from(std::string_view tiles, Line::Type type, unsigned int index
 }
 
 
+Line build_line_from(char tile, std::size_t count, Line::Type type, unsigned int index)
+{
+    return build_line_from(std::string(count, tile), type, index);
+}
+
+
 std::size_t OutputGridHasher::operator()(const OutputGrid& grid) const noexcept
 {
     return grid.hash();

@@ -180,7 +180,7 @@ TEST_CASE("Puzzle: Notes", "[solver]")
         )")
     };
 
-    CHECK(result.solutions.size() == 2);
+    REQUIRE(result.solutions.size() == 2);
     OutputGridSet solution_grids { result.solutions[0].grid, result.solutions[1].grid };
     CHECK(solution_grids == expected_solutions);
 }
