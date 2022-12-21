@@ -46,13 +46,6 @@ struct LineSelectionPolicy_Legacy
         return std::numeric_limits<unsigned int>::max();
     }
 
-    // estimate the number of alternatives of a line after a new tile is set
-    static void estimate_nb_alternatives(unsigned int& nb_alternatives)
-    {
-        UNUSED(nb_alternatives);
-        // do not change
-    }
-
     // Return true if it is time to move to branching exploration
     static bool switch_to_branching(unsigned int max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
     {
@@ -92,28 +85,11 @@ struct LineSelectionPolicy_RampUpMaxNbAlternatives
         return nb_alternatives;
     }
 
-    // estimate the number of alternatives of a line after a new tile is set
-    static void estimate_nb_alternatives(unsigned int& nb_alternatives)
-    {
-        UNUSED(nb_alternatives);
-        // do not change
-    }
-
     static bool switch_to_branching(unsigned int max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
     {
         UNUSED(max_nb_alternatives);
         UNUSED(search_depth);
         return !grid_changed && skipped_lines == 0u;
-    }
-};
-
-struct LineSelectionPolicy_RampUpMaxNbAlternatives_EstimateNbAlternatives :
-    public LineSelectionPolicy_RampUpMaxNbAlternatives
-{
-    // estimate the number of alternatives of a line after a new tile is set
-    static void estimate_nb_alternatives(unsigned int& nb_alternatives)
-    {
-        nb_alternatives = std::max(2u, nb_alternatives >> 1);
     }
 };
 

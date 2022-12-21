@@ -282,7 +282,6 @@ bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_line(const Line& line,
     const auto set_tile_func = [this, &line_changed](Line::Type type, unsigned int idx) {
         // mark the impacted line or column with flag "to be reduced"
         m_line_to_be_reduced[type][idx] = true;
-        LineSelectionPolicy::estimate_nb_alternatives(m_nb_alternatives[type][idx]);
         line_changed = true;
     };
 
@@ -570,7 +569,6 @@ void WorkGrid<LineSelectionPolicy, BranchingAllowed>::save_solution(Solver::Solu
 // Template explicit instantiations
 template class WorkGrid<LineSelectionPolicy_Legacy, true>;
 template class WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives, true>;
-template class WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives_EstimateNbAlternatives, true>;
-template class WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives_EstimateNbAlternatives, false>;
+template class WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives, false>;
 
 } // namespace picross

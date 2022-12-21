@@ -49,7 +49,7 @@ Solver::Result RefSolver<BranchingAllowed>::solve(const InputGrid& grid_input, u
     result.status = Status::OK;
     try
     {
-        WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives_EstimateNbAlternatives, BranchingAllowed> work_grid(grid_input, std::move(observer_wrapper), m_abort_function);
+        WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives, BranchingAllowed> work_grid(grid_input, std::move(observer_wrapper), m_abort_function);
         work_grid.set_stats(m_stats);
         result.status = work_grid.solve(result.solutions, max_nb_solutions);
     }
