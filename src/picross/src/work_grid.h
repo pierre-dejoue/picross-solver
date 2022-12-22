@@ -122,6 +122,13 @@ private:
             return *this;
         }
     };
+    enum class State
+    {
+        INITIAL_PASS,
+        PARTIAL_REDUCTION,
+        FULL_REDUCTION,
+        BRANCHING
+    };
 public:
     WorkGrid(const InputGrid& grid, Solver::Observer observer = Solver::Observer(), Solver::Abort abort_function = Solver::Abort());
     // Not copyable nor movable
@@ -130,7 +137,7 @@ public:
     WorkGrid& operator=(const WorkGrid&) = delete;
     WorkGrid& operator=(WorkGrid&&) noexcept = delete;
 private:
-    WorkGrid(const WorkGrid& parent, unsigned int nested_level);            // Shallow copy
+    WorkGrid(const WorkGrid& parent, State initial_state, unsigned int nested_level);       // Shallow copy
 public:
     void set_stats(GridStats* stats);
     Solver::Status line_solve(Solver::Solutions& solutions);
@@ -139,14 +146,17 @@ private:
     bool all_lines_completed() const;
     bool set_line(const Line& line, unsigned int nb_alt = 0u);
     PassStatus single_line_initial_pass(Line::Type type, unsigned int index);
-    PassStatus single_line_pass(Line::Type type, unsigned int index);
+    PassStatus single_line_full_reduction(Line::Type type, unsigned int index);
+    PassStatus single_line_partial_reduction(Line::Type type, unsigned int index);
+    template <State S>
     PassStatus full_side_pass(Line::Type type);
-    PassStatus full_grid_initial_pass();
+    template <State S>
     PassStatus full_grid_pass();
     Solver::Status branch(Solver::Solutions& solutions, unsigned int max_nb_solutions) const;
     bool valid_solution() const;
     void save_solution(Solver::Solutions& solutions) const;
 private:
+    State                                       m_state;
     std::vector<LineConstraint>                 m_constraints[2];
     std::vector<LineAlternatives>               m_alternatives[2];
     std::vector<bool>                           m_line_completed[2];
