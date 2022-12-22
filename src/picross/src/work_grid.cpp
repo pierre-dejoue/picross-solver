@@ -7,6 +7,7 @@
 
 #include "line.h"
 #include "macros.h"
+#include "picross_stats_internal.h"
 
 #include <picross/picross.h>
 
@@ -38,34 +39,6 @@ std::vector<LineAlternatives> build_line_alternatives_from(Line::Type type, cons
     std::size_t idx = 0;
     std::transform(constraints.cbegin(), constraints.cend(), std::back_inserter(output), [type, &grid, &idx, &binomial](const auto& c) { return LineAlternatives(c, grid.get_line(type, idx++), binomial); });
     return output;
-}
-
-void merge_nested_grid_stats(GridStats& stats, const GridStats& nested_stats)
-{
-    stats.nb_solutions += nested_stats.nb_solutions;
-    // stats.max_nb_solutions
-    stats.max_branching_depth = std::max(stats.max_branching_depth, nested_stats.max_branching_depth);
-    stats.nb_branching_calls += nested_stats.nb_branching_calls;
-    stats.total_nb_branching_alternatives += nested_stats.total_nb_branching_alternatives;
-
-    stats.max_nb_alternatives_by_branching_depth.resize(stats.max_branching_depth, 0u);
-    for (size_t d = 0; d < nested_stats.max_nb_alternatives_by_branching_depth.size(); d++)
-    {
-        assert(d < stats.max_nb_alternatives_by_branching_depth.size());
-        stats.max_nb_alternatives_by_branching_depth[d] = std::max(stats.max_nb_alternatives_by_branching_depth[d], nested_stats.max_nb_alternatives_by_branching_depth[d]);
-    }
-
-    stats.max_initial_nb_alternatives = std::max(stats.max_initial_nb_alternatives, nested_stats.max_initial_nb_alternatives);
-    stats.max_nb_alternatives = std::max(stats.max_nb_alternatives, nested_stats.max_nb_alternatives);
-    stats.max_nb_alternatives_w_change = std::max(stats.max_nb_alternatives_w_change, nested_stats.max_nb_alternatives_w_change);
-    stats.nb_reduce_list_of_lines_calls += nested_stats.nb_reduce_list_of_lines_calls;
-    stats.max_reduce_list_size = std::max(stats.max_reduce_list_size, nested_stats.max_reduce_list_size);
-    stats.total_lines_reduced += nested_stats.total_lines_reduced;
-    stats.nb_reduce_and_count_alternatives_calls += nested_stats.nb_reduce_and_count_alternatives_calls;
-    stats.nb_full_grid_pass_calls += nested_stats.nb_full_grid_pass_calls;
-    stats.nb_single_line_pass_calls += nested_stats.nb_single_line_pass_calls;
-    stats.nb_single_line_pass_calls_w_change += nested_stats.nb_single_line_pass_calls_w_change;
-    stats.nb_observer_callback_calls += nested_stats.nb_observer_callback_calls;
 }
 
 }  // namespace
@@ -520,7 +493,7 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::branch(Solver::S
         if (m_grid_stats)
         {
             assert(nested_stats);
-            merge_nested_grid_stats(*m_grid_stats, *nested_stats);
+            merge_branching_grid_stats(*m_grid_stats, *nested_stats);
         }
 
         flag_solution_found |= status == Solver::Status::OK;

@@ -15,6 +15,7 @@ set(LIB_SOURCES
     src/output_grid.cpp
     src/picross.cpp
     src/picross_io.cpp
+    src/picross_stats.cpp
     src/solver.cpp
     src/work_grid.cpp
 )
