@@ -55,6 +55,8 @@ namespace
         ostream << picross::validation_code_str(data.validation_result.code) << ',';
         ostream << (data.validation_result.code == 1 && (data.validation_result.branching_depth == 0u) ? "LINE" : "") << ',';
         ostream << data.timing_ms;
+        if (!data.validation_result.msg.empty())
+            ostream << ",\"" << data.validation_result.msg << "\"";
         if (!data.misc.empty())
             ostream << ",\"" << data.misc << "\"";
         return ostream;
