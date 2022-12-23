@@ -50,10 +50,10 @@ GRID 1: Mum
     > Total number of alternatives being tested: 177
     > Max number of alternatives by branching depth: 3 4 5 16 15 16
   Max number of alternatives on an empty line (initial grid pass): 13037895
-  Max number of alternatives after a line reduce (change/all): 120648/217881
-  Number of calls to full_grid_pass: 1533
-  Number of calls to single_line_pass (change/all): 6401/9653
-  Number of calls to the observer callback: 6773
+  Max number of alternatives after a line reduction (change/all): 120648/309331
+  Number of full grid pass: 2439
+  Number of single line partial reduction (change/all): 0/0
+  Number of single line full reduction (change/all): 8146/11966
 
 
 

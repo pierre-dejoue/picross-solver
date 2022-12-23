@@ -52,10 +52,10 @@ GRID 1: Two Cakes
     > Total number of alternatives being tested: 10
     > Max number of alternatives by branching depth: 10
   Max number of alternatives on an empty line (initial grid pass): 816
-  Max number of alternatives after a line reduce (change/all): 64/574
-  Number of calls to full_grid_pass: 32
-  Number of calls to single_line_pass (change/all): 205/368
-  Number of calls to the observer callback: 229
+  Max number of alternatives after a line reduction (change/all): 13/574
+  Number of full grid pass: 48
+  Number of single line partial reduction (change/all): 0/0
+  Number of single line full reduction (change/all): 154/285
 
 
 

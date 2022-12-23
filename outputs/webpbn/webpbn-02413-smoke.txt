@@ -1,0 +1,39 @@
+GRID 1: Smoke
+  Size: 20x20
+  Found 1 solution(s)
+
+  Nb 1: (branching depth: 1)
+  .#.###..##.........#
+  #.##...##...........
+  ###...####..........
+  .##.###..##.........
+  ##..#....######.....
+  ##..#############..#
+  .#.....#....########
+  .##....#.#...#######
+  ..#...##.##..##..###
+  ###..#.......#.#.###
+  .#..##.......#.#.###
+  .##.#...#........###
+  .#..#####......#####
+  ..#....#........###.
+  .....####.......##..
+  .##.##..#......##..#
+  .##.#..##....###..##
+  .####..#..######..#.
+  .###...####.###..##.
+  ...........####.##..
+
+  Number of solutions found: 1
+  Max branching depth: 1
+    > Hypothesis on 1 lines
+    > Total number of alternatives being tested: 6
+    > Max number of alternatives by branching depth: 6
+  Max number of alternatives on an empty line (initial grid pass): 3003
+  Max number of alternatives after a line reduction (change/all): 553/897
+  Number of full grid pass: 79
+  Number of single line partial reduction (change/all): 0/0
+  Number of single line full reduction (change/all): 310/432
+
+
+

@@ -55,10 +55,10 @@ GRID 1: Wild Tattoo
     > Total number of alternatives being tested: 2
     > Max number of alternatives by branching depth: 2
   Max number of alternatives on an empty line (initial grid pass): 28048800
-  Max number of alternatives after a line reduce (change/all): 217227/475020
-  Number of calls to full_grid_pass: 151
-  Number of calls to single_line_pass (change/all): 616/1015
-  Number of calls to the observer callback: 628
+  Max number of alternatives after a line reduction (change/all): 118755/119944
+  Number of full grid pass: 194
+  Number of single line partial reduction (change/all): 0/0
+  Number of single line full reduction (change/all): 701/1182
 
 
 

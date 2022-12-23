@@ -33,10 +33,10 @@ GRID 1: Bucks
     > Total number of alternatives being tested: 4
     > Max number of alternatives by branching depth: 2 2
   Max number of alternatives on an empty line (initial grid pass): 125970
-  Max number of alternatives after a line reduce (change/all): 74/137
-  Number of calls to full_grid_pass: 17
-  Number of calls to single_line_pass (change/all): 114/174
-  Number of calls to the observer callback: 138
+  Max number of alternatives after a line reduction (change/all): 91/191
+  Number of full grid pass: 40
+  Number of single line partial reduction (change/all): 0/0
+  Number of single line full reduction (change/all): 118/192
 
 
 

@@ -21,10 +21,10 @@ GRID 1: Edge Pattern
     > Total number of alternatives being tested: 11
     > Max number of alternatives by branching depth: 7 4
   Max number of alternatives on an empty line (initial grid pass): 28
-  Max number of alternatives after a line reduce (change/all): 7/21
-  Number of calls to full_grid_pass: 17
-  Number of calls to single_line_pass (change/all): 87/201
-  Number of calls to the observer callback: 110
+  Max number of alternatives after a line reduction (change/all): 7/21
+  Number of full grid pass: 18
+  Number of single line partial reduction (change/all): 0/0
+  Number of single line full reduction (change/all): 87/201
 
 
 
