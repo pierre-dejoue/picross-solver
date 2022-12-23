@@ -541,7 +541,7 @@ void WorkGrid<LineSelectionPolicy, BranchingAllowed>::save_solution(Solver::Solu
 }
 
 
-// Template explicit instantiations
+// Explicit template instantiations
 template class WorkGrid<LineSelectionPolicy_Legacy, true>;
 template class WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives, true>;
 template class WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives, false>;

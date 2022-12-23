@@ -38,13 +38,13 @@ namespace
     template <>
     struct ConstraintIterator<false>
     {
-        using Type = LineConstraint::Segments::const_iterator;
+        using Type = Segments::const_iterator;
     };
 
     template <>
     struct ConstraintIterator<true>
     {
-        using Type = LineConstraint::Segments::const_reverse_iterator;
+        using Type = Segments::const_reverse_iterator;
     };
 
     template <bool Reversed>
@@ -52,7 +52,7 @@ namespace
     {
         using ConstraintIT = typename ConstraintIterator<Reversed>::Type;
 
-        BidirectionalRange(const LineConstraint::Segments& segs, unsigned int line_length);
+        BidirectionalRange(const Segments& segs, unsigned int line_length);
 
         ConstraintIT m_constraint_begin;
         ConstraintIT m_constraint_end;
@@ -63,7 +63,7 @@ namespace
     };
 
     template <>
-    BidirectionalRange<false>::BidirectionalRange(const LineConstraint::Segments& segs, unsigned int line_length)
+    BidirectionalRange<false>::BidirectionalRange(const Segments& segs, unsigned int line_length)
         : m_constraint_begin(segs.cbegin())
         , m_constraint_end(segs.cend())
         , m_line_begin(0u)
@@ -74,7 +74,7 @@ namespace
     }
 
     template <>
-    BidirectionalRange<true>::BidirectionalRange(const LineConstraint::Segments& segs, unsigned int line_length)
+    BidirectionalRange<true>::BidirectionalRange(const Segments& segs, unsigned int line_length)
         : m_constraint_begin(segs.crbegin())
         , m_constraint_end(segs.crend())
         , m_line_begin(0u)
@@ -87,8 +87,6 @@ namespace
 
 struct LineAlternatives::Impl
 {
-    using Segments = LineConstraint::Segments;
-
     Impl(const LineConstraint& constraint, const Line& known_tiles, BinomialCoefficientsCache& binomial);
 
     template <bool Reversed>
@@ -123,7 +121,6 @@ struct LineAlternatives::Impl
     BinomialCoefficientsCache&  m_binomial;
     const unsigned int          m_line_length;
     const unsigned int          m_extra_zeros;
-    unsigned int                m_remaining_zeros;
     BidirectionalRange<false>   m_bidirectional_range;
     BidirectionalRange<true>    m_bidirectional_range_reverse;
     Line                        m_alternative;
@@ -136,7 +133,6 @@ LineAlternatives::Impl::Impl(const LineConstraint& constraints,  const Line& kno
     , m_binomial(binomial)
     , m_line_length(static_cast<unsigned int>(known_tiles.size()))
     , m_extra_zeros(m_line_length - constraints.min_line_size())
-    , m_remaining_zeros(m_extra_zeros)
     , m_bidirectional_range(constraints.segments(), m_line_length)
     , m_bidirectional_range_reverse(constraints.segments(), m_line_length)
     , m_alternative(known_tiles)
@@ -237,7 +233,11 @@ bool LineAlternatives::Impl::update_range()
             count_filled++;
         }
     }
-    return true;
+    // Validate that the remaining constraints can fit in the unknown part of the line
+    assert(range.m_line_begin <= range.m_line_end);
+    const bool valid = compute_min_line_size(range.m_constraint_begin, range.m_constraint_end) <= (range.m_line_end - range.m_line_begin);
+    assert(!(valid && range.m_nb_zeros > m_extra_zeros));
+    return valid;
 }
 
 bool LineAlternatives::Impl::update()
@@ -319,6 +319,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_all_alternatives()
 {
     reset<false>();
     const auto& range = m_bidirectional_range;
+    assert(range.m_nb_zeros <= m_extra_zeros);
     const auto remaining_zeros = m_extra_zeros - range.m_nb_zeros;
     const auto nb_alternatives = reduce_alternatives<false>(remaining_zeros, range.m_constraint_begin, range.m_constraint_end, range.m_constraint_end, range.m_line_begin);
     const Line reduced_line = m_reduced_line ? *m_reduced_line : m_known_tiles;
@@ -345,12 +346,14 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_alternatives(unsigned
 
     // Reduce nb_constraints from left to right
     reset<false>();
+    assert(range_l.m_nb_zeros <= m_extra_zeros);
     const auto remaining_zeros_l = m_extra_zeros - range_l.m_nb_zeros;
     const auto nb_alternatives_l = reduce_alternatives<false>(remaining_zeros_l, range_l.m_constraint_begin, constraint_l_end, range_l.m_constraint_end, range_l.m_line_begin);
     const Line reduced_line_l = m_reduced_line ? *m_reduced_line : m_known_tiles;
 
     // Reduce nb_constraints from right to left
     reset<true>();
+    assert(range_r.m_nb_zeros <= m_extra_zeros);
     const auto remaining_zeros_r = m_extra_zeros - range_r.m_nb_zeros;
     const auto nb_alternatives_r = reduce_alternatives<true>(remaining_zeros_r, range_r.m_constraint_begin, constraint_r_end, range_r.m_constraint_end, range_r.m_line_begin);
     const Line reduced_line_r = m_reduced_line ? *m_reduced_line : m_known_tiles;

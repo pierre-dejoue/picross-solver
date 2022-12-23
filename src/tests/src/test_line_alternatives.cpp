@@ -107,7 +107,19 @@ TEST_CASE("full_reduction_with_a_long_segment_of_ones", "[line_alternatives]")
     }
 }
 
-TEST_CASE("full_reduction_contradictory_use_case", "[line_alternatives]")
+TEST_CASE("full_reduction_contradictory_use_case_a", "[line_alternatives]")
+{
+    const LineConstraint constraint(Line::ROW, { 1 });
+    {
+        const auto known_tiles = build_line_from("..", Line::ROW, LINE_INDEX);
+        const auto reduction = full_reduction(constraint, known_tiles);
+        CHECK(reduction.reduced_line == known_tiles);
+        CHECK(reduction.nb_alternatives == 0);
+        CHECK(reduction.is_fully_reduced);
+    }
+}
+
+TEST_CASE("full_reduction_contradictory_use_case_b", "[line_alternatives]")
 {
     const LineConstraint constraint(Line::ROW, { 1, 1 });
     {
@@ -119,6 +131,20 @@ TEST_CASE("full_reduction_contradictory_use_case", "[line_alternatives]")
     }
     {
         const auto known_tiles = build_line_from("##??", Line::ROW, LINE_INDEX);
+        const auto reduction = full_reduction(constraint, known_tiles);
+        CHECK(reduction.reduced_line == known_tiles);
+        CHECK(reduction.nb_alternatives == 0);
+        CHECK(reduction.is_fully_reduced);
+    }
+    {
+        const auto known_tiles = build_line_from("#...", Line::ROW, LINE_INDEX);
+        const auto reduction = full_reduction(constraint, known_tiles);
+        CHECK(reduction.reduced_line == known_tiles);
+        CHECK(reduction.nb_alternatives == 0);
+        CHECK(reduction.is_fully_reduced);
+    }
+    {
+        const auto known_tiles = build_line_from(".#.", Line::ROW, LINE_INDEX);
         const auto reduction = full_reduction(constraint, known_tiles);
         CHECK(reduction.reduced_line == known_tiles);
         CHECK(reduction.nb_alternatives == 0);

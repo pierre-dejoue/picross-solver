@@ -11,7 +11,9 @@
 
 #include <picross/picross.h>
 
-#include <cstddef>
+#include <cassert>
+#include <iterator>
+#include <numeric>
 #include <ostream>
 #include <utility>
 #include <vector>
@@ -20,12 +22,21 @@
 namespace picross
 {
 
+using Segments = std::vector<unsigned int>;
+
+template <typename SegmentIt>
+unsigned int compute_min_line_size(SegmentIt begin, SegmentIt end)
+{
+    return std::accumulate(begin, end, 0u) + static_cast<unsigned int>(std::distance(begin, end)) - 1u;
+}
+
+unsigned int compute_min_line_size(const Segments& segments);
+
 class LineConstraint
 {
 public:
     LineConstraint(Line::Type type, const InputGrid::Constraint& vect);
 public:
-    using Segments = std::vector<unsigned int>;
     unsigned int nb_filled_tiles() const;
     std::size_t nb_segments() const { return m_segments.size(); }
     const Segments& segments() const { return m_segments; }

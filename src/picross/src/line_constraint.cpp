@@ -10,11 +10,15 @@
 
 #include <algorithm>
 #include <cassert>
-#include <numeric>
 
 
 namespace picross
 {
+
+unsigned int compute_min_line_size(const Segments& segments)
+{
+    return compute_min_line_size(segments.cbegin(), segments.cend());
+}
 
 LineConstraint::LineConstraint(Line::Type type, const InputGrid::Constraint& vect)
     : m_type(type)
@@ -28,7 +32,7 @@ LineConstraint::LineConstraint(Line::Type type, const InputGrid::Constraint& vec
     if (m_segments.size() != 0u)
     {
         // Include at least one zero between the sets of one
-        m_min_line_size = std::accumulate(m_segments.cbegin(), m_segments.cend(), 0u) + static_cast<unsigned int>(m_segments.size()) - 1u;
+        m_min_line_size = compute_min_line_size(m_segments);
     }
 }
 
