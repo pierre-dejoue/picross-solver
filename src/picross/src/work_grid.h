@@ -87,9 +87,8 @@ struct LineSelectionPolicy_RampUpMaxNbAlternatives
 
     static bool switch_to_branching(unsigned int max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
     {
-        UNUSED(max_nb_alternatives);
         UNUSED(search_depth);
-        return !grid_changed && skipped_lines == 0u;
+        return !grid_changed && (skipped_lines == 0u || (max_nb_alternatives >= Max_nb_alternatives));
     }
 };
 
@@ -146,8 +145,8 @@ private:
     bool all_lines_completed() const;
     bool set_line(const Line& line, unsigned int nb_alt = 0u);
     PassStatus single_line_initial_pass(Line::Type type, unsigned int index);
-    PassStatus single_line_full_reduction(Line::Type type, unsigned int index);
     PassStatus single_line_partial_reduction(Line::Type type, unsigned int index);
+    PassStatus single_line_full_reduction(Line::Type type, unsigned int index);
     template <State S>
     PassStatus full_side_pass(Line::Type type);
     template <State S>
@@ -160,7 +159,8 @@ private:
     std::vector<LineConstraint>                 m_constraints[2];
     std::vector<LineAlternatives>               m_alternatives[2];
     std::vector<bool>                           m_line_completed[2];
-    std::vector<bool>                           m_line_to_be_reduced[2];
+    std::vector<bool>                           m_line_has_updates[2];
+    std::vector<bool>                           m_line_is_fully_reduced[2];
     std::vector<unsigned int>                   m_nb_alternatives[2];
     GridStats*                                  m_grid_stats;        // If not null, the solver will store some stats in that structure
     Solver::Observer                            m_observer;          // If not empty, the solver will notify the observer of its progress
@@ -170,6 +170,5 @@ private:
     unsigned int                                m_branching_depth;
     std::shared_ptr<BinomialCoefficients::Cache>  m_binomial;
 };
-
 
 } // namespace picross
