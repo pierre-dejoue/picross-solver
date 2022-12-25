@@ -32,7 +32,7 @@ std::vector<LineConstraint> build_constraints_from(Line::Type type, const InputG
     return output;
 }
 
-std::vector<LineAlternatives> build_line_alternatives_from(Line::Type type, const std::vector<LineConstraint>& constraints, const Grid& grid, BinomialCoefficientsCache& binomial)
+std::vector<LineAlternatives> build_line_alternatives_from(Line::Type type, const std::vector<LineConstraint>& constraints, const Grid& grid, BinomialCoefficients::Cache& binomial)
 {
     std::vector<LineAlternatives> output;
     output.reserve(constraints.size());
@@ -59,7 +59,7 @@ WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const InputGrid& grid,
     , m_max_nb_alternatives(LineSelectionPolicy::initial_max_nb_alternatives())
     , m_guess_list_of_all_alternatives()
     , m_branching_depth(0u)
-    , m_binomial(std::make_shared<BinomialCoefficientsCache>())
+    , m_binomial(std::make_shared<BinomialCoefficients::Cache>())
 {
     assert(m_binomial);
 

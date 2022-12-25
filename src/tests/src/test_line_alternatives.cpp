@@ -15,9 +15,9 @@ namespace
 {
     inline constexpr unsigned int LINE_INDEX = 0;
 
-    BinomialCoefficientsCache& get_binomial()
+    BinomialCoefficients::Cache& get_binomial()
     {
-        static BinomialCoefficientsCache binomial;
+        static BinomialCoefficients::Cache binomial;
         return binomial;
     }
 

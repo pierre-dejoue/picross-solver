@@ -168,7 +168,7 @@ private:
     unsigned int                                m_max_nb_alternatives;
     std::vector<Line>                           m_guess_list_of_all_alternatives;
     unsigned int                                m_branching_depth;
-    std::shared_ptr<BinomialCoefficientsCache>  m_binomial;
+    std::shared_ptr<BinomialCoefficients::Cache>  m_binomial;
 };
 
 

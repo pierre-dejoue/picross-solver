@@ -41,7 +41,7 @@ public:
     std::size_t nb_segments() const { return m_segments.size(); }
     const Segments& segments() const { return m_segments; }
     unsigned int min_line_size() const { return m_min_line_size; }
-    unsigned int line_trivial_nb_alternatives(unsigned int line_size, BinomialCoefficientsCache& binomial) const;
+    unsigned int line_trivial_nb_alternatives(unsigned int line_size, BinomialCoefficients::Cache& binomial) const;
     Line line_trivial_reduction(unsigned int line_size, unsigned int index) const;
     std::vector<Line> build_all_possible_lines(const Line& known_tiles) const;
     bool compatible(const Line& line) const;

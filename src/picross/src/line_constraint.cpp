@@ -52,7 +52,7 @@ unsigned int LineConstraint::max_segment_size() const
 /*
  * Given an uninitialized line compute the theoritical number of alternatives
  */
-unsigned int LineConstraint::line_trivial_nb_alternatives(unsigned int line_size, BinomialCoefficientsCache& binomial_cache) const
+unsigned int LineConstraint::line_trivial_nb_alternatives(unsigned int line_size, BinomialCoefficients::Cache& binomial_cache) const
 {
     if (line_size < m_min_line_size)
     {
@@ -61,9 +61,9 @@ unsigned int LineConstraint::line_trivial_nb_alternatives(unsigned int line_size
     }
 
     const unsigned int nb_zeros = line_size - m_min_line_size;
-    const auto nb_altrnatives = binomial_cache.nb_alternatives_for_fixed_nb_of_partitions(nb_zeros, static_cast<unsigned int>(m_segments.size()) + 1u);
-    assert(nb_altrnatives > 0u);
-    return nb_altrnatives;
+    const auto nb_alternatives = binomial_cache.partition_n_elts_into_k_buckets(nb_zeros, static_cast<unsigned int>(m_segments.size()) + 1u);
+    assert(nb_alternatives > 0u);
+    return nb_alternatives;
 }
 
 /*

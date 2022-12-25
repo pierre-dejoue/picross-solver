@@ -87,7 +87,7 @@ namespace
 
 struct LineAlternatives::Impl
 {
-    Impl(const LineConstraint& constraint, const Line& known_tiles, BinomialCoefficientsCache& binomial);
+    Impl(const LineConstraint& constraint, const Line& known_tiles, BinomialCoefficients::Cache& binomial);
 
     template <bool Reversed>
     void reset();
@@ -116,18 +116,18 @@ struct LineAlternatives::Impl
     Reduction reduce_all_alternatives();
     Reduction reduce_alternatives(unsigned int nb_constraints);
 
-    const Segments&             m_segments;
-    const Line&                 m_known_tiles;
-    BinomialCoefficientsCache&  m_binomial;
-    const unsigned int          m_line_length;
-    const unsigned int          m_extra_zeros;
-    BidirectionalRange<false>   m_bidirectional_range;
-    BidirectionalRange<true>    m_bidirectional_range_reverse;
-    Line                        m_alternative;
-    std::unique_ptr<Line>       m_reduced_line;
+    const Segments&                 m_segments;
+    const Line&                     m_known_tiles;
+    BinomialCoefficients::Cache&    m_binomial;
+    const unsigned int              m_line_length;
+    const unsigned int              m_extra_zeros;
+    BidirectionalRange<false>       m_bidirectional_range;
+    BidirectionalRange<true>        m_bidirectional_range_reverse;
+    Line                            m_alternative;
+    std::unique_ptr<Line>           m_reduced_line;
 };
 
-LineAlternatives::Impl::Impl(const LineConstraint& constraints,  const Line& known_tiles, BinomialCoefficientsCache& binomial)
+LineAlternatives::Impl::Impl(const LineConstraint& constraints,  const Line& known_tiles, BinomialCoefficients::Cache& binomial)
     : m_segments(constraints.segments())
     , m_known_tiles(known_tiles)
     , m_binomial(binomial)
@@ -277,9 +277,8 @@ unsigned int LineAlternatives::Impl::reduce_alternatives(
         {
             reduce();
             const unsigned int nb_buckets = static_cast<unsigned int>(std::distance(constraint_partial_end, constraint_end) + 1);
-
-            // TODO Check for overflow
-            nb_alternatives += m_binomial.nb_alternatives_for_fixed_nb_of_partitions(remaining_zeros, nb_buckets);
+            assert(nb_alternatives == 0);
+            nb_alternatives = m_binomial.partition_n_elts_into_k_buckets(remaining_zeros, nb_buckets);
         }
     }
     // Else, fill in the next segment of ones, then call recursively
@@ -295,7 +294,8 @@ unsigned int LineAlternatives::Impl::reduce_alternatives(
 
         if (check_compatibility_bw<Reversed>(line_idx, next_line_idx))
         {
-            nb_alternatives += reduce_alternatives<Reversed>(remaining_zeros, constraint_it + 1, constraint_partial_end, constraint_end, next_line_idx);
+            assert(nb_alternatives == 0);
+            nb_alternatives = reduce_alternatives<Reversed>(remaining_zeros, constraint_it + 1, constraint_partial_end, constraint_end, next_line_idx);
         }
 
         for (unsigned int pre_zeros = 1u; pre_zeros <= remaining_zeros; pre_zeros++)
@@ -307,7 +307,7 @@ unsigned int LineAlternatives::Impl::reduce_alternatives(
 
             if (check_compatibility_bw<Reversed>(line_idx, next_line_idx))
             {
-                nb_alternatives += reduce_alternatives<Reversed>(remaining_zeros - pre_zeros, constraint_it + 1, constraint_partial_end, constraint_end, next_line_idx);
+                BinomialCoefficients::add(nb_alternatives, reduce_alternatives<Reversed>(remaining_zeros - pre_zeros, constraint_it + 1, constraint_partial_end, constraint_end, next_line_idx));
             }
         }
     }
@@ -364,7 +364,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_alternatives(unsigned
         false };
 }
 
-LineAlternatives::LineAlternatives(const LineConstraint& constraint, const Line& known_tiles, BinomialCoefficientsCache& binomial)
+LineAlternatives::LineAlternatives(const LineConstraint& constraint, const Line& known_tiles, BinomialCoefficients::Cache& binomial)
     : p_impl(std::make_unique<Impl>(constraint, known_tiles, binomial))
 {
 }

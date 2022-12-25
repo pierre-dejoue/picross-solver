@@ -62,7 +62,7 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
         ostream << std::endl;
     }
     ostream << "  Max number of alternatives on an empty line (initial grid pass): " << stats.max_initial_nb_alternatives;
-    if (stats.max_initial_nb_alternatives == BinomialCoefficientsCache::overflowValue())
+    if (stats.max_initial_nb_alternatives == BinomialCoefficients::overflowValue())
     {
         ostream << " (overflow!)";
     }
