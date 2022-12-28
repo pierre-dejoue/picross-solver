@@ -9,6 +9,7 @@
 
 #include "binomial.h"
 #include "grid.h"
+#include "line.h"
 #include "line_alternatives.h"
 #include "line_constraint.h"
 #include "macros.h"
@@ -128,6 +129,7 @@ private:
         FULL_REDUCTION,
         BRANCHING
     };
+    using AllLines = std::vector<LineId>;
 public:
     WorkGrid(const InputGrid& grid, Solver::Observer observer = Solver::Observer(), Solver::Abort abort_function = Solver::Abort());
     // Not copyable nor movable
@@ -148,27 +150,27 @@ private:
     PassStatus single_line_partial_reduction(Line::Type type, unsigned int index);
     PassStatus single_line_full_reduction(Line::Type type, unsigned int index);
     template <State S>
-    PassStatus full_side_pass(Line::Type type);
-    template <State S>
     PassStatus full_grid_pass();
     Solver::Status branch(Solver::Solutions& solutions, unsigned int max_nb_solutions) const;
     bool valid_solution() const;
     void save_solution(Solver::Solutions& solutions) const;
 private:
-    State                                       m_state;
-    std::vector<LineConstraint>                 m_constraints[2];
-    std::vector<LineAlternatives>               m_alternatives[2];
-    std::vector<bool>                           m_line_completed[2];
-    std::vector<bool>                           m_line_has_updates[2];
-    std::vector<bool>                           m_line_is_fully_reduced[2];
-    std::vector<unsigned int>                   m_nb_alternatives[2];
-    GridStats*                                  m_grid_stats;        // If not null, the solver will store some stats in that structure
-    Solver::Observer                            m_observer;          // If not empty, the solver will notify the observer of its progress
-    Solver::Abort                               m_abort_function;    // If not empty, the solver will regularly call this function and abort if it returns true
-    unsigned int                                m_max_nb_alternatives;
-    std::vector<Line>                           m_guess_list_of_all_alternatives;
-    unsigned int                                m_branching_depth;
-    std::shared_ptr<BinomialCoefficients::Cache>  m_binomial;
+    State                                           m_state;
+    std::vector<LineConstraint>                     m_constraints[2];
+    std::vector<LineAlternatives>                   m_alternatives[2];
+    std::vector<bool>                               m_line_completed[2];
+    std::vector<bool>                               m_line_has_updates[2];
+    std::vector<bool>                               m_line_is_fully_reduced[2];
+    std::vector<unsigned int>                       m_nb_alternatives[2];
+    AllLines                                        m_all_lines;
+    AllLines::iterator                              m_uncompleted_lines_end;
+    GridStats*                                      m_grid_stats;        // If not null, the solver will store some stats in that structure
+    Solver::Observer                                m_observer;          // If not empty, the solver will notify the observer of its progress
+    Solver::Abort                                   m_abort_function;    // If not empty, the solver will regularly call this function and abort if it returns true
+    unsigned int                                    m_max_nb_alternatives;
+    std::vector<Line>                               m_guess_list_of_all_alternatives;
+    unsigned int                                    m_branching_depth;
+    std::shared_ptr<BinomialCoefficients::Cache>    m_binomial;
 };
 
 } // namespace picross

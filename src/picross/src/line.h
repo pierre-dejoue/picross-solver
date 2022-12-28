@@ -13,6 +13,19 @@
 namespace picross
 {
 /*
+ * Line Identifier
+ */
+struct LineId
+{
+    LineId(Line::Type type = Line::ROW, Line::Index index = 0u)
+        : m_type(type), m_index(index)
+    {}
+
+    Line::Type  m_type;
+    Line::Index m_index;
+};
+
+/*
  * Line related functions
  */
 bool is_all_one_color(const Line& line, Tile color);

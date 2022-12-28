@@ -53,6 +53,8 @@ WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const InputGrid& grid,
     , m_line_completed()
     , m_line_is_fully_reduced()
     , m_nb_alternatives()
+    , m_all_lines()
+    , m_uncompleted_lines_end(m_all_lines.end())
     , m_grid_stats(nullptr)
     , m_observer(std::move(observer))
     , m_abort_function(std::move(abort_function))
@@ -62,6 +64,17 @@ WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const InputGrid& grid,
     , m_binomial(std::make_shared<BinomialCoefficients::Cache>())
 {
     assert(m_binomial);
+
+    m_all_lines.reserve(width() + height());
+    for (Line::Index row_idx = 0; row_idx < height(); row_idx++)
+    {
+        m_all_lines.emplace_back(Line::ROW, row_idx);
+    }
+    for (Line::Index col_idx = 0; col_idx < width(); col_idx++)
+    {
+        m_all_lines.emplace_back(Line::COL, col_idx);
+    }
+    m_uncompleted_lines_end = m_all_lines.end();
 
     m_constraints[Line::ROW] = build_constraints_from(Line::ROW, grid);
     m_constraints[Line::COL] = build_constraints_from(Line::COL, grid);
@@ -91,6 +104,8 @@ WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const WorkGrid& parent
     , m_line_completed()
     , m_line_is_fully_reduced()
     , m_nb_alternatives()
+    , m_all_lines(parent.m_all_lines)
+    , m_uncompleted_lines_end(m_all_lines.end())
     , m_grid_stats(nullptr)
     , m_observer(parent.m_observer)
     , m_abort_function(parent.m_abort_function)
@@ -258,12 +273,13 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::solve(Solver::So
 template <typename LineSelectionPolicy, bool BranchingAllowed>
 bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::all_lines_completed() const
 {
-    const bool all_rows = std::all_of(std::cbegin(m_line_completed[Line::ROW]), std::cend(m_line_completed[Line::ROW]), [](bool b) { return b; });
-    const bool all_cols = std::all_of(std::cbegin(m_line_completed[Line::COL]), std::cend(m_line_completed[Line::COL]), [](bool b) { return b; });
-
-    // The logical AND is important here: in the case an hypothesis is made on a row (resp. a column), it is marked as completed
-    // but the constraints on the columns (resp. the rows) may not be all satisfied.
-    return all_rows & all_cols;
+    const bool all_completed = (m_all_lines.begin() == m_uncompleted_lines_end);
+    assert(all_completed == [this]() -> bool {
+        const bool all_rows = std::all_of(std::cbegin(m_line_completed[Line::ROW]), std::cend(m_line_completed[Line::ROW]), [](bool b) { return b; });
+        const bool all_cols = std::all_of(std::cbegin(m_line_completed[Line::COL]), std::cend(m_line_completed[Line::COL]), [](bool b) { return b; });
+        return all_rows & all_cols;
+    }());
+    return all_completed;
 }
 
 
@@ -441,40 +457,6 @@ typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<Li
 }
 
 
-// Reduce all rows or all columns. Return false if no change was made on the grid.
-template <typename LineSelectionPolicy, bool BranchingAllowed>
-template <typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::State S>
-typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<LineSelectionPolicy, BranchingAllowed>::full_side_pass(Line::Type type)
-{
-    PassStatus status;
-
-    const auto length = type == Line::ROW ? height() : width();
-    for (unsigned int idx = 0u; idx < length; idx++)
-    {
-        if (m_line_completed[type][idx])
-            continue;
-        if constexpr (S == State::INITIAL_PASS)
-        {
-            status += single_line_initial_pass(type, idx);
-        }
-        else if constexpr (S == State::PARTIAL_REDUCTION)
-        {
-            status += single_line_partial_reduction(type, idx);
-        }
-        else
-        {
-            static_assert(S == State::FULL_REDUCTION);
-            status += single_line_full_reduction(type, idx);
-        }
-        if (status.contradictory)
-            break;
-        if (m_abort_function && m_abort_function())
-            throw PicrossSolverAborted();
-    }
-
-    return status;
-}
-
 // Reduce all columns and all rows. Return false if no change was made on the grid.
 // Return true if the grid was changed during the full pass
 template <typename LineSelectionPolicy, bool BranchingAllowed>
@@ -484,13 +466,27 @@ typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<Li
     PassStatus status;
     if (m_grid_stats != nullptr) { m_grid_stats->nb_full_grid_pass++; }
 
-    // Pass on columns
-    status += full_side_pass<S>(Line::COL);
-    if (status.contradictory)
-        return status;
-
-    // Pass on rows
-    status += full_side_pass<S>(Line::ROW);
+    for(auto it = m_all_lines.begin(); it != m_uncompleted_lines_end; ++it)
+    {
+        if (m_line_completed[it->m_type][it->m_index])
+            continue;
+        if constexpr (S == State::INITIAL_PASS)
+        {
+            status += single_line_initial_pass(it->m_type, it->m_index);
+        }
+        else if constexpr (S == State::PARTIAL_REDUCTION)
+        {
+            status += single_line_partial_reduction(it->m_type, it->m_index);
+        }
+        else
+        {
+            static_assert(S == State::FULL_REDUCTION);
+            status += single_line_full_reduction(it->m_type, it->m_index);
+        }
+        if (status.contradictory)
+            break;
+    }
+    m_uncompleted_lines_end = std::partition(m_all_lines.begin(), m_uncompleted_lines_end, [this](const LineId id) { return !m_line_completed[id.m_type][id.m_index]; });
     return status;
 }
 
@@ -528,6 +524,8 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::branch(Solver::S
         const bool changed = new_grid.set_line(guess_line, 1u);
         assert(changed);
         new_grid.m_line_is_fully_reduced[guess_line.type()][guess_line.index()] = true;
+        assert(new_grid.m_line_completed[guess_line.type()][guess_line.index()]);
+        new_grid.m_uncompleted_lines_end = std::partition(new_grid.m_all_lines.begin(), new_grid.m_uncompleted_lines_end, [&new_grid](const LineId id) { return !new_grid.m_line_completed[id.m_type][id.m_index]; });
 
         // Solve the new grid!
         new_grid.set_stats(nested_stats.get());
