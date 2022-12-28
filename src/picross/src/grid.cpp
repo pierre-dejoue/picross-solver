@@ -37,12 +37,12 @@ Grid::Grid(std::size_t width, std::size_t height, const std::string& name)
     , m_cols()
 {
     m_rows.reserve(height);
-    for (std::size_t row_idx = 0; row_idx < height; row_idx++)
+    for (Line::Index row_idx = 0; row_idx < height; row_idx++)
     {
         m_rows.emplace_back(Line::ROW, row_idx, width, Tile::UNKNOWN);
     }
     m_cols.reserve(width);
-    for (std::size_t col_idx = 0; col_idx < width; col_idx++)
+    for (Line::Index col_idx = 0; col_idx < width; col_idx++)
     {
         m_cols.emplace_back(Line::COL, col_idx, height, Tile::UNKNOWN);
     }
@@ -68,7 +68,7 @@ Grid& Grid::operator=(Grid&& other) noexcept
     return *this;
 }
 
-Tile Grid::get(size_t x, size_t y) const
+Tile Grid::get(Line::Index x, Line::Index y) const
 {
     assert(x < m_width);
     assert(y < m_height);
@@ -77,25 +77,25 @@ Tile Grid::get(size_t x, size_t y) const
 }
 
 template <>
-const Line& Grid::get_line<Line::ROW>(size_t index) const
+const Line& Grid::get_line<Line::ROW>(Line::Index index) const
 {
     assert(index < m_height);
     return m_rows[index];
 }
 
 template <>
-const Line& Grid::get_line<Line::COL>(size_t index) const
+const Line& Grid::get_line<Line::COL>(Line::Index index) const
 {
     assert(index < m_width);
     return m_cols[index];
 }
 
-const Line& Grid::get_line(Line::Type type, size_t index) const
+const Line& Grid::get_line(Line::Type type, Line::Index index) const
 {
     return type == Line::ROW ? get_line<Line::ROW>(index) : get_line<Line::COL>(index);
 }
 
-bool Grid::set(size_t x, size_t y, Tile val)
+bool Grid::set(Line::Index x, Line::Index y, Tile val)
 {
     assert(x < m_width);
     assert(y < m_height);

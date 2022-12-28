@@ -36,7 +36,7 @@ std::vector<LineAlternatives> build_line_alternatives_from(Line::Type type, cons
 {
     std::vector<LineAlternatives> output;
     output.reserve(constraints.size());
-    std::size_t idx = 0;
+    Line::Index idx = 0;
     std::transform(constraints.cbegin(), constraints.cend(), std::back_inserter(output), [type, &grid, &idx, &binomial](const auto& c) { return LineAlternatives(c, grid.get_line(type, idx++), binomial); });
     return output;
 }
@@ -272,7 +272,7 @@ bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_line(const Line& line,
 {
     static const Line DEFAULT_LINE(Line::ROW, 0, 0);
     const auto line_type = line.type();
-    const size_t line_index = line.index();
+    const auto line_index = line.index();
     const Line observer_original_line = m_observer ? get_line(line.type(), line_index) : DEFAULT_LINE;
     assert(line.size() == static_cast<unsigned int>(line.type() == Line::ROW ? width() : height()));
     const Line::Container& tiles = line.tiles();
@@ -290,7 +290,7 @@ bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_line(const Line& line,
     bool line_is_complete = true;
     if (line_type == Line::ROW)
     {
-        for (auto tile_index = 0u; tile_index < line.size(); tile_index++)
+        for (Line::Index tile_index = 0u; tile_index < line.size(); tile_index++)
         {
             const bool tile_changed = set(tile_index, line_index, tiles[tile_index]);
             line_is_complete &= (get(tile_index, line_index) != Tile::UNKNOWN);
@@ -300,7 +300,7 @@ bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_line(const Line& line,
     }
     else
     {
-        for (auto tile_index = 0u; tile_index < line.size(); tile_index++)
+        for (Line::Index tile_index = 0u; tile_index < line.size(); tile_index++)
         {
             const bool tile_changed = set(line_index, tile_index, tiles[tile_index]);
             line_is_complete &= (get(line_index, tile_index) != Tile::UNKNOWN);

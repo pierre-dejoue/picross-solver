@@ -56,7 +56,7 @@ std::size_t OutputGrid::height() const { return p_grid->height(); }
 
 const std::string& OutputGrid::name() const { return p_grid->name(); }
 
-Tile OutputGrid::get_tile(std::size_t x, std::size_t y) const
+Tile OutputGrid::get_tile(Line::Index x, Line::Index y) const
 {
     if (x >= p_grid->width()) { throw std::out_of_range("OutputGrid::get_tile: x (" + std::to_string(x) + ") is out of range (" + std::to_string(p_grid->width()) + ")"); }
     if (y >= p_grid->height()) { throw std::out_of_range("OutputGrid::get_tile: y (" + std::to_string(y) + ") is out of range (" + std::to_string(p_grid->height()) + ")"); }
@@ -64,7 +64,7 @@ Tile OutputGrid::get_tile(std::size_t x, std::size_t y) const
 }
 
 template <Line::Type Type>
-Line OutputGrid::get_line(size_t index) const
+Line OutputGrid::get_line(Line::Index index) const
 {
     if constexpr (Type == Line::ROW)
         if (index >= p_grid->height()) { throw std::out_of_range("Grid::get_line: row index (" + std::to_string(index) + ") is out of range (" + std::to_string(p_grid->height()) + ")"); }
@@ -73,7 +73,7 @@ Line OutputGrid::get_line(size_t index) const
     return p_grid->get_line<Type>(index);
 }
 
-Line OutputGrid::get_line(Line::Type type, size_t index) const
+Line OutputGrid::get_line(Line::Type type, Line::Index index) const
 {
     return type == Line::ROW ? get_line<Line::ROW>(index) : get_line<Line::COL>(index);
 }
@@ -90,7 +90,7 @@ std::size_t OutputGrid::hash() const
     return p_grid->hash();
 }
 
-bool OutputGrid::set_tile(std::size_t x, std::size_t y, Tile val)
+bool OutputGrid::set_tile(Line::Index x, Line::Index y, Tile val)
 {
     if (x >= p_grid->width()) { throw std::out_of_range("Grid::set_tile: x (" + std::to_string(x) + ") is out of range (" + std::to_string(p_grid->width()) + ")"); }
     if (y >= p_grid->height()) { throw std::out_of_range("Grid::set_tile: y (" + std::to_string(y) + ") is out of range (" + std::to_string(p_grid->height()) + ")"); }

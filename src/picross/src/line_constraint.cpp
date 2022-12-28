@@ -129,7 +129,7 @@ Line LineConstraint::line_trivial_reduction(unsigned int line_size, unsigned int
 std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_tiles) const
 {
     assert(known_tiles.type() == m_type);
-    const size_t index = known_tiles.index();
+    const auto index = known_tiles.index();
 
     // Number of zeros to add to the minimal size line.
     assert(known_tiles.size() >= m_min_line_size);

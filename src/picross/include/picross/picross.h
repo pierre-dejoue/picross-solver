@@ -6,7 +6,7 @@
  *   - Data structures
  *   - Solver
  *
- * Copyright (c) 2010-2022 Pierre DEJOUE
+ * Copyright (c) 2010-2023 Pierre DEJOUE
  ******************************************************************************/
 #pragma once
 
@@ -94,14 +94,15 @@ std::pair<bool, std::string> check_grid_input(const InputGrid& grid);
 class Line
 {
 public:
+    using Index = unsigned int;
     using Type = unsigned int;
     static constexpr Type ROW = 0u, COL = 1u;
     using Container = std::vector<Tile>;
 public:
-    Line(Type type, std::size_t index, std::size_t size, Tile init_tile = Tile::UNKNOWN);
+    Line(Type type, Index index, std::size_t size, Tile init_tile = Tile::UNKNOWN);
     Line(const Line& other, Tile init_tile);
-    Line(Type type, std::size_t index, const Container& tiles);
-    Line(Type type, std::size_t index, Container&& tiles);
+    Line(Type type, Index index, const Container& tiles);
+    Line(Type type, Index index, Container&& tiles);
 
     // copyable & movable
     Line(const Line&) = default;
@@ -110,17 +111,17 @@ public:
     Line& operator=(Line&&) noexcept;
 public:
     Type type() const;
-    std::size_t index() const;
+    Index index() const;
     const Container& tiles() const;
     Container& tiles();
     std::size_t size() const;
-    Tile at(std::size_t idx) const;
+    Tile at(Index idx) const;
     bool compatible(const Line& other) const;
     bool add(const Line& other);
     void reduce(const Line& other);
 private:
     const Type          m_type;
-    const std::size_t   m_index;
+    const Index         m_index;
     Container           m_tiles;
 };
 
@@ -154,18 +155,18 @@ public:
 
     const std::string& name() const;
 
-    Tile get_tile(std::size_t x, std::size_t y) const;
+    Tile get_tile(Line::Index x, Line::Index y) const;
 
     template <Line::Type Type>
-    Line get_line(std::size_t index) const;
+    Line get_line(Line::Index index) const;
 
-    Line get_line(Line::Type type, std::size_t index) const;
+    Line get_line(Line::Type type, Line::Index index) const;
 
     bool is_solved() const;
 
     std::size_t hash() const;
 
-    bool set_tile(std::size_t x, std::size_t y, Tile val);
+    bool set_tile(Line::Index x, Line::Index y, Tile val);
     void reset();
 
     friend bool operator==(const OutputGrid& lhs, const OutputGrid& rhs);

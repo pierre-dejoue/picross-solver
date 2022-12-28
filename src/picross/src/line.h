@@ -3,7 +3,7 @@
  *
  *   Declaration of the PRIVATE API of the Picross solver
  *
- * Copyright (c) 2010-2021 Pierre DEJOUE
+ * Copyright (c) 2010-2023 Pierre DEJOUE
  ******************************************************************************/
 #pragma once
 

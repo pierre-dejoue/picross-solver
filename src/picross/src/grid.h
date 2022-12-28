@@ -26,14 +26,14 @@ public:
 
     const std::string& name() const { return m_name; }
 
-    Tile get(std::size_t x, std::size_t y) const;
+    Tile get(Line::Index x, Line::Index y) const;
 
     template <Line::Type type>
-    const Line& get_line(std::size_t index) const;
+    const Line& get_line(Line::Index index) const;
 
-    const Line& get_line(Line::Type type, std::size_t index) const;
+    const Line& get_line(Line::Type type, Line::Index index) const;
 
-    bool set(std::size_t x, std::size_t y, Tile val);
+    bool set(Line::Index x, Line::Index y, Tile val);
     void reset();
 
     bool is_solved() const;

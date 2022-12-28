@@ -60,7 +60,7 @@ namespace Tiles
 } // namespace
 
 
-Line::Line(Line::Type type, size_t index, size_t size, Tile init_tile) :
+Line::Line(Line::Type type, Line::Index index, size_t size, Tile init_tile) :
     m_type(type),
     m_index(index),
     m_tiles(size, init_tile)
@@ -74,7 +74,7 @@ Line::Line(const Line& other, Tile init_tile) :
 }
 
 
-Line::Line(Line::Type type, size_t index, const Line::Container& tiles) :
+Line::Line(Line::Type type, Line::Index index, const Line::Container& tiles) :
     m_type(type),
     m_index(index),
     m_tiles(tiles)
@@ -82,7 +82,7 @@ Line::Line(Line::Type type, size_t index, const Line::Container& tiles) :
 }
 
 
-Line::Line(Line::Type type, size_t index, Line::Container&& tiles) :
+Line::Line(Line::Type type, Line::Index index, Line::Container&& tiles) :
     m_type(type),
     m_index(index),
     m_tiles(std::move(tiles))
@@ -93,7 +93,7 @@ Line::Line(Line::Type type, size_t index, Line::Container&& tiles) :
 Line& Line::operator=(const Line& other)
 {
     const_cast<Line::Type&>(m_type) = other.m_type;
-    const_cast<std::size_t&>(m_index) = other.m_index;
+    const_cast<Line::Index&>(m_index) = other.m_index;
     m_tiles = other.m_tiles;
     return *this;
 }
@@ -102,7 +102,7 @@ Line& Line::operator=(const Line& other)
 Line& Line::operator=(Line&& other) noexcept
 {
     const_cast<Line::Type&>(m_type) = other.m_type;
-    const_cast<std::size_t&>(m_index) = other.m_index;
+    const_cast<Line::Index&>(m_index) = other.m_index;
     m_tiles = std::move(other.m_tiles);
     return *this;
 }
@@ -114,7 +114,7 @@ Line::Type Line::type() const
 }
 
 
-size_t Line::index() const
+Line::Index Line::index() const
 {
     return m_index;
 }
@@ -138,7 +138,7 @@ size_t Line::size() const
 }
 
 
-Tile Line::at(size_t idx) const
+Tile Line::at(Line::Index idx) const
 {
     return m_tiles.at(idx);
 }
