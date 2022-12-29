@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <limits>
+#include <type_traits>
 #include <utility>
 
 namespace picross
@@ -97,6 +99,8 @@ struct LineAlternatives::Impl
     template <bool Reversed>
     bool check_compatibility_bw(std::size_t start_idx, std::size_t end_idx) const;
 
+    unsigned int nb_unknown_tiles() const;
+
     template <bool Reversed>
     BidirectionalRange<Reversed>& bidirectional_range();
 
@@ -106,7 +110,7 @@ struct LineAlternatives::Impl
     bool update();
 
     template <bool Reversed>
-    unsigned int reduce_alternatives(
+    NbAlt reduce_alternatives(
         unsigned int remaining_zeros,
         typename ConstraintIterator<Reversed>::Type constraint_it,
         typename ConstraintIterator<Reversed>::Type constraint_partial_end,
@@ -115,6 +119,7 @@ struct LineAlternatives::Impl
 
     Reduction reduce_all_alternatives();
     Reduction reduce_alternatives(unsigned int nb_constraints);
+
 
     const Segments&                 m_segments;
     const Line&                     m_known_tiles;
@@ -186,6 +191,19 @@ bool LineAlternatives::Impl::check_compatibility_bw(std::size_t start_idx, std::
     return true;
 }
 
+unsigned int LineAlternatives::Impl::nb_unknown_tiles() const
+{
+    const auto& range = m_bidirectional_range;
+    unsigned int count = 0;
+    const Line::Container& tiles = m_known_tiles.tiles();
+    for (auto idx = range.m_line_begin; idx < range.m_line_end; idx++)
+    {
+        if (tiles[idx] == Tile::UNKNOWN)
+            count++;
+    }
+    return count;
+}
+
 template <>
 BidirectionalRange<false>& LineAlternatives::Impl::bidirectional_range<false>() { return m_bidirectional_range; }
 
@@ -252,14 +270,15 @@ bool LineAlternatives::Impl::update()
 }
 
 template <bool Reversed>
-unsigned int LineAlternatives::Impl::reduce_alternatives(
+LineAlternatives::NbAlt LineAlternatives::Impl::reduce_alternatives(
     unsigned int remaining_zeros,
     typename ConstraintIterator<Reversed>::Type constraint_it,
     typename ConstraintIterator<Reversed>::Type constraint_partial_end,
     typename ConstraintIterator<Reversed>::Type constraint_end,
     size_t line_idx)
 {
-    unsigned int nb_alternatives = 0u;
+    static_assert(std::is_same_v<NbAlt, BinomialCoefficients::Rep>);
+    NbAlt nb_alternatives = 0u;
 
     // If the last segment of ones was reached, pad end of line with zeros
     if (constraint_it == constraint_end)
@@ -358,9 +377,18 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_alternatives(unsigned
     const auto nb_alternatives_r = reduce_alternatives<true>(remaining_zeros_r, range_r.m_constraint_begin, constraint_r_end, range_r.m_constraint_end, range_r.m_line_begin);
     const Line reduced_line_r = m_reduced_line ? *m_reduced_line : m_known_tiles;
 
+    auto nb_alternatives = std::min(nb_alternatives_l, nb_alternatives_r);
+
+    if (nb_alternatives == BinomialCoefficients::overflowValue())
+    {
+        const auto nb_unk = nb_unknown_tiles();
+        if (nb_unk < std::numeric_limits<unsigned int>::digits)
+            nb_alternatives = NbAlt{1} << nb_unk;
+    }
+
     return Reduction {
         reduced_line_l + reduced_line_r,
-        std::min(nb_alternatives_l, nb_alternatives_r),
+        nb_alternatives,
         false };
 }
 

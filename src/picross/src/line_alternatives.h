@@ -13,6 +13,8 @@ class LineConstraint;
 class LineAlternatives
 {
 public:
+    using NbAlt = unsigned int;
+public:
     LineAlternatives(const LineConstraint& constraint, const Line& known_tiles, BinomialCoefficients::Cache& binomial);
     ~LineAlternatives();
     // Movable
@@ -26,7 +28,7 @@ public:
     struct Reduction
     {
         Line reduced_line;
-        unsigned int nb_alternatives;
+        NbAlt nb_alternatives;
         bool is_fully_reduced;
     };
     Reduction full_reduction();
