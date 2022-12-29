@@ -3,7 +3,7 @@
 #include "err_window.h"
 #include "settings.h"
 
-#include <picross/picross_io.h>
+#include <picross/picross.h>
 #include <utils/bitmap_io.h>
 #include <utils/picross_file_io.h>
 #include <utils/strings.h>
@@ -394,9 +394,7 @@ void GridWindow::solve_picross_grid()
     unsigned count_grids = 0u;
 
     // Sanity check of the input data
-    bool check;
-    std::string check_msg;
-    std::tie(check, check_msg) = picross::check_grid_input(grid);
+    const auto [check, check_msg] = picross::check_input_grid(grid);
     if (check)
     {
         solver->set_observer(std::reference_wrapper<GridObserver>(*this));

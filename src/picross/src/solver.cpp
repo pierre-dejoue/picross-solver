@@ -130,7 +130,7 @@ ValidationResult validate_input_grid(const Solver& solver, const InputGrid& grid
 {
     ValidationResult result;
 
-    const auto [check, check_msg] = picross::check_grid_input(grid_input);
+    const auto [check, check_msg] = picross::check_input_grid(grid_input);
 
     if (!check)
     {
@@ -175,7 +175,7 @@ ValidationResult validate_input_grid(const Solver& solver, const InputGrid& grid
 }
 
 
-std::string_view validation_code_str(ValidationCode code)
+std::string_view str_validation_code(ValidationCode code)
 {
     if (code < 0)
     {

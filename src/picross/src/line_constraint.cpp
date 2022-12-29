@@ -36,27 +36,22 @@ LineConstraint::LineConstraint(Line::Type type, const InputGrid::Constraint& vec
     }
 }
 
-
 unsigned int LineConstraint::nb_filled_tiles() const
 {
     return std::accumulate(m_segments.cbegin(), m_segments.cend(), 0u);
 }
-
 
 unsigned int LineConstraint::max_segment_size() const
 {
     return m_segments.empty() ? 0u : *max_element(m_segments.cbegin(), m_segments.cend());
 }
 
-
-/*
- * Given an uninitialized line compute the theoritical number of alternatives
- */
+// Given an uninitialized line compute the theoritical number of alternatives
 unsigned int LineConstraint::line_trivial_nb_alternatives(unsigned int line_size, BinomialCoefficients::Cache& binomial_cache) const
 {
     if (line_size < m_min_line_size)
     {
-        // This can happen if the user does not check the grid with check_grid_input()
+        // This can happen if the user does not check the grid with check_input_grid()
         throw std::logic_error("Constraint::line_trivial_reduction: line_size < min_line_size");
     }
 
@@ -66,16 +61,14 @@ unsigned int LineConstraint::line_trivial_nb_alternatives(unsigned int line_size
     return nb_alternatives;
 }
 
-/*
- * Given an uninitialized line compute the trivial reduction
- */
+// Given an uninitialized line compute the trivial reduction
 Line LineConstraint::line_trivial_reduction(unsigned int line_size, unsigned int index) const
 {
     Line line(m_type, index, line_size);
 
     if (line_size < m_min_line_size)
     {
-        // This can happen if the user does not check the grid with check_grid_input()
+        // This can happen if the user does not check the grid with check_input_grid()
         throw std::logic_error("Constraint::line_trivial_reduction: line_size < min_line_size");
     }
     const unsigned int nb_zeros = line_size - m_min_line_size;
@@ -124,7 +117,6 @@ Line LineConstraint::line_trivial_reduction(unsigned int line_size, unsigned int
 
     return line;
 }
-
 
 std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_tiles) const
 {
@@ -216,7 +208,6 @@ bool LineConstraint::compatible(const Line& line) const
     return segments == m_segments;
 }
 
-
 void LineConstraint::print(std::ostream& ostream) const
 {
     ostream << "Constraint on a " << str_line_type(m_type) << ": [ ";
@@ -227,35 +218,10 @@ void LineConstraint::print(std::ostream& ostream) const
     ostream << "]; min_line_size = " << m_min_line_size;
 }
 
-
 std::ostream& operator<<(std::ostream& ostream, const LineConstraint& constraint)
 {
     constraint.print(ostream);
     return ostream;
-}
-
-
-InputGrid build_input_grid_from(const OutputGrid& grid)
-{
-    InputGrid result;
-
-    result.m_name = grid.name();
-
-    result.m_rows.reserve(grid.height());
-    for (unsigned int y = 0u; y < grid.height(); y++)
-    {
-        result.m_rows.emplace_back(get_constraint_from(grid.get_line<Line::ROW>(y)));
-    }
-
-    result.m_cols.reserve(grid.width());
-    for (unsigned int x = 0u; x < grid.width(); x++)
-    {
-        result.m_cols.emplace_back(get_constraint_from(grid.get_line<Line::COL>(x)));
-    }
-
-    assert(result.width() == grid.width());
-    assert(result.height() == grid.height());
-    return result;
 }
 
 } // namespace picross

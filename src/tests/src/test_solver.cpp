@@ -1,7 +1,55 @@
 #include <catch2/catch_test_macros.hpp>
 #include <picross/picross.h>
+#include <utils/input_from_output.h>
 #include <utils/test_helpers.h>
 
+
+// This is the example used in the project README
+TEST_CASE("Puzzle: Note", "[solver]")
+{
+    // Puzzle definition
+    const picross::InputGrid::Constraints rows {
+        { 3 },
+        { 1, 1 },
+        { 1, 1 },
+        { 3 },
+        { 3 },
+        { }
+    };
+    const picross::InputGrid::Constraints cols {
+        { },
+        { 2 },
+        { 2 },
+        { 5 },
+        { 1 },
+        { 3 }
+    };
+    picross::InputGrid puzzle(rows, cols, "Note");
+
+    // [Optional] Check the puzzle validity
+    const auto [check_is_ok, check_msg] = picross::check_input_grid(puzzle);
+    REQUIRE(check_is_ok);
+
+    // Solve it
+    const auto solver = picross::get_ref_solver();
+    const auto result = solver->solve(puzzle);
+
+    CHECK(result.status == picross::Solver::Status::OK);
+    REQUIRE(result.solutions.size() == 1);
+    const auto& solution = result.solutions.front();
+
+    picross::OutputGrid expected = picross::build_output_grid_from(6, 6, R"(
+        ...###
+        ...#.#
+        ...#.#
+        .###..
+        .###..
+        ......
+    )");
+
+    CHECK(solution.branching_depth == 0);
+    CHECK(solution.grid == expected);
+}
 
 namespace picross
 {
@@ -26,7 +74,7 @@ TEST_CASE("Constraints can use zero to declare an empty row or column", "[solver
     InputGrid puzzle_1(rows_wo_zero, cols_wo_zero, "");
     InputGrid puzzle_2(rows_w_zero, cols_w_zero, "");
 
-    const auto solver = picross::get_ref_solver();
+    const auto solver = get_ref_solver();
     const auto result_1 = solver->solve(puzzle_1);
     const auto result_2 = solver->solve(puzzle_2);
 
@@ -61,7 +109,7 @@ TEST_CASE("Puzzle: Smile", "[solver]")
 
     InputGrid puzzle(rows, cols, "Smile");
 
-    const auto solver = picross::get_ref_solver();
+    const auto solver = get_ref_solver();
     const auto result = solver->solve(puzzle);
 
     CHECK(result.status == Solver::Status::OK);
@@ -74,47 +122,6 @@ TEST_CASE("Puzzle: Smile", "[solver]")
     )");
 
     CHECK(solution.branching_depth == 1);
-    CHECK(solution.grid == expected);
-}
-
-TEST_CASE("Puzzle: Note", "[solver]")
-{
-    const InputGrid::Constraints rows {
-        { 3 },
-        { 1, 1 },
-        { 1, 1 },
-        { 3 },
-        { 3 },
-        { }
-    };
-    const InputGrid::Constraints cols {
-        { },
-        { 2 },
-        { 2 },
-        { 5 },
-        { 1 },
-        { 3 }
-    };
-
-    InputGrid puzzle(rows, cols, "Note");
-
-    const auto solver = picross::get_ref_solver();
-    const auto result = solver->solve(puzzle);
-
-    CHECK(result.status == Solver::Status::OK);
-    REQUIRE(result.solutions.size() == 1);
-    const auto& solution = result.solutions.front();
-
-    OutputGrid expected = build_output_grid_from(6, 6, R"(
-        ...###
-        ...#.#
-        ...#.#
-        .###..
-        .###..
-        ......
-    )");
-
-    CHECK(solution.branching_depth == 0);
     CHECK(solution.grid == expected);
 }
 
@@ -148,7 +155,7 @@ TEST_CASE("Puzzle: Notes", "[solver]")
 
     InputGrid puzzle(rows, cols, "Notes");
 
-    const auto solver = picross::get_ref_solver();
+    const auto solver = get_ref_solver();
     const auto result = solver->solve(puzzle);
 
     CHECK(result.status == Solver::Status::OK);
@@ -213,7 +220,7 @@ TEST_CASE("Puzzle: Cameraman", "[solver]")
 
     InputGrid puzzle = build_input_grid_from(expected);
 
-    const auto solver = picross::get_ref_solver();
+    const auto solver = get_ref_solver();
     const auto result = solver->solve(puzzle);
 
     CHECK(result.status == Solver::Status::OK);
@@ -223,24 +230,22 @@ TEST_CASE("Puzzle: Cameraman", "[solver]")
     CHECK(solution.grid == expected);
 }
 
-TEST_CASE("Puzzle: 4-DOM", "[solver]")
+TEST_CASE("Puzzle: 3-DOM", "[solver]")
 {
-    // Domino pattern
-    OutputGrid expected = build_output_grid_from(9, 9, R"(
-        ......###
-        ........#
-        ....###.#
-        ......#..
-        ..###.#..
-        ....#....
-        ###.#....
-        ..#......
-        ..#......
-    )", "4-DOM");
+    // Domino pattern (not line-solvable)
+    OutputGrid expected = build_output_grid_from(7, 7, R"(
+        ....###
+        ......#
+        ..###.#
+        ....#..
+        ###.#..
+        ..#....
+        ..#....
+    )", "3-DOM");
 
     InputGrid puzzle = build_input_grid_from(expected);
 
-    const auto solver = picross::get_ref_solver();
+    const auto solver = get_ref_solver();
     const auto result = solver->solve(puzzle);
 
     CHECK(result.status == Solver::Status::OK);

@@ -2,6 +2,7 @@
 
 #include <picross/picross.h>
 #include <utils/bitmap_io.h>
+#include <utils/input_from_output.h>
 #include <utils/strings.h>
 
 #include <cassert>

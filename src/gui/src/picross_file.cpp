@@ -1,6 +1,6 @@
 #include "picross_file.h"
 
-#include <picross/picross_io.h>
+#include <picross/picross.h>
 #include <utils/strings.h>
 
 #include <cassert>

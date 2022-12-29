@@ -1,7 +1,6 @@
 #pragma once
 
 #include <picross/picross.h>
-#include <picross/picross_io.h>
 
 #include <string>
 

@@ -3,28 +3,28 @@
  *
  *   Declaration of the PUBLIC API of the Picross solver
  *
- *   - Data structures
- *   - Solver
+ *   - This is the MAIN include file of the library
  *
  * Copyright (c) 2010-2023 Pierre DEJOUE
  ******************************************************************************/
 #pragma once
 
+#include "picross_input_grid.h"
+#include "picross_io.h"
 #include "picross_stats.h"
 
 #include <cstddef>
 #include <functional>
-#include <map>
 #include <memory>
 #include <ostream>
 #include <string>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 
 namespace picross
 {
+
 /*
  * Get the version of the library
  */
@@ -40,50 +40,6 @@ enum class Tile
     EMPTY = 0,
     FILLED = 1
 };
-
-
-/*
- * InputGrid class
- *
- *   A data structure to store the information related to an unsolved Picross grid.
- *   This is basically the input information of the solver.
- */
-struct InputGrid
-{
-    // Constraint that applies to a line (row or column)
-    // It gives the size of each of the groups of contiguous filled tiles
-    using Constraint = std::vector<unsigned int>;
-    using Constraints = std::vector<Constraint>;
-
-    InputGrid() = default;
-    InputGrid(const Constraints& rows, const Constraints& cols, const std::string& name = std::string{});
-    InputGrid(Constraints&& rows, Constraints&& cols, const std::string& name = std::string{});
-
-    std::size_t width() const { return m_cols.size(); }
-    std::size_t height() const { return m_rows.size(); }
-    const std::string& name() const { return m_name; }
-
-    Constraints                         m_rows;
-    Constraints                         m_cols;
-    std::string                         m_name;
-    std::map<std::string, std::string>  m_metadata;      // Optional
-};
-
-
-/*
- * Return the grid size as a string "WxH" with W the width and H the height
- */
-std::string str_input_grid_size(const InputGrid& grid);
-
-
-/*
- * Sanity check of the constraints of the input grid:
- *
- * - Non-zero height and width
- * - Same number of filled tiles on the rows and columns
- * - The height and width are sufficient to cope with the individual constraints
- */
-std::pair<bool, std::string> check_grid_input(const InputGrid& grid);
 
 
 /*
@@ -132,14 +88,18 @@ std::ostream& operator<<(std::ostream& ostream, const Line& line);
 std::string str_line_type(Line::Type type);
 std::string str_line_full(const Line& line);
 
+/*
+ * Utility function to build an input constraint from a fully defined line
+ */
+InputGrid::Constraint get_constraint_from(const Line& line);
 
-class Grid;     // Fwd declaration
 
 /*
  * OutputGrid class
  *
  *   A partially or fully solved Picross grid
  */
+class Grid;         // Fwd declaration
 class OutputGrid
 {
 public:
@@ -277,6 +237,18 @@ std::ostream& operator<<(std::ostream& ostream, Solver::Event event);
 
 
 /*
+ * Factory for the reference grid solver
+ */
+std::unique_ptr<Solver> get_ref_solver();
+
+
+/*
+ * Factory for a line solver
+ */
+std::unique_ptr<Solver> get_line_solver();
+
+
+/*
 * Validation code:
 *
 *  -1  ERR     The input grid is invalid
@@ -285,7 +257,7 @@ std::ostream& operator<<(std::ostream& ostream, Solver::Event event);
 *   2  MULT    The solution is not unique
 */
 using ValidationCode = int;
-std::string_view validation_code_str(ValidationCode code);
+std::string_view str_validation_code(ValidationCode code);
 
 
 /*
@@ -305,23 +277,5 @@ struct ValidationResult
     std::string msg;
 };
 ValidationResult validate_input_grid(const Solver& solver, const InputGrid& grid_input);
-
-
-/*
- * Factory for the reference grid solver
- */
-std::unique_ptr<Solver> get_ref_solver();
-
-
-/*
- * Factory for a line solver
- */
-std::unique_ptr<Solver> get_line_solver();
-
-
-/*
- * Build an InputGrid from an OutputGrid
- */
-InputGrid build_input_grid_from(const OutputGrid& grid);
 
 } // namespace picross

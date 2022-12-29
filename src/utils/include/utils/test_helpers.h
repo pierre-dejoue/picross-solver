@@ -39,4 +39,4 @@ struct OutputGridHasher
 
 using OutputGridSet = std::unordered_set<OutputGrid, OutputGridHasher>;
 
-} // namesapce picross
+} // namespace picross

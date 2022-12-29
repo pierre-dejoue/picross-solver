@@ -9,7 +9,6 @@
  * Copyright (c) 2010-2021 Pierre DEJOUE
  ******************************************************************************/
 #include <picross/picross.h>
-#include <picross/picross_io.h>
 #include <utils/console_observer.h>
 #include <utils/duration_meas.h>
 #include <utils/strings.h>
@@ -52,7 +51,7 @@ namespace
         ostream << data.filename << ',';
         ostream << data.gridname << ',';
         ostream << data.size << ',';
-        ostream << picross::validation_code_str(data.validation_result.code) << ',';
+        ostream << picross::str_validation_code(data.validation_result.code) << ',';
         ostream << (data.validation_result.code == 1 && (data.validation_result.branching_depth == 0u) ? "LINE" : "") << ',';
         ostream << data.timing_ms;
         if (!data.validation_result.msg.empty())
@@ -191,9 +190,9 @@ int main(int argc, char *argv[])
                 }
 
                 /* Sanity check of the input data */
-                bool input_ok;
-                std::tie(input_ok, grid_data.misc) = picross::check_grid_input(grid_input);
+                const auto [input_ok, check_msg] = picross::check_input_grid(grid_input);
                 grid_data.validation_result.code = input_ok ? 0 : -1;
+                grid_data.misc = check_msg;
 
                 if (input_ok)
                 {

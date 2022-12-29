@@ -1,5 +1,5 @@
-Picross Solver
-==============
+Picross Solver Library
+======================
 
 Picross is a puzzle game licensed by Nintendo. Those puzzles are also called nonograms or
 paint-by-number. The goal is to find a hidden picture in a rectangular grid, by painting
@@ -66,8 +66,66 @@ cpack -G ZIP -C Release
 
 ### CMake Integration
 
-The library CMake's build export the following target: `picross::picross`
+The library CMake's build exports the following target: `picross::picross`
 
+### Example
+
+Below is an example of how to use the library.
+The API is accessible via a unique header file [`<picross/picross.h>`](src/picross/include/picross/picross.h)
+
+```cpp
+#include <picross/picross.h>
+
+#include <cassert>
+#include <iostream>
+
+int main()
+{
+    // Puzzle definition
+    const picross::InputGrid::Constraints rows {
+        { 3 },
+        { 1, 1 },
+        { 1, 1 },
+        { 3 },
+        { 3 },
+        { }
+    };
+    const picross::InputGrid::Constraints cols {
+        { },
+        { 2 },
+        { 2 },
+        { 5 },
+        { 1 },
+        { 3 }
+    };
+    picross::InputGrid puzzle(rows, cols, "Note");
+
+    // [Optional] Check the puzzle validity
+    const auto [check_is_ok, check_msg] = picross::check_input_grid(puzzle);
+    assert(check_is_ok);
+
+    // Solve it
+    const auto solver = picross::get_ref_solver();
+    const auto result = solver->solve(puzzle);
+    assert(result.status == picross::Solver::Status::OK);
+
+    // Print out the solution
+    assert(result.solutions.size() == 1);
+    const auto& solution = result.solutions.front();
+    std::cout << solution.grid << std::endl;
+}
+```
+
+Output:
+
+```
+...###
+...#.#
+...#.#
+.###..
+.###..
+......
+```
 ## Test Applications
 
 A CLI and a GUI applications built on top of the solver library
@@ -132,6 +190,12 @@ is shown with tiles of varying colors:
 
 ![Animation of a complex puzzle with backtracking](./doc/img/solver-animation-with-branching.png)
 ("Mum" puzzle by Jan Wolter: https://webpbn.com/index.cgi?id=65)
+
+## Contributions
+
+This project does not accept pull requests at the moment.
+
+Please [submit an issue](https://github.com/pierre-dejoue/picross-solver/issues/new) for a feature request, a bug report or any question.
 
 ## License
 
