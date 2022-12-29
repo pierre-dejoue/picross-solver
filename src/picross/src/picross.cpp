@@ -40,7 +40,7 @@ InputGrid::InputGrid(Constraints&& rows, Constraints&& cols, const std::string& 
     , m_metadata()
 {}
 
-std::string grid_size_str(const InputGrid& grid)
+std::string str_input_grid_size(const InputGrid& grid)
 {
     std::ostringstream oss;
     oss << grid.m_cols.size() << "x" << grid.m_rows.size();

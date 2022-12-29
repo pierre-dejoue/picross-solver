@@ -321,7 +321,7 @@ void GridWindow::reset_solutions()
     const size_t width = grid.width();
     const size_t height = grid.height();
     text_buffer->buffer.clear();
-    text_buffer->buffer.appendf("Grid %s\n", grid_size_str(grid).c_str());
+    text_buffer->buffer.appendf("Grid %s\n", str_input_grid_size(grid).c_str());
 }
 
 void GridWindow::observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const ObserverGrid& grid)

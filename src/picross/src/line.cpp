@@ -230,23 +230,12 @@ bool is_complete(const Line& line)
 }
 
 
-std::string str_line(const Line& line)
-{
-    std::stringstream ss;
-    for (unsigned int idx = 0u; idx < line.size(); idx++)
-    {
-        ss << Tiles::str(line.at(idx));
-    }
-    return ss.str();
-}
-
-
 std::string str_line_type(Line::Type type)
 {
     if (type == Line::ROW) { return "ROW"; }
     if (type == Line::COL) { return "COL"; }
-    assert(false);
-    return "UNKNOWN";
+    assert(0);
+    return "ERR";
 }
 
 
@@ -266,12 +255,19 @@ bool operator!=(const Line& lhs, const Line& rhs)
 
 std::ostream& operator<<(std::ostream& ostream, const Line& line)
 {
-    std::ios prev_iostate(nullptr);
-    prev_iostate.copyfmt(ostream);
-    ostream << str_line_type(line.type()) << " " << std::setw(3) << line.index() << " " << str_line(line);
-    ostream.copyfmt(prev_iostate);
+    for (unsigned int idx = 0u; idx < line.size(); idx++)
+        ostream << Tiles::str(line.at(idx));
     return ostream;
 }
+
+
+std::string str_line_full(const Line& line)
+{
+    std::stringstream ss;
+    ss << str_line_type(line.type()) << " " << std::setw(3) << line.index() << " " << line;
+    return ss.str();
+}
+
 
 InputGrid::Constraint get_constraint_from(const Line& line)
 {

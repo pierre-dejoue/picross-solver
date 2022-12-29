@@ -21,7 +21,7 @@ void ConsoleObserver::observer_callback(picross::Solver::Event event, const picr
         break;
 
     case picross::Solver::Event::DELTA_LINE:
-        ostream << " delta: " << *delta << " depth: " << depth << std::endl;
+        ostream << " delta: " << str_line_full(*delta) << " depth: " << depth << std::endl;
         break;
 
     case picross::Solver::Event::SOLVED_GRID:

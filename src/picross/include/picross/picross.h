@@ -73,7 +73,7 @@ struct InputGrid
 /*
  * Return the grid size as a string "WxH" with W the width and H the height
  */
-std::string grid_size_str(const InputGrid& grid);
+std::string str_input_grid_size(const InputGrid& grid);
 
 
 /*
@@ -129,6 +129,9 @@ bool operator==(const Line& lhs, const Line& rhs);
 bool operator!=(const Line& lhs, const Line& rhs);
 
 std::ostream& operator<<(std::ostream& ostream, const Line& line);
+std::string str_line_type(Line::Type type);
+std::string str_line_full(const Line& line);
+
 
 class Grid;     // Fwd declaration
 

@@ -62,6 +62,12 @@ namespace
         return ostream;
     }
 
+    void output_solution_grid(std::ostream& ostream, const picross::OutputGrid& grid, unsigned int indent = 0)
+    {
+        const std::string ind(indent, ' ');
+        for (unsigned int y = 0u; y < grid.height(); y++)
+            ostream << ind << grid.get_line<picross::Line::ROW>(y) << std::endl;
+    }
 } // namespace
 
 /*******************************************************************************
@@ -174,7 +180,7 @@ int main(int argc, char *argv[])
         {
             ValidationModeData grid_data = file_data;
             grid_data.gridname = grid_input.name();
-            grid_data.size = grid_size_str(grid_input);
+            grid_data.size = str_input_grid_size(grid_input);
 
             try
             {
@@ -236,7 +242,8 @@ int main(int argc, char *argv[])
                                 const auto& solution = solver_result.solutions.front();
                                 assert(!solution.grid.is_solved());
                                 std::cout << "  Found partial solution" << std::endl;
-                                std::cout << solution.grid << std::endl;
+                                output_solution_grid(std::cout, solution.grid, 2);
+                                std::cout << std::endl;
                             }
                             std::cout << std::endl;
                         }
@@ -249,7 +256,8 @@ int main(int argc, char *argv[])
                             {
                                 assert(solution.grid.is_solved());
                                 std::cout << "  Nb " << ++nb << ": (branching depth: " << solution.branching_depth << ")" << std::endl;
-                                std::cout << solution.grid << std::endl;
+                                output_solution_grid(std::cout, solution.grid, 2);
+                                std::cout << std::endl;
                             }
                         }
 
