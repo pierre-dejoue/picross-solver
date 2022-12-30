@@ -33,23 +33,10 @@ Solver::Result RefSolver<BranchingAllowed>::solve(const InputGrid& grid_input, u
         m_stats->max_nb_solutions = max_nb_solutions;
     }
 
-    Observer observer_wrapper;
-    if (m_observer)
-    {
-        observer_wrapper = [this](Solver::Event event, const Line* delta, unsigned int depth)
-        {
-            if (this->m_stats != nullptr)
-            {
-                this->m_stats->nb_observer_callback_calls++;
-            }
-            this->m_observer(event, delta, depth);
-        };
-    }
-
     result.status = Status::OK;
     try
     {
-        WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives, BranchingAllowed> work_grid(grid_input, std::move(observer_wrapper), m_abort_function);
+        WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives, BranchingAllowed> work_grid(grid_input, m_observer, m_abort_function);
         work_grid.set_stats(m_stats);
         result.status = work_grid.solve(result.solutions, max_nb_solutions);
     }
@@ -118,6 +105,9 @@ std::ostream& operator<<(std::ostream& ostream, Solver::Event event)
         break;
     case Solver::Event::SOLVED_GRID:
         ostream << "SOLVED_GRID";
+        break;
+    case Solver::Event::INTERNAL_STATE:
+        ostream << "INTERNAL_STATE";
         break;
     default:
         assert(0);  // Unknown Solver::Event

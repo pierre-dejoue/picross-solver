@@ -324,7 +324,7 @@ void GridWindow::reset_solutions()
     text_buffer->buffer.appendf("Grid %s\n", str_input_grid_size(grid).c_str());
 }
 
-void GridWindow::observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, const ObserverGrid& grid)
+void GridWindow::observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int, unsigned int, const ObserverGrid& grid)
 {
     std::unique_lock<std::mutex> lock(line_mutex);
     if (line_events.size() >= speed)
@@ -368,6 +368,9 @@ unsigned int GridWindow::process_line_events(std::vector<LineEvent>& events)
         case picross::Solver::Event::SOLVED_GRID:
             valid_solutions++;
             allocate_new_solution = true;              // Allocate new solution on next event
+            break;
+
+        case picross::Solver::Event::INTERNAL_STATE:
             break;
 
         default:

@@ -37,7 +37,6 @@ void merge_branching_grid_stats(GridStats& stats, const GridStats& branching_sta
     stats.nb_single_line_partial_reduction_w_change += branching_stats.nb_single_line_partial_reduction_w_change;
     stats.nb_single_line_full_reduction += branching_stats.nb_single_line_full_reduction;
     stats.nb_single_line_full_reduction_w_change += branching_stats.nb_single_line_full_reduction_w_change;
-    stats.nb_observer_callback_calls += branching_stats.nb_observer_callback_calls;
 }
 
 std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
@@ -71,10 +70,6 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
     ostream << "  Number of full grid pass: " << stats.nb_full_grid_pass << std::endl;
     ostream << "  Number of single line partial reduction (change/all): " << stats.nb_single_line_partial_reduction_w_change << "/" << stats.nb_single_line_partial_reduction << std::endl;
     ostream << "  Number of single line full reduction (change/all): " << stats.nb_single_line_full_reduction_w_change << "/" << stats.nb_single_line_full_reduction << std::endl;
-    if (stats.nb_observer_callback_calls > 0)
-    {
-        ostream << "  Number of calls to the observer callback: " << stats.nb_observer_callback_calls << std::endl;
-    }
 
     return ostream;
 }

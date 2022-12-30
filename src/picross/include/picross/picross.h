@@ -187,30 +187,34 @@ public:
     //
     // The observer is a function object with the following signature:
     //
-    // void observer(Event event, const Line* delta, unsigned int depth);
+    // void observer(Event event, const Line* delta, unsigned int depth, unsigned int misc);
     //
-    //  * event = DELTA_LINE        delta != nullptr            depth is set
+    //  * event = DELTA_LINE        delta != nullptr            depth is set        misc = nb_alternatives
     //
     //      A line of the output grid has been updated, the delta between the previous value of that line
     //      and the new one is given in delta.
     //      The depth is set to zero initially, then it is the same value as that of the last BRANCHING event.
     //
-    //  * event = BRANCHING         delta = nullptr             depth > 0
+    //  * event = BRANCHING         delta = known_tiles         depth >= 0          misc = nb_alternatives    (NODE)
+    //  * event = BRANCHING         delta = nullptr             depth > 0           misc = 0                  (EDGE)
     //
     //      This event occurs when the algorithm is branching between several alternative solutions, or
     //      when it is going back to an earlier branch. Upon starting a new branch the depth is increased
     //      by one. In the other case, depth is set the the value of the earlier branch.
     //      NB: The user must keep track of the state of the grid at each branching point in order to be
     //          able to reconstruct the final solutions based on the observer events only.
-    //      NB: There is no BRANCHING event sent at the beginning of the solving process (depth = 0),
-    //          therefore the depth of the first BRANCHING event is always 1.
+    //      NB: There are two kinds of BRANCHING events: the NODE event which provides the known_tiles of the
+    //          branching line and the number of alternatives, and the EDGE event each time an alternative
+    //          of the branching line is being tested.
     //
-    //  * event = SOLVED_GRID       delta = nullptr             depth is set
+    //  * event = SOLVED_GRID       delta = nullptr             depth is set        misc = 0
     //
     //      A solution grid has been found. The sum of all the delta lines up until that stage is the solved grid.
     //
-    enum class Event { DELTA_LINE, BRANCHING, SOLVED_GRID };
-    using Observer = std::function<void(Event,const Line*,unsigned int)>;
+    //  * event = INTERNAL_STATE    delta = nullptr             depth is set        misc = state
+    //
+    enum class Event { DELTA_LINE, BRANCHING, SOLVED_GRID, INTERNAL_STATE };
+    using Observer = std::function<void(Event,const Line*,unsigned int,unsigned int)>;
     virtual void set_observer(Observer observer) = 0;
 
 

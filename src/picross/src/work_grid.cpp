@@ -131,7 +131,7 @@ WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const WorkGrid& parent
     // Solver::Observer
     if (m_observer)
     {
-        m_observer(Solver::Event::BRANCHING, nullptr, nested_level);
+        m_observer(Solver::Event::BRANCHING, nullptr, nested_level, 0);
     }
 }
 
@@ -148,10 +148,14 @@ template <typename LineSelectionPolicy, bool BranchingAllowed>
 Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::line_solve(Solver::Solutions& solutions)
 {
     bool grid_completed = false;
-
     // While the reduce method is making progress, call it!
     while (m_state != State::BRANCHING && !grid_completed)
     {
+       if (m_observer)
+       {
+           m_observer(Solver::Event::INTERNAL_STATE, nullptr, m_branching_depth, static_cast<unsigned int>(m_state));
+       }
+
         PassStatus pass_status;
         switch (m_state)
         {
@@ -201,7 +205,7 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::line_solve(Solve
     {
         if (m_observer)
         {
-            m_observer(Solver::Event::SOLVED_GRID, nullptr, m_branching_depth);
+            m_observer(Solver::Event::SOLVED_GRID, nullptr, m_branching_depth, 0);
         }
         save_solution(solutions);
         return Solver::Status::OK;
@@ -309,14 +313,14 @@ bool WorkGrid<LineSelectionPolicy, BranchingAllowed>::set_line(const Line& line,
         }
     }
 
-    m_nb_alternatives[line_type][line_index] = line_is_complete ? 1u : nb_alt;
+    m_nb_alternatives[line_type][line_index] = nb_alt = line_is_complete ? 1u : nb_alt;
     m_line_completed[line_type][line_index] = line_is_complete;
     m_line_has_updates[line_type][line_index] = line_changed;
 
     if (m_observer && line_changed)
     {
         const Line delta = line_delta(observer_original_line, get_line(line_type, line_index));
-        m_observer(Solver::Event::DELTA_LINE, &delta, m_branching_depth);
+        m_observer(Solver::Event::DELTA_LINE, &delta, m_branching_depth, nb_alt);
     }
 
     return line_changed;
@@ -507,6 +511,11 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::branch(Solver::S
 
     // This function will test a range of alternatives for one particular line of the grid, each time
     // creating a new instance of the grid class on which the function WorkGrid<LineSelectionPolicy, BranchingAllowed>::solve() is called.
+
+    if (m_observer)
+    {
+        m_observer(Solver::Event::BRANCHING, &known_tiles, m_branching_depth, nb_alt);
+    }
 
     if (m_grid_stats != nullptr)
     {

@@ -34,7 +34,7 @@ GridObserver::GridObserver(const picross::InputGrid& grid)
 {
 }
 
-void GridObserver::operator()(picross::Solver::Event event, const picross::Line* delta, unsigned int depth)
+void GridObserver::operator()(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, unsigned int misc)
 {
     const auto width = grids[0].width();
     const auto height = grids[0].height();
@@ -42,6 +42,9 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
     switch (event)
     {
     case picross::Solver::Event::BRANCHING:
+        // Consider only the "branching edge" events
+        if (delta)
+            break;
         if (depth > current_depth)
         {
             assert(depth == current_depth + 1u);
@@ -84,12 +87,16 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
         assert(depth == current_depth);
         break;
 
+    case picross::Solver::Event::INTERNAL_STATE:
+        assert(depth == current_depth);
+        break;
+
     default:
         assert(0);  // Unknown Solver::Event
     }
 
     assert(current_depth < grids.size());
-    observer_callback(event, delta, depth, grids.at(current_depth));
+    observer_callback(event, delta, depth, misc, grids.at(current_depth));
 }
 
 void GridObserver::observer_clear()
