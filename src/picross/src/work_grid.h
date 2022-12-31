@@ -153,7 +153,7 @@ private:
     PassStatus single_line_full_reduction(Line::Type type, unsigned int index);
     template <State S>
     PassStatus full_grid_pass();
-    Solver::Status branch(Solver::Solutions& solutions, unsigned int max_nb_solutions) const;
+    Solver::Status branch(Solver::Solutions& solutions, unsigned int max_nb_solutions);
     bool valid_solution() const;
     void save_solution(Solver::Solutions& solutions) const;
 private:
@@ -170,7 +170,6 @@ private:
     Solver::Observer                                m_observer;          // If not empty, the solver will notify the observer of its progress
     Solver::Abort                                   m_abort_function;    // If not empty, the solver will regularly call this function and abort if it returns true
     unsigned int                                    m_max_nb_alternatives;
-    std::vector<Line>                               m_guess_list_of_all_alternatives;
     unsigned int                                    m_branching_depth;
     std::shared_ptr<BinomialCoefficients::Cache>    m_binomial;
 };

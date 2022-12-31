@@ -58,7 +58,6 @@ WorkGrid<LineSelectionPolicy, BranchingAllowed>::WorkGrid(const InputGrid& grid,
     , m_observer(std::move(observer))
     , m_abort_function(std::move(abort_function))
     , m_max_nb_alternatives(LineSelectionPolicy::initial_max_nb_alternatives())
-    , m_guess_list_of_all_alternatives()
     , m_branching_depth(0u)
     , m_binomial(std::make_shared<BinomialCoefficients::Cache>())
 {
@@ -229,20 +228,6 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::solve(Solver::So
         {
             assert(m_state == State::BRANCHING);
 
-            // Find the row or column not yet solved with the minimal alternative lines.
-            // That is the min of all alternatives greater or equal to 2.
-            sort_by_nb_alternatives();
-            const LineId& found_line = m_all_lines.front();
-            assert(m_nb_alternatives[found_line.m_type][found_line.m_index] >= 2);
-
-            // Select the row or column with the minimal number of alternatives
-            const LineConstraint& line_constraint = m_constraints[found_line.m_type][found_line.m_index];
-            const Line& known_tiles = get_line(found_line.m_type, found_line.m_index);
-
-            m_guess_list_of_all_alternatives = line_constraint.build_all_possible_lines(known_tiles);
-            if (m_guess_list_of_all_alternatives.empty())
-                return Solver::Status::CONTRADICTORY_GRID;
-
             // Make a guess
             status = branch(solutions, max_nb_solutions);
         }
@@ -371,18 +356,6 @@ typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<Li
     // Set line
     status.grid_changed = set_line(reduced_line, nb_alt);
 
-    if (nb_alt > 1u)
-    {
-        // During a normal pass line_to_be_reduced is set to false after a line reduction has been performed.
-        // Here since we are computing a trivial reduction assuming the initial line is completely unknown we
-        // are ignoring tiles that are possibly already set. In such a case, we need to redo a reduction
-        // on the next full grid pass, unless the line is already completed
-        if (reduced_line != get_line(type, index))
-        {
-            m_line_is_fully_reduced[type][index] = m_line_completed[type][index];
-        }
-    }
-
     return status;
 }
 
@@ -503,14 +476,26 @@ typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<Li
     return status;
 }
 
-
+// This method will test a range of alternatives for one particular line of the grid, each time
+// creating a new instance of the grid class on which the function WorkGrid<LineSelectionPolicy, BranchingAllowed>::solve() is called.
 template <typename LineSelectionPolicy, bool BranchingAllowed>
-Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::branch(Solver::Solutions& solutions, unsigned int max_nb_solutions) const
+Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::branch(Solver::Solutions& solutions, unsigned int max_nb_solutions)
 {
-    assert(m_guess_list_of_all_alternatives.size() > 0u);
+    assert(BranchingAllowed);
+    assert(std::all_of(m_all_lines.begin(), m_all_lines.end(), [this](const LineId& id) { return m_line_completed[id.m_type][id.m_index] || m_line_is_fully_reduced[id.m_type][id.m_index]; }));
 
-    // This function will test a range of alternatives for one particular line of the grid, each time
-    // creating a new instance of the grid class on which the function WorkGrid<LineSelectionPolicy, BranchingAllowed>::solve() is called.
+    // Find the row or column not yet solved with the minimal alternative lines.
+    sort_by_nb_alternatives();
+    const LineId& found_line = m_all_lines.front();
+    const LineConstraint& line_constraint = m_constraints[found_line.m_type][found_line.m_index];
+    const Line& known_tiles = get_line(found_line.m_type, found_line.m_index);
+    const auto nb_alt = m_nb_alternatives[found_line.m_type][found_line.m_index];
+    assert(nb_alt >= 2);
+
+    // Build all alternatives for that row or column
+    const auto list_of_all_alternatives = line_constraint.build_all_possible_lines(known_tiles);
+    assert(list_of_all_alternatives.size() == nb_alt);
+    assert(!list_of_all_alternatives.empty());  // Then the grid would be contradictory, but this must be catched earlier
 
     if (m_observer)
     {
@@ -520,7 +505,7 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::branch(Solver::S
     if (m_grid_stats != nullptr)
     {
         m_grid_stats->nb_branching_calls++;
-        const auto nb_alts = static_cast<unsigned int>(m_guess_list_of_all_alternatives.size());
+        const auto nb_alts = static_cast<unsigned int>(list_of_all_alternatives.size());
         m_grid_stats->total_nb_branching_alternatives += nb_alts;
         if (m_grid_stats->max_nb_alternatives_by_branching_depth.size() < m_branching_depth + 1)
             m_grid_stats->max_nb_alternatives_by_branching_depth.resize(m_branching_depth + 1, 0u);
@@ -529,7 +514,7 @@ Solver::Status WorkGrid<LineSelectionPolicy, BranchingAllowed>::branch(Solver::S
     }
 
     bool flag_solution_found = false;
-    for (const Line& guess_line : m_guess_list_of_all_alternatives)
+    for (const Line& guess_line : list_of_all_alternatives)
     {
         // Allocate a new work grid. Use the shallow copy.
         WorkGrid new_grid(*this, State::PARTIAL_REDUCTION, m_branching_depth + 1);
