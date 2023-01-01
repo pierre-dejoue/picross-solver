@@ -8,6 +8,7 @@
 #include <picross/picross.h>
 
 #include "work_grid.h"
+#include "solver_policy.h"
 
 #include <cassert>
 #include <exception>
@@ -33,10 +34,14 @@ Solver::Result RefSolver<BranchingAllowed>::solve(const InputGrid& grid_input, u
         m_stats->max_nb_solutions = max_nb_solutions;
     }
 
+    SolverPolicy_RampUpMaxNbAlternatives solver_policy;
+    solver_policy.m_branching_allowed = BranchingAllowed;
+    solver_policy.m_limit_on_max_nb_alternatives = BranchingAllowed;
+
     result.status = Status::OK;
     try
     {
-        WorkGrid<LineSelectionPolicy_RampUpMaxNbAlternatives, BranchingAllowed> work_grid(grid_input, m_observer, m_abort_function);
+        WorkGrid<SolverPolicy_RampUpMaxNbAlternatives> work_grid(grid_input, solver_policy, m_observer, m_abort_function);
         work_grid.set_stats(m_stats);
         result.status = work_grid.solve(result.solutions, max_nb_solutions);
     }
@@ -189,7 +194,7 @@ std::string_view str_validation_code(ValidationCode code)
 
 std::unique_ptr<Solver> get_ref_solver()
 {
-    return std::make_unique<RefSolver<>>();
+    return std::make_unique<RefSolver<true>>();
 }
 
 

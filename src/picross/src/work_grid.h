@@ -16,95 +16,23 @@
 
 #include <picross/picross.h>
 
-#include <algorithm>
 #include <exception>
-#include <limits>
 #include <memory>
 #include <vector>
-
 
 namespace picross
 {
 
-/*
- * Policies that affect how the solver select which lines to reduce
- */
-struct LineSelectionPolicy_Legacy
-{
-    // Solver initial value of max_nb_alternatives
-    static constexpr unsigned int initial_max_nb_alternatives()
-    {
-        return std::numeric_limits<unsigned int>::max();
-    }
-
-    // get the value for max_nb_alternatives to be used on the next full grid pass
-    static unsigned int get_max_nb_alternatives(unsigned int previous_max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
-    {
-        UNUSED(previous_max_nb_alternatives);
-        UNUSED(grid_changed);
-        UNUSED(skipped_lines);
-        UNUSED(search_depth);
-        return std::numeric_limits<unsigned int>::max();
-    }
-
-    // Return true if it is time to move to branching exploration
-    static bool switch_to_branching(unsigned int max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
-    {
-        UNUSED(max_nb_alternatives);
-        UNUSED(skipped_lines);
-        UNUSED(search_depth);
-        return !grid_changed;
-    }
-};
-
-struct LineSelectionPolicy_RampUpMaxNbAlternatives
-{
-    static inline constexpr unsigned int Min_nb_alternatives = 1 << 6;
-    static inline constexpr unsigned int Max_nb_alternatives = 1 << 30;
-
-    static constexpr unsigned int initial_max_nb_alternatives()
-    {
-        return Min_nb_alternatives;
-    }
-
-    static unsigned int get_max_nb_alternatives(unsigned int previous_max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
-    {
-        UNUSED(search_depth);
-        unsigned int nb_alternatives = previous_max_nb_alternatives;
-        if (grid_changed && previous_max_nb_alternatives > Min_nb_alternatives)
-        {
-            // Decrease max_nb_alternatives
-            nb_alternatives = std::min(nb_alternatives, Max_nb_alternatives) >> 2;
-        }
-        else if (!grid_changed && skipped_lines > 0u)
-        {
-            // Increase max_nb_alternatives
-            nb_alternatives = nb_alternatives >= Max_nb_alternatives
-                ? std::numeric_limits<unsigned int>::max()
-                : nb_alternatives << 2;
-        }
-        return nb_alternatives;
-    }
-
-    static bool switch_to_branching(unsigned int max_nb_alternatives, bool grid_changed, unsigned int skipped_lines, unsigned int search_depth)
-    {
-        UNUSED(search_depth);
-        return !grid_changed && (skipped_lines == 0u || (max_nb_alternatives >= Max_nb_alternatives));
-    }
-};
-
-
 // Exception returned by WorkGrid::solve() if the processing was aborted from the outside
 class PicrossSolverAborted : public std::exception
 {};
-
 
 /*
  * WorkGrid class
  *
  *   Working class used to solve a grid.
  */
-template <typename LineSelectionPolicy, bool BranchingAllowed = true>
+template <typename SolverPolicy>
 class WorkGrid final : private Grid
 {
 private:
@@ -131,14 +59,14 @@ private:
     };
     using AllLines = std::vector<LineId>;
 public:
-    WorkGrid(const InputGrid& grid, Solver::Observer observer = Solver::Observer(), Solver::Abort abort_function = Solver::Abort());
+    WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Solver::Observer observer = Solver::Observer(), Solver::Abort abort_function = Solver::Abort());
     // Not copyable nor movable
     WorkGrid(const WorkGrid&) = delete;
     WorkGrid(WorkGrid&&) noexcept = delete;
     WorkGrid& operator=(const WorkGrid&) = delete;
     WorkGrid& operator=(WorkGrid&&) noexcept = delete;
 private:
-    WorkGrid(const WorkGrid& parent, State initial_state, unsigned int nested_level);       // Shallow copy
+    WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, State initial_state, unsigned int nested_level);       // Shallow copy
 public:
     void set_stats(GridStats* stats);
     Solver::Status line_solve(Solver::Solutions& solutions);
@@ -158,6 +86,7 @@ private:
     void save_solution(Solver::Solutions& solutions) const;
 private:
     State                                           m_state;
+    const SolverPolicy                              m_solver_policy;
     std::vector<LineConstraint>                     m_constraints[2];
     std::vector<LineAlternatives>                   m_alternatives[2];
     std::vector<bool>                               m_line_completed[2];

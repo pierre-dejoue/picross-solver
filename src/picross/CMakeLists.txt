@@ -19,6 +19,7 @@ set(LIB_SOURCES
     src/picross_io.cpp
     src/picross_stats.cpp
     src/solver.cpp
+    src/solver_policy.cpp
     src/work_grid.cpp
 )
 
