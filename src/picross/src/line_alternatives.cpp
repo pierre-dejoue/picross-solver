@@ -91,6 +91,7 @@ namespace
 struct LineAlternatives::Impl
 {
     Impl(const LineConstraint& constraint, const LineSpan& known_tiles, BinomialCoefficients::Cache& binomial);
+    Impl(const Impl& other, const LineSpan& known_tiles);
 
     template <bool Reversed>
     void reset();
@@ -121,7 +122,6 @@ struct LineAlternatives::Impl
     Reduction reduce_all_alternatives();
     Reduction reduce_alternatives(unsigned int nb_constraints);
 
-
     const Segments&                 m_segments;
     const LineSpan                  m_known_tiles;
     BinomialCoefficients::Cache&    m_binomial;
@@ -150,6 +150,23 @@ LineAlternatives::Impl::Impl(const LineConstraint& constraints,  const LineSpan&
     assert(m_alternative.type() == m_known_tiles.type());
     assert(m_alternative.size() == m_line_length);
     assert(m_line_length >= constraints.min_line_size());
+}
+
+LineAlternatives::Impl::Impl(const Impl& other, const LineSpan& known_tiles)
+    : m_segments(other.m_segments)
+    , m_known_tiles(known_tiles)
+    , m_binomial(other.m_binomial)
+    , m_line_length(other.m_line_length)
+    , m_extra_zeros(other.m_extra_zeros)
+    , m_bidirectional_range(other.m_bidirectional_range)
+    , m_bidirectional_range_reverse(other.m_bidirectional_range_reverse)
+    , m_alternative(other.m_alternative)
+    , m_reduced_line(m_alternative)
+    , m_reduced_line_reset(true)
+{
+    assert(m_line_length == m_known_tiles.size());
+    assert(m_alternative.index() == m_known_tiles.index());
+    assert(m_alternative.type() == m_known_tiles.type());
 }
 
 template <bool Reversed>
@@ -392,6 +409,11 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_alternatives(unsigned
 
 LineAlternatives::LineAlternatives(const LineConstraint& constraint, const LineSpan& known_tiles, BinomialCoefficients::Cache& binomial)
     : p_impl(std::make_unique<Impl>(constraint, known_tiles, binomial))
+{
+}
+
+LineAlternatives::LineAlternatives(const LineAlternatives& other, const LineSpan& known_tiles)
+    : p_impl(std::make_unique<Impl>(*other.p_impl, known_tiles))
 {
 }
 

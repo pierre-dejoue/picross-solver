@@ -17,6 +17,7 @@ public:
     using NbAlt = unsigned int;
 public:
     LineAlternatives(const LineConstraint& constraint, const LineSpan& known_tiles, BinomialCoefficients::Cache& binomial);
+    LineAlternatives(const LineAlternatives& other, const LineSpan& known_tiles);
     ~LineAlternatives();
     // Movable
     LineAlternatives(LineAlternatives&&) noexcept;
