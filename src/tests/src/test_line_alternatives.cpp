@@ -5,6 +5,7 @@
 #include "binomial.h"
 #include "line_alternatives.h"
 #include "line_constraint.h"
+#include "line_span.h"
 
 #include <utility>
 

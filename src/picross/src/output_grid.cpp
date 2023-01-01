@@ -6,6 +6,7 @@
 #include <picross/picross.h>
 
 #include "grid.h"
+#include "line.h"
 
 #include <cassert>
 #include <exception>
@@ -67,11 +68,16 @@ template <Line::Type Type>
 Line OutputGrid::get_line(Line::Index index) const
 {
     if constexpr (Type == Line::ROW)
-        if (index >= p_grid->height()) { throw std::out_of_range("Grid::get_line: row index (" + std::to_string(index) + ") is out of range (" + std::to_string(p_grid->height()) + ")"); }
+    {
+        if (index >= p_grid->height()) { throw std::out_of_range("OutputGrid::get_line: row index (" + std::to_string(index) + ") is out of range (" + std::to_string(p_grid->height()) + ")"); }
+    }
     if constexpr (Type == Line::COL)
-        if (index >= p_grid->width()) { throw std::out_of_range("Grid::get_line: column index (" + std::to_string(index) + ") is out of range (" + std::to_string(p_grid->width()) + ")"); }
-    return p_grid->get_line<Type>(index);
+    {
+        if (index >= p_grid->width()) { throw std::out_of_range("OututGrid::get_line: column index (" + std::to_string(index) + ") is out of range (" + std::to_string(p_grid->width()) + ")"); }
+    }
+    return line_from_line_span(p_grid->get_line(Type, index));
 }
+
 
 Line OutputGrid::get_line(Line::Type type, Line::Index index) const
 {
@@ -92,8 +98,8 @@ std::size_t OutputGrid::hash() const
 
 bool OutputGrid::set_tile(Line::Index x, Line::Index y, Tile val)
 {
-    if (x >= p_grid->width()) { throw std::out_of_range("Grid::set_tile: x (" + std::to_string(x) + ") is out of range (" + std::to_string(p_grid->width()) + ")"); }
-    if (y >= p_grid->height()) { throw std::out_of_range("Grid::set_tile: y (" + std::to_string(y) + ") is out of range (" + std::to_string(p_grid->height()) + ")"); }
+    if (x >= p_grid->width()) { throw std::out_of_range("OutputGrid::set_tile: x (" + std::to_string(x) + ") is out of range (" + std::to_string(p_grid->width()) + ")"); }
+    if (y >= p_grid->height()) { throw std::out_of_range("OutputGrid::set_tile: y (" + std::to_string(y) + ") is out of range (" + std::to_string(p_grid->height()) + ")"); }
     return p_grid->set(x, y, val);
 }
 

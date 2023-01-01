@@ -145,7 +145,7 @@ public:
     Solver::Status solve(Solver::Solutions& solutions, unsigned int max_nb_solutions = 0u);
 private:
     bool all_lines_completed() const;
-    bool set_line(const Line& line, unsigned int nb_alt);
+    bool update_line(const Line& line, unsigned int nb_alt);
     void partition_completed_lines();
     void sort_by_nb_alternatives();
     PassStatus single_line_initial_pass(Line::Type type, unsigned int index);

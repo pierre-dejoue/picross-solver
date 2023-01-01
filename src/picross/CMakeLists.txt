@@ -13,6 +13,7 @@ set(LIB_SOURCES
     src/line.cpp
     src/line_alternatives.cpp
     src/line_constraint.cpp
+    src/line_span.cpp
     src/output_grid.cpp
     src/picross.cpp
     src/picross_io.cpp

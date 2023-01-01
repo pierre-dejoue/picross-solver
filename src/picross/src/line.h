@@ -7,6 +7,8 @@
  ******************************************************************************/
 #pragma once
 
+#include "line_span.h"
+
 #include <picross/picross.h>
 
 
@@ -28,9 +30,13 @@ struct LineId
 /*
  * Line related functions
  */
-bool is_all_one_color(const Line& line, Tile color);
-bool is_complete(const Line& line);
-Line line_delta(const Line& lhs, const Line& rhs);
-Line operator+(const Line& lhs, const Line& rhs);
+Line operator+(const LineSpan& lhs, const LineSpan& rhs);
+Line operator-(const LineSpan& lhs, const LineSpan& rhs);
+void line_reduce(Line& lhs, const LineSpan& rhs);
+bool is_line_uniform(const LineSpan& line, Tile color);
+bool is_line_complete(const LineSpan& line);
+Line line_from_line_span(const LineSpan& line_span);
+void copy_line_from_line_span(Line& line, const LineSpan& line_span);
+InputGrid::Constraint get_constraint_from(const LineSpan& line_span);
 
 } // namespace picross

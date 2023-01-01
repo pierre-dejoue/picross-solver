@@ -8,6 +8,7 @@ namespace picross
 {
 namespace BinomialCoefficients { class Cache; }
 class LineConstraint;
+class LineSpan;
 
 // Given a constraint, recursively build the possible alternatives of a Line and reduce them.
 class LineAlternatives
@@ -15,7 +16,7 @@ class LineAlternatives
 public:
     using NbAlt = unsigned int;
 public:
-    LineAlternatives(const LineConstraint& constraint, const Line& known_tiles, BinomialCoefficients::Cache& binomial);
+    LineAlternatives(const LineConstraint& constraint, const LineSpan& known_tiles, BinomialCoefficients::Cache& binomial);
     ~LineAlternatives();
     // Movable
     LineAlternatives(LineAlternatives&&) noexcept;

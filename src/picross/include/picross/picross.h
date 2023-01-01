@@ -34,11 +34,11 @@ std::string_view get_version_string();
 /*
  * A tile is the base element to construct lines and grids: it can be empty or filled
  */
-enum class Tile
+enum class Tile : unsigned char
 {
-    UNKNOWN = -1,
-    EMPTY = 0,
-    FILLED = 1
+    UNKNOWN = 0,
+    EMPTY = 1,
+    FILLED = 2
 };
 
 
@@ -56,7 +56,6 @@ public:
     using Container = std::vector<Tile>;
 public:
     Line(Type type, Index index, std::size_t size, Tile init_tile = Tile::UNKNOWN);
-    Line(const Line& other, Tile init_tile);
     Line(Type type, Index index, const Container& tiles);
     Line(Type type, Index index, Container&& tiles);
 
@@ -66,19 +65,16 @@ public:
     Line(Line&&) noexcept = default;
     Line& operator=(Line&&) noexcept;
 public:
-    Type type() const;
-    Index index() const;
-    const Container& tiles() const;
-    Container& tiles();
-    std::size_t size() const;
-    Tile at(Index idx) const;
-    bool compatible(const Line& other) const;
-    bool add(const Line& other);
-    void reduce(const Line& other);
+    Type type() const { return m_type; }
+    Index index() const { return m_index; }
+    std::size_t size() const { return m_tiles.size(); }
+    const Container& tiles() const { return m_tiles; }
+    Tile& operator[](std::size_t idx) { return m_tiles[idx]; }
+    Tile& at(std::size_t idx) { return m_tiles.at(idx); }
 private:
-    const Type          m_type;
-    const Index         m_index;
-    Container           m_tiles;
+    const Type      m_type;
+    const Index     m_index;
+    Container       m_tiles;
 };
 
 bool operator==(const Line& lhs, const Line& rhs);

@@ -73,19 +73,17 @@ Line LineConstraint::line_trivial_reduction(unsigned int line_size, unsigned int
     }
     const unsigned int nb_zeros = line_size - m_min_line_size;
 
-    Line::Container& tiles = line.tiles();
     unsigned int line_idx = 0u;
-
     const auto max_seg_sz = max_segment_size();
     if (max_seg_sz == 0u)
     {
         // Blank line
         for (unsigned int c = 0u; c < line_size; c++)
         {
-            tiles[line_idx++] = Tile::EMPTY;
+            line[line_idx++] = Tile::EMPTY;
         }
         assert(line_idx == line_size);
-        assert(is_complete(line));
+        assert(is_line_complete(line));
     }
     else if (nb_zeros == 0u)
     {
@@ -94,11 +92,11 @@ Line LineConstraint::line_trivial_reduction(unsigned int line_size, unsigned int
         {
             const auto seg_sz = m_segments[seg_idx];
             const bool last = (seg_idx + 1u == m_segments.size());
-            for (unsigned int c = 0u; c < seg_sz; c++) { tiles[line_idx++] = Tile::FILLED; }
-            if (!last) { tiles[line_idx++] = Tile::EMPTY; }
+            for (unsigned int c = 0u; c < seg_sz; c++) { line[line_idx++] = Tile::FILLED; }
+            if (!last) { line[line_idx++] = Tile::EMPTY; }
         }
         assert(line_idx == line_size);
-        assert(is_complete(line));
+        assert(is_line_complete(line));
     }
     else if (max_seg_sz > nb_zeros)
     {
@@ -108,17 +106,17 @@ Line LineConstraint::line_trivial_reduction(unsigned int line_size, unsigned int
             const auto seg_sz = m_segments[seg_idx];
             assert(seg_sz > 0);
             const bool last = (seg_idx + 1u == m_segments.size());
-            for (unsigned int c = 0u; c < seg_sz; c++) { if (c >= nb_zeros) { tiles[line_idx] = Tile::FILLED; }; line_idx++; }
+            for (unsigned int c = 0u; c < seg_sz; c++) { if (c >= nb_zeros) { line[line_idx] = Tile::FILLED; }; line_idx++; }
             if (!last) { line_idx++; /* would be Tile::EMPTY */ }
         }
         assert(line_idx + nb_zeros == line_size);
-        assert(!is_all_one_color(line, Tile::UNKNOWN));
+        assert(!is_line_uniform(line, Tile::UNKNOWN));
     }
 
     return line;
 }
 
-std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_tiles) const
+std::vector<Line> LineConstraint::build_all_possible_lines(const LineSpan& known_tiles) const
 {
     assert(known_tiles.type() == m_type);
     const auto index = known_tiles.index();
@@ -128,19 +126,18 @@ std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_til
     unsigned int nb_zeros = static_cast<unsigned int>(known_tiles.size()) - m_min_line_size;
 
     std::vector<Line> result;
-    Line new_line(known_tiles, Tile::UNKNOWN);
-    Line::Container& new_tile_vect = new_line.tiles();
+    Line new_line(known_tiles.type(), known_tiles.index(), known_tiles.size(), Tile::UNKNOWN);
 
     if (m_segments.size() == 0)
     {
         // Return a list with only one all-zero line
         unsigned int line_idx = 0u;
-        for (unsigned int c = 0u; c < known_tiles.size(); c++) { new_tile_vect[line_idx++] = Tile::EMPTY; }
+        for (unsigned int c = 0u; c < known_tiles.size(); c++) { new_line[line_idx++] = Tile::EMPTY; }
 
         // Filter against known_tiles
-        if (new_line.compatible(known_tiles))
+        if (are_compatible(new_line, known_tiles))
         {
-            result.emplace_back(m_type, index, new_tile_vect);
+            result.emplace_back(new_line);
         }
     }
     else if (m_segments.size() == 1)
@@ -150,14 +147,14 @@ std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_til
         for (unsigned int n = 0u; n <= nb_zeros; n++)
         {
             unsigned int line_idx = 0u;
-            for (unsigned int c = 0u; c < n; c++) { new_tile_vect[line_idx++] = Tile::EMPTY; }
-            for (unsigned int c = 0u; c < m_segments[0]; c++) { new_tile_vect[line_idx++] = Tile::FILLED; }
-            while (line_idx < known_tiles.size()) { new_tile_vect[line_idx++] = Tile::EMPTY; }
+            for (unsigned int c = 0u; c < n; c++) { new_line[line_idx++] = Tile::EMPTY; }
+            for (unsigned int c = 0u; c < m_segments[0]; c++) { new_line[line_idx++] = Tile::FILLED; }
+            while (line_idx < known_tiles.size()) { new_line[line_idx++] = Tile::EMPTY; }
 
             // Filter against known_tiles
-            if (new_line.compatible(known_tiles))
+            if (are_compatible(new_line, known_tiles))
             {
-                result.emplace_back(m_type, index, new_tile_vect);
+                result.emplace_back(new_line);
             }
         }
     }
@@ -167,18 +164,18 @@ std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_til
         for (unsigned int n = 0u; n <= nb_zeros; n++)
         {
             unsigned int line_idx = 0u;
-            for (unsigned int c = 0u; c < n; c++) { new_tile_vect[line_idx++] = Tile::EMPTY; }
-            for (unsigned int c = 0u; c < m_segments[0]; c++) { new_tile_vect[line_idx++] = Tile::FILLED; }
-            new_tile_vect[line_idx++] = Tile::EMPTY;
+            for (unsigned int c = 0u; c < n; c++) { new_line[line_idx++] = Tile::EMPTY; }
+            for (unsigned int c = 0u; c < m_segments[0]; c++) { new_line[line_idx++] = Tile::FILLED; }
+            new_line[line_idx++] = Tile::EMPTY;
 
             // Filter against known_tiles
-            if (new_line.compatible(known_tiles))
+            if (are_compatible(new_line, known_tiles))
             {
                 // If OK, then go on and recursively call this function to construct the remaining part of the line.
                 std::vector<unsigned int> trim_sets_of_ones(m_segments.begin() + 1, m_segments.end());
                 LineConstraint recursive_constraint(m_type, trim_sets_of_ones);
 
-                std::vector<Tile> end_known_vect(known_tiles.tiles().cbegin() + line_idx, known_tiles.tiles().cend());
+                std::vector<Tile> end_known_vect(known_tiles.begin() + line_idx, known_tiles.end());
                 Line end_known_tiles(m_type, index, std::move(end_known_vect));
 
                 std::vector<Line> recursive_list = recursive_constraint.build_all_possible_lines(end_known_tiles);
@@ -186,8 +183,8 @@ std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_til
                 // Finally, construct the return_list based on the contents of the recursive_list.
                 for (const Line& line : recursive_list)
                 {
-                    std::copy(line.tiles().cbegin(), line.tiles().cend(), new_tile_vect.begin() + line_idx);
-                    result.emplace_back(m_type, index, new_tile_vect);
+                    std::copy(line.tiles().cbegin(), line.tiles().cend(), &new_line[line_idx]);
+                    result.emplace_back(new_line);
                 }
             }
             else
@@ -201,9 +198,9 @@ std::vector<Line> LineConstraint::build_all_possible_lines(const Line& known_til
     return result;
 }
 
-bool LineConstraint::compatible(const Line& line) const
+bool LineConstraint::compatible(const LineSpan& line) const
 {
-    assert(is_complete(line));
+    assert(is_line_complete(line));
     const auto segments = get_constraint_from(line);
     return segments == m_segments;
 }

@@ -21,6 +21,7 @@
 
 namespace picross
 {
+class LineSpan;
 
 using Segments = std::vector<unsigned int>;
 
@@ -43,8 +44,8 @@ public:
     unsigned int min_line_size() const { return m_min_line_size; }
     unsigned int line_trivial_nb_alternatives(unsigned int line_size, BinomialCoefficients::Cache& binomial) const;
     Line line_trivial_reduction(unsigned int line_size, unsigned int index) const;
-    std::vector<Line> build_all_possible_lines(const Line& known_tiles) const;
-    bool compatible(const Line& line) const;
+    std::vector<Line> build_all_possible_lines(const LineSpan& known_tiles) const;
+    bool compatible(const LineSpan& line) const;
 private:
     unsigned int max_segment_size() const;
     void print(std::ostream& ostream) const;

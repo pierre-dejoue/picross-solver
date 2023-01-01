@@ -67,17 +67,17 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
         if (delta->type() == picross::Line::ROW)
         {
             for (size_t x = 0u; x < width; ++x)
-                if (delta->at(x) != picross::Tile::UNKNOWN)
+                if (delta->tiles().at(x) != picross::Tile::UNKNOWN)
                 {
-                    grid.set_tile(x, index, delta->at(x), static_cast<unsigned int>(current_depth));
+                    grid.set_tile(x, index, delta->tiles().at(x), static_cast<unsigned int>(current_depth));
                 }
         }
         else
         {
             for (size_t y = 0u; y < height; ++y)
-                if (delta->at(y) != picross::Tile::UNKNOWN)
+                if (delta->tiles().at(y) != picross::Tile::UNKNOWN)
                 {
-                    grid.set_tile(index, y, delta->at(y), static_cast<unsigned int>(current_depth));
+                    grid.set_tile(index, y, delta->tiles().at(y), static_cast<unsigned int>(current_depth));
                 }
         }
         break;

@@ -10,6 +10,7 @@
 
 namespace picross
 {
+class LineSpan;
 
 class Grid
 {
@@ -26,14 +27,15 @@ public:
 
     const std::string& name() const { return m_name; }
 
+    LineSpan get_line(Line::Type type, Line::Index index) const;
     Tile get(Line::Index x, Line::Index y) const;
 
-    template <Line::Type type>
-    const Line& get_line(Line::Index index) const;
-
-    const Line& get_line(Line::Type type, Line::Index index) const;
-
+    // set() will force whatever tile value is passed as argument
+    // update() will change the tile value from unknwon to the value passed as argument, otherwise let it unchanged
+    // Return true if the tile value in the grid has changed
     bool set(Line::Index x, Line::Index y, Tile val);
+    bool update(Line::Index x, Line::Index y, Tile val);
+
     void reset();
 
     bool is_solved() const;
@@ -47,8 +49,8 @@ private:
     const std::size_t       m_width;
     const std::size_t       m_height;
     const std::string       m_name;
-    std::vector<Line>       m_rows;
-    std::vector<Line>       m_cols;
+    std::vector<Tile>       m_row_major;
+    std::vector<Tile>       m_col_major;
 };
 
 std::ostream& operator<<(std::ostream& ostream, const Grid& grid);
