@@ -476,6 +476,8 @@ typename WorkGrid<LineSelectionPolicy, BranchingAllowed>::PassStatus WorkGrid<Li
         }
         if (status.contradictory)
             break;
+        if (m_abort_function && m_abort_function())
+            throw PicrossSolverAborted();
     }
     if constexpr (S == State::INITIAL_PASS)
     {
