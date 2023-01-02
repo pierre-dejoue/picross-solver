@@ -1,0 +1,26 @@
+# Same as the smile pattern, this puzzle is not line solvable
+GRID Snake
+ROWS
+[ 2 4 3 1 ]
+[ 2 3 5 ]
+COLUMNS
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
+[ 1 ]
