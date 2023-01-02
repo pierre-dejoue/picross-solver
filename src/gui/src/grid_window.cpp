@@ -24,35 +24,74 @@ namespace
     // Default tile colors (branching depth = 0)
     constexpr ImU32 ColorTileBorder = IM_COL32(20, 90, 116, 255);
     constexpr ImU32 ColorTileFilled = IM_COL32(91, 94, 137, 255);
-    constexpr ImU32 ColorTileEmpty = IM_COL32(216, 216, 224, 255);
+    constexpr ImU32 ColorTileEmpty = IM_COL32(212, 216, 224, 255);
 
     // Branching colors
-    constexpr unsigned int DepthColors = 3;
-
     constexpr ImU32 ColorTileDepth1Border = IM_COL32(116, 20, 90, 255);
     constexpr ImU32 ColorTileDepth1Filled = IM_COL32(137, 91, 94, 255);
-    constexpr ImU32 ColorTileDepth1Empty = IM_COL32(224, 216, 216, 255);
+    constexpr ImU32 ColorTileDepth1Empty = IM_COL32(224, 212, 216, 255);
 
     constexpr ImU32 ColorTileDepth2Border = IM_COL32(90, 116, 20, 255);
     constexpr ImU32 ColorTileDepth2Filled = IM_COL32(94, 137, 91, 255);
-    constexpr ImU32 ColorTileDepth2Empty = IM_COL32(216, 224, 216, 255);
+    constexpr ImU32 ColorTileDepth2Empty = IM_COL32(216, 224, 212, 255);
+
+    // Branching colors (periodical from there)
+    constexpr ImU32 ColorTileDepthCyc0Border = IM_COL32(52, 20, 114, 255);
+    constexpr ImU32 ColorTileDepthCyc0Filled = IM_COL32(135, 90, 135, 255);
+    constexpr ImU32 ColorTileDepthCyc0Empty = IM_COL32(224, 216, 224, 255);
+
+    constexpr ImU32 ColorTileDepthCyc1Border = IM_COL32(114, 52, 20, 255);
+    constexpr ImU32 ColorTileDepthCyc1Filled = IM_COL32(135, 135, 90, 255);
+    constexpr ImU32 ColorTileDepthCyc1Empty = IM_COL32(224, 224, 216, 255);
+
+    constexpr ImU32 ColorTileDepthCyc2Border = IM_COL32(20, 114, 54, 255);
+    constexpr ImU32 ColorTileDepthCyc2Filled = IM_COL32(90, 135, 135, 255);
+    constexpr ImU32 ColorTileDepthCyc2Empty = IM_COL32(216, 224, 224, 255);
+
+    unsigned int cycling_color_index(unsigned int depth)
+    {
+        return depth < 3
+            ? depth
+            : 3 + ((depth - 3) % 3);
+    }
 
     const ImU32& get_color_tile_border(unsigned int depth = 0)
     {
-        static const ImU32 Colors[3] = { ColorTileBorder, ColorTileDepth1Border, ColorTileDepth2Border };
-        return Colors[depth % DepthColors];
+        static const ImU32 Colors[] = {
+            ColorTileBorder,
+            ColorTileDepth1Border,
+            ColorTileDepth2Border,
+            ColorTileDepthCyc0Border,
+            ColorTileDepthCyc1Border,
+            ColorTileDepthCyc2Border
+        };
+        return Colors[cycling_color_index(depth)];
     }
 
     const ImU32& get_color_tile_filled(unsigned int depth = 0)
     {
-        static const ImU32 Colors[3] = { ColorTileFilled, ColorTileDepth1Filled, ColorTileDepth2Filled };
-        return Colors[depth % DepthColors];
+        static const ImU32 Colors[] = {
+            ColorTileFilled,
+            ColorTileDepth1Filled,
+            ColorTileDepth2Filled,
+            ColorTileDepthCyc0Filled,
+            ColorTileDepthCyc1Filled,
+            ColorTileDepthCyc2Filled
+         };
+        return Colors[cycling_color_index(depth)];
     }
 
     const ImU32& get_color_tile_empty(unsigned int depth = 0)
     {
-        static const ImU32 Colors[3] = { ColorTileEmpty, ColorTileDepth1Empty, ColorTileDepth2Empty };
-        return Colors[depth % DepthColors];
+        static const ImU32 Colors[] = {
+            ColorTileEmpty,
+            ColorTileDepth1Empty,
+            ColorTileDepth2Empty,
+            ColorTileDepthCyc0Empty,
+            ColorTileDepthCyc1Empty,
+            ColorTileDepthCyc2Empty
+        };
+        return Colors[cycling_color_index(depth)];
     }
 
     void draw_background_grid(ImDrawList* draw_list, ImVec2 tl_corner, size_t tile_size, size_t width, size_t height, bool outline = false)
