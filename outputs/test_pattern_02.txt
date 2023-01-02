@@ -18,7 +18,7 @@ GRID 1: Asterisk
   Max number of alternatives on an empty line (initial grid pass): 15
   Max number of alternatives after a line reduction (change/all): 0/0
   Number of full grid pass: 2
-  Number of single line partial reduction (change/all): 0/0
+  Number of single line partial reduction (change/all): 0/4
   Number of single line full reduction (change/all): 0/0
 
 

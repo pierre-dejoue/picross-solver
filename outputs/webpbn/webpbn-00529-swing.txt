@@ -52,10 +52,10 @@ GRID 1: Swing
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 38567100
-  Max number of alternatives after a line reduction (change/all): 5390/5390
-  Number of full grid pass: 100
-  Number of single line partial reduction (change/all): 0/0
-  Number of single line full reduction (change/all): 432/561
+  Max number of alternatives after a line reduction (change/all): 1512/2235
+  Number of full grid pass: 146
+  Number of single line partial reduction (change/all): 457/1078
+  Number of single line full reduction (change/all): 259/370
 
 
 

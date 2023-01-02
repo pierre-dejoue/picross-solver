@@ -20,10 +20,10 @@ GRID 1: Katakana
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 120
-  Max number of alternatives after a line reduction (change/all): 1/1
-  Number of full grid pass: 5
-  Number of single line partial reduction (change/all): 0/0
-  Number of single line full reduction (change/all): 5/6
+  Max number of alternatives after a line reduction (change/all): 0/0
+  Number of full grid pass: 2
+  Number of single line partial reduction (change/all): 2/6
+  Number of single line full reduction (change/all): 0/0
 
 
 

@@ -47,10 +47,10 @@ GRID 1: Giraffe
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 2035800
-  Max number of alternatives after a line reduction (change/all): 204/204
-  Number of full grid pass: 46
-  Number of single line partial reduction (change/all): 0/0
-  Number of single line full reduction (change/all): 166/242
+  Max number of alternatives after a line reduction (change/all): 30/37
+  Number of full grid pass: 49
+  Number of single line partial reduction (change/all): 140/210
+  Number of single line full reduction (change/all): 49/89
 
 
 

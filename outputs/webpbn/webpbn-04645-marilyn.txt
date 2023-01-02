@@ -80,10 +80,10 @@ GRID 1: Marilyn
     > Total number of alternatives being tested: 838
     > Max number of alternatives by branching depth: 25 13 17 37
   Max number of alternatives on an empty line (initial grid pass): 62891499
-  Max number of alternatives after a line reduction (change/all): 11108889/38320568
-  Number of full grid pass: 13698
-  Number of single line partial reduction (change/all): 0/0
-  Number of single line full reduction (change/all): 31268/51723
+  Max number of alternatives after a line reduction (change/all): 186891/38320568
+  Number of full grid pass: 6707
+  Number of single line partial reduction (change/all): 32992/77750
+  Number of single line full reduction (change/all): 3173/8474
 
 
 

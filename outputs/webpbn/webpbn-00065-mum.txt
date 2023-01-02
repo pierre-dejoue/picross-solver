@@ -45,15 +45,15 @@ GRID 1: Mum
   ..............######..............
 
   Number of solutions found: 1
-  Max branching depth: 6
-    > Hypothesis on 19 lines
-    > Total number of alternatives being tested: 177
-    > Max number of alternatives by branching depth: 3 4 5 16 15 16
+  Max branching depth: 7
+    > Hypothesis on 22 lines
+    > Total number of alternatives being tested: 225
+    > Max number of alternatives by branching depth: 3 4 5 16 15 16 16
   Max number of alternatives on an empty line (initial grid pass): 13037895
-  Max number of alternatives after a line reduction (change/all): 120648/309331
-  Number of full grid pass: 2439
-  Number of single line partial reduction (change/all): 0/0
-  Number of single line full reduction (change/all): 8146/11966
+  Max number of alternatives after a line reduction (change/all): 120648/1081575
+  Number of full grid pass: 4925
+  Number of single line partial reduction (change/all): 3704/16355
+  Number of single line full reduction (change/all): 6078/9836
 
 
 

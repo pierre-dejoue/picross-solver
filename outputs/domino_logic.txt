@@ -1,4 +1,30 @@
-GRID 1: 4-Dom
+GRID 1: 3-Dom
+  Size: 7x7
+  Found 1 solution(s)
+
+  Nb 1: (branching depth: 1)
+  ....###
+  ......#
+  ..###.#
+  ....#..
+  ###.#..
+  ..#....
+  ..#....
+
+  Number of solutions found: 1
+  Max branching depth: 1
+    > Hypothesis on 1 lines
+    > Total number of alternatives being tested: 2
+    > Max number of alternatives by branching depth: 2
+  Max number of alternatives on an empty line (initial grid pass): 7
+  Max number of alternatives after a line reduction (change/all): 0/0
+  Number of full grid pass: 9
+  Number of single line partial reduction (change/all): 21/51
+  Number of single line full reduction (change/all): 0/0
+
+
+
+GRID 2: 4-Dom
   Size: 9x9
   Found 1 solution(s)
 
@@ -19,14 +45,14 @@ GRID 1: 4-Dom
     > Total number of alternatives being tested: 16
     > Max number of alternatives by branching depth: 7 5
   Max number of alternatives on an empty line (initial grid pass): 15
-  Max number of alternatives after a line reduction (change/all): 10/10
-  Number of full grid pass: 42
-  Number of single line partial reduction (change/all): 0/0
-  Number of single line full reduction (change/all): 118/292
+  Max number of alternatives after a line reduction (change/all): 0/0
+  Number of full grid pass: 41
+  Number of single line partial reduction (change/all): 124/301
+  Number of single line full reduction (change/all): 0/0
 
 
 
-GRID 2: 5-Dom
+GRID 3: 5-Dom
   Size: 11x11
   Found 1 solution(s)
 
@@ -45,18 +71,18 @@ GRID 2: 5-Dom
 
   Number of solutions found: 1
   Max branching depth: 5
-    > Hypothesis on 25 lines
-    > Total number of alternatives being tested: 116
+    > Hypothesis on 26 lines
+    > Total number of alternatives being tested: 115
     > Max number of alternatives by branching depth: 9 7 5 5 2
   Max number of alternatives on an empty line (initial grid pass): 28
-  Max number of alternatives after a line reduction (change/all): 13/21
-  Number of full grid pass: 247
-  Number of single line partial reduction (change/all): 0/0
-  Number of single line full reduction (change/all): 767/2095
+  Max number of alternatives after a line reduction (change/all): 0/0
+  Number of full grid pass: 264
+  Number of single line partial reduction (change/all): 750/2055
+  Number of single line full reduction (change/all): 0/0
 
 
 
-GRID 3: 6-Dom
+GRID 4: 6-Dom
   Size: 13x13
   Found 1 solution(s)
 
@@ -77,18 +103,18 @@ GRID 3: 6-Dom
 
   Number of solutions found: 1
   Max branching depth: 6
-    > Hypothesis on 188 lines
-    > Total number of alternatives being tested: 873
-    > Max number of alternatives by branching depth: 11 9 7 7 6 5
+    > Hypothesis on 173 lines
+    > Total number of alternatives being tested: 807
+    > Max number of alternatives by branching depth: 11 9 7 7 5 5
   Max number of alternatives on an empty line (initial grid pass): 45
-  Max number of alternatives after a line reduction (change/all): 16/36
-  Number of full grid pass: 1782
-  Number of single line partial reduction (change/all): 0/0
-  Number of single line full reduction (change/all): 5440/15851
+  Max number of alternatives after a line reduction (change/all): 0/0
+  Number of full grid pass: 1771
+  Number of single line partial reduction (change/all): 5127/14513
+  Number of single line full reduction (change/all): 0/0
 
 
 
-GRID 4: 7-Dom
+GRID 5: 7-Dom
   Size: 15x15
   Found 1 solution(s)
 
@@ -110,19 +136,19 @@ GRID 4: 7-Dom
   ..#............
 
   Number of solutions found: 1
-  Max branching depth: 8
-    > Hypothesis on 2009 lines
-    > Total number of alternatives being tested: 9905
-    > Max number of alternatives by branching depth: 13 11 9 9 8 7 7 3
+  Max branching depth: 9
+    > Hypothesis on 2010 lines
+    > Total number of alternatives being tested: 9877
+    > Max number of alternatives by branching depth: 13 11 9 9 7 7 7 3 2
   Max number of alternatives on an empty line (initial grid pass): 66
-  Max number of alternatives after a line reduction (change/all): 28/55
-  Number of full grid pass: 18686
-  Number of single line partial reduction (change/all): 0/0
-  Number of single line full reduction (change/all): 58706/173288
+  Max number of alternatives after a line reduction (change/all): 0/0
+  Number of full grid pass: 19598
+  Number of single line partial reduction (change/all): 57821/163913
+  Number of single line full reduction (change/all): 0/0
 
 
 
-GRID 5: 8-Dom
+GRID 6: 8-Dom
   Size: 17x17
   Found 1 solution(s)
 
@@ -147,18 +173,18 @@ GRID 5: 8-Dom
 
   Number of solutions found: 1
   Max branching depth: 11
-    > Hypothesis on 22522 lines
-    > Total number of alternatives being tested: 117028
-    > Max number of alternatives by branching depth: 15 13 11 11 10 9 9 8 7 2 2
+    > Hypothesis on 20083 lines
+    > Total number of alternatives being tested: 104037
+    > Max number of alternatives by branching depth: 15 13 11 11 9 9 9 7 5 2 2
   Max number of alternatives on an empty line (initial grid pass): 91
-  Max number of alternatives after a line reduction (change/all): 45/78
-  Number of full grid pass: 221846
-  Number of single line partial reduction (change/all): 0/0
-  Number of single line full reduction (change/all): 724129/2180874
+  Max number of alternatives after a line reduction (change/all): 0/0
+  Number of full grid pass: 207551
+  Number of single line partial reduction (change/all): 634886/1914300
+  Number of single line full reduction (change/all): 0/0
 
 
 
-GRID 6: 9-Dom
+GRID 7: 9-Dom
   Size: 19x19
   Found 1 solution(s)
 
@@ -185,14 +211,14 @@ GRID 6: 9-Dom
 
   Number of solutions found: 1
   Max branching depth: 12
-    > Hypothesis on 265028 lines
-    > Total number of alternatives being tested: 1363764
-    > Max number of alternatives by branching depth: 17 15 13 13 12 11 11 10 9 8 4 2
+    > Hypothesis on 232795 lines
+    > Total number of alternatives being tested: 1180952
+    > Max number of alternatives by branching depth: 17 15 13 13 11 11 11 10 9 8 4 2
   Max number of alternatives on an empty line (initial grid pass): 120
-  Max number of alternatives after a line reduction (change/all): 66/105
-  Number of full grid pass: 2671490
-  Number of single line partial reduction (change/all): 0/0
-  Number of single line full reduction (change/all): 8819132/27246321
+  Max number of alternatives after a line reduction (change/all): 0/0
+  Number of full grid pass: 2402457
+  Number of single line partial reduction (change/all): 7487315/23593299
+  Number of single line full reduction (change/all): 0/0
 
 
 
