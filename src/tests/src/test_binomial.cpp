@@ -19,7 +19,7 @@ TEST_CASE("overflow", "[binomial]")
 {
     BinomialCoefficients::Cache binomial;
     constexpr auto MAX = BinomialCoefficients::overflowValue();
-    CHECK(binomial.partition_n_elts_into_k_buckets(24, 14) == 3562467300);
+    CHECK(binomial.partition_n_elts_into_k_buckets(24, 14) == 3562467300u);
     CHECK(binomial.partition_n_elts_into_k_buckets(23, 15) == MAX);
     CHECK(binomial.partition_n_elts_into_k_buckets(24, 15) == MAX);
 }
@@ -42,9 +42,9 @@ TEST_CASE("add", "[binomial]")
         constexpr auto MAX = BinomialCoefficients::overflowValue();
         BinomialCoefficients::Rep nb_alternatives{0};
         BinomialCoefficients::add(nb_alternatives, binomial.partition_n_elts_into_k_buckets(25, 13));
-        CHECK(nb_alternatives == 1852482996);
+        CHECK(nb_alternatives == 1852482996u);
         BinomialCoefficients::add(nb_alternatives, binomial.partition_n_elts_into_k_buckets(25, 13));
-        CHECK(nb_alternatives == 2 * 1852482996);
+        CHECK(nb_alternatives == 2u * 1852482996u);
         BinomialCoefficients::add(nb_alternatives, binomial.partition_n_elts_into_k_buckets(25, 13));
         CHECK(nb_alternatives == MAX);
         BinomialCoefficients::add(nb_alternatives, binomial.partition_n_elts_into_k_buckets(25, 13));
