@@ -11,6 +11,8 @@
 
 #include <picross/picross.h>
 
+#include <cassert>
+
 
 namespace picross
 {
@@ -25,6 +27,23 @@ struct LineId
 
     Line::Type  m_type;
     Line::Index m_index;
+};
+
+/*
+ * Line range
+ *
+ * A range of rows or column that satisfy some criteria (for example, the range of uncompleted rows).
+ * The elements in the range are indices: m_begin, m_begin + 1, ..., m_end - 1.
+ * The range can be empty (i.e. m_begin == m_end), meaning now index satisfies the criteria
+ */
+struct LineRange
+{
+    Line::Index m_begin = 0u;
+    Line::Index m_end = 0u;
+
+    bool empty() const { assert(m_begin <= m_end); return m_begin == m_end; }
+    Line::Index first() const { assert(!empty()); return m_begin; }
+    Line::Index last() const { assert(!empty()); return m_end - 1u; }
 };
 
 /*

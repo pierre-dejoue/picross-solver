@@ -49,6 +49,17 @@ std::vector<LineAlternatives> export_line_alternatives_to_new_grid(Line::Type ty
     std::transform(alternatives.cbegin(), alternatives.cend(), std::back_inserter(output), [type, &new_grid, &idx](const auto& alt) { return LineAlternatives(alt, new_grid.get_line(type, idx++)); });
     return output;
 }
+
+template <bool B>
+void update_line_range(LineRange& range, const std::vector<bool>& source)
+{
+    assert(range.m_begin <= range.m_end);
+    assert(0 <= range.m_begin && (range.empty() || (range.m_begin < source.size())));
+    assert(0 <= range.m_end && range.m_end <= source.size());
+    while (range.m_begin < range.m_end && source[range.m_begin] == B)    { range.m_begin++; }
+    while (range.m_begin < range.m_end && source[range.m_end - 1u] == B) { range.m_end--; }
+    assert(range.m_begin <= range.m_end);
+}
 }  // namespace
 
 
@@ -62,6 +73,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
     , m_line_completed()
     , m_line_is_fully_reduced()
     , m_nb_alternatives()
+    , m_uncompleted_lines_range()
     , m_all_lines()
     , m_uncompleted_lines_end(m_all_lines.end())
     , m_grid_stats(nullptr)
@@ -96,6 +108,8 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
     m_line_is_fully_reduced[Line::COL].resize(width(), false);
     m_nb_alternatives[Line::ROW].resize(height(), 0u);
     m_nb_alternatives[Line::COL].resize(width(), 0u);
+    m_uncompleted_lines_range[Line::ROW] = { 0u, static_cast<Line::Index>(height()) };
+    m_uncompleted_lines_range[Line::COL] = { 0u, static_cast<Line::Index>(width()) };
 
     assert(m_constraints[Line::ROW].size() == height());
     assert(m_constraints[Line::COL].size() == width());
@@ -113,6 +127,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& sol
     , m_line_completed()
     , m_line_is_fully_reduced()
     , m_nb_alternatives()
+    , m_uncompleted_lines_range()
     , m_all_lines(parent.m_all_lines)
     , m_uncompleted_lines_end(m_all_lines.end())
     , m_grid_stats(nullptr)
@@ -137,6 +152,8 @@ WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& sol
     m_line_is_fully_reduced[Line::COL] = parent.m_line_is_fully_reduced[Line::COL];
     m_nb_alternatives[Line::ROW] = parent.m_nb_alternatives[Line::ROW];
     m_nb_alternatives[Line::COL] = parent.m_nb_alternatives[Line::COL];
+    m_uncompleted_lines_range[Line::ROW] = parent.m_uncompleted_lines_range[Line::ROW];
+    m_uncompleted_lines_range[Line::COL] = parent.m_uncompleted_lines_range[Line::COL];
 
     // Solver::Observer
     if (m_observer)
@@ -328,6 +345,8 @@ template <typename SolverPolicy>
 void WorkGrid<SolverPolicy>::partition_completed_lines()
 {
     m_uncompleted_lines_end = std::partition(m_all_lines.begin(), m_uncompleted_lines_end, [this](const LineId id) { return !m_line_completed[id.m_type][id.m_index]; });
+    update_line_range<true>(m_uncompleted_lines_range[Line::ROW], m_line_completed[Line::ROW]);
+    update_line_range<true>(m_uncompleted_lines_range[Line::COL], m_line_completed[Line::COL]);
 }
 
 

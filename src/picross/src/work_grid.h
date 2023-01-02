@@ -93,6 +93,7 @@ private:
     std::vector<bool>                               m_line_has_updates[2];
     std::vector<bool>                               m_line_is_fully_reduced[2];
     std::vector<unsigned int>                       m_nb_alternatives[2];
+    LineRange                                       m_uncompleted_lines_range[2];
     AllLines                                        m_all_lines;
     AllLines::iterator                              m_uncompleted_lines_end;
     GridStats*                                      m_grid_stats;        // If not null, the solver will store some stats in that structure
