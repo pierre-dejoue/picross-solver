@@ -116,10 +116,9 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
 }
 
 
-// Shallow copy (does not copy the list of alternatives)
 template <typename SolverPolicy>
-WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, State initial_state, unsigned int nested_level)
-    : Grid(static_cast<const Grid&>(parent))
+WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, State initial_state)
+    : Grid(parent)
     , m_state(initial_state)
     , m_solver_policy(solver_policy)
     , m_constraints()
@@ -134,16 +133,15 @@ WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& sol
     , m_observer(parent.m_observer)
     , m_abort_function(parent.m_abort_function)
     , m_max_nb_alternatives(solver_policy.m_min_nb_alternatives)
-    , m_branching_depth(nested_level)
+    , m_branching_depth(parent.m_branching_depth + 1)
     , m_binomial(parent.m_binomial)
 {
-    assert(m_branching_depth > 0u);
     assert(m_binomial);
 
     m_constraints[Line::ROW] = parent.m_constraints[Line::ROW];
     m_constraints[Line::COL] = parent.m_constraints[Line::COL];
-    m_alternatives[Line::ROW] = export_line_alternatives_to_new_grid(Line::ROW, parent.m_alternatives[Line::ROW], static_cast<const Grid&>(*this));
-    m_alternatives[Line::COL] = export_line_alternatives_to_new_grid(Line::COL, parent.m_alternatives[Line::COL], static_cast<const Grid&>(*this));
+    m_alternatives[Line::ROW] = export_line_alternatives_to_new_grid(Line::ROW, parent.m_alternatives[Line::ROW], *this);
+    m_alternatives[Line::COL] = export_line_alternatives_to_new_grid(Line::COL, parent.m_alternatives[Line::COL], *this);
     m_line_completed[Line::ROW] = parent.m_line_completed[Line::ROW];
     m_line_completed[Line::COL] = parent.m_line_completed[Line::COL];
     m_line_has_updates[Line::ROW] = parent.m_line_has_updates[Line::ROW];
@@ -154,13 +152,9 @@ WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& sol
     m_nb_alternatives[Line::COL] = parent.m_nb_alternatives[Line::COL];
     m_uncompleted_lines_range[Line::ROW] = parent.m_uncompleted_lines_range[Line::ROW];
     m_uncompleted_lines_range[Line::COL] = parent.m_uncompleted_lines_range[Line::COL];
-
-    // Solver::Observer
-    if (m_observer)
-    {
-        m_observer(Solver::Event::BRANCHING, nullptr, nested_level, 0);
-    }
+    m_uncompleted_lines_end = m_all_lines.begin() + std::distance(parent.m_all_lines.begin(), AllLines::const_iterator(parent.m_uncompleted_lines_end));
 }
+
 
 template <typename SolverPolicy>
 void WorkGrid<SolverPolicy>::set_stats(GridStats* stats)
@@ -550,23 +544,25 @@ Solver::Status WorkGrid<SolverPolicy>::branch(Solver::Solutions& solutions, unsi
     bool flag_solution_found = false;
     for (const Line& guess_line : list_of_all_alternatives)
     {
-        // Allocate a new work grid. Use the shallow copy.
-        WorkGrid new_grid(*this, m_solver_policy, State::PARTIAL_REDUCTION, m_branching_depth + 1);
-        Solver::Solutions nested_solutions;
-        std::unique_ptr<GridStats> nested_stats;
-        if (m_grid_stats)
-            nested_stats = std::make_unique<GridStats>();
+        // Copy current grid state to a nested grid
+        WorkGrid<SolverPolicy> nested_work_grid(*this, m_solver_policy, State::PARTIAL_REDUCTION);
+        if (m_observer)
+        {
+            m_observer(Solver::Event::BRANCHING, nullptr, nested_work_grid.m_branching_depth, 0);
+        }
 
         // Set one line in the new_grid according to the hypothesis we made. That line is then complete
-        const bool changed = new_grid.update_line(guess_line, 1u);
+        const bool changed = nested_work_grid.update_line(guess_line, 1u);
         assert(changed);
-        new_grid.m_line_is_fully_reduced[guess_line.type()][guess_line.index()] = true;
-        assert(new_grid.m_line_completed[guess_line.type()][guess_line.index()]);
-        new_grid.partition_completed_lines();
+        nested_work_grid.m_line_is_fully_reduced[guess_line.type()][guess_line.index()] = true;
+        assert(nested_work_grid.m_line_completed[guess_line.type()][guess_line.index()]);
+        nested_work_grid.partition_completed_lines();
 
         // Solve the new grid!
-        new_grid.set_stats(nested_stats.get());
-        const auto status = new_grid.solve(nested_solutions, max_nb_solutions);
+        Solver::Solutions nested_solutions;
+        std::unique_ptr<GridStats> nested_stats = m_grid_stats ? std::make_unique<GridStats>() : nullptr;
+        nested_work_grid.set_stats(nested_stats.get());
+        const auto status = nested_work_grid.solve(nested_solutions, max_nb_solutions);
 
         if (m_grid_stats)
         {

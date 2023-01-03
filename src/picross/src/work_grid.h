@@ -66,7 +66,8 @@ public:
     WorkGrid& operator=(const WorkGrid&) = delete;
     WorkGrid& operator=(WorkGrid&&) noexcept = delete;
 private:
-    WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, State initial_state, unsigned int nested_level);       // Shallow copy
+    // Allocate nested work grid
+    WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, State initial_state);
 public:
     void set_stats(GridStats* stats);
     Solver::Status line_solve(Solver::Solutions& solutions);
