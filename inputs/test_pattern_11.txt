@@ -1,0 +1,20 @@
+# A subpart of the puzzle "Centerpiece" webpbn-10810
+GRID Centerpiece edge
+ROWS
+[ 1 4 1 ]
+[ 1 1 ]
+[ 1 1 1 1 ]
+[ 1 2 1 ]
+[ 1 2 1 ]
+[ 1 1 1 1 ]
+[ 1 1 ]
+[ 1 4 1 ]
+COLUMNS
+[ 1 4 1 ]
+[ 1 1 ]
+[ 1 1 1 1 ]
+[ 1 2 1 ]
+[ 1 2 1 ]
+[ 1 1 1 1 ]
+[ 1 1 ]
+[ 1 4 1 ]

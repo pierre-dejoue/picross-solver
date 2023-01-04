@@ -192,6 +192,55 @@ TEST_CASE("Puzzle: Notes", "[solver]")
     CHECK(solution_grids == expected_solutions);
 }
 
+TEST_CASE("Puzzle: A piece of Centerpiece", "[solver]")
+{
+    // A subpart of the puzzle "Centerpiece" webpbn-10810. It has three solutions.
+    const InputGrid::Constraints rows {
+        { 1, 1 },
+        { 2 },
+        { 2 },
+        { 1, 1 }
+    };
+    const InputGrid::Constraints cols {
+        { 1, 1 },
+        { 2 },
+        { 2 },
+        { 1, 1 }
+    };
+
+    InputGrid puzzle(rows, cols, "Piece");
+
+    const auto solver = get_ref_solver();
+    const auto result = solver->solve(puzzle);
+
+    CHECK(result.status == Solver::Status::OK);
+
+    OutputGridSet expected_solutions {
+        build_output_grid_from(4, 4, R"(
+            #..#
+            .##.
+            .##.
+            #..#
+        )"),
+        build_output_grid_from(4, 4, R"(
+            .#.#
+            ##..
+            ..##
+            #.#.
+        )"),
+        build_output_grid_from(4, 4, R"(
+            #.#.
+            ..##
+            ##..
+            .#.#
+        )")
+    };
+
+    REQUIRE(result.solutions.size() == 3);
+    OutputGridSet solution_grids { result.solutions[0].grid, result.solutions[1].grid, result.solutions[2].grid};
+    CHECK(solution_grids == expected_solutions);
+}
+
 TEST_CASE("Puzzle: Cameraman", "[solver]")
 {
     // PicrossDS/Free/07-O-Cameraman.txt

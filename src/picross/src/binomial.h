@@ -60,7 +60,7 @@ public:
      * Returns the number of ways to partition nb_elts into nb_buckets.
      *
      * - It is equal to the binomial coefficient (n k) with n = nb_elts + nb_buckets - 1  and k = nb_buckets - 1
-     * - nb_buckets must be strictily positive
+     * - nb_buckets must be strictly positive
      * - Returns overflowValue() in case of overflow (which can happen rapidly!)
      */
     Rep partition_n_elts_into_k_buckets(unsigned int nb_elts, unsigned int nb_buckets);

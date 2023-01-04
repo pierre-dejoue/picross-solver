@@ -509,7 +509,7 @@ template <typename SolverPolicy>
 Solver::Status WorkGrid<SolverPolicy>::branch(Solver::Solutions& solutions, unsigned int max_nb_solutions)
 {
     assert(m_solver_policy.m_branching_allowed);
-    assert(std::all_of(m_all_lines.begin(), m_all_lines.end(), [this](const LineId& id) { return m_line_completed[id.m_type][id.m_index] || m_line_is_fully_reduced[id.m_type][id.m_index]; }));
+    assert(m_all_lines.begin() != m_uncompleted_lines_end);
 
     // Find the row or column not yet solved with the minimal alternative lines.
     sort_by_nb_alternatives();

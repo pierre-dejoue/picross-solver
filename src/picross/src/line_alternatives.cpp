@@ -153,7 +153,7 @@ struct LineAlternatives::Impl
     BidirectionalRange<true>        m_bidirectional_range_reverse;
 };
 
-LineAlternatives::Impl::Impl(const LineConstraint& constraints,  const LineSpan& known_tiles, BinomialCoefficients::Cache& binomial)
+LineAlternatives::Impl::Impl(const LineConstraint& constraints, const LineSpan& known_tiles, BinomialCoefficients::Cache& binomial)
     : m_segments(constraints.segments())
     , m_known_tiles(known_tiles)
     , m_binomial(binomial)
@@ -418,10 +418,10 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_alternatives(unsigned
 
     auto nb_alternatives = std::min(nb_alternatives_l, nb_alternatives_r);
 
-    if (nb_alternatives == BinomialCoefficients::overflowValue())
+    if (nb_alternatives >= (std::numeric_limits<NbAlt>::max() >> 2))
     {
         const auto nb_unk = nb_unknown_tiles();
-        if (nb_unk < std::numeric_limits<unsigned int>::digits)
+        if (nb_unk < std::numeric_limits<NbAlt>::digits)
             nb_alternatives = NbAlt{1} << nb_unk;
     }
 
