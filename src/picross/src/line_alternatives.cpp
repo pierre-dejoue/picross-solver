@@ -86,6 +86,17 @@ namespace
         , m_nb_zeros(0u)
     {
     }
+
+    struct ReducedLine
+    {
+        ReducedLine(const LineSpan& templ)
+            : m_line(templ.type(), templ.index(), templ.size())
+            , m_reset(true)
+        {}
+
+        Line    m_line;
+        bool    m_reset;
+    };
 }
 
 struct LineAlternatives::Impl
@@ -94,12 +105,12 @@ struct LineAlternatives::Impl
     Impl(const Impl& other, const LineSpan& known_tiles);
 
     template <bool Reversed>
-    void reset();
+    Line init_alternative();
 
-    void reduce();
+    void reduce(ReducedLine& line_reduce, const Line& alternative);
 
     template <bool Reversed>
-    bool check_compatibility_bw(std::size_t start_idx, std::size_t end_idx) const;
+    bool check_compatibility_bw(const Line& alternative, std::size_t start_idx, std::size_t end_idx) const;
 
     unsigned int nb_unknown_tiles() const;
 
@@ -112,12 +123,23 @@ struct LineAlternatives::Impl
     bool update();
 
     template <bool Reversed>
-    NbAlt reduce_alternatives(
+    std::pair<Line, NbAlt> reduce_alternatives(
         unsigned int remaining_zeros,
         typename ConstraintIterator<Reversed>::Type constraint_it,
         typename ConstraintIterator<Reversed>::Type constraint_partial_end,
         typename ConstraintIterator<Reversed>::Type constraint_end,
         std::size_t line_idx);
+
+    template <bool Reversed>
+    NbAlt reduce_alternatives_recursive(
+        ReducedLine& reduced_line,
+        Line& alternative,
+        unsigned int remaining_zeros,
+        typename ConstraintIterator<Reversed>::Type constraint_it,
+        typename ConstraintIterator<Reversed>::Type constraint_partial_end,
+        typename ConstraintIterator<Reversed>::Type constraint_end,
+        std::size_t line_idx);
+
 
     Reduction reduce_all_alternatives();
     Reduction reduce_alternatives(unsigned int nb_constraints);
@@ -129,9 +151,6 @@ struct LineAlternatives::Impl
     const unsigned int              m_extra_zeros;
     BidirectionalRange<false>       m_bidirectional_range;
     BidirectionalRange<true>        m_bidirectional_range_reverse;
-    Line                            m_alternative;
-    Line                            m_reduced_line;
-    bool                            m_reduced_line_reset;
 };
 
 LineAlternatives::Impl::Impl(const LineConstraint& constraints,  const LineSpan& known_tiles, BinomialCoefficients::Cache& binomial)
@@ -142,13 +161,7 @@ LineAlternatives::Impl::Impl(const LineConstraint& constraints,  const LineSpan&
     , m_extra_zeros(m_line_length - constraints.min_line_size())
     , m_bidirectional_range(constraints.segments(), m_line_length)
     , m_bidirectional_range_reverse(constraints.segments(), m_line_length)
-    , m_alternative(line_from_line_span(known_tiles))
-    , m_reduced_line(m_alternative)
-    , m_reduced_line_reset(true)
 {
-    assert(m_alternative.index() == m_known_tiles.index());
-    assert(m_alternative.type() == m_known_tiles.type());
-    assert(m_alternative.size() == m_line_length);
     assert(m_line_length >= constraints.min_line_size());
 }
 
@@ -160,52 +173,52 @@ LineAlternatives::Impl::Impl(const Impl& other, const LineSpan& known_tiles)
     , m_extra_zeros(other.m_extra_zeros)
     , m_bidirectional_range(other.m_bidirectional_range)
     , m_bidirectional_range_reverse(other.m_bidirectional_range_reverse)
-    , m_alternative(other.m_alternative)
-    , m_reduced_line(m_alternative)
-    , m_reduced_line_reset(true)
 {
     assert(m_line_length == m_known_tiles.size());
-    assert(m_alternative.index() == m_known_tiles.index());
-    assert(m_alternative.type() == m_known_tiles.type());
 }
 
 template <bool Reversed>
-void LineAlternatives::Impl::reset()
+Line LineAlternatives::Impl::init_alternative()
 {
+    Line alternative = line_from_line_span(m_known_tiles);
     const auto& range = bidirectional_range<Reversed>();
-    copy_line_from_line_span(m_alternative, m_known_tiles);
     for (auto line_idx = range.m_line_begin; line_idx < range.m_line_end; line_idx++)
-        m_alternative[IndexTranslation<Reversed>()(m_line_length, line_idx)] = Tile::UNKNOWN;
-     m_reduced_line_reset = true;
+        alternative[IndexTranslation<Reversed>()(m_line_length, line_idx)] = Tile::UNKNOWN;
+    return alternative;
 }
 
-void LineAlternatives::Impl::reduce()
+void LineAlternatives::Impl::reduce(ReducedLine& reduced_line, const Line& alternative)
 {
-    assert(are_compatible(m_alternative, m_known_tiles));
-    if (m_reduced_line_reset)
+    assert(are_compatible(alternative, m_known_tiles));
+    if (reduced_line.m_reset)
     {
-        m_reduced_line_reset = false;
-        copy_line_from_line_span(m_reduced_line, m_alternative);
+        reduced_line.m_reset = false;
+        copy_line_from_line_span(reduced_line.m_line, alternative);
     }
     else
     {
-        line_reduce(m_reduced_line, m_alternative);
+        for (std::size_t idx = 0; idx < m_line_length; idx++)
+        {
+            auto& reduced_tile = reduced_line.m_line[idx];
+            if (reduced_tile != Tile::UNKNOWN && reduced_tile != alternative.tiles()[idx])
+                reduced_tile = Tile::UNKNOWN;
+        }
     }
 }
 
 template <bool Reversed>
-bool LineAlternatives::Impl::check_compatibility_bw(std::size_t start_idx, std::size_t end_idx) const
+bool LineAlternatives::Impl::check_compatibility_bw(const Line& alternative, std::size_t start_idx, std::size_t end_idx) const
 {
+    using TileRaw = unsigned char;
+    static_assert(static_cast<TileRaw>(Tile::UNKNOWN) == 0);
+    static constexpr TileRaw INCOMPATIBLE_SUM = static_cast<TileRaw>(Tile::EMPTY) + static_cast<TileRaw>(Tile::FILLED);
     assert(start_idx <= end_idx);
-    const Line::Container& alt_tiles = m_alternative.tiles();
-    for (size_t idx = start_idx; idx < end_idx; ++idx)
+    const Line::Container& alt_tiles = alternative.tiles();
+    for (std::size_t idx = start_idx; idx < end_idx; ++idx)
     {
         const auto trans_idx = IndexTranslation<Reversed>()(m_line_length, idx);
-        if ((m_known_tiles[trans_idx] == Tile::EMPTY  && alt_tiles[trans_idx] == Tile::FILLED) ||
-            (m_known_tiles[trans_idx] == Tile::FILLED && alt_tiles[trans_idx] == Tile::EMPTY))
-        {
+        if (static_cast<TileRaw>(m_known_tiles[trans_idx]) + static_cast<TileRaw>(alt_tiles[trans_idx]) == INCOMPATIBLE_SUM)
             return false;
-        }
     }
     return true;
 }
@@ -288,7 +301,24 @@ bool LineAlternatives::Impl::update()
 }
 
 template <bool Reversed>
-LineAlternatives::NbAlt LineAlternatives::Impl::reduce_alternatives(
+std::pair<Line, LineAlternatives::NbAlt> LineAlternatives::Impl::reduce_alternatives(
+    unsigned int remaining_zeros,
+    typename ConstraintIterator<Reversed>::Type constraint_it,
+    typename ConstraintIterator<Reversed>::Type constraint_partial_end,
+    typename ConstraintIterator<Reversed>::Type constraint_end,
+    size_t line_idx)
+{
+    ReducedLine reduced_line(m_known_tiles);
+    Line alternative = init_alternative<Reversed>();
+    auto nb_alternatives = reduce_alternatives_recursive<Reversed>(reduced_line, alternative, remaining_zeros, constraint_it, constraint_partial_end, constraint_end, line_idx);
+    return std::make_pair<Line, NbAlt>(std::move(reduced_line.m_line), std::move(nb_alternatives));
+}
+
+
+template <bool Reversed>
+LineAlternatives::NbAlt LineAlternatives::Impl::reduce_alternatives_recursive(
+    ReducedLine& reduced_line,
+    Line& alternative,
     unsigned int remaining_zeros,
     typename ConstraintIterator<Reversed>::Type constraint_it,
     typename ConstraintIterator<Reversed>::Type constraint_partial_end,
@@ -302,19 +332,19 @@ LineAlternatives::NbAlt LineAlternatives::Impl::reduce_alternatives(
     if (constraint_it == constraint_end)
     {
         auto next_line_idx = line_idx;
-        for (unsigned int c = 0u; c < remaining_zeros; c++) { m_alternative[IndexTranslation<Reversed>()(m_line_length, next_line_idx++)] = Tile::EMPTY; }
+        for (unsigned int c = 0u; c < remaining_zeros; c++) { alternative[IndexTranslation<Reversed>()(m_line_length, next_line_idx++)] = Tile::EMPTY; }
         remaining_zeros = 0;
     }
 
     // If the last segment of this reduction was reached, check compatibility then reduce
     if (constraint_it == constraint_partial_end || constraint_it == constraint_end)
     {
-        if (check_compatibility_bw<Reversed>(line_idx, m_alternative.size()))
+        if (check_compatibility_bw<Reversed>(alternative, line_idx, m_line_length))
         {
-            reduce();
+            reduce(reduced_line, alternative);
             const unsigned int nb_buckets = static_cast<unsigned int>(std::distance(constraint_partial_end, constraint_end) + 1);
             assert(nb_alternatives == 0);
-            nb_alternatives = m_binomial.partition_n_elts_into_k_buckets(remaining_zeros, nb_buckets);
+            nb_alternatives = remaining_zeros > 0 ? m_binomial.partition_n_elts_into_k_buckets(remaining_zeros, nb_buckets) : 1u;
         }
     }
     // Else, fill in the next segment of ones, then call recursively
@@ -324,40 +354,38 @@ LineAlternatives::NbAlt LineAlternatives::Impl::reduce_alternatives(
         const bool is_last_constraint = (constraint_it + 1 == constraint_end);
 
         auto next_line_idx = line_idx;
-        for (unsigned int c = 0u; c < nb_ones; c++) { m_alternative[IndexTranslation<Reversed>()(m_line_length, next_line_idx++)] = Tile::FILLED; }
-        if (!is_last_constraint) { m_alternative[IndexTranslation<Reversed>()(m_line_length, next_line_idx++)] = Tile::EMPTY; }
+        for (unsigned int c = 0u; c < nb_ones; c++) { alternative[IndexTranslation<Reversed>()(m_line_length, next_line_idx++)] = Tile::FILLED; }
+        if (!is_last_constraint) { alternative[IndexTranslation<Reversed>()(m_line_length, next_line_idx++)] = Tile::EMPTY; }
 
-        if (check_compatibility_bw<Reversed>(line_idx, next_line_idx))
+        if (check_compatibility_bw<Reversed>(alternative, line_idx, next_line_idx))
         {
             assert(nb_alternatives == 0);
-            nb_alternatives = reduce_alternatives<Reversed>(remaining_zeros, constraint_it + 1, constraint_partial_end, constraint_end, next_line_idx);
+            nb_alternatives = reduce_alternatives_recursive<Reversed>(reduced_line, alternative, remaining_zeros, constraint_it + 1, constraint_partial_end, constraint_end, next_line_idx);
         }
 
         for (unsigned int pre_zeros = 1u; pre_zeros <= remaining_zeros; pre_zeros++)
         {
-            m_alternative[IndexTranslation<Reversed>()(m_line_length, line_idx + pre_zeros - 1)] = Tile::EMPTY;
+            alternative[IndexTranslation<Reversed>()(m_line_length, line_idx + pre_zeros - 1)] = Tile::EMPTY;
             next_line_idx = line_idx + pre_zeros + nb_ones - 1;
-            m_alternative[IndexTranslation<Reversed>()(m_line_length, next_line_idx++)] = Tile::FILLED;
-            if (!is_last_constraint) { m_alternative[IndexTranslation<Reversed>()(m_line_length, next_line_idx++)] = Tile::EMPTY; }
+            alternative[IndexTranslation<Reversed>()(m_line_length, next_line_idx++)] = Tile::FILLED;
+            if (!is_last_constraint) { alternative[IndexTranslation<Reversed>()(m_line_length, next_line_idx++)] = Tile::EMPTY; }
 
-            if (check_compatibility_bw<Reversed>(line_idx, next_line_idx))
+            if (check_compatibility_bw<Reversed>(alternative, line_idx, next_line_idx))
             {
-                BinomialCoefficients::add(nb_alternatives, reduce_alternatives<Reversed>(remaining_zeros - pre_zeros, constraint_it + 1, constraint_partial_end, constraint_end, next_line_idx));
+                BinomialCoefficients::add(nb_alternatives, reduce_alternatives_recursive<Reversed>(reduced_line, alternative, remaining_zeros - pre_zeros, constraint_it + 1, constraint_partial_end, constraint_end, next_line_idx));
             }
         }
     }
-
     return nb_alternatives;
 }
 
 LineAlternatives::Reduction LineAlternatives::Impl::reduce_all_alternatives()
 {
-    reset<false>();
     const auto& range = m_bidirectional_range;
     assert(range.m_nb_zeros <= m_extra_zeros);
     const auto remaining_zeros = m_extra_zeros - range.m_nb_zeros;
-    const auto nb_alternatives = reduce_alternatives<false>(remaining_zeros, range.m_constraint_begin, range.m_constraint_end, range.m_constraint_end, range.m_line_begin);
-    return Reduction { m_reduced_line, nb_alternatives, true };
+    const auto [reduced_line, nb_alternatives] = reduce_alternatives<false>(remaining_zeros, range.m_constraint_begin, range.m_constraint_end, range.m_constraint_end, range.m_line_begin);
+    return Reduction { reduced_line, nb_alternatives, true };
 }
 
 LineAlternatives::Reduction LineAlternatives::Impl::reduce_alternatives(unsigned int nb_constraints)
@@ -379,18 +407,14 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_alternatives(unsigned
     }
 
     // Reduce nb_constraints from left to right
-    reset<false>();
     assert(range_l.m_nb_zeros <= m_extra_zeros);
     const auto remaining_zeros_l = m_extra_zeros - range_l.m_nb_zeros;
-    const auto nb_alternatives_l = reduce_alternatives<false>(remaining_zeros_l, range_l.m_constraint_begin, constraint_l_end, range_l.m_constraint_end, range_l.m_line_begin);
-    const Line reduced_line_l = m_reduced_line;
+    const auto [reduced_line_l, nb_alternatives_l] = reduce_alternatives<false>(remaining_zeros_l, range_l.m_constraint_begin, constraint_l_end, range_l.m_constraint_end, range_l.m_line_begin);
 
     // Reduce nb_constraints from right to left
-    reset<true>();
     assert(range_r.m_nb_zeros <= m_extra_zeros);
     const auto remaining_zeros_r = m_extra_zeros - range_r.m_nb_zeros;
-    const auto nb_alternatives_r = reduce_alternatives<true>(remaining_zeros_r, range_r.m_constraint_begin, constraint_r_end, range_r.m_constraint_end, range_r.m_line_begin);
-    const Line reduced_line_r = m_reduced_line;
+    const auto [reduced_line_r, nb_alternatives_r] = reduce_alternatives<true>(remaining_zeros_r, range_r.m_constraint_begin, constraint_r_end, range_r.m_constraint_end, range_r.m_line_begin);
 
     auto nb_alternatives = std::min(nb_alternatives_l, nb_alternatives_r);
 
@@ -404,7 +428,8 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_alternatives(unsigned
     return Reduction {
         reduced_line_l + reduced_line_r,
         nb_alternatives,
-        false };
+        false
+    };
 }
 
 LineAlternatives::LineAlternatives(const LineConstraint& constraint, const LineSpan& known_tiles, BinomialCoefficients::Cache& binomial)
@@ -427,7 +452,7 @@ LineAlternatives::Reduction LineAlternatives::full_reduction()
     if (valid)
         return p_impl->reduce_all_alternatives();
     else
-        return Reduction { line_from_line_span(p_impl->m_known_tiles), 0, true };
+        return Reduction { ReducedLine(p_impl->m_known_tiles).m_line, 0, true };
 }
 
 LineAlternatives::Reduction LineAlternatives::partial_reduction(unsigned int nb_constraints)
@@ -437,7 +462,7 @@ LineAlternatives::Reduction LineAlternatives::partial_reduction(unsigned int nb_
     if (valid)
         return p_impl->reduce_alternatives(nb_constraints);
     else
-        return Reduction { line_from_line_span(p_impl->m_known_tiles), 0, true };
+        return Reduction { ReducedLine(p_impl->m_known_tiles).m_line, 0, true };
 }
 
 } // namespace picross

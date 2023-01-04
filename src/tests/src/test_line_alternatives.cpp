@@ -114,7 +114,9 @@ TEST_CASE("full_reduction_contradictory_use_case_a", "[line_alternatives]")
     {
         const auto known_tiles = build_line_from("..", Line::ROW, LINE_INDEX);
         const auto reduction = full_reduction(constraint, known_tiles);
-        CHECK(reduction.reduced_line == known_tiles);
+        CHECK(reduction.reduced_line.type() == known_tiles.type());
+        CHECK(reduction.reduced_line.index() == known_tiles.index());
+        CHECK(reduction.reduced_line.size() == known_tiles.size());
         CHECK(reduction.nb_alternatives == 0);
         CHECK(reduction.is_fully_reduced);
     }
@@ -126,28 +128,36 @@ TEST_CASE("full_reduction_contradictory_use_case_b", "[line_alternatives]")
     {
         const auto known_tiles = build_line_from("?#?", Line::ROW, LINE_INDEX);
         const auto reduction = full_reduction(constraint, known_tiles);
-        CHECK(reduction.reduced_line == known_tiles);
+        CHECK(reduction.reduced_line.type() == known_tiles.type());
+        CHECK(reduction.reduced_line.index() == known_tiles.index());
+        CHECK(reduction.reduced_line.size() == known_tiles.size());
         CHECK(reduction.nb_alternatives == 0);
         CHECK(reduction.is_fully_reduced);
     }
     {
         const auto known_tiles = build_line_from("##??", Line::ROW, LINE_INDEX);
         const auto reduction = full_reduction(constraint, known_tiles);
-        CHECK(reduction.reduced_line == known_tiles);
+        CHECK(reduction.reduced_line.type() == known_tiles.type());
+        CHECK(reduction.reduced_line.index() == known_tiles.index());
+        CHECK(reduction.reduced_line.size() == known_tiles.size());
         CHECK(reduction.nb_alternatives == 0);
         CHECK(reduction.is_fully_reduced);
     }
     {
         const auto known_tiles = build_line_from("#...", Line::ROW, LINE_INDEX);
         const auto reduction = full_reduction(constraint, known_tiles);
-        CHECK(reduction.reduced_line == known_tiles);
+        CHECK(reduction.reduced_line.type() == known_tiles.type());
+        CHECK(reduction.reduced_line.index() == known_tiles.index());
+        CHECK(reduction.reduced_line.size() == known_tiles.size());
         CHECK(reduction.nb_alternatives == 0);
         CHECK(reduction.is_fully_reduced);
     }
     {
         const auto known_tiles = build_line_from(".#.", Line::ROW, LINE_INDEX);
         const auto reduction = full_reduction(constraint, known_tiles);
-        CHECK(reduction.reduced_line == known_tiles);
+        CHECK(reduction.reduced_line.type() == known_tiles.type());
+        CHECK(reduction.reduced_line.index() == known_tiles.index());
+        CHECK(reduction.reduced_line.size() == known_tiles.size());
         CHECK(reduction.nb_alternatives == 0);
         CHECK(reduction.is_fully_reduced);
     }
