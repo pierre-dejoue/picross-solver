@@ -12,6 +12,15 @@ namespace
 inline constexpr unsigned int LINE_INDEX = 0;
 }
 
+TEST_CASE("compute_min_line_size", "[line_constraint]")
+{
+    CHECK(compute_min_line_size({ }) == 0);
+    CHECK(compute_min_line_size({ 0 }) == 0);
+    CHECK(compute_min_line_size({ 1 }) == 1);
+    CHECK(compute_min_line_size({ 1, 1 }) == 3);
+    CHECK(compute_min_line_size({ 5, 7 }) == 13);
+}
+
 TEST_CASE("line_trivial_nb_alternatives", "[line_constraint]")
 {
     BinomialCoefficients::Cache binomial;

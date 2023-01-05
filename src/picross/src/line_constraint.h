@@ -28,7 +28,8 @@ using Segments = std::vector<unsigned int>;
 template <typename SegmentIt>
 unsigned int compute_min_line_size(SegmentIt begin, SegmentIt end)
 {
-    return std::accumulate(begin, end, 0u) + static_cast<unsigned int>(std::distance(begin, end)) - 1u;
+    const auto interval_zeros = (begin == end) ? 0u : static_cast<unsigned int>(std::distance(begin, end)) - 1u;
+    return std::accumulate(begin, end, 0u) + interval_zeros;
 }
 
 unsigned int compute_min_line_size(const Segments& segments);
