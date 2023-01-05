@@ -331,7 +331,7 @@ TEST_CASE("centerpiece-webpbn-10810-row-8", "[line_alternatives]")
         const Line expected = build_line_from("##.####.????????????????????????????????????????????.####.##", Line::ROW, 8);
         const auto partial_reduction = line_alternatives.partial_reduction(1);
         CHECK(partial_reduction.reduced_line == expected);
-        CHECK(partial_reduction.nb_alternatives == 10015005);
+        CHECK(partial_reduction.nb_alternatives == 6906900);
         CHECK_FALSE(partial_reduction.is_fully_reduced);
     }
     copy_line_from_line_span(known_tiles, build_line_from("##.####.????.????.????.????.????.????.????.????.????.####.##", Line::ROW, 8));
@@ -339,7 +339,7 @@ TEST_CASE("centerpiece-webpbn-10810-row-8", "[line_alternatives]")
         const Line partial_expected = build_line_from("##.####.????????????????????????????????????????????.####.##", Line::ROW, 8);
         const auto partial_reduction = line_alternatives.partial_reduction(1);
         CHECK(partial_reduction.reduced_line == partial_expected);
-        CHECK(partial_reduction.nb_alternatives == 9972500);
+        CHECK(partial_reduction.nb_alternatives == 4660490);
         CHECK_FALSE(partial_reduction.is_fully_reduced);
         const auto full_reduction = line_alternatives.full_reduction();
         CHECK(full_reduction.reduced_line == known_tiles);
@@ -378,7 +378,7 @@ TEST_CASE("centerpiece-webpbn-10810-row-9", "[line_alternatives]")
         const Line expected = build_line_from(".#.#.??????????????????????????????????????????????????.#.#.", Line::ROW, 9);
         const auto partial_reduction = line_alternatives.partial_reduction(1);
         CHECK(partial_reduction.reduced_line == expected);
-        CHECK(partial_reduction.nb_alternatives == 927983760);  // 0x374fe890
+        CHECK(partial_reduction.nb_alternatives == 225792840);  // 0x0d755348
         CHECK_FALSE(partial_reduction.is_fully_reduced);
     }
     copy_line_from_line_span(known_tiles, build_line_from(".#.#.?#??????????????????????????????????????????????#?.#.#.", Line::ROW, 9));
@@ -387,7 +387,7 @@ TEST_CASE("centerpiece-webpbn-10810-row-9", "[line_alternatives]")
         const Line expected = build_line_from(".#.#..#.????????????????????????????????????????????.#..#.#.", Line::ROW, 9);
         const auto partial_reduction = line_alternatives.partial_reduction(1);
         CHECK(partial_reduction.reduced_line == expected);
-        CHECK(partial_reduction.nb_alternatives == 225792840);  // 0x0d755348
+        CHECK(partial_reduction.nb_alternatives == 20030010);   // 0x0131a23a
         CHECK_FALSE(partial_reduction.is_fully_reduced);
     }
     copy_line_from_line_span(known_tiles, build_line_from(".#.#..#.?????????.????.????.????.????.????.?????????.#..#.#.", Line::ROW, 9));
@@ -395,7 +395,7 @@ TEST_CASE("centerpiece-webpbn-10810-row-9", "[line_alternatives]")
         const Line partial_expected = build_line_from(".#.#..#.????????????????????????????????????????????.#..#.#.", Line::ROW, 9);
         const auto partial_reduction = line_alternatives.partial_reduction(1);
         CHECK(partial_reduction.reduced_line == partial_expected);
-        CHECK(partial_reduction.nb_alternatives == 223691040);   // 0x0d554120
+        CHECK(partial_reduction.nb_alternatives == 4616974);    // 0x0046730e
         CHECK_FALSE(partial_reduction.is_fully_reduced);
         const auto full_reduction = line_alternatives.full_reduction();
         CHECK(full_reduction.reduced_line == known_tiles);
