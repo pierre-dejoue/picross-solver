@@ -14,7 +14,6 @@ namespace picross
 void merge_branching_grid_stats(GridStats& stats, const GridStats& branching_stats)
 {
     stats.nb_solutions += branching_stats.nb_solutions;
-    // stats.max_nb_solutions
     stats.max_branching_depth = std::max(stats.max_branching_depth, branching_stats.max_branching_depth);
     stats.nb_branching_calls += branching_stats.nb_branching_calls;
     stats.total_nb_branching_alternatives += branching_stats.total_nb_branching_alternatives;
@@ -41,12 +40,7 @@ void merge_branching_grid_stats(GridStats& stats, const GridStats& branching_sta
 
 std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
 {
-    ostream << "  Number of solutions found: " << stats.nb_solutions;
-    if (stats.max_nb_solutions > 0)
-    {
-        ostream << "/" << stats.max_nb_solutions;
-    }
-    ostream << std::endl;
+    ostream << "  Number of solutions found: " << stats.nb_solutions << std::endl;
     ostream << "  Max branching depth: " << stats.max_branching_depth << std::endl;
     if (stats.max_branching_depth > 0u)
     {

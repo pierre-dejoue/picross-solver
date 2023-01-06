@@ -224,40 +224,54 @@ int main(int argc, char *argv[])
                         picross::GridStats stats;
                         solver->set_stats(stats);
 
-                        /* Solve the grid */
-                        picross::Solver::Result solver_result;
+                        /* Solution display */
+                        unsigned int nb = 0;
+                        picross::Solver::SolutionFound solution_found = [&nb, max_nb_solutions](picross::Solver::Solution&& solution)
                         {
-                            DurationMeas<float, std::milli> meas_ms(time_ms);
-                            solver_result = solver->solve(grid_input, max_nb_solutions);
-                        }
-
-                        /* Display solutions */
-                        if (solver_result.status != picross::Solver::Status::OK)
-                        {
-                            std::cout << "  Could not solve that grid :-(" << std::endl;
-                            if (solver_result.status == picross::Solver::Status::NOT_LINE_SOLVABLE)
+                            if (solution.partial)
                             {
-                                assert(solver_result.solutions.size() == 1);
-                                const auto& solution = solver_result.solutions.front();
                                 assert(!solution.grid.is_solved());
-                                std::cout << "  Found partial solution" << std::endl;
-                                output_solution_grid(std::cout, solution.grid, 2);
-                                std::cout << std::endl;
+                                std::cout << "  Partial solution:" << std::endl;
                             }
-                            std::cout << std::endl;
-                        }
-                        else
-                        {
-                            std::cout << "  Found " << solver_result.solutions.size() << " solution(s)" << std::endl;
-                            std::cout << std::endl;
-                            int nb = 0;
-                            for (const auto& solution : solver_result.solutions)
+                            else
                             {
                                 assert(solution.grid.is_solved());
-                                std::cout << "  Nb " << ++nb << ": (branching depth: " << solution.branching_depth << ")" << std::endl;
-                                output_solution_grid(std::cout, solution.grid, 2);
-                                std::cout << std::endl;
+                                std::cout << "  Solution nb " << ++nb << ": (branching depth: " << solution.branching_depth << ")" << std::endl;
                             }
+                            output_solution_grid(std::cout, solution.grid, 2);
+                            std::cout << std::endl;
+                            return max_nb_solutions == 0 || nb < max_nb_solutions;
+                        };
+
+                        /* Solve the grid */
+                        picross::Solver::Status solver_status;
+                        {
+                            DurationMeas<float, std::milli> meas_ms(time_ms);
+                            solver_status = solver->solve(grid_input, solution_found);
+                        }
+
+                        switch (solver_status)
+                        {
+                        case picross::Solver::Status::OK:
+                            break;
+                        case picross::Solver::Status::ABORTED:
+                            if (nb == max_nb_solutions)
+                                std::cout << "  Reached max number of solutions" << std::endl;
+                            else
+                                std::cout << "  Solver aborted" << std::endl;
+                            std::cout << std::endl;
+                            break;
+                        case picross::Solver::Status::CONTRADICTORY_GRID:
+                            std::cout << "  Not solvable" <<  std::endl;
+                            std::cout << std::endl;
+                            break;
+                        case picross::Solver::Status::NOT_LINE_SOLVABLE:
+                            std::cout << "  Not line solvable" << std::endl;
+                            std::cout << std::endl;
+                            break;
+                        default:
+                            assert(0);
+                            break;
                         }
 
                         /* Display stats */

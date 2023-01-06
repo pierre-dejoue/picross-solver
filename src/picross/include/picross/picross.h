@@ -148,8 +148,8 @@ public:
     // Return status of the solver
     enum class Status
     {
-        OK,                     // One or more solution found
-        ABORTED,                // Aborted
+        OK,                     // Solver process completed and one or more solutions found
+        ABORTED,                // Solver process aborted
         CONTRADICTORY_GRID,     // Not solvable
         NOT_LINE_SOLVABLE       // Not line solvable (i.e. not solvable without a branching algorithm)
     };
@@ -158,6 +158,7 @@ public:
     {
         OutputGrid grid;
         unsigned int branching_depth;
+        bool partial;
     };
     using Solutions = std::vector<Solution>;
 
@@ -169,12 +170,31 @@ public:
     };
 
     //
-    // Main method called to solve a grid
+    // Solve a grid
     //
     // By default the solver will look for all the solutions of the input grid.
     // The optional argument max_nb_solutions can be used to limit the number of solutions discovered by the algorithm.
+    // max_nb_solutions = 0 means no limit
+    //
+    // If the solver returns with status Status::NOT_LINE_SOLVABLE, the partially solved grid is part of the
+    // solutions
     //
     virtual Result solve(const InputGrid& grid_input, unsigned int max_nb_solutions = 0u) const = 0;
+
+
+    //
+    // Solve a grid
+    //
+    // The callback solution_found gets called each time the solver finds a solution.
+    // If the callback returns true, the solver process continue, otherwise it will stop and this
+    // method will return with status Status::ABORTED
+    //
+    // If the solver returns with status Status::NOT_LINE_SOLVABLE, the partially solved grid is passed to the
+    // callback function solution_found, with the partial flag set to true
+    //
+    using SolutionFound = std::function<bool(Solution&&)>;
+    virtual Status solve(const InputGrid& grid_input, SolutionFound solution_found) const = 0;
+
 
     //
     // Set an optional observer on the solver

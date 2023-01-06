@@ -31,28 +31,44 @@ Solver::Result RefSolver<BranchingAllowed>::solve(const InputGrid& grid_input, u
         /* Reset stats */
         GridStats new_stats;
         std::swap(*m_stats, new_stats);
-        m_stats->max_nb_solutions = max_nb_solutions;
     }
 
     SolverPolicy_RampUpMaxNbAlternatives solver_policy;
     solver_policy.m_branching_allowed = BranchingAllowed;
     solver_policy.m_limit_on_max_nb_alternatives = BranchingAllowed;
 
-    result.status = Status::OK;
-    try
+    WorkGrid<SolverPolicy_RampUpMaxNbAlternatives> work_grid(grid_input, solver_policy, m_observer, m_abort_function);
+    work_grid.set_stats(m_stats);
+
+    SolutionFound solution_found = [&result, max_nb_solutions](Solution&& solution) -> bool
     {
-        WorkGrid<SolverPolicy_RampUpMaxNbAlternatives> work_grid(grid_input, solver_policy, m_observer, m_abort_function);
-        work_grid.set_stats(m_stats);
-        result.status = work_grid.solve(result.solutions, max_nb_solutions);
-    }
-    catch (const PicrossSolverAborted&)
-    {
-        result.status = Status::ABORTED;
-    }
+        result.solutions.emplace_back(std::move(solution));
+        return max_nb_solutions == 0 || result.solutions.size() < max_nb_solutions;
+    };
+    result.status = work_grid.solve(solution_found);
 
     return result;
 }
 
+template <bool BranchingAllowed>
+Solver::Status RefSolver<BranchingAllowed>::solve(const InputGrid& grid_input, SolutionFound solution_found) const
+{
+    if (m_stats != nullptr)
+    {
+        /* Reset stats */
+        GridStats new_stats;
+        std::swap(*m_stats, new_stats);
+    }
+
+    SolverPolicy_RampUpMaxNbAlternatives solver_policy;
+    solver_policy.m_branching_allowed = BranchingAllowed;
+    solver_policy.m_limit_on_max_nb_alternatives = BranchingAllowed;
+
+    WorkGrid<SolverPolicy_RampUpMaxNbAlternatives> work_grid(grid_input, solver_policy, m_observer, m_abort_function);
+    work_grid.set_stats(m_stats);
+
+    return work_grid.solve(solution_found);
+}
 
 template <bool BranchingAllowed>
 void RefSolver<BranchingAllowed>::set_observer(Observer observer)

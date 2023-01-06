@@ -16,16 +16,11 @@
 
 #include <picross/picross.h>
 
-#include <exception>
 #include <memory>
 #include <vector>
 
 namespace picross
 {
-
-// Exception returned by WorkGrid::solve() if the processing was aborted from the outside
-class PicrossSolverAborted : public std::exception
-{};
 
 /*
  * WorkGrid class
@@ -70,8 +65,8 @@ private:
     WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, State initial_state);
 public:
     void set_stats(GridStats* stats);
-    Solver::Status line_solve(Solver::Solutions& solutions);
-    Solver::Status solve(Solver::Solutions& solutions, unsigned int max_nb_solutions = 0u);
+    Solver::Status line_solve(const Solver::SolutionFound& solution_found);
+    Solver::Status solve(const Solver::SolutionFound& solution_found);
 private:
     bool all_lines_completed() const;
     bool update_line(const Line& line, unsigned int nb_alt);
@@ -82,9 +77,9 @@ private:
     PassStatus single_line_full_reduction(Line::Type type, unsigned int index);
     template <State S>
     PassStatus full_grid_pass();
-    Solver::Status branch(Solver::Solutions& solutions, unsigned int max_nb_solutions);
-    bool valid_solution() const;
-    void save_solution(Solver::Solutions& solutions) const;
+    Solver::Status branch(const Solver::SolutionFound& solution_found);
+    bool is_valid_solution() const;
+    bool found_solution(const Solver::SolutionFound& solution_found) const;
 private:
     State                                           m_state;
     const SolverPolicy                              m_solver_policy;

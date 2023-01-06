@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <exception>
 #include <iterator>
 #include <memory>
 
@@ -21,8 +22,15 @@
 namespace picross
 {
 
+// Exception returned by WorkGrid::solve() if the processing was aborted from the outside
+class PicrossSolverAborted : public std::exception
+{};
+
 namespace
 {
+constexpr bool PARTIAL_SOLUTION = true;
+constexpr bool FULL_SOLUTION = false;
+
 std::vector<LineConstraint> build_constraints_from(Line::Type type, const InputGrid& grid)
 {
     std::vector<LineConstraint> output;
@@ -166,83 +174,92 @@ void WorkGrid<SolverPolicy>::set_stats(GridStats* stats)
 
 
 template <typename SolverPolicy>
-Solver::Status WorkGrid<SolverPolicy>::line_solve(Solver::Solutions& solutions)
+Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& solution_found)
 {
-    bool grid_completed = false;
-    // While the reduce method is making progress, call it!
-    while (m_state != State::BRANCHING && !grid_completed)
+    Solver::Status status = Solver::Status::OK;
+    try
     {
-       if (m_observer)
-       {
-           m_observer(Solver::Event::INTERNAL_STATE, nullptr, m_branching_depth, static_cast<unsigned int>(m_state));
-       }
-
+        bool grid_completed = false;
         PassStatus pass_status;
-        switch (m_state)
+
+        while (m_state != State::BRANCHING && !grid_completed)
         {
-        case State::INITIAL_PASS:
-            pass_status = full_grid_pass<State::INITIAL_PASS>();
-            m_state = State::PARTIAL_REDUCTION;
-            break;
-
-        case State::PARTIAL_REDUCTION:
-            pass_status = full_grid_pass<State::PARTIAL_REDUCTION>();
-            if (!pass_status.grid_changed)
+            if (m_observer)
             {
-                m_state = State::FULL_REDUCTION;
-                sort_by_nb_alternatives();
+                m_observer(Solver::Event::INTERNAL_STATE, nullptr, m_branching_depth, static_cast<unsigned int>(m_state));
             }
-            break;
 
-        case State::FULL_REDUCTION:
-            pass_status = full_grid_pass<State::FULL_REDUCTION>();
-            if (m_solver_policy.switch_to_branching(m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines))
+            switch (m_state)
             {
-                m_state = State::BRANCHING;
-            }
-            else
-            {
-                // Max number of alternatives for the next full grid pass
-                m_max_nb_alternatives = m_solver_policy.get_max_nb_alternatives(m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines);
+            case State::INITIAL_PASS:
+                pass_status = full_grid_pass<State::INITIAL_PASS>();
+                m_state = State::PARTIAL_REDUCTION;
+                break;
+
+            case State::PARTIAL_REDUCTION:
+                pass_status = full_grid_pass<State::PARTIAL_REDUCTION>();
                 if (!pass_status.grid_changed)
-                    m_state = State::PARTIAL_REDUCTION;
+                {
+                    m_state = State::FULL_REDUCTION;
+                    sort_by_nb_alternatives();
+                }
+                break;
+
+            case State::FULL_REDUCTION:
+                pass_status = full_grid_pass<State::FULL_REDUCTION>();
+                if (m_solver_policy.switch_to_branching(m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines))
+                {
+                    m_state = State::BRANCHING;
+                }
+                else
+                {
+                    // Max number of alternatives for the next full grid pass
+                    m_max_nb_alternatives = m_solver_policy.get_max_nb_alternatives(m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines);
+                    if (!pass_status.grid_changed)
+                        m_state = State::PARTIAL_REDUCTION;
+                }
+                break;
+
+            case State::BRANCHING:
+            default:
+                assert(0);
+                break;
             }
-            break;
 
-        case State::BRANCHING:
-        default:
-            assert(0);
-            break;
+            if (pass_status.contradictory)
+                break;
+
+            grid_completed = all_lines_completed();
         }
 
-        if (pass_status.contradictory)
-            return Solver::Status::CONTRADICTORY_GRID;
-
-        grid_completed = all_lines_completed();
-    }
-
-    // Are we done?
-    if (grid_completed)
-    {
-        if (m_observer)
+        // Are we done?
+        if (grid_completed)
         {
-            m_observer(Solver::Event::SOLVED_GRID, nullptr, m_branching_depth, 0);
+            const bool cont = found_solution(solution_found);
+            status = cont ? Solver::Status::OK : Solver::Status::ABORTED;
         }
-        save_solution(solutions);
-        return Solver::Status::OK;
+        // If we are not, the grid is either contradictory or not line solvable
+        else if (pass_status.contradictory)
+        {
+            status = Solver::Status::CONTRADICTORY_GRID;
+        }
+        else
+        {
+            status = Solver::Status::NOT_LINE_SOLVABLE;
+        }
     }
-    // If we are not, the grid is not line solvable
-    else
+    catch (const PicrossSolverAborted&)
     {
-        return Solver::Status::NOT_LINE_SOLVABLE;
+        status = Solver::Status::ABORTED;
     }
+    return status;
 }
 
 
 template <typename SolverPolicy>
-Solver::Status WorkGrid<SolverPolicy>::solve(Solver::Solutions& solutions, unsigned int max_nb_solutions)
+Solver::Status WorkGrid<SolverPolicy>::solve(const Solver::SolutionFound& solution_found)
 {
-    auto status = line_solve(solutions);
+    auto status = line_solve(solution_found);
 
     if (status == Solver::Status::NOT_LINE_SOLVABLE)
     {
@@ -251,12 +268,12 @@ Solver::Status WorkGrid<SolverPolicy>::solve(Solver::Solutions& solutions, unsig
             assert(m_state == State::BRANCHING);
 
             // Make a guess
-            status = branch(solutions, max_nb_solutions);
+            status = branch(solution_found);
         }
-        else
+        else if (m_branching_depth == 0)
         {
-            // Store an incomplete solution
-            save_solution(solutions);
+            // Partial solution
+            solution_found(Solver::Solution{ OutputGrid(*this), m_branching_depth, PARTIAL_SOLUTION });
         }
     }
 
@@ -506,7 +523,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::full_grid_pa
 // This method will test a range of alternatives for one particular line of the grid, each time
 // creating a new instance of the grid class on which the function WorkGrid<SolverPolicy>::solve() is called.
 template <typename SolverPolicy>
-Solver::Status WorkGrid<SolverPolicy>::branch(Solver::Solutions& solutions, unsigned int max_nb_solutions)
+Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solution_found)
 {
     assert(m_solver_policy.m_branching_allowed);
     assert(m_all_lines.begin() != m_uncompleted_lines_end);
@@ -541,6 +558,7 @@ Solver::Status WorkGrid<SolverPolicy>::branch(Solver::Solutions& solutions, unsi
         max_nb_alts = std::max(max_nb_alts, nb_alts);
     }
 
+    Solver::Status status = Solver::Status::OK;
     bool flag_solution_found = false;
     for (const Line& guess_line : list_of_all_alternatives)
     {
@@ -562,7 +580,7 @@ Solver::Status WorkGrid<SolverPolicy>::branch(Solver::Solutions& solutions, unsi
         Solver::Solutions nested_solutions;
         std::unique_ptr<GridStats> nested_stats = m_grid_stats ? std::make_unique<GridStats>() : nullptr;
         nested_work_grid.set_stats(nested_stats.get());
-        const auto status = nested_work_grid.solve(nested_solutions, max_nb_solutions);
+        status = nested_work_grid.solve(solution_found);
 
         if (m_grid_stats)
         {
@@ -570,22 +588,18 @@ Solver::Status WorkGrid<SolverPolicy>::branch(Solver::Solutions& solutions, unsi
             merge_branching_grid_stats(*m_grid_stats, *nested_stats);
         }
 
-        flag_solution_found |= status == Solver::Status::OK;
+        flag_solution_found |= (status == Solver::Status::OK);
 
-        solutions.reserve(solutions.size() + nested_solutions.size());
-        std::move(nested_solutions.begin(), nested_solutions.end(), std::back_inserter(solutions));
-        nested_solutions.clear();       // Entries are now invalidated
-
-        // Stop if enough solutions found
-        if (max_nb_solutions > 0u && solutions.size() >= max_nb_solutions)
-            break;
+        if (status == Solver::Status::ABORTED)
+            return status;
     }
+
     return flag_solution_found ? Solver::Status::OK : Solver::Status::CONTRADICTORY_GRID;
 }
 
 
 template <typename SolverPolicy>
-bool WorkGrid<SolverPolicy>::valid_solution() const
+bool WorkGrid<SolverPolicy>::is_valid_solution() const
 {
     assert(is_solved());
     bool valid = true;
@@ -596,20 +610,14 @@ bool WorkGrid<SolverPolicy>::valid_solution() const
 
 
 template <typename SolverPolicy>
-void WorkGrid<SolverPolicy>::save_solution(Solver::Solutions& solutions) const
+bool WorkGrid<SolverPolicy>::found_solution(const Solver::SolutionFound& solution_found) const
 {
-    if (m_solver_policy.m_branching_allowed)
-    {
-        assert(valid_solution());
-        if (m_grid_stats != nullptr) { m_grid_stats->nb_solutions++; }
-    }
-    else
-    {
-        assert(m_branching_depth == 0);
-    }
+    assert(is_valid_solution());
+    if (m_grid_stats != nullptr) { m_grid_stats->nb_solutions++; }
+    if (m_observer) { m_observer(Solver::Event::SOLVED_GRID, nullptr, m_branching_depth, 0); }
 
     // Shallow copy of only the grid data
-    solutions.emplace_back(Solver::Solution{ static_cast<const OutputGrid&>(*this), m_branching_depth });
+    return solution_found(Solver::Solution{ OutputGrid(*this), m_branching_depth, FULL_SOLUTION });
 }
 
 // Explicit template instantiations
