@@ -1,6 +1,6 @@
 # Source: https://www.nonograms.org/nonograms/i/4010
 # 33x40
-GRID Jelly-fish
+GRID Jellyfish
 ROWS
 [ 11 12 ]
 [ 5 9 9 ]
