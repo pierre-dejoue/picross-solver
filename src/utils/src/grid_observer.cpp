@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <exception>
+#include <iostream>
 
 
 ObserverGrid::ObserverGrid(size_t width, size_t height, const std::string& name)
@@ -55,7 +56,7 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
         }
         assert(depth > 0u);
         assert(depth < grids.size());
-        grids.emplace(grids.begin() + depth, grids[depth - 1]);
+        grids[depth] = grids[depth - 1];
         current_depth = depth;
         break;
 
