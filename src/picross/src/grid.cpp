@@ -69,6 +69,12 @@ Grid& Grid::operator=(Grid&& other) noexcept
     return *this;
 }
 
+
+const Grid::Container& Grid::get_container(Line::Type type) const
+{
+    return type == Line::ROW ? m_row_major : m_col_major;
+}
+
 LineSpan Grid::get_line(Line::Type type, Line::Index index) const
 {
     assert((type == Line::ROW && index < m_height) || (type == Line::COL && index < m_width));
@@ -162,5 +168,73 @@ std::ostream& operator<<(std::ostream& ostream, const Grid& grid)
         ostream << grid.get_line(Line::ROW, y) << std::endl;
     return ostream;
 }
+
+
+template <Line::Type T>
+GridSnapshot<T>::GridSnapshot(std::size_t width, std::size_t height)
+    : m_width(width)
+    , m_height(height)
+    , m_tiles()
+{
+    m_tiles.resize(width * height, Tile::UNKNOWN);
+}
+
+template <Line::Type T>
+GridSnapshot<T>::GridSnapshot(const Grid& grid)
+    : m_width(grid.width())
+    , m_height(grid.height())
+    , m_tiles(grid.get_container(T))
+{
+}
+
+template <Line::Type T>
+GridSnapshot<T>& GridSnapshot<T>::operator=(const GridSnapshot<T>& other)
+{
+    const_cast<std::size_t&>(m_width) = other.m_width;
+    const_cast<std::size_t&>(m_height) = other.m_height;
+    m_tiles = other.m_tiles;
+    return *this;
+}
+template <Line::Type T>
+GridSnapshot<T>& GridSnapshot<T>::operator=(GridSnapshot<T>&& other) noexcept
+{
+    const_cast<std::size_t&>(m_width) = other.m_width;
+    const_cast<std::size_t&>(m_height) = other.m_height;
+    m_tiles = std::move(other.m_tiles);
+    return *this;
+}
+
+template <Line::Type T>
+GridSnapshot<T>& GridSnapshot<T>::operator=(const Grid& grid)
+{
+    const_cast<std::size_t&>(m_width) = grid.width();
+    const_cast<std::size_t&>(m_height) = grid.height();
+    m_tiles = grid.get_container(T);
+    return *this;
+}
+
+template <Line::Type T>
+LineSpan GridSnapshot<T>::get_line(Line::Index index) const
+{
+    assert((T == Line::ROW && index < m_height) || (T == Line::COL && index < m_width));
+    const auto line_length = T == Line::ROW ? m_width : m_height;
+    return LineSpan(T, index, line_length, &m_tiles[index * line_length]);
+}
+
+template <Line::Type T>
+void GridSnapshot<T>::reduce(const Grid& grid)
+{
+    const Grid::Container& other_tiles = grid.get_container(T);
+    std::size_t idx {0};
+    for (Tile& tile : m_tiles)
+    {
+        if (tile != Tile::UNKNOWN && tile != other_tiles[idx])
+            tile = Tile::UNKNOWN;
+        idx++;
+    }
+}
+
+// Explicit template instantiation
+template class GridSnapshot<Line::ROW>;
 
 } // namespace picross

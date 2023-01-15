@@ -27,6 +27,8 @@ struct GridStats
     unsigned int max_branching_depth = 0u;                              // max branching depth of the solver (not of the solutions)
     unsigned int nb_branching_calls = 0u;
     unsigned int total_nb_branching_alternatives = 0u;
+    unsigned int nb_probing_calls = 0u;
+    unsigned int total_nb_probing_alternatives = 0u;
     unsigned int max_initial_nb_alternatives = 0u;
     unsigned int max_nb_alternatives = 0u;
     unsigned int max_nb_alternatives_w_change = 0u;

@@ -15,6 +15,8 @@ class LineSpan;
 class Grid
 {
 public:
+    using Container = std::vector<Tile>;
+public:
     Grid(std::size_t width, std::size_t height, const std::string& name = std::string{});
 
     Grid(const Grid&) = default;
@@ -27,6 +29,7 @@ public:
 
     const std::string& name() const { return m_name; }
 
+    const Container& get_container(Line::Type type) const;
     LineSpan get_line(Line::Type type, Line::Index index) const;
     Tile get(Line::Index x, Line::Index y) const;
 
@@ -49,10 +52,38 @@ private:
     const std::size_t       m_width;
     const std::size_t       m_height;
     const std::string       m_name;
-    std::vector<Tile>       m_row_major;
-    std::vector<Tile>       m_col_major;
+    Container               m_row_major;
+    Container               m_col_major;
 };
 
 std::ostream& operator<<(std::ostream& ostream, const Grid& grid);
+
+template <Line::Type T>
+class GridSnapshot
+{
+public:
+    GridSnapshot(std::size_t width, std::size_t height);
+    explicit GridSnapshot(const Grid& grid);
+
+    GridSnapshot(const GridSnapshot&) = default;
+    GridSnapshot(GridSnapshot&&) noexcept = default;
+    GridSnapshot& operator=(const GridSnapshot&);
+    GridSnapshot& operator=(GridSnapshot&&) noexcept;
+
+    GridSnapshot& operator=(const Grid& grid);
+
+    std::size_t width() const { return m_width; }
+    std::size_t height() const { return m_height; }
+
+    LineSpan get_line(Line::Index index) const;
+
+    void reduce(const Grid& grid);
+
+private:
+    const std::size_t       m_width;
+    const std::size_t       m_height;
+    Grid::Container         m_tiles;
+};
+
 
 } // namespace picross

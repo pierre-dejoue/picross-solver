@@ -43,20 +43,21 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
     switch (event)
     {
     case picross::Solver::Event::BRANCHING:
-        // Consider only the "branching edge" events
-        if (delta)
-            break;
-        if (depth > current_depth)
+        if (!delta)
         {
-            assert(depth == current_depth + 1u);
-            for (size_t idx = grids.size(); idx <= depth; ++idx)
+            // BRANCHING EDGE event
+            assert(depth > 0u);
+            if (depth > current_depth)
             {
-                grids.emplace_back(width, height);
+                assert(depth == current_depth + 1u);
+                for (size_t idx = grids.size(); idx <= depth; ++idx)
+                {
+                    grids.emplace_back(width, height);
+                }
             }
+            assert(depth < grids.size());
+            grids[depth] = grids[depth - 1];
         }
-        assert(depth > 0u);
-        assert(depth < grids.size());
-        grids[depth] = grids[depth - 1];
         current_depth = depth;
         break;
 
@@ -85,7 +86,6 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
     }
 
     case picross::Solver::Event::SOLVED_GRID:
-        assert(depth == current_depth);
         break;
 
     case picross::Solver::Event::INTERNAL_STATE:

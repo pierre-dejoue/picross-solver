@@ -5,6 +5,7 @@
  ******************************************************************************/
 #include "work_grid.h"
 
+#include "grid.h"
 #include "line.h"
 #include "macros.h"
 #include "picross_stats_internal.h"
@@ -17,6 +18,7 @@
 #include <exception>
 #include <iterator>
 #include <memory>
+#include <optional>
 
 
 namespace picross
@@ -80,6 +82,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
     , m_alternatives()
     , m_line_completed()
     , m_line_is_fully_reduced()
+    , m_line_probed()
     , m_nb_alternatives()
     , m_uncompleted_lines_range()
     , m_all_lines()
@@ -87,8 +90,9 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
     , m_grid_stats(nullptr)
     , m_observer(std::move(observer))
     , m_abort_function(std::move(abort_function))
-    , m_max_nb_alternatives(solver_policy.m_min_nb_alternatives)
+    , m_max_nb_alternatives(SolverPolicy::MIN_NB_ALTERNATIVES)
     , m_branching_depth(0u)
+    , m_probing_depth_incr(0u)
     , m_binomial(std::make_shared<BinomialCoefficients::Cache>())
 {
     assert(m_binomial);
@@ -114,6 +118,8 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
     m_line_has_updates[Line::COL].resize(width(), false);
     m_line_is_fully_reduced[Line::ROW].resize(height(), false);
     m_line_is_fully_reduced[Line::COL].resize(width(), false);
+    m_line_probed[Line::ROW].resize(height(), false);
+    m_line_probed[Line::COL].resize(width(), false);
     m_nb_alternatives[Line::ROW].resize(height(), 0u);
     m_nb_alternatives[Line::COL].resize(width(), 0u);
     m_uncompleted_lines_range[Line::ROW] = { 0u, static_cast<Line::Index>(height()) };
@@ -133,6 +139,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& sol
     , m_alternatives()
     , m_line_completed()
     , m_line_is_fully_reduced()
+    , m_line_probed()
     , m_nb_alternatives()
     , m_uncompleted_lines_range()
     , m_all_lines(parent.m_all_lines)
@@ -140,8 +147,9 @@ WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& sol
     , m_grid_stats(nullptr)
     , m_observer(parent.m_observer)
     , m_abort_function(parent.m_abort_function)
-    , m_max_nb_alternatives(solver_policy.m_min_nb_alternatives)
-    , m_branching_depth(parent.m_branching_depth + 1)
+    , m_max_nb_alternatives(SolverPolicy::MIN_NB_ALTERNATIVES)
+    , m_branching_depth(parent.m_branching_depth + 1u)
+    , m_probing_depth_incr(0u)
     , m_binomial(parent.m_binomial)
 {
     assert(m_binomial);
@@ -156,6 +164,8 @@ WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& sol
     m_line_has_updates[Line::COL] = parent.m_line_has_updates[Line::COL];
     m_line_is_fully_reduced[Line::ROW] = parent.m_line_is_fully_reduced[Line::ROW];
     m_line_is_fully_reduced[Line::COL] = parent.m_line_is_fully_reduced[Line::COL];
+    m_line_probed[Line::ROW] = parent.m_line_probed[Line::ROW];
+    m_line_probed[Line::COL] = parent.m_line_probed[Line::COL];
     m_nb_alternatives[Line::ROW] = parent.m_nb_alternatives[Line::ROW];
     m_nb_alternatives[Line::COL] = parent.m_nb_alternatives[Line::COL];
     m_uncompleted_lines_range[Line::ROW] = parent.m_uncompleted_lines_range[Line::ROW];
@@ -172,9 +182,14 @@ void WorkGrid<SolverPolicy>::set_stats(GridStats* stats)
         stats->max_branching_depth = m_branching_depth;
 }
 
-
 template <typename SolverPolicy>
 Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& solution_found)
+{
+    return line_solve(solution_found, false);
+}
+
+template <typename SolverPolicy>
+Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& solution_found, bool probing)
 {
     Solver::Status status = Solver::Status::OK;
     try
@@ -209,7 +224,7 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
                 pass_status = full_grid_pass<State::FULL_REDUCTION>();
                 if (m_solver_policy.switch_to_branching(m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines))
                 {
-                    m_state = State::BRANCHING;
+                    m_state = probing ? State::BRANCHING : State::PROBING;
                 }
                 else
                 {
@@ -219,6 +234,20 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
                         m_state = State::PARTIAL_REDUCTION;
                 }
                 break;
+
+            case State::PROBING:
+            {
+                if (!m_solver_policy.m_branching_allowed)
+                    m_state = State::BRANCHING;
+                const auto probing_result = probe();
+                if (probing_result.m_status == Solver::Status::CONTRADICTORY_GRID)
+                    pass_status.contradictory = true;
+                if (probing_result.m_grid_has_changed)
+                    m_state = State::PARTIAL_REDUCTION;
+                else
+                    m_state = State::BRANCHING;
+                break;
+            }
 
             case State::BRANCHING:
             default:
@@ -235,8 +264,15 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
         // Are we done?
         if (grid_completed)
         {
-            const bool cont = found_solution(solution_found);
-            status = cont ? Solver::Status::OK : Solver::Status::ABORTED;
+            if (!probing)
+            {
+                const bool cont = found_solution(solution_found);
+                status = cont ? Solver::Status::OK : Solver::Status::ABORTED;
+            }
+            else
+            {
+                status = Solver::Status::OK;
+            }
         }
         // If we are not, the grid is either contradictory or not line solvable
         else if (pass_status.contradictory)
@@ -295,16 +331,15 @@ bool WorkGrid<SolverPolicy>::all_lines_completed() const
 
 
 template <typename SolverPolicy>
-bool WorkGrid<SolverPolicy>::update_line(const Line& line, unsigned int nb_alt)
+bool WorkGrid<SolverPolicy>::update_line(const LineSpan& line, unsigned int nb_alt)
 {
     assert(nb_alt > 0);
     static const Line DEFAULT_LINE(Line::ROW, 0, 0);
     const auto line_type = line.type();
     const auto line_index = line.index();
     const auto line_sz = line.size();
-    const Line observer_original_line = m_observer ? line_from_line_span(get_line(line.type(), line_index)) : DEFAULT_LINE;
+    const Line observer_original_line = m_observer ? line_from_line_span(get_line(line_type, line_index)) : DEFAULT_LINE;
     assert(line.size() == static_cast<unsigned int>(line.type() == Line::ROW ? width() : height()));
-    const Line::Container& tiles = line.tiles();
 
     bool line_changed = false;
     const auto set_tile_func = [this, &line_changed](Line::Type type, unsigned int idx) {
@@ -320,7 +355,7 @@ bool WorkGrid<SolverPolicy>::update_line(const Line& line, unsigned int nb_alt)
     {
         for (Line::Index tile_idx = 0u; tile_idx < line_sz; tile_idx++)
         {
-            const bool tile_changed = update(tile_idx, line_index, tiles[tile_idx]);
+            const bool tile_changed = update(tile_idx, line_index, line[tile_idx]);
             line_is_complete &= (grid_line[tile_idx] != Tile::UNKNOWN);
             if (tile_changed)
                 set_tile_func(Line::COL, tile_idx);
@@ -331,7 +366,7 @@ bool WorkGrid<SolverPolicy>::update_line(const Line& line, unsigned int nb_alt)
         assert(line_type == Line::COL);
         for (Line::Index tile_idx = 0u; tile_idx < line_sz; tile_idx++)
         {
-            const bool tile_changed = update(line_index, tile_idx, tiles[tile_idx]);
+            const bool tile_changed = update(line_index, tile_idx, line[tile_idx]);
             line_is_complete &= (grid_line[tile_idx] != Tile::UNKNOWN);
             if (tile_changed)
                 set_tile_func(Line::ROW, tile_idx);
@@ -358,6 +393,62 @@ void WorkGrid<SolverPolicy>::partition_completed_lines()
     m_uncompleted_lines_end = std::partition(m_all_lines.begin(), m_uncompleted_lines_end, [this](const LineId id) { return !m_line_completed[id.m_type][id.m_index]; });
     update_line_range<true>(m_uncompleted_lines_range[Line::ROW], m_line_completed[Line::ROW]);
     update_line_range<true>(m_uncompleted_lines_range[Line::COL], m_line_completed[Line::COL]);
+}
+
+template <typename SolverPolicy>
+std::vector<LineId> WorkGrid<SolverPolicy>::sorted_edges() const
+{
+    std::vector<LineId> lines;
+    for (const auto line_type : { Line::ROW, Line::COL })
+    {
+        if (!m_uncompleted_lines_range[line_type].empty())
+        {
+            const auto first = m_uncompleted_lines_range[line_type].first();
+            const auto last = m_uncompleted_lines_range[line_type].last();
+
+            lines.emplace_back(line_type, first);
+            if (last != first)
+                lines.emplace_back(line_type, last);
+        }
+    }
+
+    std::sort(lines.begin(), lines.end(), [this](const auto& lhs, const auto& rhs) {
+        return m_nb_alternatives[lhs.m_type][lhs.m_index] < m_nb_alternatives[rhs.m_type][rhs.m_index];
+    });
+
+    return lines;
+}
+
+template <typename SolverPolicy>
+std::vector<LineId> WorkGrid<SolverPolicy>::sorted_lines_next_to_completed() const
+{
+    std::vector<LineId> lines;
+    for (const auto line_type : { Line::ROW, Line::COL })
+    {
+        if (!m_uncompleted_lines_range[line_type].empty())
+        {
+            const auto first = m_uncompleted_lines_range[line_type].first();
+            const auto last = m_uncompleted_lines_range[line_type].last();
+
+            lines.emplace_back(line_type, first);
+            if (last != first)
+                lines.emplace_back(line_type, last);
+            for (Line::Index idx = first + 1; idx < last; idx++)
+            {
+                if (!m_line_completed[line_type][idx] &&
+                    (m_line_completed[line_type][idx - 1] || m_line_completed[line_type][idx + 1]))
+                {
+                    lines.emplace_back(LineId(line_type, idx));
+                }
+            }
+        }
+    }
+
+    std::sort(lines.begin(), lines.end(), [this](const auto& lhs, const auto& rhs) {
+        return m_nb_alternatives[lhs.m_type][lhs.m_index] < m_nb_alternatives[rhs.m_type][rhs.m_index];
+    });
+
+    return lines;
 }
 
 
@@ -414,7 +505,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_
 
     // Reduce all possible lines that match the data already present in the grid and the line constraint
     if (m_grid_stats != nullptr) { m_grid_stats->nb_single_line_partial_reduction++; }
-    const auto partial_reduction = m_alternatives[type][index].partial_reduction(1);
+    const auto partial_reduction = m_alternatives[type][index].partial_reduction(SolverPolicy::PARTIAL_REDUCE_NB_CONSTRAINTS);
 
     // If the list of alternative lines is empty, it means the grid data is contradictory
     if (partial_reduction.nb_alternatives == 0)
@@ -520,6 +611,149 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::full_grid_pa
     return status;
 }
 
+// This method probes at least one line of the grid. It returns true if the grid has changed, false otherwise.
+// To prevent repeat of the found solutions, if the grid is solved during the probing, the found solution is not saved.
+template <typename SolverPolicy>
+typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe()
+{
+    ProbingResult result{};
+    std::vector<LineId> candidate_lines = sorted_edges();
+    for (auto candidate : candidate_lines)
+    {
+        if (!m_line_probed[candidate.m_type][candidate.m_index] &&
+            m_nb_alternatives[candidate.m_type][candidate.m_index] < m_solver_policy.m_max_nb_alternatives_for_probing)
+        {
+            result = probe(candidate);
+            switch (result.m_status)
+            {
+            case Solver::Status::OK:
+                break;
+
+            case Solver::Status::ABORTED:
+            case Solver::Status::CONTRADICTORY_GRID:
+                return result;
+
+            case Solver::Status::NOT_LINE_SOLVABLE:
+            default:
+                assert(0);
+                break;
+            }
+            if (result.m_grid_has_changed)
+            {
+                m_probing_depth_incr = 1u;
+                break;
+            }
+        }
+    }
+    return result;
+}
+
+// This method probes a specific line. It returns true if the grid was changed, false otherwise
+template <typename SolverPolicy>
+typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(LineId line_id)
+{
+    ProbingResult result{};
+
+    const LineConstraint& line_constraint = m_constraints[line_id.m_type][line_id.m_index];
+    const LineSpan& known_tiles = get_line(line_id.m_type, line_id.m_index);
+
+    // Probe lines only once per solve
+    assert(!m_line_probed[line_id.m_type][line_id.m_index]);
+    m_line_probed[line_id.m_type][line_id.m_index] = true;
+
+    // Build all alternatives for that row or column
+    const auto list_of_all_alternatives = line_constraint.build_all_possible_lines(known_tiles);
+    assert(!list_of_all_alternatives.empty());  // Then the grid would be contradictory, but this must be catched earlier
+    const auto nb_alt = static_cast<unsigned int>(list_of_all_alternatives.size());
+    assert(nb_alt >= 2);
+
+    if (m_observer)
+    {
+        const auto line_known_tiles = line_from_line_span(known_tiles);
+        m_observer(Solver::Event::BRANCHING, &line_known_tiles, m_branching_depth, nb_alt);
+    }
+
+    if (m_grid_stats != nullptr)
+    {
+        m_grid_stats->nb_probing_calls++;
+        m_grid_stats->total_nb_probing_alternatives += nb_alt;
+    }
+
+    std::optional<GridSnapshot<Line::ROW>> reduced_grid;
+    Solver::SolutionFound do_nothing_with_found_solution = [](Solver::Solution&&) -> bool { assert(0); return true; };
+    auto solver_policy = m_solver_policy;
+    solver_policy.m_branching_allowed = false;
+    solver_policy.m_limit_on_max_nb_alternatives = true;
+    solver_policy.m_max_nb_alternatives = m_solver_policy.m_max_nb_alternatives_while_probing;
+    for (const Line& guess_line : list_of_all_alternatives)
+    {
+        // Copy current grid state to a nested grid
+        WorkGrid<SolverPolicy> nested_work_grid(*this, solver_policy, State::PARTIAL_REDUCTION);
+        if (m_observer)
+        {
+            m_observer(Solver::Event::BRANCHING, nullptr, nested_work_grid.m_branching_depth, 0);
+        }
+
+        // Set one line in the new_grid according to the hypothesis we made. That line is then complete
+        const bool changed = nested_work_grid.update_line(guess_line, 1u);
+        assert(changed);
+        nested_work_grid.m_line_is_fully_reduced[guess_line.type()][guess_line.index()] = true;
+        assert(nested_work_grid.m_line_completed[guess_line.type()][guess_line.index()]);
+        nested_work_grid.partition_completed_lines();
+
+        // Solve the new grid!
+        Solver::Solutions nested_solutions;
+        std::unique_ptr<GridStats> nested_stats = m_grid_stats ? std::make_unique<GridStats>() : nullptr;
+        nested_work_grid.set_stats(nested_stats.get());
+        const auto status = nested_work_grid.line_solve(do_nothing_with_found_solution, true);
+
+        if (m_grid_stats)
+        {
+            assert(nested_stats);
+            merge_branching_grid_stats(*m_grid_stats, *nested_stats);
+        }
+
+        if (status == Solver::Status::ABORTED)
+        {
+            result.m_status = status;
+            return result;
+        }
+
+        if (status != Solver::Status::CONTRADICTORY_GRID)
+        {
+            if (!reduced_grid)
+                reduced_grid.emplace(static_cast<Grid&>(nested_work_grid));
+            else
+                reduced_grid->reduce(static_cast<Grid&>(nested_work_grid));
+        }
+    }
+
+    // Repeat start branching message
+    if (m_observer)
+    {
+        const auto line_known_tiles = line_from_line_span(known_tiles);
+        m_observer(Solver::Event::BRANCHING, &line_known_tiles, m_branching_depth, nb_alt);
+    }
+
+    if (!reduced_grid)
+    {
+        result.m_status = Solver::Status::CONTRADICTORY_GRID;
+        return result;
+    }
+
+    for (Line::Index row_idx = 0; row_idx < height(); row_idx++)
+    {
+        const auto& reduced_line = reduced_grid->get_line(row_idx);
+        const auto nb_alternatives = m_nb_alternatives[Line::ROW][row_idx];
+        const bool line_changed = update_line(reduced_line, nb_alternatives);
+        result.m_grid_has_changed |= line_changed;
+        if (line_changed)
+            m_line_is_fully_reduced[Line::ROW][row_idx] = false;
+    }
+
+    return result;
+}
+
 // This method will test a range of alternatives for one particular line of the grid, each time
 // creating a new instance of the grid class on which the function WorkGrid<SolverPolicy>::solve() is called.
 template <typename SolverPolicy>
@@ -550,12 +784,11 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
     if (m_grid_stats != nullptr)
     {
         m_grid_stats->nb_branching_calls++;
-        const auto nb_alts = static_cast<unsigned int>(list_of_all_alternatives.size());
-        m_grid_stats->total_nb_branching_alternatives += nb_alts;
+        m_grid_stats->total_nb_branching_alternatives += nb_alt;
         if (m_grid_stats->max_nb_alternatives_by_branching_depth.size() < m_branching_depth + 1)
             m_grid_stats->max_nb_alternatives_by_branching_depth.resize(m_branching_depth + 1, 0u);
-        auto& max_nb_alts = m_grid_stats->max_nb_alternatives_by_branching_depth[m_branching_depth];
-        max_nb_alts = std::max(max_nb_alts, nb_alts);
+        auto& max_nb_alt = m_grid_stats->max_nb_alternatives_by_branching_depth[m_branching_depth];
+        max_nb_alt = std::max(max_nb_alt, nb_alt);
     }
 
     Solver::Status status = Solver::Status::OK;
@@ -594,6 +827,13 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
             return status;
     }
 
+    // Repeat start branching message
+    if (m_observer)
+    {
+        const auto line_known_tiles = line_from_line_span(known_tiles);
+        m_observer(Solver::Event::BRANCHING, &line_known_tiles, m_branching_depth, nb_alt);
+    }
+
     return flag_solution_found ? Solver::Status::OK : Solver::Status::CONTRADICTORY_GRID;
 }
 
@@ -613,11 +853,12 @@ template <typename SolverPolicy>
 bool WorkGrid<SolverPolicy>::found_solution(const Solver::SolutionFound& solution_found) const
 {
     assert(is_valid_solution());
+    const auto adjusted_branching_depth = m_branching_depth + m_probing_depth_incr;
     if (m_grid_stats != nullptr) { m_grid_stats->nb_solutions++; }
-    if (m_observer) { m_observer(Solver::Event::SOLVED_GRID, nullptr, m_branching_depth, 0); }
+    if (m_observer) { m_observer(Solver::Event::SOLVED_GRID, nullptr, adjusted_branching_depth, 0); }
 
     // Shallow copy of only the grid data
-    return solution_found(Solver::Solution{ OutputGrid(*this), m_branching_depth, FULL_SOLUTION });
+    return solution_found(Solver::Solution{ OutputGrid(*this), adjusted_branching_depth, FULL_SOLUTION });
 }
 
 // Explicit template instantiations

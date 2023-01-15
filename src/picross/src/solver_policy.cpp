@@ -12,7 +12,7 @@ namespace picross
 unsigned int SolverPolicy_RampUpMaxNbAlternatives::get_max_nb_alternatives(unsigned int previous_max_nb_alternatives, bool grid_changed, unsigned int skipped_lines) const
 {
     unsigned int nb_alternatives = previous_max_nb_alternatives;
-    if (grid_changed && previous_max_nb_alternatives > m_min_nb_alternatives)
+    if (grid_changed && previous_max_nb_alternatives > MIN_NB_ALTERNATIVES)
     {
         // Decrease max_nb_alternatives
         nb_alternatives = std::min(nb_alternatives, m_max_nb_alternatives) >> 2;

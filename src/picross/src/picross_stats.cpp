@@ -17,6 +17,8 @@ void merge_branching_grid_stats(GridStats& stats, const GridStats& branching_sta
     stats.max_branching_depth = std::max(stats.max_branching_depth, branching_stats.max_branching_depth);
     stats.nb_branching_calls += branching_stats.nb_branching_calls;
     stats.total_nb_branching_alternatives += branching_stats.total_nb_branching_alternatives;
+    stats.nb_probing_calls += branching_stats.nb_probing_calls;
+    stats.total_nb_probing_alternatives += branching_stats.total_nb_probing_alternatives;
 
     stats.max_nb_alternatives_by_branching_depth.resize(stats.max_branching_depth, 0u);
     for (std::size_t d = 0; d < branching_stats.max_nb_alternatives_by_branching_depth.size(); d++)
@@ -44,8 +46,8 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
     ostream << "  Max branching depth: " << stats.max_branching_depth << std::endl;
     if (stats.max_branching_depth > 0u)
     {
-        ostream << "    > Hypothesis on " << stats.nb_branching_calls << " lines" << std::endl;
-        ostream << "    > Total number of alternatives being tested: " << stats.total_nb_branching_alternatives << std::endl;
+        ostream << "    > Hypothesis (probing/branching) on " << stats.nb_probing_calls << "/" << stats.nb_branching_calls << " lines" << std::endl;
+        ostream << "    > Total number of alternatives being tested (probing/branching): " << stats.total_nb_probing_alternatives << "/" << stats.total_nb_branching_alternatives << std::endl;
         assert(stats.max_nb_alternatives_by_branching_depth.size() == stats.max_branching_depth);
         ostream << "    > Max number of alternatives by branching depth:";
         for (const auto& max_alternatives : stats.max_nb_alternatives_by_branching_depth)
