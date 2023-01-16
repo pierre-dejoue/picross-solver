@@ -302,6 +302,10 @@ Solver::Status WorkGrid<SolverPolicy>::solve(const Solver::SolutionFound& soluti
         if (m_solver_policy.m_branching_allowed)
         {
             assert(m_state == State::BRANCHING);
+            if (m_observer)
+            {
+                m_observer(Solver::Event::INTERNAL_STATE, nullptr, m_branching_depth, static_cast<unsigned int>(m_state));
+            }
 
             // Make a guess
             status = branch(solution_found);

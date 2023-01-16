@@ -43,7 +43,8 @@ void ConsoleObserver::observer_callback(picross::Solver::Event event, const picr
         break;
 
     case picross::Solver::Event::INTERNAL_STATE:
-        ostream << " state: " << misc;
+        ostream << " state: " << misc
+                << " depth: " << depth;
         break;
 
     default:
