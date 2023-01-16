@@ -30,8 +30,10 @@ struct GridStats
     unsigned int nb_probing_calls = 0u;
     unsigned int total_nb_probing_alternatives = 0u;
     unsigned int max_initial_nb_alternatives = 0u;
-    unsigned int max_nb_alternatives = 0u;
-    unsigned int max_nb_alternatives_w_change = 0u;
+    unsigned int max_nb_alternatives_partial = 0u;
+    unsigned int max_nb_alternatives_partial_w_change = 0u;
+    unsigned int max_nb_alternatives_full = 0u;
+    unsigned int max_nb_alternatives_full_w_change = 0u;
     unsigned int nb_reduce_list_of_lines_calls = 0u;
     unsigned int max_reduce_list_size = 0u;
     unsigned int total_lines_reduced = 0u;

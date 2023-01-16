@@ -517,6 +517,8 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_
         status.contradictory = true;
         return status;
     }
+    if (m_grid_stats != nullptr) { m_grid_stats->max_nb_alternatives_partial = std::max(m_grid_stats->max_nb_alternatives_partial, partial_reduction.nb_alternatives); }
+
 
     // In any case, update the grid data with the reduced line resulting from the list of alternatives
     const auto nb_alternatives = std::min(partial_reduction.nb_alternatives, m_nb_alternatives[type][index]);
@@ -529,6 +531,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_
     if (m_grid_stats != nullptr && line_changed)
     {
         m_grid_stats->nb_single_line_partial_reduction_w_change++;
+        m_grid_stats->max_nb_alternatives_partial_w_change = std::max(m_grid_stats->max_nb_alternatives_partial_w_change, partial_reduction.nb_alternatives);
     }
 
     return status;
@@ -557,7 +560,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_
         status.contradictory = true;
         return status;
     }
-    if (m_grid_stats != nullptr) { m_grid_stats->max_nb_alternatives = std::max(m_grid_stats->max_nb_alternatives, full_reduction.nb_alternatives); }
+    if (m_grid_stats != nullptr) { m_grid_stats->max_nb_alternatives_full = std::max(m_grid_stats->max_nb_alternatives_full, full_reduction.nb_alternatives); }
 
     // In any case, update the grid data with the reduced line resulting from the list of alternatives
     status.grid_changed = update_line(full_reduction.reduced_line, full_reduction.nb_alternatives);
@@ -568,7 +571,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_
     if (m_grid_stats != nullptr && status.grid_changed)
     {
         m_grid_stats->nb_single_line_full_reduction_w_change++;
-        m_grid_stats->max_nb_alternatives_w_change = std::max(m_grid_stats->max_nb_alternatives_w_change, full_reduction.nb_alternatives);
+        m_grid_stats->max_nb_alternatives_full_w_change = std::max(m_grid_stats->max_nb_alternatives_full_w_change, full_reduction.nb_alternatives);
     }
 
     return status;
