@@ -15,6 +15,7 @@ set(LIB_SOURCES
     src/line_constraint.cpp
     src/line_span.cpp
     src/output_grid.cpp
+    src/output_grid_utils.cpp
     src/picross_io.cpp
     src/picross_solver_version.cpp
     src/picross_stats.cpp

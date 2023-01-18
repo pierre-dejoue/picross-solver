@@ -41,7 +41,7 @@ public:
 
     void reset();
 
-    bool is_solved() const;
+    bool is_completed() const;
 
     std::size_t hash() const;
 

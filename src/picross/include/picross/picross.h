@@ -71,6 +71,7 @@ public:
     const Container& tiles() const { return m_tiles; }
     Tile& operator[](std::size_t idx) { return m_tiles[idx]; }
     Tile& at(std::size_t idx) { return m_tiles.at(idx); }
+    bool is_completed() const;
 private:
     const Type      m_type;
     const Index     m_index;
@@ -83,6 +84,23 @@ bool operator!=(const Line& lhs, const Line& rhs);
 std::ostream& operator<<(std::ostream& ostream, const Line& line);
 std::string str_line_type(Line::Type type);
 std::string str_line_full(const Line& line);
+
+
+/*
+ * Line Identifier
+ */
+struct LineId
+{
+    LineId(Line::Type type = Line::ROW, Line::Index index = 0u)
+        : m_type(type), m_index(index)
+    {}
+
+    Line::Type  m_type;
+    Line::Index m_index;
+};
+
+std::string str_line_id(const LineId& line_id);
+
 
 /*
  * Utility function to build an input constraint from a fully defined line
@@ -120,8 +138,9 @@ public:
     Line get_line(Line::Index index) const;
 
     Line get_line(Line::Type type, Line::Index index) const;
+    Line get_line(const LineId& line_id) const;
 
-    bool is_solved() const;
+    bool is_completed() const;
 
     std::size_t hash() const;
 
@@ -135,6 +154,12 @@ public:
 private:
     std::unique_ptr<Grid> p_grid;
 };
+
+
+/*
+ * Return the grid size as a string "WxH" with W the width and H the height
+ */
+std::string str_output_grid_size(const OutputGrid& grid);
 
 
 /*
@@ -179,7 +204,7 @@ public:
     // If the solver returns with status Status::NOT_LINE_SOLVABLE, the partially solved grid is part of the
     // solutions
     //
-    virtual Result solve(const InputGrid& grid_input, unsigned int max_nb_solutions = 0u) const = 0;
+    virtual Result solve(const InputGrid& input_grid, unsigned int max_nb_solutions = 0u) const = 0;
 
 
     //
@@ -193,7 +218,7 @@ public:
     // callback function solution_found, with the partial flag set to true
     //
     using SolutionFound = std::function<bool(Solution&&)>;
-    virtual Status solve(const InputGrid& grid_input, SolutionFound solution_found) const = 0;
+    virtual Status solve(const InputGrid& input_grid, SolutionFound solution_found) const = 0;
 
 
     //
@@ -296,6 +321,20 @@ struct ValidationResult
     unsigned int branching_depth;
     std::string msg;
 };
-ValidationResult validate_input_grid(const Solver& solver, const InputGrid& grid_input);
+ValidationResult validate_input_grid(const Solver& solver, const InputGrid& input_grid);
+
+
+/*
+ * Functions to test an output grid against a set of input contraints
+ *
+ * - is_solution: returns true if the output grid is a solution of the set of constraints
+ * - list_incompatible_lines: returns the list of all incompatible constraints
+ *
+ * NB: Will throw on an invalid InputGrid (i.e. not passing check_input_grid)
+ * NB: Will throw if the input and output grids' size do not match
+ * NB: list_incompatible_lines will throw on a partial output (one with Tile::UNKNWON tiles)
+ */
+bool is_solution(const InputGrid& input_grid, const OutputGrid& output_grid);
+std::vector<LineId> list_incompatible_lines(const InputGrid& input_grid, const OutputGrid& output_grid);
 
 } // namespace picross

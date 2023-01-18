@@ -848,7 +848,7 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
 template <typename SolverPolicy>
 bool WorkGrid<SolverPolicy>::is_valid_solution() const
 {
-    assert(is_solved());
+    assert(is_completed());
     bool valid = true;
     for (unsigned int x = 0u; x < width(); x++)  { valid &= m_constraints[Line::COL][x].compatible(get_line(Line::COL, x)); }
     for (unsigned int y = 0u; y < height(); y++) { valid &= m_constraints[Line::ROW][y].compatible(get_line(Line::ROW, y)); }

@@ -78,18 +78,20 @@ Line OutputGrid::get_line(Line::Index index) const
     return line_from_line_span(p_grid->get_line(Type, index));
 }
 
-
 Line OutputGrid::get_line(Line::Type type, Line::Index index) const
 {
     return type == Line::ROW ? get_line<Line::ROW>(index) : get_line<Line::COL>(index);
 }
 
-
-bool OutputGrid::is_solved() const
+Line OutputGrid::get_line(const LineId& line_id) const
 {
-    return p_grid->is_solved();
+    return get_line(line_id.m_type, line_id.m_index);
 }
 
+bool OutputGrid::is_completed() const
+{
+    return p_grid->is_completed();
+}
 
 std::size_t OutputGrid::hash() const
 {

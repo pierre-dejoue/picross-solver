@@ -175,30 +175,30 @@ int main(int argc, char *argv[])
         /***************************************************************************
          * III - Solve Picross puzzles
          **************************************************************************/
-        for (const auto& grid_input : grids_to_solve)
+        for (const auto& input_grid : grids_to_solve)
         {
             ValidationModeData grid_data = file_data;
-            grid_data.gridname = grid_input.name();
-            grid_data.size = str_input_grid_size(grid_input);
+            grid_data.gridname = input_grid.name();
+            grid_data.size = str_input_grid_size(input_grid);
 
             try
             {
                 if (!validation_mode)
                 {
-                    std::cout << "GRID " << ++count_grids << ": " << grid_input.name() << std::endl;
+                    std::cout << "GRID " << ++count_grids << ": " << input_grid.name() << std::endl;
                     std::cout << "  Size: " << grid_data.size << std::endl;
                 }
 
                 /* Sanity check of the input data */
-                const auto [input_ok, check_msg] = picross::check_input_grid(grid_input);
+                const auto [input_ok, check_msg] = picross::check_input_grid(input_grid);
                 grid_data.validation_result.code = input_ok ? 0 : -1;
                 grid_data.misc = check_msg;
 
                 if (input_ok)
                 {
                     /* Set observer */
-                    const auto width = grid_input.width();
-                    const auto height = grid_input.height();
+                    const auto width = input_grid.width();
+                    const auto height = input_grid.height();
                     ConsoleObserver obs(width, height, std::cout);
                     if (!validation_mode)
                     {
@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
                         /* Validate the grid */
                         {
                             DurationMeas<float, std::milli> meas_ms(time_ms);
-                            grid_data.validation_result = picross::validate_input_grid(*solver, grid_input);
+                            grid_data.validation_result = picross::validate_input_grid(*solver, input_grid);
                         }
                         grid_data.timing_ms = time_ms.count();
                     }
@@ -230,12 +230,12 @@ int main(int argc, char *argv[])
                         {
                             if (solution.partial)
                             {
-                                assert(!solution.grid.is_solved());
+                                assert(!solution.grid.is_completed());
                                 std::cout << "  Partial solution:" << std::endl;
                             }
                             else
                             {
-                                assert(solution.grid.is_solved());
+                                assert(solution.grid.is_completed());
                                 std::cout << "  Solution nb " << ++nb << ": (branching depth: " << solution.branching_depth << ")" << std::endl;
                             }
                             output_solution_grid(std::cout, solution.grid, 2);
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
                         picross::Solver::Status solver_status;
                         {
                             DurationMeas<float, std::milli> meas_ms(time_ms);
-                            solver_status = solver->solve(grid_input, solution_found);
+                            solver_status = solver->solve(input_grid, solution_found);
                         }
 
                         switch (solver_status)
@@ -298,7 +298,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    std::cout << "EXCPT [" << file_data.filename << "][" << grid_input.name() << "]: " << e.what() << std::endl;
+                    std::cout << "EXCPT [" << file_data.filename << "][" << input_grid.name() << "]: " << e.what() << std::endl;
                     return_status = 5;
                 }
             }

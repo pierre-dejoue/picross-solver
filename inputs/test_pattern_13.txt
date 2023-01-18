@@ -1,0 +1,16 @@
+# Example in the paper by Ueda & Nagao, "NP-completeness Results for NONOGRAM via Parsimonious Reductions", 1996
+# It has two solutions
+GRID Flip
+ROWS
+[ 2 3 ]
+[ 3 ]
+[ 1 1 1 ]
+[ 1 1 ]
+
+COLUMNS
+[ 1 1 ]
+[ 2 1 ]
+[ 2 ]
+[ 2 ]
+[ 1 1 ]
+[ 1 1 ]

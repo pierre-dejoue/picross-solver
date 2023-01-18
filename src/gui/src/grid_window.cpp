@@ -312,7 +312,7 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
             if (ImGui::BeginTabItem(tabs.at(idx).c_str(), nullptr, tab_flags))
             {
                 const auto& solution = solutions.at(idx);
-                assert(idx + 1 == solutions.size() || solution.is_solved());
+                assert(idx + 1 == solutions.size() || solution.is_completed());
 
                 ImDrawList* draw_list = ImGui::GetWindowDrawList();
                 assert(draw_list);

@@ -143,12 +143,6 @@ bool is_line_uniform(const LineSpan& line, Tile color)
 }
 
 
-bool is_line_complete(const LineSpan& line)
-{
-    return std::none_of(line.begin(), line.end(), [](const Tile t) { return t == Tile::UNKNOWN; });
-}
-
-
 std::string str_line_type(Line::Type type)
 {
     if (type == Line::ROW) { return "ROW"; }
@@ -157,6 +151,10 @@ std::string str_line_type(Line::Type type)
     return "ERR";
 }
 
+bool Line::is_completed() const
+{
+    return LineSpan(*this).is_completed();
+}
 
 bool operator==(const Line& lhs, const Line& rhs)
 {
@@ -186,9 +184,17 @@ std::string str_line_full(const Line& line)
 }
 
 
+std::string str_line_id(const LineId& line_id)
+{
+    std::stringstream ss;
+    ss << str_line_type(line_id.m_type) << " " << std::setw(3) << line_id.m_index;
+    return ss.str();
+}
+
+
 InputGrid::Constraint get_constraint_from(const LineSpan& line_span)
 {
-    assert(is_line_complete(line_span));
+    assert(line_span.is_completed());
 
     InputGrid::Constraint segments;
     unsigned int count = 0u;

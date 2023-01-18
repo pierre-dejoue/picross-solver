@@ -16,7 +16,8 @@ OutputGrid build_output_grid_from(std::size_t width, std::size_t height, const s
         for (std::size_t x = 0u; x < width; x++)
         {
             assert(it != tiles.end());
-            result.set_tile(x, y, *it ? Tile::FILLED : Tile::EMPTY);
+            if (*it >= 0)
+                result.set_tile(x, y, *it ? Tile::FILLED : Tile::EMPTY);
             ++it;
         }
     }
@@ -30,10 +31,13 @@ OutputGrid build_output_grid_from(std::size_t width, std::size_t height, std::st
     tiles_vect.reserve(width * height);
     for (const auto c: tiles)
     {
-        if (c == '0' || c == '.')
-            tiles_vect.push_back(0);
+        if (c == '?')
+            tiles_vect.push_back(-1);           // UNKNOWN
+        else if (c == '0' || c == '.')
+            tiles_vect.push_back(0);            // EMPTY
         else if (c == '1' || c == '#')
-            tiles_vect.push_back(1);
+            tiles_vect.push_back(1);            // FILLED
+        // Ignore all other characters
     }
     assert(tiles_vect.size() == (width * height));
     return build_output_grid_from(width, height, tiles_vect, name);

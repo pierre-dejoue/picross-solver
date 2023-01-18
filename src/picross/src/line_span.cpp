@@ -1,5 +1,6 @@
 #include "line_span.h"
 
+#include <algorithm>
 #include <cassert>
 #include <sstream>
 
@@ -26,6 +27,11 @@ namespace Tiles
     }
 } // namespace Tiles
 } // namespace
+
+bool LineSpan::is_completed() const
+{
+    return std::none_of(begin(), end(), [](const Tile t) { return t == Tile::UNKNOWN; });
+}
 
 bool LineSpan::compatible(const LineSpan& other) const
 {

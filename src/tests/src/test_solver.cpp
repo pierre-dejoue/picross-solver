@@ -192,6 +192,87 @@ TEST_CASE("Puzzle: Notes", "[solver]")
     CHECK(solution_grids == expected_solutions);
 }
 
+TEST_CASE("Puzzle: Flip", "[solver]")
+{
+    // Example in the paper by Ueda & Nagao, "NP-completeness Results for NONOGRAM via Parsimonious Reductions", 1996
+    const InputGrid::Constraints rows {
+        { 2, 3 },
+        { 3 },
+        { 1, 1, 1 },
+        { 1, 1 }
+    };
+    const InputGrid::Constraints cols {
+        { 1, 1 },
+        { 2, 1 },
+        { 2 },
+        { 2 },
+        { 1, 1 },
+        { 1, 1 }
+    };
+
+    InputGrid puzzle(rows, cols, "Flip");
+
+    //
+    // 1. Full resolution (with branching)
+    //
+    {
+        const auto solver = get_ref_solver();
+        const auto result = solver->solve(puzzle);
+
+        CHECK(result.status == Solver::Status::OK);
+
+        OutputGridSet expected_solutions {
+            build_output_grid_from(6, 4, R"(
+                ##.###
+                .###..
+                #.#..#
+                .#..#.
+            )"),
+            build_output_grid_from(6, 4, R"(
+                ##.###
+                .###..
+                #.#.#.
+                .#...#
+            )")
+        };
+
+        REQUIRE(result.solutions.size() == 2);
+        OutputGridSet solution_grids { result.solutions[0].grid, result.solutions[1].grid };
+        CHECK(solution_grids == expected_solutions);
+        CHECK(result.solutions[0].branching_depth == 1);
+        CHECK(result.solutions[0].partial == false);
+        CHECK(result.solutions[1].branching_depth == 1);
+        CHECK(result.solutions[1].partial == false);
+        CHECK(is_solution(puzzle, result.solutions[0].grid));
+        CHECK(is_solution(puzzle, result.solutions[1].grid));
+        CHECK(list_incompatible_lines(puzzle, result.solutions[0].grid).empty());
+        CHECK(list_incompatible_lines(puzzle, result.solutions[1].grid).empty());
+    }
+
+    //
+    // 2. Line solve (no branching allowed)
+    //
+    {
+        const auto solver = get_line_solver();
+        const auto result = solver->solve(puzzle);
+
+        CHECK(result.status == Solver::Status::NOT_LINE_SOLVABLE);
+
+        const OutputGrid expected_partial_solution = build_output_grid_from(6, 4, R"(
+                ##.###
+                .###..
+                #.#.??
+                .#..??
+            )");
+
+        REQUIRE(result.solutions.size() == 1);
+        CHECK(result.solutions[0].grid == expected_partial_solution);
+        CHECK(result.solutions[0].branching_depth == 0);
+        CHECK(result.solutions[0].partial == true);
+        CHECK(!is_solution(puzzle, result.solutions[0].grid));
+    }
+}
+
 TEST_CASE("Puzzle: A piece of Centerpiece", "[solver]")
 {
     // A subpart of the puzzle "Centerpiece" webpbn-10810. It has three solutions.

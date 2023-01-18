@@ -20,8 +20,8 @@ template <bool BranchingAllowed = true>
 class RefSolver : public Solver
 {
 public:
-    Result solve(const InputGrid& grid_input, unsigned int max_nb_solutions) const override;
-    Status solve(const InputGrid& grid_input, SolutionFound solution_found) const override;
+    Result solve(const InputGrid& input_grid, unsigned int max_nb_solutions) const override;
+    Status solve(const InputGrid& input_grid, SolutionFound solution_found) const override;
     void set_observer(Observer observer) override;
     void set_stats(GridStats& stats) override;
     void set_abort_function(Abort abort) override;

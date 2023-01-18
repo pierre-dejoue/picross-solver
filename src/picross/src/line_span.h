@@ -37,6 +37,7 @@ public:
     const Tile* begin() const { return m_tiles; }
     const Tile* end() const { return m_tiles + m_size; }
 
+    bool is_completed() const;
     bool compatible(const LineSpan& other) const;
 
 private:

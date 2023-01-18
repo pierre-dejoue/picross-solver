@@ -10,6 +10,7 @@
 #include "work_grid.h"
 #include "solver_policy.h"
 
+#include <algorithm>
 #include <cassert>
 #include <exception>
 #include <memory>
@@ -22,7 +23,7 @@ namespace picross
 {
 
 template <bool BranchingAllowed>
-Solver::Result RefSolver<BranchingAllowed>::solve(const InputGrid& grid_input, unsigned int max_nb_solutions) const
+Solver::Result RefSolver<BranchingAllowed>::solve(const InputGrid& input_grid, unsigned int max_nb_solutions) const
 {
     Result result;
 
@@ -37,7 +38,7 @@ Solver::Result RefSolver<BranchingAllowed>::solve(const InputGrid& grid_input, u
     solver_policy.m_branching_allowed = BranchingAllowed;
     solver_policy.m_limit_on_max_nb_alternatives = BranchingAllowed;
 
-    WorkGrid<SolverPolicy_RampUpMaxNbAlternatives> work_grid(grid_input, solver_policy, m_observer, m_abort_function);
+    WorkGrid<SolverPolicy_RampUpMaxNbAlternatives> work_grid(input_grid, solver_policy, m_observer, m_abort_function);
     work_grid.set_stats(m_stats);
 
     SolutionFound solution_found = [&result, max_nb_solutions](Solution&& solution) -> bool
@@ -46,12 +47,14 @@ Solver::Result RefSolver<BranchingAllowed>::solve(const InputGrid& grid_input, u
         return max_nb_solutions == 0 || result.solutions.size() < max_nb_solutions;
     };
     result.status = work_grid.solve(solution_found);
+    if (result.status == Solver::Status::ABORTED && result.solutions.size() == max_nb_solutions)
+        result.status = Solver::Status::OK;
 
     return result;
 }
 
 template <bool BranchingAllowed>
-Solver::Status RefSolver<BranchingAllowed>::solve(const InputGrid& grid_input, SolutionFound solution_found) const
+Solver::Status RefSolver<BranchingAllowed>::solve(const InputGrid& input_grid, SolutionFound solution_found) const
 {
     if (m_stats != nullptr)
     {
@@ -64,7 +67,7 @@ Solver::Status RefSolver<BranchingAllowed>::solve(const InputGrid& grid_input, S
     solver_policy.m_branching_allowed = BranchingAllowed;
     solver_policy.m_limit_on_max_nb_alternatives = BranchingAllowed;
 
-    WorkGrid<SolverPolicy_RampUpMaxNbAlternatives> work_grid(grid_input, solver_policy, m_observer, m_abort_function);
+    WorkGrid<SolverPolicy_RampUpMaxNbAlternatives> work_grid(input_grid, solver_policy, m_observer, m_abort_function);
     work_grid.set_stats(m_stats);
 
     return work_grid.solve(solution_found);
@@ -137,11 +140,11 @@ std::ostream& operator<<(std::ostream& ostream, Solver::Event event)
 }
 
 
-ValidationResult validate_input_grid(const Solver& solver, const InputGrid& grid_input)
+ValidationResult validate_input_grid(const Solver& solver, const InputGrid& input_grid)
 {
     ValidationResult result;
 
-    const auto [check, check_msg] = picross::check_input_grid(grid_input);
+    const auto [check, check_msg] = picross::check_input_grid(input_grid);
 
     if (!check)
     {
@@ -151,20 +154,58 @@ ValidationResult validate_input_grid(const Solver& solver, const InputGrid& grid
         return result;
     }
 
-    const auto solver_results = solver.solve(grid_input, 2);
+    const auto solver_results = solver.solve(input_grid, 2);
 
-    if (solver_results.status == Solver::Status::CONTRADICTORY_GRID)
+    switch (solver_results.status)
     {
+    case Solver::Status::OK:
+        result.code = static_cast<ValidationCode>(solver_results.solutions.size());     // Temporary initialization value
+        result.branching_depth = 0;
+        result.msg = "";
+        break;
+
+    case Solver::Status::NOT_LINE_SOLVABLE:
+        assert(solver_results.solutions.size() == 1);
+        assert(solver_results.solutions[0].partial == true);
+        assert(solver_results.solutions[0].grid.is_completed() == false);
+        assert(solver_results.solutions[0].branching_depth == 0);
+        result.code = 0;
+        result.branching_depth = 0;
+        result.msg = "Not line solvable";
+        return result;
+
+    case Solver::Status::ABORTED:
+        result.code = -1;
+        result.branching_depth = 0;
+        result.msg = "The solver was aborted";      // TODO Validation with timeout
+        return result;
+
+    case Solver::Status::CONTRADICTORY_GRID:
         result.code = -1;
         result.branching_depth = 0;
         result.msg = "Input grid constraints are contradictory";
         return result;
+
+    default:
+        assert(0);
+        result.code = -1;
+        result.branching_depth = 0;
+        result.msg = "Unknown error";
+        return result;
+    }
+    assert(solver_results.status == Solver::Status::OK);
+
+    // Check that all the returned solutions are compatible with the input constraints
+    const bool solutions_are_compatible = std::all_of(solver_results.solutions.cbegin(), solver_results.solutions.cend(),
+        [&input_grid](const auto& solution) { return is_solution(input_grid, solution.grid); });
+    if (!solutions_are_compatible)
+    {
+        result.code = -1;
+        result.branching_depth = 0;
+        result.msg = "Solver error: at least one of the returned solution is incompatible with the input constraints";
     }
 
-    assert(solver_results.status == Solver::Status::OK);
-    result.code = static_cast<ValidationCode>(solver_results.solutions.size());
-    result.branching_depth = 0;
-    result.msg = "";
+    // We've checked all the potential errors. The validation code is therefore >= 0
     if (solver_results.solutions.empty())
     {
         assert(result.code == 0);
@@ -177,11 +218,15 @@ ValidationResult validate_input_grid(const Solver& solver, const InputGrid& grid
     }
     else
     {
+        const auto minimal_branching_depth_solution_it = std::min_element(solver_results.solutions.cbegin(), solver_results.solutions.cend(),
+                                                                          [](const auto& lhs, const auto& rhs) { return lhs.branching_depth < rhs.branching_depth; });
+        assert(minimal_branching_depth_solution_it != solver_results.solutions.cend());
+        assert(minimal_branching_depth_solution_it->branching_depth > 0);   // If there are multiple solutions the resolution required branching
         result.code = 2;
-        result.branching_depth = solver_results.solutions[0].branching_depth;
-        assert(result.branching_depth != 0);    // If there are multiple solutions the grid is not line solvable
+        result.branching_depth = minimal_branching_depth_solution_it->branching_depth;
         result.msg = "The solution is not unique";
     }
+
     return result;
 }
 

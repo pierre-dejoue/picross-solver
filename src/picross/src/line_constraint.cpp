@@ -83,7 +83,7 @@ Line LineConstraint::line_trivial_reduction(unsigned int line_size, unsigned int
             line[line_idx++] = Tile::EMPTY;
         }
         assert(line_idx == line_size);
-        assert(is_line_complete(line));
+        assert(line.is_completed());
     }
     else if (nb_zeros == 0u)
     {
@@ -96,7 +96,7 @@ Line LineConstraint::line_trivial_reduction(unsigned int line_size, unsigned int
             if (!last) { line[line_idx++] = Tile::EMPTY; }
         }
         assert(line_idx == line_size);
-        assert(is_line_complete(line));
+        assert(line.is_completed());
     }
     else if (max_seg_sz > nb_zeros)
     {
@@ -200,7 +200,7 @@ std::vector<Line> LineConstraint::build_all_possible_lines(const LineSpan& known
 
 bool LineConstraint::compatible(const LineSpan& line) const
 {
-    assert(is_line_complete(line));
+    assert(line.is_completed());
     const auto segments = get_constraint_from(line);
     return segments == m_segments;
 }

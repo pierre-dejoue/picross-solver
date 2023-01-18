@@ -114,7 +114,7 @@ void Grid::reset()
     }
 }
 
-bool Grid::is_solved() const
+bool Grid::is_completed() const
 {
     return std::all_of(std::cbegin(m_row_major), std::cend(m_row_major), [](const Tile& t) { return t != Tile::UNKNOWN; });
 }
