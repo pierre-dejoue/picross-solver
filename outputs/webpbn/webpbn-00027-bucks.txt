@@ -1,8 +1,6 @@
 GRID 1: Bucks
   Size: 27x23
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 1)
+  Solution nb 1: (branching depth: 1)
   ......###########..........
   ...#################.......
   ..###.#####.#####.###......
@@ -28,15 +26,16 @@ GRID 1: Bucks
   #####........#####....###..
 
   Number of solutions found: 1
-  Max branching depth: 3
-    > Hypothesis on 3 lines
-    > Total number of alternatives being tested: 6
-    > Max number of alternatives by branching depth: 2 2 2
+  Max branching depth: 1
+    > Hypothesis (probing/branching) on 2/0 lines
+    > Total number of alternatives being tested (probing/branching): 4/0
+    > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 125970
-  Max number of alternatives after a line reduction (change/all): 40/40
-  Number of full grid pass: 39
-  Number of single line partial reduction (change/all): 219/429
-  Number of single line full reduction (change/all): 6/18
+  Max number of alternatives after a partial line reduction (change/all): 50388/125970
+  Max number of alternatives after a    full line reduction (change/all): 40/40
+  Number of full grid pass: 34
+  Number of single line partial reduction (change/all): 198/423
+  Number of single line    full reduction (change/all): 6/17
 
 
 

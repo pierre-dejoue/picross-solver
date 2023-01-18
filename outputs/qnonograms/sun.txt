@@ -1,8 +1,6 @@
-GRID 1: Brightly
+GRID 1: Sun
   Size: 50x60
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 0)
+  Solution nb 1: (branching depth: 0)
   ..................#..........####.....###.........
   ............#.....###.......#.##....####..........
   ............###...#.####...#.###...##.##........#.
@@ -67,10 +65,11 @@ GRID 1: Brightly
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 1121099408
-  Max number of alternatives after a line reduction (change/all): 41655/170373
-  Number of full grid pass: 391
-  Number of single line partial reduction (change/all): 387/1203
-  Number of single line full reduction (change/all): 642/980
+  Max number of alternatives after a partial line reduction (change/all): 470044135/1120922660
+  Max number of alternatives after a    full line reduction (change/all): 41655/170373
+  Number of full grid pass: 377
+  Number of single line partial reduction (change/all): 395/1218
+  Number of single line    full reduction (change/all): 628/966
 
 
 

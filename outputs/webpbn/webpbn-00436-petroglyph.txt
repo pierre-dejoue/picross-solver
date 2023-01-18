@@ -1,8 +1,6 @@
 GRID 1: Petroglyph
   Size: 40x35
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 1)
+  Solution nb 1: (branching depth: 1)
   .................##...##................
   ............##..###...##................
   ...........###..###..###....##..........
@@ -41,14 +39,15 @@ GRID 1: Petroglyph
 
   Number of solutions found: 1
   Max branching depth: 1
-    > Hypothesis on 1 lines
-    > Total number of alternatives being tested: 25
-    > Max number of alternatives by branching depth: 25
+    > Hypothesis (probing/branching) on 1/0 lines
+    > Total number of alternatives being tested (probing/branching): 29/0
+    > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 480700
-  Max number of alternatives after a line reduction (change/all): 4787/230230
-  Number of full grid pass: 168
-  Number of single line partial reduction (change/all): 1252/2667
-  Number of single line full reduction (change/all): 141/301
+  Max number of alternatives after a partial line reduction (change/all): 75474/477367
+  Max number of alternatives after a    full line reduction (change/all): 4787/230230
+  Number of full grid pass: 166
+  Number of single line partial reduction (change/all): 768/2501
+  Number of single line    full reduction (change/all): 136/298
 
 
 

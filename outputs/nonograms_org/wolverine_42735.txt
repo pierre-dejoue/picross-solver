@@ -1,8 +1,6 @@
 GRID 1: Wolverine
   Size: 40x40
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 0)
+  Solution nb 1: (branching depth: 0)
   ...######..#...########......##...###...
   .####..#.##..###########....##..####..#.
   #.##.#####...#######.####..##..####..###
@@ -47,10 +45,11 @@ GRID 1: Wolverine
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 13037895
-  Max number of alternatives after a line reduction (change/all): 28392/50388
-  Number of full grid pass: 342
-  Number of single line partial reduction (change/all): 466/1190
-  Number of single line full reduction (change/all): 293/563
+  Max number of alternatives after a partial line reduction (change/all): 3268760/13037895
+  Max number of alternatives after a    full line reduction (change/all): 28392/50388
+  Number of full grid pass: 334
+  Number of single line partial reduction (change/all): 472/1190
+  Number of single line    full reduction (change/all): 287/558
 
 
 

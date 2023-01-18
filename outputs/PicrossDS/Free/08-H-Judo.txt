@@ -1,8 +1,6 @@
 GRID 1: Judo
   Size: 20x20
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 0)
+  Solution nb 1: (branching depth: 0)
   .......####.........
   ......######........
   ......##...#........
@@ -27,10 +25,11 @@ GRID 1: Judo
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4368
-  Max number of alternatives after a line reduction (change/all): 206/1001
+  Max number of alternatives after a partial line reduction (change/all): 435/4368
+  Max number of alternatives after a    full line reduction (change/all): 206/1001
   Number of full grid pass: 72
-  Number of single line partial reduction (change/all): 61/169
-  Number of single line full reduction (change/all): 107/217
+  Number of single line partial reduction (change/all): 72/198
+  Number of single line    full reduction (change/all): 97/199
 
 
 

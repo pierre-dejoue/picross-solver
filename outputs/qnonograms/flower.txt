@@ -1,8 +1,6 @@
 GRID 1: Not a Weed
   Size: 30x35
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 0)
+  Solution nb 1: (branching depth: 0)
   ....##...##...................
   ....###.###........#.....#....
   ....###.###........##...##....
@@ -42,10 +40,11 @@ GRID 1: Not a Weed
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 98280
-  Max number of alternatives after a line reduction (change/all): 161/398
-  Number of full grid pass: 58
-  Number of single line partial reduction (change/all): 260/603
-  Number of single line full reduction (change/all): 86/157
+  Max number of alternatives after a partial line reduction (change/all): 11781/98280
+  Max number of alternatives after a    full line reduction (change/all): 120/252
+  Number of full grid pass: 49
+  Number of single line partial reduction (change/all): 341/720
+  Number of single line    full reduction (change/all): 31/73
 
 
 

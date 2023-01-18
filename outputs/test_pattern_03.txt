@@ -1,8 +1,6 @@
 GRID 1: Asterisk
   Size: 9x9
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 0)
+  Solution nb 1: (branching depth: 0)
   ....#....
   ....#....
   ##..#..##
@@ -16,10 +14,11 @@ GRID 1: Asterisk
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 28
-  Max number of alternatives after a line reduction (change/all): 0/0
+  Max number of alternatives after a partial line reduction (change/all): 9/9
+  Max number of alternatives after a    full line reduction (change/all): 0/0
   Number of full grid pass: 4
   Number of single line partial reduction (change/all): 18/30
-  Number of single line full reduction (change/all): 0/0
+  Number of single line    full reduction (change/all): 0/0
 
 
 

@@ -1,8 +1,6 @@
 GRID 1: Two Notes
   Size: 10x10
-  Found 2 solution(s)
-
-  Nb 1: (branching depth: 1)
+  Solution nb 1: (branching depth: 1)
   ..###.....
   ..#.#.....
   ..#.#.....
@@ -14,7 +12,7 @@ GRID 1: Two Notes
   .....###..
   .....###..
 
-  Nb 2: (branching depth: 1)
+  Solution nb 2: (branching depth: 1)
   .......###
   .......#.#
   .......#.#
@@ -28,14 +26,15 @@ GRID 1: Two Notes
 
   Number of solutions found: 2
   Max branching depth: 1
-    > Hypothesis on 1 lines
-    > Total number of alternatives being tested: 6
-    > Max number of alternatives by branching depth: 6
+    > Hypothesis (probing/branching) on 4/1 lines
+    > Total number of alternatives being tested (probing/branching): 14/2
+    > Max number of alternatives by branching depth: 2
   Max number of alternatives on an empty line (initial grid pass): 36
-  Max number of alternatives after a line reduction (change/all): 0/0
-  Number of full grid pass: 21
-  Number of single line partial reduction (change/all): 105/193
-  Number of single line full reduction (change/all): 0/0
+  Max number of alternatives after a partial line reduction (change/all): 5/36
+  Max number of alternatives after a    full line reduction (change/all): 0/0
+  Number of full grid pass: 42
+  Number of single line partial reduction (change/all): 206/373
+  Number of single line    full reduction (change/all): 0/0
 
 
 

@@ -1,8 +1,6 @@
 GRID 1: The Ugly Duckling
   Size: 25x20
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 0)
+  Solution nb 1: (branching depth: 0)
   .#################....###
   ...#..#......#...########
   .##....#..###############
@@ -27,10 +25,11 @@ GRID 1: The Ugly Duckling
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 8008
-  Max number of alternatives after a line reduction (change/all): 13/30
-  Number of full grid pass: 35
-  Number of single line partial reduction (change/all): 127/284
-  Number of single line full reduction (change/all): 55/77
+  Max number of alternatives after a partial line reduction (change/all): 3003/5005
+  Max number of alternatives after a    full line reduction (change/all): 22/30
+  Number of full grid pass: 33
+  Number of single line partial reduction (change/all): 128/290
+  Number of single line    full reduction (change/all): 52/72
 
 
 

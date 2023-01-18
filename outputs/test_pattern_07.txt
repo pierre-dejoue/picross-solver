@@ -1,8 +1,6 @@
 GRID 1: Two Cakes
   Size: 20x20
-  Found 2 solution(s)
-
-  Nb 1: (branching depth: 1)
+  Solution nb 1: (branching depth: 1)
   ....................
   ................#...
   ...............##...
@@ -24,7 +22,7 @@ GRID 1: Two Cakes
   #........#..........
   ##########..........
 
-  Nb 2: (branching depth: 1)
+  Solution nb 2: (branching depth: 1)
   ....................
   ......#.............
   .....##.............
@@ -48,14 +46,15 @@ GRID 1: Two Cakes
 
   Number of solutions found: 2
   Max branching depth: 1
-    > Hypothesis on 1 lines
-    > Total number of alternatives being tested: 10
-    > Max number of alternatives by branching depth: 10
+    > Hypothesis (probing/branching) on 4/1 lines
+    > Total number of alternatives being tested (probing/branching): 25/2
+    > Max number of alternatives by branching depth: 2
   Max number of alternatives on an empty line (initial grid pass): 816
-  Max number of alternatives after a line reduction (change/all): 0/574
-  Number of full grid pass: 37
-  Number of single line partial reduction (change/all): 230/600
-  Number of single line full reduction (change/all): 0/18
+  Max number of alternatives after a partial line reduction (change/all): 211/659
+  Max number of alternatives after a    full line reduction (change/all): 0/574
+  Number of full grid pass: 82
+  Number of single line partial reduction (change/all): 590/1182
+  Number of single line    full reduction (change/all): 0/36
 
 
 

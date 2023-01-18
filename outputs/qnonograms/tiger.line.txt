@@ -1,8 +1,6 @@
-GRID 1: Burning Brightly
+GRID 1: Tiger
   Size: 75x50
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 0)
+  Solution nb 1: (branching depth: 0)
   .........####..................................................####........
   .......###.####..............................................###..##.......
   ......##....#####..........................................####....##......
@@ -54,13 +52,14 @@ GRID 1: Burning Brightly
   ......##.......##...........###..###....##...###.............##........##..
   ..............##..............################................##...........
 
-  Number of solutions found: 0
+  Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4294967295 (overflow!)
-  Max number of alternatives after a line reduction (change/all): 88714484/137381407
-  Number of full grid pass: 375
-  Number of single line partial reduction (change/all): 254/961
-  Number of single line full reduction (change/all): 810/1282
+  Max number of alternatives after a partial line reduction (change/all): 4294967295/4294967295
+  Max number of alternatives after a    full line reduction (change/all): 88714484/137381407
+  Number of full grid pass: 283
+  Number of single line partial reduction (change/all): 235/819
+  Number of single line    full reduction (change/all): 774/1241
 
 
 

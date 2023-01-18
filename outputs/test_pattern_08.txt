@@ -1,113 +1,111 @@
 GRID 1: Dots
   Size: 5x5
-  Found 16 solution(s)
-
-  Nb 1: (branching depth: 4)
+  Solution nb 1: (branching depth: 4)
   #.#..
   .#.#.
   #...#
   .#.#.
   ..#.#
 
-  Nb 2: (branching depth: 4)
+  Solution nb 2: (branching depth: 4)
   #.#..
   .#.#.
   ..#.#
   .#.#.
   #...#
 
-  Nb 3: (branching depth: 3)
+  Solution nb 3: (branching depth: 3)
   #.#..
   .#.#.
   ..#.#
   #..#.
   .#..#
 
-  Nb 4: (branching depth: 2)
+  Solution nb 4: (branching depth: 2)
   #.#..
   .#..#
   #..#.
   ..#.#
   .#.#.
 
-  Nb 5: (branching depth: 3)
-  #..#.
-  .#..#
-  #.#..
-  .#.#.
-  ..#.#
-
-  Nb 6: (branching depth: 3)
+  Solution nb 5: (branching depth: 2)
   #..#.
   ..#.#
   .#.#.
   #.#..
   .#..#
 
-  Nb 7: (branching depth: 2)
+  Solution nb 6: (branching depth: 2)
+  #..#.
+  .#..#
+  #.#..
+  .#.#.
+  ..#.#
+
+  Solution nb 7: (branching depth: 2)
   #...#
   .#.#.
   ..#.#
   .#.#.
   #.#..
 
-  Nb 8: (branching depth: 2)
+  Solution nb 8: (branching depth: 2)
   #...#
   .#.#.
   #.#..
   .#.#.
   ..#.#
 
-  Nb 9: (branching depth: 3)
-  .#.#.
-  ..#.#
-  #..#.
-  .#..#
-  #.#..
-
-  Nb 10: (branching depth: 2)
+  Solution nb 9: (branching depth: 2)
   .#.#.
   #.#..
   .#..#
   #..#.
   ..#.#
 
-  Nb 11: (branching depth: 2)
+  Solution nb 10: (branching depth: 2)
+  .#.#.
+  ..#.#
+  #..#.
+  .#..#
+  #.#..
+
+  Solution nb 11: (branching depth: 2)
   .#..#
   #.#..
   .#.#.
   ..#.#
   #..#.
 
-  Nb 12: (branching depth: 2)
+  Solution nb 12: (branching depth: 2)
   .#..#
   #..#.
   ..#.#
   .#.#.
   #.#..
 
-  Nb 13: (branching depth: 2)
+  Solution nb 13: (branching depth: 2)
   ..#.#
   #..#.
   .#..#
   #.#..
   .#.#.
 
-  Nb 14: (branching depth: 4)
+  Solution nb 14: (branching depth: 4)
   ..#.#
   .#.#.
   #...#
   .#.#.
   #.#..
 
-  Nb 15: (branching depth: 4)
+  Solution nb 15: (branching depth: 4)
   ..#.#
   .#.#.
   #.#..
   .#.#.
   #...#
 
-  Nb 16: (branching depth: 3)
+  Solution nb 16: (branching depth: 3)
   ..#.#
   .#.#.
   #.#..
@@ -116,14 +114,15 @@ GRID 1: Dots
 
   Number of solutions found: 16
   Max branching depth: 4
-    > Hypothesis on 15 lines
-    > Total number of alternatives being tested: 35
-    > Max number of alternatives by branching depth: 6 3 2 2
+    > Hypothesis (probing/branching) on 16/11 lines
+    > Total number of alternatives being tested (probing/branching): 49/26
+    > Max number of alternatives by branching depth: 6 2 2 2
   Max number of alternatives on an empty line (initial grid pass): 6
-  Max number of alternatives after a line reduction (change/all): 0/0
-  Number of full grid pass: 104
-  Number of single line partial reduction (change/all): 150/248
-  Number of single line full reduction (change/all): 0/0
+  Max number of alternatives after a partial line reduction (change/all): 3/6
+  Max number of alternatives after a    full line reduction (change/all): 0/0
+  Number of full grid pass: 254
+  Number of single line partial reduction (change/all): 373/626
+  Number of single line    full reduction (change/all): 0/0
 
 
 

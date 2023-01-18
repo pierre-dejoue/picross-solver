@@ -1,21 +1,20 @@
 GRID 1: Snake
   Size: 20x2
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 1)
+  Solution nb 1: (branching depth: 1)
   ##..####...###.....#
   ..##....###...#####.
 
   Number of solutions found: 1
   Max branching depth: 1
-    > Hypothesis on 1 lines
-    > Total number of alternatives being tested: 2
-    > Max number of alternatives by branching depth: 2
+    > Hypothesis (probing/branching) on 1/0 lines
+    > Total number of alternatives being tested (probing/branching): 2/0
+    > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 330
-  Max number of alternatives after a line reduction (change/all): 0/330
-  Number of full grid pass: 21
-  Number of single line partial reduction (change/all): 49/80
-  Number of single line full reduction (change/all): 0/2
+  Max number of alternatives after a partial line reduction (change/all): 120/330
+  Max number of alternatives after a    full line reduction (change/all): 0/330
+  Number of full grid pass: 22
+  Number of single line partial reduction (change/all): 49/100
+  Number of single line    full reduction (change/all): 0/2
 
 
 

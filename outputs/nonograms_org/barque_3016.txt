@@ -1,8 +1,6 @@
 GRID 1: Barque
   Size: 50x60
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 0)
+  Solution nb 1: (branching depth: 0)
   ##############.############...####################
   ###########...#..#######.#.......#####.#.#..####.#
   ###########.#.#.####.###...############...#..#..#.
@@ -67,10 +65,11 @@ GRID 1: Barque
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 1852482996
-  Max number of alternatives after a line reduction (change/all): 392322/10518300
-  Number of full grid pass: 318
-  Number of single line partial reduction (change/all): 581/1521
-  Number of single line full reduction (change/all): 448/860
+  Max number of alternatives after a partial line reduction (change/all): 600805296/600805296
+  Max number of alternatives after a    full line reduction (change/all): 730280/10518300
+  Number of full grid pass: 359
+  Number of single line partial reduction (change/all): 566/1571
+  Number of single line    full reduction (change/all): 483/924
 
 
 

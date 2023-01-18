@@ -1,8 +1,6 @@
 GRID 1: Swing
   Size: 45x45
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 0)
+  Solution nb 1: (branching depth: 0)
   #######...#......#......#.......#.......#....
   ###.#.###.#.####.#.####.#.#####.#.#####.#.##.
   #.#.#.###.#.####.#.####.#.#####.#.#####.#.##.
@@ -52,10 +50,11 @@ GRID 1: Swing
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 38567100
-  Max number of alternatives after a line reduction (change/all): 1512/2235
-  Number of full grid pass: 146
-  Number of single line partial reduction (change/all): 457/1078
-  Number of single line full reduction (change/all): 259/370
+  Max number of alternatives after a partial line reduction (change/all): 18407025/25807275
+  Max number of alternatives after a    full line reduction (change/all): 1512/2235
+  Number of full grid pass: 155
+  Number of single line partial reduction (change/all): 471/1129
+  Number of single line    full reduction (change/all): 227/347
 
 
 

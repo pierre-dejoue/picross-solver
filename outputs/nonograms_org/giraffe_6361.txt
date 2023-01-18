@@ -1,8 +1,6 @@
 GRID 1: Giraffe
   Size: 25x40
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 0)
+  Solution nb 1: (branching depth: 0)
   ############...##########
   ############.#.####..####
   ########...#...###....###
@@ -47,10 +45,11 @@ GRID 1: Giraffe
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 2035800
-  Max number of alternatives after a line reduction (change/all): 30/37
-  Number of full grid pass: 49
-  Number of single line partial reduction (change/all): 140/210
-  Number of single line full reduction (change/all): 49/89
+  Max number of alternatives after a partial line reduction (change/all): 475020/475020
+  Max number of alternatives after a    full line reduction (change/all): 30/37
+  Number of full grid pass: 38
+  Number of single line partial reduction (change/all): 144/217
+  Number of single line    full reduction (change/all): 50/89
 
 
 

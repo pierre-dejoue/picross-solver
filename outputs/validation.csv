@@ -4,25 +4,26 @@ invalid_input.txt,Fishy,22x20,ERR,,0,"Number of filled tiles on rows (153) and c
 invalid_input.txt,False note,10x0,ERR,,0,"Invalid height = 0"
 invalid_input.txt,Ill-formed,3x3,ERR,,0,"Height = 3 of the grid is too small for constraint: Constraint on a COL: [ 4 ]; min_line_size = 4"
 invalid_input.txt,Wrong constraint,2x2,ERR,,0,"Width = 2 of the grid is too small for constraint: Constraint on a ROW: [ 1 1 ]; min_line_size = 3"
-invalid_input.txt,Impossible,3x3,ERR,,0.0155,"Input grid constraints are contradictory"
-example_input.txt,Fish,22x20,OK,LINE,0.6936
-example_input.txt,Two Notes,10x10,MULT,,0.1617,"The solution is not unique"
-test_pattern_01.txt,Asterisk,9x9,OK,LINE,0.017
-test_pattern_02.txt,Asterisk,9x9,OK,LINE,0.014
-test_pattern_03.txt,Asterisk,9x9,OK,LINE,0.0289
-test_pattern_04.txt,Katakana,13x13,OK,LINE,0.0276
-test_pattern_05.txt,Katakana,13x13,MULT,,0.2053,"The solution is not unique"
-test_pattern_06.txt,Two Notes,10x10,MULT,,0.1583,"The solution is not unique"
-test_pattern_07.txt,Two Cakes,20x20,MULT,,1.4113,"The solution is not unique"
-test_pattern_08.txt,Dots,5x5,MULT,,0.0477,"The solution is not unique"
-test_pattern_09.txt,Smile,4x2,OK,,0.0197
-test_pattern_10.txt,Snake,20x2,OK,,0.1031
-test_pattern_11.txt,Centerpiece edge,8x8,MULT,,0.0513,"The solution is not unique"
-test_pattern_12.txt,Centerpiece corner,13x13,MULT,,0.1707,"The solution is not unique"
-domino_logic.txt,3-Dom,7x7,OK,,0.0462
-domino_logic.txt,4-Dom,9x9,OK,,0.2391
-domino_logic.txt,5-Dom,11x11,OK,,1.7746
-domino_logic.txt,6-Dom,13x13,OK,,14.8964
-domino_logic.txt,7-Dom,15x15,OK,,196.271
-domino_logic.txt,8-Dom,17x17,OK,,2460.85
-domino_logic.txt,9-Dom,19x19,OK,,34303.3
+invalid_input.txt,Impossible,3x3,ERR,,0.0296,"Input grid constraints are contradictory"
+example_input.txt,Fish,22x20,OK,LINE,0.6366
+example_input.txt,Two Notes,10x10,MULT,,0.2957,"The solution is not unique"
+test_pattern_01.txt,Asterisk,9x9,OK,LINE,0.0225
+test_pattern_02.txt,Asterisk,9x9,OK,LINE,0.0211
+test_pattern_03.txt,Asterisk,9x9,OK,LINE,0.0343
+test_pattern_04.txt,Katakana,13x13,OK,LINE,0.0331
+test_pattern_05.txt,Katakana,13x13,MULT,,0.9862,"The solution is not unique"
+test_pattern_06.txt,Two Notes,10x10,MULT,,0.3257,"The solution is not unique"
+test_pattern_07.txt,Two Cakes,20x20,MULT,,1.8858,"The solution is not unique"
+test_pattern_08.txt,Dots,5x5,MULT,,0.2595,"The solution is not unique"
+test_pattern_09.txt,Smile,4x2,OK,,0.0228
+test_pattern_10.txt,Snake,20x2,OK,,0.1699
+test_pattern_11.txt,Centerpiece edge,8x8,MULT,,0.1772,"The solution is not unique"
+test_pattern_12.txt,Centerpiece corner,13x13,MULT,,1.063,"The solution is not unique"
+test_pattern_13.txt,Flip,6x4,MULT,,0.0686,"The solution is not unique"
+domino_logic.txt,3-Dom,7x7,OK,,0.0762
+domino_logic.txt,4-Dom,9x9,OK,,0.5861
+domino_logic.txt,5-Dom,11x11,OK,,6.1946
+domino_logic.txt,6-Dom,13x13,OK,,35.5839
+domino_logic.txt,7-Dom,15x15,OK,,290.685
+domino_logic.txt,8-Dom,17x17,OK,,3823.23
+domino_logic.txt,9-Dom,19x19,OK,,53408.1

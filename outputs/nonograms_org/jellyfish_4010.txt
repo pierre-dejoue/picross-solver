@@ -1,8 +1,6 @@
-GRID 1: Jelly-fish
+GRID 1: Jellyfish
   Size: 33x40
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 0)
+  Solution nb 1: (branching depth: 0)
   ......###########....############
   ....#####..#########....#########
   ....###...#####.######....#######
@@ -47,10 +45,11 @@ GRID 1: Jelly-fish
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 293930
-  Max number of alternatives after a line reduction (change/all): 463/495
-  Number of full grid pass: 83
-  Number of single line partial reduction (change/all): 437/940
-  Number of single line full reduction (change/all): 68/108
+  Max number of alternatives after a partial line reduction (change/all): 125970/125970
+  Max number of alternatives after a    full line reduction (change/all): 132/210
+  Number of full grid pass: 67
+  Number of single line partial reduction (change/all): 462/958
+  Number of single line    full reduction (change/all): 38/56
 
 
 

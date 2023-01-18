@@ -1,8 +1,6 @@
 GRID 1: Centerpiece edge
   Size: 8x8
-  Found 3 solution(s)
-
-  Nb 1: (branching depth: 1)
+  Solution nb 1: (branching depth: 1)
   #.####.#
   .#....#.
   #.#.#..#
@@ -12,7 +10,7 @@ GRID 1: Centerpiece edge
   .#....#.
   #.####.#
 
-  Nb 2: (branching depth: 1)
+  Solution nb 2: (branching depth: 1)
   #.####.#
   .#....#.
   #.#..#.#
@@ -22,7 +20,7 @@ GRID 1: Centerpiece edge
   .#....#.
   #.####.#
 
-  Nb 3: (branching depth: 1)
+  Solution nb 3: (branching depth: 1)
   #.####.#
   .#....#.
   #..#.#.#
@@ -34,14 +32,15 @@ GRID 1: Centerpiece edge
 
   Number of solutions found: 3
   Max branching depth: 1
-    > Hypothesis on 1 lines
-    > Total number of alternatives being tested: 3
+    > Hypothesis (probing/branching) on 4/1 lines
+    > Total number of alternatives being tested (probing/branching): 12/3
     > Max number of alternatives by branching depth: 3
   Max number of alternatives on an empty line (initial grid pass): 21
-  Max number of alternatives after a line reduction (change/all): 0/0
-  Number of full grid pass: 14
-  Number of single line partial reduction (change/all): 36/54
-  Number of single line full reduction (change/all): 0/0
+  Max number of alternatives after a partial line reduction (change/all): 6/10
+  Max number of alternatives after a    full line reduction (change/all): 0/0
+  Number of full grid pass: 48
+  Number of single line partial reduction (change/all): 140/179
+  Number of single line    full reduction (change/all): 0/0
 
 
 

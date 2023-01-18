@@ -1,8 +1,6 @@
 GRID 1: Mum
   Size: 34x40
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 5)
+  Solution nb 1: (branching depth: 1)
   ...........############...........
   ........#####...##...#####........
   .....#####.##........##.#####.....
@@ -45,15 +43,16 @@ GRID 1: Mum
   ..............######..............
 
   Number of solutions found: 1
-  Max branching depth: 7
-    > Hypothesis on 22 lines
-    > Total number of alternatives being tested: 225
-    > Max number of alternatives by branching depth: 3 4 5 16 15 16 16
+  Max branching depth: 1
+    > Hypothesis (probing/branching) on 7/0 lines
+    > Total number of alternatives being tested (probing/branching): 32/0
+    > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 13037895
-  Max number of alternatives after a line reduction (change/all): 120648/1081575
-  Number of full grid pass: 4925
-  Number of single line partial reduction (change/all): 3704/16355
-  Number of single line full reduction (change/all): 6078/9836
+  Max number of alternatives after a partial line reduction (change/all): 5311735/13037895
+  Max number of alternatives after a    full line reduction (change/all): 120648/1081575
+  Number of full grid pass: 461
+  Number of single line partial reduction (change/all): 575/2295
+  Number of single line    full reduction (change/all): 518/858
 
 
 

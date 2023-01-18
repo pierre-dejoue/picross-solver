@@ -1,8 +1,6 @@
 GRID 1: Wild Tattoo
   Size: 60x45
-  Found 1 solution(s)
-
-  Nb 1: (branching depth: 1)
+  Solution nb 1: (branching depth: 1)
   ...................##....##.................................
   ..................###..###..................................
   ...............#####..###...................................
@@ -51,14 +49,15 @@ GRID 1: Wild Tattoo
 
   Number of solutions found: 1
   Max branching depth: 1
-    > Hypothesis on 1 lines
-    > Total number of alternatives being tested: 2
-    > Max number of alternatives by branching depth: 2
+    > Hypothesis (probing/branching) on 1/0 lines
+    > Total number of alternatives being tested (probing/branching): 2/0
+    > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 28048800
-  Max number of alternatives after a line reduction (change/all): 42067/71137
-  Number of full grid pass: 232
-  Number of single line partial reduction (change/all): 443/1171
-  Number of single line full reduction (change/all): 344/667
+  Max number of alternatives after a partial line reduction (change/all): 7888725/12620256
+  Max number of alternatives after a    full line reduction (change/all): 42067/71137
+  Number of full grid pass: 243
+  Number of single line partial reduction (change/all): 458/1216
+  Number of single line    full reduction (change/all): 342/685
 
 
 

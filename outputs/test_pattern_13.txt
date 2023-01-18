@@ -1,0 +1,28 @@
+GRID 1: Flip
+  Size: 6x4
+  Solution nb 1: (branching depth: 1)
+  ##.###
+  .###..
+  #.#..#
+  .#..#.
+
+  Solution nb 2: (branching depth: 1)
+  ##.###
+  .###..
+  #.#.#.
+  .#...#
+
+  Number of solutions found: 2
+  Max branching depth: 1
+    > Hypothesis (probing/branching) on 4/1 lines
+    > Total number of alternatives being tested (probing/branching): 8/2
+    > Max number of alternatives by branching depth: 2
+  Max number of alternatives on an empty line (initial grid pass): 10
+  Max number of alternatives after a partial line reduction (change/all): 3/3
+  Max number of alternatives after a    full line reduction (change/all): 0/0
+  Number of full grid pass: 16
+  Number of single line partial reduction (change/all): 27/41
+  Number of single line    full reduction (change/all): 0/0
+
+
+
