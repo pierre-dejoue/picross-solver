@@ -6,16 +6,18 @@
  *   and solve them. If several solutions exist, an exhaustive search is done
  *   and all of them are displayed.
  *
- * Copyright (c) 2010-2021 Pierre DEJOUE
+ * Copyright (c) 2010-2023 Pierre DEJOUE
  ******************************************************************************/
 #include <picross/picross.h>
 #include <utils/console_observer.h>
 #include <utils/duration_meas.h>
 #include <utils/strings.h>
+#include <utils/timeout.h>
 
 #include <argagg/argagg.hpp>
 
 #include <cassert>
+#include <chrono>
 #include <exception>
 #include <functional>
 #include <iostream>
@@ -97,7 +99,10 @@ int main(int argc, char *argv[])
         "Validation mode: Check for unique solution, output one line per grid", 0 },
       {
         "line-solver", { "--line-solver" },
-        "Line solver: might output an incomplete solution if the grid is not line solvable", 0 }
+        "Line solver: might output an incomplete solution if the grid is not line solvable", 0 },
+      {
+        "timeout", { "--timeout" },
+        "Timeout on grid solve, in seconds", 1 }
     } };
 
     std::ostringstream usage_note;
@@ -129,6 +134,7 @@ int main(int argc, char *argv[])
 
     const auto max_nb_solutions = args["max-nb-solutions"].as<unsigned int>(0u);
     const bool validation_mode = args["validation-mode"];
+    const std::chrono::seconds timeout_duration(args["timeout"].as<unsigned int>(0u));
 
     // Positional arguments
     if (args.pos.empty())
@@ -206,6 +212,13 @@ int main(int argc, char *argv[])
                         {
                             solver->set_observer(std::reference_wrapper<ConsoleObserver>(obs));
                         }
+                    }
+
+                    /* Set timeout */
+                    if (timeout_duration > std::chrono::seconds::zero())
+                    {
+                        Timeout<std::chrono::seconds> timeout_clock(timeout_duration);
+                        solver->set_abort_function([&timeout_clock]() { return timeout_clock.has_expired(); });
                     }
 
                     std::chrono::duration<float, std::milli> time_ms;
