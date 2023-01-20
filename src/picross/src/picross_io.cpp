@@ -7,6 +7,7 @@
  ******************************************************************************/
 #include <picross/picross_io.h>
 
+#include "macros.h"
 
 #include <algorithm>
 #include <cassert>
@@ -30,6 +31,7 @@ constexpr ExitCode EXIT_ON_INVALID_PARSER = 10;
 struct FileFormat
 {
     struct Native {};
+    struct Nin {};
     struct Non {};
 };
 
@@ -161,6 +163,119 @@ private:
     }
 private:
     ParsingState parsing_state;
+};
+
+
+/******************************************************************************
+ * Parser for the NIN file format
+ ******************************************************************************/
+template<>
+class FileParser<FileFormat::Nin>
+{
+private:
+    enum class ParsingState
+    {
+        GRID_SIZE,
+        ROW_SECTION,
+        COLUMN_SECTION,
+        DONE
+    };
+
+public:
+    FileParser()
+        : parsing_state(ParsingState::GRID_SIZE)
+        , nb_rows(0)
+        , nb_cols(0)
+    {
+    }
+
+    void parse_line(const std::string& line_to_parse, std::vector<picross::InputGrid>& grids, const ErrorHandler& error_handler)
+    {
+        UNUSED(error_handler);
+
+        // Ignore whiteline
+        if (line_to_parse.empty() || std::all_of(line_to_parse.cbegin(), line_to_parse.cend(), [](char c) { return c == '\t' || c == ' ';  } ))
+            return;
+
+        // Ignore comments
+        if (line_to_parse[0] == '#')
+            return;
+
+        std::istringstream iss(line_to_parse);
+        switch(parsing_state)
+        {
+        case ParsingState::GRID_SIZE:
+            iss >> nb_cols;
+            iss >> nb_rows;
+            grids.emplace_back();
+            grids.back().m_name = "No name";
+            parsing_state = ParsingState::ROW_SECTION;
+            break;
+
+        case ParsingState::ROW_SECTION:
+        {
+            picross::InputGrid::Constraint new_row;
+            unsigned int n;
+            while (iss >> n) { new_row.push_back(n); }
+            grids.back().m_rows.push_back(std::move(new_row));
+            if (--nb_rows == 0)
+                parsing_state = ParsingState::COLUMN_SECTION;
+            break;
+        }
+
+        case ParsingState::COLUMN_SECTION:
+        {
+            picross::InputGrid::Constraint new_col;
+            unsigned int n;
+            while (iss >> n) { new_col.push_back(n); }
+            grids.back().m_cols.push_back(std::move(new_col));
+            if (--nb_cols == 0)
+                parsing_state = ParsingState::DONE;
+            break;
+        }
+
+        case ParsingState::DONE:
+            // Ignore line
+            break;
+
+        default:
+            assert(0);
+        }
+    }
+
+private:
+    const char* parsing_state_str()
+    {
+        switch (parsing_state)
+        {
+        case ParsingState::GRID_SIZE:
+            return "GRID_SIZE";
+            break;
+        case ParsingState::ROW_SECTION:
+            return "ROW_SECTION";
+            break;
+        case ParsingState::COLUMN_SECTION:
+            return "COLUMN_SECTION";
+            break;
+        case ParsingState::DONE:
+            return "DONE";
+            break;
+        default:
+            assert(0);
+        }
+        return "UNKNOWN";
+    }
+
+    void error_decorator(const ErrorHandler& error_handler, const std::string_view& msg)
+    {
+        std::ostringstream oss;
+        oss << msg << " (parsing_state = " << parsing_state_str() << ")";
+        error_handler(oss.str(), NO_EXIT);
+    }
+private:
+    ParsingState parsing_state;
+    unsigned int nb_rows;
+    unsigned int nb_cols;
 };
 
 
@@ -404,6 +519,22 @@ void write_constraints_native_format(std::ostream& ostream, const std::vector<In
     }
 }
 
+void write_constraints_nin_format(std::ostream& ostream, const std::vector<InputGrid::Constraint>& constraints)
+{
+    for (const auto& constraint : constraints)
+    {
+        if (constraint.empty())
+        {
+            ostream << 0 << std::endl;
+        }
+        else
+        {
+            std::copy(constraint.cbegin(), std::prev(constraint.cend()), std::ostream_iterator<InputGrid::Constraint::value_type>(ostream, " "));
+            ostream << constraint.back() << std::endl;
+        }
+    }
+}
+
 void write_constraints_non_format(std::ostream& ostream, const std::vector<InputGrid::Constraint>& constraints)
 {
     for (const auto& constraint : constraints)
@@ -432,6 +563,11 @@ std::vector<InputGrid> parse_input_file_native(std::string_view filepath, const 
     return parse_input_file_generic<FileFormat::Native>(filepath, error_handler);
 }
 
+std::vector<InputGrid> parse_input_file_nin_format(std::string_view filepath, const ErrorHandler& error_handler) noexcept
+{
+    return parse_input_file_generic<FileFormat::Nin>(filepath, error_handler);
+}
+
 std::vector<InputGrid> parse_input_file_non_format(std::string_view filepath, const ErrorHandler& error_handler) noexcept
 {
     return parse_input_file_generic<FileFormat::Non>(filepath, error_handler);
@@ -450,6 +586,12 @@ void write_input_grid_native(std::ostream& ostream, const InputGrid& input_grid)
     write_constraints_native_format(ostream, input_grid.m_cols);
 }
 
+void write_input_grid_nin_format(std::ostream& ostream, const InputGrid& input_grid)
+{
+    ostream << input_grid.width() << " " << input_grid.height();
+    write_constraints_nin_format(ostream, input_grid.m_rows);
+    write_constraints_nin_format(ostream, input_grid.m_cols);
+}
 
 void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_grid)
 {

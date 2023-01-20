@@ -22,6 +22,9 @@ std::ostream& operator<<(std::ostream& ostream, PicrossFileFormat format)
     case PicrossFileFormat::Native:
         ostream << "Native";
         break;
+    case PicrossFileFormat::NIN:
+        ostream << "NIN";
+        break;
     case PicrossFileFormat::NON:
         ostream << "NON";
         break;
@@ -42,7 +45,11 @@ std::ostream& operator<<(std::ostream& ostream, PicrossFileFormat format)
 PicrossFileFormat picross_file_format_from_filepath(std::string_view filepath)
 {
     const std::string ext = str_tolower(file_extension(filepath));
-    if (ext == "non")
+    if (ext == "nin")
+    {
+        return PicrossFileFormat::NIN;
+    }
+    else if (ext == "non")
     {
         return PicrossFileFormat::NON;
     }
@@ -65,6 +72,9 @@ std::vector<InputGrid> parse_picross_file(std::string_view filepath, PicrossFile
         {
         case PicrossFileFormat::Native:
             return picross::io::parse_input_file_native(filepath, error_handler);
+
+        case PicrossFileFormat::NIN:
+            return picross::io::parse_input_file_nin_format(filepath, error_handler);
 
         case PicrossFileFormat::NON:
             return picross::io::parse_input_file_non_format(filepath, error_handler);
@@ -115,6 +125,15 @@ void save_picross_file(std::string_view filepath, PicrossFileFormat format, cons
             if (!out.good())
                 error_handler("Error writing file " + std::string(filepath), 1);
             picross::io::write_input_grid_native(out, input_grid);
+            break;
+        }
+
+        case PicrossFileFormat::NIN:
+        {
+            std::ofstream out(filepath.data());
+            if (!out.good())
+                error_handler("Error writing file " + std::string(filepath), 1);
+            picross::io::write_input_grid_nin_format(out, input_grid);
             break;
         }
 

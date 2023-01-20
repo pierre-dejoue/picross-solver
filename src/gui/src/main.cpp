@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
                 if (ImGui::MenuItem("Open", "Ctrl+O"))
                 {
                     const auto paths = pfd::open_file("Select a Picross file", "",
-                        { "Picross file", "*.txt *.non", "All files", "*" }).result();
+                        { "Picross file", "*.txt *.nin *.non", "All files", "*" }).result();
                     for (const auto path : paths)
                     {
                         const auto format = picross::io::picross_file_format_from_filepath(path);

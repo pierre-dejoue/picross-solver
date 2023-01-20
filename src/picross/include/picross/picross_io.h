@@ -46,6 +46,17 @@ using ErrorHandler = std::function<void(std::string_view, ExitCode)>;
 std::vector<InputGrid> parse_input_file_native(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
 
 /*
+ * File parser, NIN file format used by Jakub Wilk's nonogram solver program
+ *
+ *      10 10               <--- Width and height
+ *      1 2 3               <--- Constraint on one line, first rows then columns
+ *      ...
+ *
+ * Example of puzzles with this format: https://github.com/jwilk-archive/nonogram/tree/master/data
+ */
+std::vector<InputGrid> parse_input_file_nin_format(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
+
+/*
  * File parser, NON file format (originally by Steve Simpson)
  *
  *   https://github.com/mikix/nonogram-db/blob/master/FORMAT.md
@@ -57,6 +68,11 @@ std::vector<InputGrid> parse_input_file_non_format(std::string_view filepath, co
  * Stream writer, native file format
  */
 void write_input_grid_native(std::ostream& ostream, const InputGrid& input_grid);
+
+/*
+ * Stream writer, NIN file format
+ */
+void write_input_grid_nin_format(std::ostream& ostream, const InputGrid& input_grid);
 
 /*
  * Stream writer, NON file format

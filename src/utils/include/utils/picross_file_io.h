@@ -14,6 +14,7 @@ namespace io
 enum class PicrossFileFormat
 {
     Native,
+    NIN,
     NON,
     PBM,
     OutputGrid
