@@ -43,7 +43,7 @@ using ErrorHandler = std::function<void(std::string_view, ExitCode)>;
  * - Empty lines are skipped
  *
  */
-std::vector<InputGrid> parse_input_file(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
+std::vector<InputGrid> parse_input_file_native(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
 
 /*
  * File parser, NON file format (originally by Steve Simpson)
@@ -56,7 +56,7 @@ std::vector<InputGrid> parse_input_file_non_format(std::string_view filepath, co
 /*
  * Stream writer, native file format
  */
-void write_input_grid(std::ostream& ostream, const InputGrid& input_grid);
+void write_input_grid_native(std::ostream& ostream, const InputGrid& input_grid);
 
 /*
  * Stream writer, NON file format

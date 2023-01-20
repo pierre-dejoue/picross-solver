@@ -8,21 +8,21 @@
 #include <cstddef>
 #include <exception>
 
-std::unique_ptr<picross::OutputGrid> import_bitmap_pbm(const std::string& filepath, const picross::io::ErrorHandler& error_handler) noexcept
+
+picross::OutputGrid import_bitmap_pbm(const std::string& filepath, const picross::io::ErrorHandler& error_handler) noexcept
 {
     try
     {
         const pnm::pbm_image bitmap = pnm::read_pbm(filepath);
         const auto grid_name = file_name_wo_extension(filepath);
-        auto output_grid = std::make_unique<picross::OutputGrid>(bitmap.width(), bitmap.height(), grid_name);
-        assert(output_grid);
+        picross::OutputGrid output_grid(bitmap.width(), bitmap.height(), grid_name);
         std::size_t y = 0u;
         for (const auto& line : bitmap.lines())
         {
             std::size_t x = 0u;
             for (const auto& pix : line)
             {
-                output_grid->set_tile(x++, y, pix.value ? picross::Tile::FILLED : picross::Tile::EMPTY);
+                output_grid.set_tile(x++, y, pix.value ? picross::Tile::FILLED : picross::Tile::EMPTY);
             }
             y++;
         }
@@ -32,7 +32,7 @@ std::unique_ptr<picross::OutputGrid> import_bitmap_pbm(const std::string& filepa
     {
         error_handler(e.what(), 0);
     }
-    return nullptr;
+    return picross::OutputGrid(0, 0, "Invalid");
 }
 
 void export_bitmap_pbm(const std::string& filepath, const picross::OutputGrid& grid, const picross::io::ErrorHandler& error_handler) noexcept

@@ -7,17 +7,15 @@
 #include <iostream>
 #include <iterator>
 
-PicrossFile::PicrossFile(std::string_view path)
+
+PicrossFile::PicrossFile(std::string_view path, picross::io::PicrossFileFormat format)
     : file_path(path)
+    , file_format(format)
     , is_file_open(false)
     , windows()
 {}
 
-PicrossFile::~PicrossFile()
-{
-    windows.clear();
-    std::cerr << "Close window for file " << file_path << std::endl;
-}
+PicrossFile::~PicrossFile() = default;
 
 void PicrossFile::visit_windows(bool& canBeErased, Settings& settings)
 {
@@ -29,10 +27,7 @@ void PicrossFile::visit_windows(bool& canBeErased, Settings& settings)
         {
             this->get_err_window().print(msg);
         };
-        std::vector<picross::InputGrid> grids_to_solve = str_tolower(file_extension(file_path)) == "non"
-            ? picross::io::parse_input_file_non_format(file_path, err_handler)
-            : picross::io::parse_input_file(file_path, err_handler);
-
+        std::vector<picross::InputGrid> grids_to_solve = picross::io::parse_picross_file(file_path, file_format, err_handler);
         windows.reserve(grids_to_solve.size());
         for (auto& grid : grids_to_solve)
         {

@@ -427,7 +427,7 @@ inline void write_metadata_non_format(std::ostream& ostream, const std::map<std:
 
 } // anonymous namespace
 
-std::vector<InputGrid> parse_input_file(std::string_view filepath, const ErrorHandler& error_handler) noexcept
+std::vector<InputGrid> parse_input_file_native(std::string_view filepath, const ErrorHandler& error_handler) noexcept
 {
     return parse_input_file_generic<FileFormat::Native>(filepath, error_handler);
 }
@@ -437,7 +437,7 @@ std::vector<InputGrid> parse_input_file_non_format(std::string_view filepath, co
     return parse_input_file_generic<FileFormat::Non>(filepath, error_handler);
 }
 
-void write_input_grid(std::ostream& ostream, const InputGrid& input_grid)
+void write_input_grid_native(std::ostream& ostream, const InputGrid& input_grid)
 {
     for (const auto& kvp : input_grid.m_metadata)
     {

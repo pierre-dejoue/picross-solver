@@ -11,8 +11,8 @@
 #include <picross/picross.h>
 #include <utils/console_observer.h>
 #include <utils/duration_meas.h>
+#include <utils/picross_file_io.h>
 #include <utils/strings.h>
-#include <utils/text_io.h>
 #include <utils/timeout.h>
 
 #include <argagg/argagg.hpp>
@@ -175,22 +175,16 @@ int main(int argc, char *argv[])
             file_data.misc = msg.empty() ? std::to_string(code) : msg;
         };
 
-        const auto grids_to_solve = [&]() -> std::vector<picross::InputGrid> {
+        const auto format = [&args, &filepath]() -> picross::io::PicrossFileFormat {
             if (args["from_output"])
-            {
-                const auto output_grid = picross::parse_output_grid_from_file(filepath, (validation_mode ? err_handler_validation : err_handler_classic));
-                return { picross::get_input_grid_from(output_grid) };
-            }
+                return picross::io::PicrossFileFormat::OutputGrid;
             else
-            {
-                return str_tolower(file_extension(filepath)) == "non"
-                    ? picross::io::parse_input_file_non_format(filepath, (validation_mode ? err_handler_validation : err_handler_classic))
-                    : picross::io::parse_input_file(filepath, (validation_mode ? err_handler_validation : err_handler_classic));
-            }
+                return picross::io::picross_file_format_from_filepath(filepath);
         }();
 
-        if (validation_mode && !file_data.misc.empty()) { std::cout << file_data << std::endl; }
+        const auto grids_to_solve = picross::io::parse_picross_file(filepath, format, (validation_mode ? err_handler_validation : err_handler_classic));;
 
+        if (validation_mode && !file_data.misc.empty()) { std::cout << file_data << std::endl; }
 
         /***************************************************************************
          * III - Solve Picross puzzles

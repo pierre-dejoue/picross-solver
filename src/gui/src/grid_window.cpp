@@ -4,7 +4,6 @@
 #include "settings.h"
 
 #include <picross/picross.h>
-#include <utils/bitmap_io.h>
 #include <utils/picross_file_io.h>
 #include <utils/strings.h>
 
@@ -13,6 +12,7 @@
 #include <imgui.h>
 
 #include <iostream>
+#include <optional>
 #include <sstream>
 #include <utility>
 
@@ -488,17 +488,8 @@ void GridWindow::save_grid()
             this->text_buffer->buffer.appendf("%s\n", msg);
         };
 
-        const std::string ext = str_tolower(file_extension(file_path));
-        if (ext == "pbm")
-        {
-            if (!solutions.empty())
-            {
-                export_bitmap_pbm(file_path, solutions[0], err_handler);
-            }
-        }
-        else
-        {
-            save_picross_file(file_path, grid, err_handler);
-        }
+        const auto solution = solutions.empty() ? std::nullopt : std::optional<picross::OutputGrid>(solutions[0]);
+        const auto format = picross::io::picross_file_format_from_filepath(file_path);
+        picross::io::save_picross_file(file_path, format, grid, solution, err_handler);
     }
 }

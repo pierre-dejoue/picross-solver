@@ -2,11 +2,12 @@
 #include <picross/picross.h>
 #include <utils/text_io.h>
 
+namespace picross
+{
 
 TEST_CASE("build_output_grid_from", "[text_io]")
 {
-
-    picross::OutputGrid note1 = picross::build_output_grid_from(6, 5, R"(
+    OutputGrid note1 = build_output_grid_from(6, 5, R"(
         ...###
         ...#.#
         ...#.#
@@ -14,7 +15,7 @@ TEST_CASE("build_output_grid_from", "[text_io]")
         .###..
     )");
 
-    picross::OutputGrid note2 = picross::build_output_grid_from(6, 5, R"(
+    OutputGrid note2 = build_output_grid_from(6, 5, R"(
     Note
         000111
         000101
@@ -23,7 +24,7 @@ TEST_CASE("build_output_grid_from", "[text_io]")
         011100
     )");
 
-    picross::OutputGrid note3 = picross::build_output_grid_from(R"(
+    OutputGrid note3 = build_output_grid_from(R"(
     Note
 
         ...###
@@ -41,3 +42,5 @@ TEST_CASE("build_output_grid_from", "[text_io]")
     CHECK(note1 == note2);
     CHECK(note2 == note3);
 }
+
+} // namespace picross

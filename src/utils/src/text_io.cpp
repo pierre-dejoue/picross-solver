@@ -82,7 +82,7 @@ OutputGrid build_output_grid_from(std::string_view tiles, std::string_view name)
     return build_output_grid_from(width, height, tiles, name);
 }
 
-OutputGrid parse_output_grid_from_file(std::string_view filepath, const io::ErrorHandler& error_handler) noexcept
+OutputGrid io::parse_output_grid_from_file(std::string_view filepath, const io::ErrorHandler& error_handler) noexcept
 {
     try
     {

@@ -24,8 +24,10 @@ OutputGrid build_output_grid_from(std::size_t width, std::size_t height, const s
 // Unless the grid width and height are given as arguments, they are deduced from the presence of EOL characters
 OutputGrid build_output_grid_from(std::size_t width, std::size_t height, std::string_view tiles, std::string_view name = "Test");
 OutputGrid build_output_grid_from(std::string_view tiles, std::string_view name = "Test");
+namespace io
+{
 OutputGrid parse_output_grid_from_file(std::string_view filepath, const io::ErrorHandler& error_handler) noexcept;
-
+}
 
 // Utility function to build a Line from a string representing the tiles:
 // '.': the tile is empty
