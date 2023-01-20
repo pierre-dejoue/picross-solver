@@ -9,10 +9,9 @@ set(LIB_SOURCES
     src/bitmap_io.cpp
     src/console_observer.cpp
     src/grid_observer.cpp
-    src/input_from_output.cpp
     src/picross_file_io.cpp
     src/strings.cpp
-    src/test_helpers.cpp
+    src/text_io.cpp
 )
 
 file(GLOB LIB_HEADERS include/utils/*.h src/*.h)

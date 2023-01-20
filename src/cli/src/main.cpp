@@ -12,6 +12,7 @@
 #include <utils/console_observer.h>
 #include <utils/duration_meas.h>
 #include <utils/strings.h>
+#include <utils/text_io.h>
 #include <utils/timeout.h>
 
 #include <argagg/argagg.hpp>
@@ -102,7 +103,10 @@ int main(int argc, char *argv[])
         "Line solver: might output an incomplete solution if the grid is not line solvable", 0 },
       {
         "timeout", { "--timeout" },
-        "Timeout on grid solve, in seconds", 1 }
+        "Timeout on grid solve, in seconds", 1 },
+      {
+        "from_output", { "--from-output" },
+        "The input is a text file with an output grid", 0 }
     } };
 
     std::ostringstream usage_note;
@@ -171,9 +175,19 @@ int main(int argc, char *argv[])
             file_data.misc = msg.empty() ? std::to_string(code) : msg;
         };
 
-        const std::vector<picross::InputGrid> grids_to_solve = str_tolower(file_extension(filepath)) == "non"
-            ? picross::io::parse_input_file_non_format(filepath, (validation_mode ? err_handler_validation : err_handler_classic))
-            : picross::io::parse_input_file(filepath, (validation_mode ? err_handler_validation : err_handler_classic));
+        const auto grids_to_solve = [&]() -> std::vector<picross::InputGrid> {
+            if (args["from_output"])
+            {
+                const auto output_grid = picross::parse_output_grid_from_file(filepath, (validation_mode ? err_handler_validation : err_handler_classic));
+                return { picross::get_input_grid_from(output_grid) };
+            }
+            else
+            {
+                return str_tolower(file_extension(filepath)) == "non"
+                    ? picross::io::parse_input_file_non_format(filepath, (validation_mode ? err_handler_validation : err_handler_classic))
+                    : picross::io::parse_input_file(filepath, (validation_mode ? err_handler_validation : err_handler_classic));
+            }
+        }();
 
         if (validation_mode && !file_data.misc.empty()) { std::cout << file_data << std::endl; }
 

@@ -9,6 +9,7 @@ set(UTESTS_SOURCES
     src/test_line_alternatives.cpp
     src/test_line_constraint.cpp
     src/test_solver.cpp
+    src/test_utils.cpp
 )
 
 file(GLOB UTESTS_HEADERS src/*.h)

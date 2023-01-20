@@ -2,7 +2,6 @@
 
 #include <picross/picross.h>
 #include <utils/bitmap_io.h>
-#include <utils/input_from_output.h>
 #include <utils/strings.h>
 
 #include <cassert>
@@ -34,7 +33,7 @@ void BitmapFile::visit_windows(bool& canBeErased, Settings& settings)
         auto output_grid = import_bitmap_pbm(file_path, err_handler);
         if (output_grid)
         {
-            auto grid = picross::build_input_grid_from(*output_grid);
+            auto grid = picross::get_input_grid_from(*output_grid);
             window = std::make_unique<GridWindow>(std::move(grid), file_name(file_path));
         }
     }

@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <picross/picross.h>
-#include <utils/input_from_output.h>
 #include <utils/test_helpers.h>
+#include <utils/text_io.h>
 
 
 // This is the example used in the project README
@@ -348,7 +348,7 @@ TEST_CASE("Puzzle: Cameraman", "[solver]")
         ....###.###########.
     )", "Cameraman");
 
-    InputGrid puzzle = build_input_grid_from(expected);
+    InputGrid puzzle = get_input_grid_from(expected);
 
     const auto solver = get_ref_solver();
     const auto result = solver->solve(puzzle);
@@ -373,7 +373,7 @@ TEST_CASE("Puzzle: 3-DOM", "[solver]")
         ..#....
     )", "3-DOM");
 
-    InputGrid puzzle = build_input_grid_from(expected);
+    InputGrid puzzle = get_input_grid_from(expected);
 
     const auto solver = get_ref_solver();
     const auto result = solver->solve(puzzle);

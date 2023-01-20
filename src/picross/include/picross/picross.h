@@ -103,12 +103,6 @@ std::string str_line_id(const LineId& line_id);
 
 
 /*
- * Utility function to build an input constraint from a fully defined line
- */
-InputGrid::Constraint get_constraint_from(const Line& line);
-
-
-/*
  * OutputGrid class
  *
  *   A partially or fully solved Picross grid
@@ -336,5 +330,13 @@ ValidationResult validate_input_grid(const Solver& solver, const InputGrid& inpu
  */
 bool is_solution(const InputGrid& input_grid, const OutputGrid& output_grid);
 std::vector<LineId> list_incompatible_lines(const InputGrid& input_grid, const OutputGrid& output_grid);
+
+
+/*
+ * Utility functions to build an input constraint from a fully defined Line,
+ * or an InputGrid from a fully defined OutputGrid (no Tile::UNKNOWN)
+ */
+InputGrid::Constraint get_constraint_from(const Line& line);
+InputGrid get_input_grid_from(const OutputGrid& grid);
 
 } // namespace picross

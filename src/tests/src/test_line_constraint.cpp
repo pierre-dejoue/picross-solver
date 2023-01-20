@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <picross/picross.h>
-#include <utils/test_helpers.h>
+#include <utils/text_io.h>
 
 #include "line_constraint.h"
 

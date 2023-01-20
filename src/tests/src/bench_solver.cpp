@@ -1,8 +1,7 @@
 #include <catch2/benchmark/catch_benchmark_all.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <picross/picross.h>
-#include <utils/input_from_output.h>
-#include <utils/test_helpers.h>
+#include <utils/text_io.h>
 
 
 namespace picross
@@ -26,7 +25,7 @@ TEST_CASE("Benchmark", "[solver]")
             ......####
         )", "Edge");
 
-        InputGrid puzzle = build_input_grid_from(expected);
+        InputGrid puzzle = get_input_grid_from(expected);
 
         const auto solver = picross::get_ref_solver();
         const auto result = solver->solve(puzzle);
@@ -56,7 +55,7 @@ TEST_CASE("Benchmark", "[solver]")
             ..#........
         )", "5-DOM");
 
-        InputGrid puzzle = build_input_grid_from(expected);
+        InputGrid puzzle = get_input_grid_from(expected);
 
         const auto solver = picross::get_ref_solver();
         const auto result = solver->solve(puzzle);
@@ -94,7 +93,7 @@ TEST_CASE("Benchmark", "[solver]")
             ...........####.##..
         )", "Smoke");
 
-        InputGrid puzzle = build_input_grid_from(expected);
+        InputGrid puzzle = get_input_grid_from(expected);
 
         const auto solver = picross::get_ref_solver();
         const auto result = solver->solve(puzzle);
@@ -157,7 +156,7 @@ TEST_CASE("Benchmark", "[solver]")
             ....#.....##########......#.......#.....#....
         )", "Swing");
 
-        InputGrid puzzle = build_input_grid_from(expected);
+        InputGrid puzzle = get_input_grid_from(expected);
 
         const auto solver = picross::get_ref_solver();
         const auto result = solver->solve(puzzle);
