@@ -238,7 +238,10 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
             case State::PROBING:
             {
                 if (!m_solver_policy.m_branching_allowed)
+                {
                     m_state = State::BRANCHING;
+                    break;
+                }
                 const auto probing_result = probe();
                 if (probing_result.m_status == Solver::Status::CONTRADICTORY_GRID)
                     pass_status.contradictory = true;
@@ -632,6 +635,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::full_grid_pa
 template <typename SolverPolicy>
 typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe()
 {
+    assert(m_solver_policy.m_branching_allowed);
     ProbingResult result{};
     std::vector<LineId> candidate_lines = sorted_edges();
     for (auto candidate : candidate_lines)
