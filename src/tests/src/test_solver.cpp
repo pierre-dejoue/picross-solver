@@ -32,6 +32,7 @@ TEST_CASE("Puzzle: Note", "[solver]")
 
     // Solve it
     const auto solver = picross::get_ref_solver();
+    REQUIRE(solver);
     const auto result = solver->solve(puzzle);
 
     CHECK(result.status == picross::Solver::Status::OK);
@@ -75,6 +76,7 @@ TEST_CASE("Constraints can use zero to declare an empty row or column", "[solver
     InputGrid puzzle_2(rows_w_zero, cols_w_zero, "");
 
     const auto solver = get_ref_solver();
+    REQUIRE(solver);
     const auto result_1 = solver->solve(puzzle_1);
     const auto result_2 = solver->solve(puzzle_2);
 
@@ -93,6 +95,35 @@ TEST_CASE("Constraints can use zero to declare an empty row or column", "[solver
     CHECK(result_1.solutions.front().grid == expected);
 }
 
+TEST_CASE("A puzzle with no solution", "[solver]")
+{
+    const InputGrid::Constraints rows {
+        { 1 },
+        { 2 },
+        { 1 }
+    };
+
+    const InputGrid::Constraints cols {
+        { 1 },
+        { 1, 1 },
+        { 1 }
+    };
+
+    InputGrid puzzle(rows, cols, "Zero");
+
+    const auto [check_is_ok, check_msg] = picross::check_input_grid(puzzle);
+    CHECK(check_is_ok);
+
+    const auto solver = get_ref_solver();
+    REQUIRE(solver);
+    const auto result = solver->solve(puzzle);
+    CHECK(result.status == Solver::Status::CONTRADICTORY_GRID);
+    REQUIRE(result.solutions.empty());
+
+    const auto validation_result = validate_input_grid(*solver, puzzle);
+    CHECK(validation_result.code == 0);
+}
+
 TEST_CASE("Puzzle: Smile", "[solver]")
 {
     // The "Smile" puzzle is a simple pattern that is non line-solvable
@@ -109,7 +140,11 @@ TEST_CASE("Puzzle: Smile", "[solver]")
 
     InputGrid puzzle(rows, cols, "Smile");
 
+    const auto [check_is_ok, check_msg] = picross::check_input_grid(puzzle);
+    CHECK(check_is_ok);
+
     const auto solver = get_ref_solver();
+    REQUIRE(solver);
     const auto result = solver->solve(puzzle);
 
     CHECK(result.status == Solver::Status::OK);
@@ -123,6 +158,9 @@ TEST_CASE("Puzzle: Smile", "[solver]")
 
     CHECK(solution.branching_depth == 1);
     CHECK(solution.grid == expected);
+
+    const auto validation_result = validate_input_grid(*solver, puzzle);
+    CHECK(validation_result.code == 1);
 }
 
 TEST_CASE("Puzzle: Notes", "[solver]")
@@ -155,7 +193,11 @@ TEST_CASE("Puzzle: Notes", "[solver]")
 
     InputGrid puzzle(rows, cols, "Notes");
 
+    const auto [check_is_ok, check_msg] = picross::check_input_grid(puzzle);
+    CHECK(check_is_ok);
+
     const auto solver = get_ref_solver();
+    REQUIRE(solver);
     const auto result = solver->solve(puzzle);
 
     CHECK(result.status == Solver::Status::OK);
@@ -212,11 +254,15 @@ TEST_CASE("Puzzle: Flip", "[solver]")
 
     InputGrid puzzle(rows, cols, "Flip");
 
+    const auto [check_is_ok, check_msg] = picross::check_input_grid(puzzle);
+    CHECK(check_is_ok);
+
     //
     // 1. Full resolution (with branching)
     //
     {
         const auto solver = get_ref_solver();
+        REQUIRE(solver);
         const auto result = solver->solve(puzzle);
 
         CHECK(result.status == Solver::Status::OK);
@@ -254,6 +300,7 @@ TEST_CASE("Puzzle: Flip", "[solver]")
     //
     {
         const auto solver = get_line_solver();
+        REQUIRE(solver);
         const auto result = solver->solve(puzzle);
 
         CHECK(result.status == Solver::Status::NOT_LINE_SOLVABLE);
@@ -292,6 +339,7 @@ TEST_CASE("Puzzle: A piece of Centerpiece", "[solver]")
     InputGrid puzzle(rows, cols, "Piece");
 
     const auto solver = get_ref_solver();
+    REQUIRE(solver);
     const auto result = solver->solve(puzzle);
 
     CHECK(result.status == Solver::Status::OK);
@@ -320,6 +368,9 @@ TEST_CASE("Puzzle: A piece of Centerpiece", "[solver]")
     REQUIRE(result.solutions.size() == 3);
     OutputGridSet solution_grids { result.solutions[0].grid, result.solutions[1].grid, result.solutions[2].grid};
     CHECK(solution_grids == expected_solutions);
+
+    const auto validation_result = validate_input_grid(*solver, puzzle);
+    CHECK(validation_result.code == 2);
 }
 
 TEST_CASE("Puzzle: Cameraman", "[solver]")
@@ -350,7 +401,11 @@ TEST_CASE("Puzzle: Cameraman", "[solver]")
 
     InputGrid puzzle = get_input_grid_from(expected);
 
+    const auto [check_is_ok, check_msg] = picross::check_input_grid(puzzle);
+    CHECK(check_is_ok);
+
     const auto solver = get_ref_solver();
+    REQUIRE(solver);
     const auto result = solver->solve(puzzle);
 
     CHECK(result.status == Solver::Status::OK);
@@ -376,6 +431,7 @@ TEST_CASE("Puzzle: 3-DOM", "[solver]")
     InputGrid puzzle = get_input_grid_from(expected);
 
     const auto solver = get_ref_solver();
+    REQUIRE(solver);
     const auto result = solver->solve(puzzle);
 
     CHECK(result.status == Solver::Status::OK);
@@ -383,6 +439,9 @@ TEST_CASE("Puzzle: 3-DOM", "[solver]")
     const auto& solution = result.solutions.front();
     CHECK(solution.branching_depth > 0);
     CHECK(solution.grid == expected);
+
+    const auto validation_result = validate_input_grid(*solver, puzzle);
+    CHECK(validation_result.code == 1);
 }
 
 } // namespace picross

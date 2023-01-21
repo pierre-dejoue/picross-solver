@@ -1,4 +1,4 @@
-WARNING [invalid_input.txt]: Parsing error [Invalid token GRILL (parsing_state = COLUMN_SECTION)] on line 94: GRILL Beaf
+WARNING [invalid_input.txt]: Parsing error [Invalid token GRILL (parsing_state = COLUMN_SECTION)] on line 105: GRILL Beaf
 GRID 1: Fishy
   Size: 22x20
   Invalid grid. Error message: Number of filled tiles on rows (153) and columns (154) do not match
@@ -26,6 +26,21 @@ GRID 5: Impossible
   Number of solutions found: 0
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 1
+  Max number of alternatives after a partial line reduction (change/all): 0/0
+  Max number of alternatives after a    full line reduction (change/all): 0/0
+  Number of full grid pass: 1
+  Number of single line partial reduction (change/all): 0/0
+  Number of single line    full reduction (change/all): 0/0
+
+
+
+GRID 6: Zero
+  Size: 3x3
+  Not solvable
+
+  Number of solutions found: 0
+  Max branching depth: 0
+  Max number of alternatives on an empty line (initial grid pass): 3
   Max number of alternatives after a partial line reduction (change/all): 0/0
   Max number of alternatives after a    full line reduction (change/all): 0/0
   Number of full grid pass: 1

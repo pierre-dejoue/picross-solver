@@ -79,7 +79,7 @@ COLUMNS
 [ 2 ]
 [ 2 ]
 
-# Valid constraints but the grid has no solution
+# A grid with no solution
 GRID Impossible
 ROWS
 [ 1 1 ]
@@ -89,6 +89,17 @@ COLUMNS
 [ ]
 [ 3 ]
 [ 3 ]
+
+# Another grid with no solution
+GRID Zero
+ROWS
+[ 1 ]
+[ 2 ]
+[ 1 ]
+COLUMNS
+[ 1 ]
+[ 1 1 ]
+[ 1 ]
 
 # Syntax error
 GRILL Beaf

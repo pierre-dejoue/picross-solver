@@ -181,9 +181,9 @@ ValidationResult validate_input_grid(const Solver& solver, const InputGrid& inpu
         return result;
 
     case Solver::Status::CONTRADICTORY_GRID:
-        result.code = -1;
+        result.code = 0;
         result.branching_depth = 0;
-        result.msg = "Input grid constraints are contradictory";
+        result.msg = "No solution";
         return result;
 
     default:
@@ -206,10 +206,11 @@ ValidationResult validate_input_grid(const Solver& solver, const InputGrid& inpu
     }
 
     // We've checked all the potential errors. The validation code is therefore >= 0
+    assert(!solver_results.solutions.empty());
     if (solver_results.solutions.empty())
     {
-        assert(result.code == 0);
-        result.msg = "No solution could be found";
+        result.code = 0;
+        result.msg = "No solution";
     }
     else if (solver_results.solutions.size() == 1)
     {

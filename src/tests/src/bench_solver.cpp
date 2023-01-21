@@ -28,6 +28,7 @@ TEST_CASE("Benchmark", "[solver]")
         InputGrid puzzle = get_input_grid_from(expected);
 
         const auto solver = picross::get_ref_solver();
+        REQUIRE(solver);
         const auto result = solver->solve(puzzle);
 
         CHECK(result.status == Solver::Status::OK);
@@ -58,6 +59,7 @@ TEST_CASE("Benchmark", "[solver]")
         InputGrid puzzle = get_input_grid_from(expected);
 
         const auto solver = picross::get_ref_solver();
+        REQUIRE(solver);
         const auto result = solver->solve(puzzle);
 
         CHECK(result.status == Solver::Status::OK);
@@ -96,6 +98,7 @@ TEST_CASE("Benchmark", "[solver]")
         InputGrid puzzle = get_input_grid_from(expected);
 
         const auto solver = picross::get_ref_solver();
+        REQUIRE(solver);
         const auto result = solver->solve(puzzle);
 
         CHECK(result.status == Solver::Status::OK);
@@ -159,6 +162,7 @@ TEST_CASE("Benchmark", "[solver]")
         InputGrid puzzle = get_input_grid_from(expected);
 
         const auto solver = picross::get_ref_solver();
+        REQUIRE(solver);
         const auto result = solver->solve(puzzle);
 
         CHECK(result.status == Solver::Status::OK);

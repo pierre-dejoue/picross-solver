@@ -106,6 +106,7 @@ int main()
 
     // Solve it
     const auto solver = picross::get_ref_solver();
+    assert(solver);
     const auto result = solver->solve(puzzle);
     assert(result.status == picross::Solver::Status::OK);
 

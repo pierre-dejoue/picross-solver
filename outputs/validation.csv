@@ -1,10 +1,11 @@
 File,Grid,Size,Valid,Difficulty,Timing (ms),Misc
-invalid_input.txt,,,ERR,,,"Parsing error [Invalid token GRILL (parsing_state = COLUMN_SECTION)] on line 94: GRILL Beaf"
+invalid_input.txt,,,ERR,,,"Parsing error [Invalid token GRILL (parsing_state = COLUMN_SECTION)] on line 105: GRILL Beaf"
 invalid_input.txt,Fishy,22x20,ERR,,,"Number of filled tiles on rows (153) and columns (154) do not match"
 invalid_input.txt,False note,10x0,ERR,,,"Invalid height = 0"
 invalid_input.txt,Ill-formed,3x3,ERR,,,"Height = 3 of the grid is too small for constraint: Constraint on a COL: [ 4 ]; min_line_size = 4"
 invalid_input.txt,Wrong constraint,2x2,ERR,,,"Width = 2 of the grid is too small for constraint: Constraint on a ROW: [ 1 1 ]; min_line_size = 3"
-invalid_input.txt,Impossible,3x3,ERR,,,"Input grid constraints are contradictory"
+invalid_input.txt,Impossible,3x3,ZERO,,,"No solution"
+invalid_input.txt,Zero,3x3,ZERO,,,"No solution"
 example_input.txt,Fish,22x20,OK,LINE,
 example_input.txt,Two Notes,10x10,MULT,,,"The solution is not unique"
 test_pattern_01.txt,Asterisk,9x9,OK,LINE,
