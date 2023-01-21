@@ -230,7 +230,7 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
                 {
                     // Max number of alternatives for the next full grid pass
                     m_max_nb_alternatives = m_solver_policy.get_max_nb_alternatives(m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines);
-                    if (!pass_status.grid_changed)
+                    if (pass_status.grid_changed)
                         m_state = State::PARTIAL_REDUCTION;
                 }
                 break;
