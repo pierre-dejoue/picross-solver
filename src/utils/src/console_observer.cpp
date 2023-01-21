@@ -11,16 +11,16 @@ ConsoleObserver::ConsoleObserver(size_t width, size_t height, std::ostream& ostr
 {
 }
 
-void ConsoleObserver::observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, unsigned int misc, const ObserverGrid& grid)
+void ConsoleObserver::observer_callback(picross::Solver::Event event, const picross::Line* line, unsigned int depth, unsigned int misc, const ObserverGrid& grid)
 {
     ostream << event;
     switch (event)
     {
     case picross::Solver::Event::BRANCHING:
-        if (delta)
+        if (line)
         {
             ostream << " NODE";
-            ostream << " known_tiles: " << str_line_full(*delta);
+            ostream << " known: " << str_line_full(*line);
             ostream << " depth: " << depth;
             ostream << " nb_alt: " << misc;
         }
@@ -31,8 +31,14 @@ void ConsoleObserver::observer_callback(picross::Solver::Event event, const picr
         }
         break;
 
+    case picross::Solver::Event::KNOWN_LINE:
+        ostream << " known: " << str_line_full(*line)
+                << " depth: " << depth
+                << " nb_alt: " << misc;
+        break;
+
     case picross::Solver::Event::DELTA_LINE:
-        ostream << " delta: " << str_line_full(*delta)
+        ostream << " delta: " << str_line_full(*line)
                 << " depth: " << depth
                 << " nb_alt: " << misc;
         break;

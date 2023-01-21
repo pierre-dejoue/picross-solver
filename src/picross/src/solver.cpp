@@ -124,6 +124,9 @@ std::ostream& operator<<(std::ostream& ostream, Solver::Event event)
     case Solver::Event::BRANCHING:
         ostream << "BRANCHING";
         break;
+    case Solver::Event::KNOWN_LINE:
+        ostream << "KNOWN_LINE";
+        break;
     case Solver::Event::DELTA_LINE:
         ostream << "DELTA_LINE";
         break;

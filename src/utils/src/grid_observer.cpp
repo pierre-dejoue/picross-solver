@@ -35,7 +35,7 @@ GridObserver::GridObserver(const picross::InputGrid& grid)
 {
 }
 
-void GridObserver::operator()(picross::Solver::Event event, const picross::Line* delta, unsigned int depth, unsigned int misc)
+void GridObserver::operator()(picross::Solver::Event event, const picross::Line* line, unsigned int depth, unsigned int misc)
 {
     const auto width = grids[0].width();
     const auto height = grids[0].height();
@@ -43,7 +43,7 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
     switch (event)
     {
     case picross::Solver::Event::BRANCHING:
-        if (!delta)
+        if (!line)
         {
             // BRANCHING EDGE event
             assert(depth > 0u);
@@ -61,25 +61,28 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
         current_depth = depth;
         break;
 
+    case picross::Solver::Event::KNOWN_LINE:
+        break;
+
     case picross::Solver::Event::DELTA_LINE:
     {
         assert(depth == current_depth);
-        const size_t index = delta->index();
+        const size_t index = line->index();
         ObserverGrid& grid = grids.at(current_depth);
-        if (delta->type() == picross::Line::ROW)
+        if (line->type() == picross::Line::ROW)
         {
             for (size_t x = 0u; x < width; ++x)
-                if (delta->tiles().at(x) != picross::Tile::UNKNOWN)
+                if (line->tiles().at(x) != picross::Tile::UNKNOWN)
                 {
-                    grid.set_tile(x, index, delta->tiles().at(x), static_cast<unsigned int>(current_depth));
+                    grid.set_tile(x, index, line->tiles().at(x), static_cast<unsigned int>(current_depth));
                 }
         }
         else
         {
             for (size_t y = 0u; y < height; ++y)
-                if (delta->tiles().at(y) != picross::Tile::UNKNOWN)
+                if (line->tiles().at(y) != picross::Tile::UNKNOWN)
                 {
-                    grid.set_tile(index, y, delta->tiles().at(y), static_cast<unsigned int>(current_depth));
+                    grid.set_tile(index, y, line->tiles().at(y), static_cast<unsigned int>(current_depth));
                 }
         }
         break;
@@ -97,7 +100,7 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
     }
 
     assert(current_depth < grids.size());
-    observer_callback(event, delta, depth, misc, grids.at(current_depth));
+    observer_callback(event, line, depth, misc, grids.at(current_depth));
 }
 
 void GridObserver::observer_clear()

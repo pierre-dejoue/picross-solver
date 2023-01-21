@@ -343,6 +343,7 @@ bool WorkGrid<SolverPolicy>::update_line(const LineSpan& line, unsigned int nb_a
     const auto line_index = line.index();
     const auto line_sz = line.size();
     const Line observer_original_line = m_observer ? line_from_line_span(get_line(line_type, line_index)) : DEFAULT_LINE;
+    const auto observer_original_nb_alt = m_nb_alternatives[line_type][line_index];
     assert(line.size() == static_cast<unsigned int>(line.type() == Line::ROW ? width() : height()));
 
     bool line_changed = false;
@@ -381,10 +382,18 @@ bool WorkGrid<SolverPolicy>::update_line(const LineSpan& line, unsigned int nb_a
     m_line_completed[line_type][line_index] = line_is_complete;
     m_line_has_updates[line_type][line_index] = line_changed;
 
-    if (m_observer && line_changed)
+    if (m_observer)
     {
-        const Line delta = get_line(line_type, line_index) - observer_original_line;
-        m_observer(Solver::Event::DELTA_LINE, &delta, m_branching_depth, nb_alt);
+        if (line_changed)
+        {
+            m_observer(Solver::Event::KNOWN_LINE, &observer_original_line, m_branching_depth, observer_original_nb_alt);
+            const Line delta = get_line(line_type, line_index) - observer_original_line;
+            m_observer(Solver::Event::DELTA_LINE, &delta, m_branching_depth, nb_alt);
+        }
+        else
+        {
+            m_observer(Solver::Event::KNOWN_LINE, &observer_original_line, m_branching_depth, nb_alt);
+        }
     }
 
     return line_changed;

@@ -130,14 +130,14 @@ namespace
     }
 } // Anonymous namespace
 
-GridWindow::LineEvent::LineEvent(picross::Solver::Event event, const picross::Line* delta, const ObserverGrid& grid)
+GridWindow::LineEvent::LineEvent(picross::Solver::Event event, const picross::Line* line, const ObserverGrid& grid)
     : event(event)
-    , delta()
+    , event_line()
     , grid(grid)
 {
-    if (delta)
+    if (line)
     {
-        this->delta = std::make_unique<picross::Line>(*delta);
+        event_line = std::make_unique<picross::Line>(*line);
     }
 }
 
@@ -363,7 +363,7 @@ void GridWindow::reset_solutions()
     text_buffer->buffer.appendf("Grid %s\n", str_input_grid_size(grid).c_str());
 }
 
-void GridWindow::observer_callback(picross::Solver::Event event, const picross::Line* delta, unsigned int, unsigned int, const ObserverGrid& grid)
+void GridWindow::observer_callback(picross::Solver::Event event, const picross::Line* line, unsigned int, unsigned int, const ObserverGrid& grid)
 {
     std::unique_lock<std::mutex> lock(line_mutex);
     if (line_events.size() >= speed)
@@ -374,7 +374,7 @@ void GridWindow::observer_callback(picross::Solver::Event event, const picross::
                 ||  this->abort_solver_thread();
         });
     }
-    line_events.emplace_back(event, delta, grid);
+    line_events.emplace_back(event, line, grid);
 }
 
 unsigned int GridWindow::process_line_events(std::vector<LineEvent>& events)
@@ -396,24 +396,10 @@ unsigned int GridWindow::process_line_events(std::vector<LineEvent>& events)
             solutions.back() = std::move(event.grid);
         }
 
-        switch (event.event)
+        if (event.event == picross::Solver::Event::SOLVED_GRID)
         {
-        case picross::Solver::Event::BRANCHING:
-            break;
-
-        case picross::Solver::Event::DELTA_LINE:
-            break;
-
-        case picross::Solver::Event::SOLVED_GRID:
             valid_solutions++;
             allocate_new_solution = true;              // Allocate new solution on next event
-            break;
-
-        case picross::Solver::Event::INTERNAL_STATE:
-            break;
-
-        default:
-            assert(0);  // Unknown Solver::Event
         }
 
         // Adjust number of tabs
