@@ -45,7 +45,7 @@ namespace
         std::string misc;
     };
 
-    ValidationModeData::ValidationModeData() : filename(), gridname(), size(), validation_result{ -1, 0u, "" }, timing_ms(0u), misc()
+    ValidationModeData::ValidationModeData() : filename(), gridname(), size(), validation_result{ -1, 0u, "" }, timing_ms(-1.f), misc()
     {
     }
 
@@ -56,7 +56,8 @@ namespace
         ostream << data.size << ',';
         ostream << picross::str_validation_code(data.validation_result.code) << ',';
         ostream << (data.validation_result.code == 1 && (data.validation_result.branching_depth == 0u) ? "LINE" : "") << ',';
-        ostream << data.timing_ms;
+        if (data.timing_ms >= 0.f)
+            ostream << data.timing_ms;
         if (!data.validation_result.msg.empty())
             ostream << ",\"" << data.validation_result.msg << "\"";
         if (!data.misc.empty())
@@ -237,7 +238,8 @@ int main(int argc, char *argv[])
                             DurationMeas<float, std::milli> meas_ms(time_ms);
                             grid_data.validation_result = picross::validate_input_grid(*solver, input_grid);
                         }
-                        grid_data.timing_ms = time_ms.count();
+                        if (!args["no-timing"])
+                            grid_data.timing_ms = time_ms.count();
                     }
                     else
                     {
