@@ -4,6 +4,7 @@
 include(catch2)
 
 set(UTESTS_SOURCES
+    src/bench_line_alternatives.cpp
     src/bench_solver.cpp
     src/test_binomial.cpp
     src/test_line_alternatives.cpp

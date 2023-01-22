@@ -256,6 +256,40 @@ TEST_CASE("partial_reduction_with_a_long_segment", "[line_alternatives]")
     }
 }
 
+TEST_CASE("partial_reduction_fills_in_empty_tiles_before_first_segment", "[line_alternatives]")
+{
+    const LineConstraint constraint_l(Line::ROW, { 2, 1, 1, 1 });
+    {
+        const auto known_tiles = build_line_from(".?.?.??????????", Line::ROW, LINE_INDEX);
+        const auto reduction = partial_reduction(constraint_l, known_tiles, 1);
+        CHECK(reduction.reduced_line == build_line_from(".....??????????", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 15);
+        CHECK_FALSE(reduction.is_fully_reduced);
+    }
+    {
+        const auto known_tiles = build_line_from(".?.?.??.???????", Line::ROW, LINE_INDEX);
+        const auto reduction = partial_reduction(constraint_l, known_tiles, 1);
+        CHECK(reduction.reduced_line == build_line_from(".....##.???????", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 10);
+        CHECK_FALSE(reduction.is_fully_reduced);
+    }
+    const LineConstraint constraint_r(Line::ROW, { 1, 1, 1, 2 });
+    {
+        const auto known_tiles = build_line_from("??????????.?.?.", Line::ROW, LINE_INDEX);
+        const auto reduction = partial_reduction(constraint_r, known_tiles, 1);
+        CHECK(reduction.reduced_line == build_line_from("??????????.....", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 15);
+        CHECK_FALSE(reduction.is_fully_reduced);
+    }
+    {
+        const auto known_tiles = build_line_from("???????.??.?.?.", Line::ROW, LINE_INDEX);
+        const auto reduction = partial_reduction(constraint_r, known_tiles, 1);
+        CHECK(reduction.reduced_line == build_line_from("???????.##.....", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 10);
+        CHECK_FALSE(reduction.is_fully_reduced);
+    }
+}
+
 TEST_CASE("reduction_of_a_completed_line", "[line_alternatives]")
 {
     const LineConstraint constraint(Line::ROW, { 4, 1, 3, 1 });
@@ -404,5 +438,29 @@ TEST_CASE("centerpiece-webpbn-10810-row-9", "[line_alternatives]")
         CHECK(full_reduction.is_fully_reduced);
     }
 }
+
+TEST_CASE("examples_of_full_reductions", "[line_alternatives]")
+{
+    // Examples from tiger.non
+    {
+        const LineConstraint constraint(Line::COL, { 7, 6, 9, 3, 3, 4, 4 });
+        const auto known_tiles    = build_line_from("..????###?#???##???????######?###?#??????##???##??", Line::COL, 34);
+        const auto expected_delta = build_line_from("?????#???????#?????.###??????.???.?##..???????????", Line::COL, 34);
+        const auto reduction = full_reduction(constraint, known_tiles);
+        CHECK(reduction.reduced_line - known_tiles == expected_delta);
+        CHECK(reduction.nb_alternatives == 24);
+        CHECK(reduction.is_fully_reduced);
+    }
+    {
+        const LineConstraint constraint(Line::COL, { 6, 4, 5, 8, 1, 1, 1, 4, 1, 2 });
+        const auto known_tiles    = build_line_from("...??####?#?##?????#????#######?#.#.?????##???????", Line::COL, 35);
+        const auto expected_delta = build_line_from("?????????????????##???.#???????.??????????????????", Line::COL, 35);
+        const auto reduction = full_reduction(constraint, known_tiles);
+        CHECK(reduction.reduced_line - known_tiles == expected_delta);
+        CHECK(reduction.nb_alternatives == 100);
+        CHECK(reduction.is_fully_reduced);
+    }
+}
+
 
 } // namespace picross

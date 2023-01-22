@@ -29,9 +29,9 @@ public:
     //  - If is_fully_reduced == false, the value of nb_alternatives is an estimate (most likely, it is overestimated)
     struct Reduction
     {
-        Line reduced_line;
-        NbAlt nb_alternatives;
-        bool is_fully_reduced;
+        Line reduced_line = Line(Line::ROW, 0, 0);
+        NbAlt nb_alternatives = 0;
+        bool is_fully_reduced = false;
     };
     Reduction full_reduction();
     Reduction partial_reduction(unsigned int nb_constraints);
