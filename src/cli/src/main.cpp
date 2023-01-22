@@ -11,6 +11,7 @@
 #include <picross/picross.h>
 #include <utils/console_observer.h>
 #include <utils/duration_meas.h>
+#include <utils/input_grid_utils.h>
 #include <utils/picross_file_io.h>
 #include <utils/strings.h>
 #include <utils/timeout.h>
@@ -211,6 +212,11 @@ int main(int argc, char *argv[])
 
                 if (input_ok)
                 {
+                    if (args["verbose"])
+                    {
+                        stream_input_grid_constraints(std::cout, input_grid);
+                    }
+
                     /* Set observer */
                     const auto width = input_grid.width();
                     const auto height = input_grid.height();
