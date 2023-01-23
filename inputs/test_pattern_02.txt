@@ -1,4 +1,4 @@
-# Same asterisk grid but using [ 0 ] to represent a blank line
+# 9x9 grid solvable in one pass thanks to trivial rows and columns
 GRID Asterisk
 ROWS
 [ 4 4 ]

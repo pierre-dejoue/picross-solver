@@ -129,7 +129,13 @@ Output:
 ```
 ## Test Applications
 
-A CLI and a GUI applications built on top of the solver library
+A CLI and a GUI applications built on top of the solver library.
+
+The applications are able to read puzzle files in the formats listed above for the library, and also raw images in the following formats:
+
+* Bitmap: [PBM files](https://fr.wikipedia.org/wiki/Portable_pixmap)
+* Raw text with the '.' and '#' characters: [Example](./inputs/raw/note.txt)
+* Raw text with the '0' and '1' characters: [Example](./inputs/raw/rand11)
 
 ### Dependencies
 

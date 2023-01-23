@@ -8,7 +8,7 @@ invalid_input.txt,Impossible,3x3,ZERO,,,"No solution"
 invalid_input.txt,Zero,3x3,ZERO,,,"No solution"
 example_input.txt,Fish,22x20,OK,LINE,
 example_input.txt,Two Notes,10x10,MULT,,,"The solution is not unique"
-test_pattern_01.txt,Asterisk,9x9,OK,LINE,
+test_pattern_01.txt,Note,6x6,OK,LINE,
 test_pattern_02.txt,Asterisk,9x9,OK,LINE,
 test_pattern_03.txt,Asterisk,9x9,OK,LINE,
 test_pattern_04.txt,Katakana,13x13,OK,LINE,

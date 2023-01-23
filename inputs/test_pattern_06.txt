@@ -1,4 +1,4 @@
-# 10x10 grid based on picross DS level 0-D
+# 10x10 grid based on Picross DS level 0-D
 # This grid has two solutions
 GRID Two Notes
 ROWS
