@@ -32,7 +32,7 @@ With [CMake](https://cmake.org/download/). For example on Windows:
 ```
 mkdir ./build
 cd build
-cmake -G "Visual Studio 15 2017 Win64" ..
+cmake -G "Visual Studio 15 2017" ..
 cmake --build . --config Release
 ```
 
@@ -46,7 +46,7 @@ Dependencies:
 Build and run unit tests:
 
 ```
-cmake -G "Visual Studio 15 2017 Win64" -DPICROSS_BUILD_TESTS=ON ..
+cmake -G "Visual Studio 15 2017" -DPICROSS_BUILD_TESTS=ON ..
 cmake --build . --target picross_run_utests --config Debug
 ```
 
@@ -161,7 +161,7 @@ On Windows:
 ```
 mkdir ./build
 cd build
-cmake -G "Visual Studio 15 2017 Win64" -DPICROSS_BUILD_APP=ON -DPICROSS_BUILD_CLI=ON ..
+cmake -G "Visual Studio 15 2017" -DPICROSS_BUILD_APP=ON -DPICROSS_BUILD_CLI=ON ..
 cmake --build . --config Release
 ```
 
