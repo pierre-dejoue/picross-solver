@@ -114,9 +114,8 @@ Line operator-(const LineSpan& lhs, const LineSpan& rhs)
     assert(lhs.type() == rhs.type());
     assert(lhs.index() == rhs.index());
     assert(lhs.size() == rhs.size());
-    std::vector<Tile> delta_tiles;
-    delta_tiles.resize(lhs.size(), Tile::UNKNOWN);
-    std::transform(lhs.begin(), lhs.end(), rhs.begin(), std::begin(delta_tiles), Tiles::delta);
+    Line::Container delta_tiles(lhs.size(), Tile::UNKNOWN);
+    std::transform(lhs.begin(), lhs.end(), rhs.begin(), delta_tiles.begin(), Tiles::delta);
     return Line(lhs.type(), lhs.index(), std::move(delta_tiles));
 }
 
@@ -128,12 +127,12 @@ Line operator-(const LineSpan& lhs, const LineSpan& rhs)
  *           rhs:    ??....######
  *        reduce:    ??..??####??
  */
-void line_reduce(Line& lhs, const LineSpan& rhs)
+void line_reduce(LineSpanW& lhs, const LineSpan& rhs)
 {
     assert(lhs.type() == rhs.type());
     assert(lhs.index() == rhs.index());
     assert(lhs.size() == rhs.size());
-    std::transform(lhs.tiles().begin(), lhs.tiles().end(), rhs.begin(), &lhs[0], Tiles::reduce);
+    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), Tiles::reduce);
 }
 
 
@@ -160,7 +159,8 @@ bool operator==(const Line& lhs, const Line& rhs)
 {
     return lhs.type() == rhs.type()
         && lhs.index() == rhs.index()
-        && lhs.tiles() == rhs.tiles();
+        && lhs.size() == rhs.size()
+        && std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
 
@@ -213,21 +213,27 @@ InputGrid::Constraint get_constraint_from(const Line& line)
     return get_constraint_from(LineSpan(line));
 }
 
+void copy_line_span(LineSpanW& target, const LineSpan& source)
+{
+    assert(target.type() == source.type());
+    assert(target.index() == source.index());
+    assert(target.size() == source.size());
+    const int sz = static_cast<int>(source.size());
+    for (int idx = 0; idx < sz; idx++)
+        target[idx] = source[idx];
+}
+
+void copy_line_span(Line& target, const LineSpan& source)
+{
+    LineSpanW target_w(target);
+    copy_line_span(target_w, source);
+}
+
 Line line_from_line_span(const LineSpan& line_span)
 {
     Line line(line_span.type(), line_span.index(), line_span.size());
-    copy_line_from_line_span(line, line_span);
+    copy_line_span(line, line_span);
     return line;
-}
-
-void copy_line_from_line_span(Line& line, const LineSpan& line_span)
-{
-    assert(line.type() == line_span.type());
-    assert(line.index() == line_span.index());
-    assert(line.size() == line_span.size());
-    const std::size_t sz = line_span.size();
-    for (std::size_t idx = 0u; idx < sz; idx++)
-        line[idx] = line_span[idx];
 }
 
 } // namespace picross

@@ -68,10 +68,18 @@ public:
     Type type() const { return m_type; }
     Index index() const { return m_index; }
     std::size_t size() const { return m_tiles.size(); }
-    const Container& tiles() const { return m_tiles; }
+    const Tile* tiles() const { return m_tiles.data(); }
+    const Tile& operator[](std::size_t idx) const { return m_tiles[idx]; }
+    const Tile& at(std::size_t idx) const { return m_tiles.at(idx); }
+    const Tile* begin() const { return m_tiles.data(); }
+    const Tile* end() const { return m_tiles.data() + m_tiles.size(); }
+    bool is_completed() const;
+
+    Tile* tiles() { return m_tiles.data(); }
     Tile& operator[](std::size_t idx) { return m_tiles[idx]; }
     Tile& at(std::size_t idx) { return m_tiles.at(idx); }
-    bool is_completed() const;
+    Tile* begin() { return m_tiles.data(); }
+    Tile* end() { return m_tiles.data() + m_tiles.size(); }
 private:
     const Type      m_type;
     const Index     m_index;

@@ -181,9 +181,9 @@ std::vector<Line> LineConstraint::build_all_possible_lines(const LineSpan& known
                 std::vector<Line> recursive_list = recursive_constraint.build_all_possible_lines(end_known_tiles);
 
                 // Finally, construct the return_list based on the contents of the recursive_list.
-                for (const Line& line : recursive_list)
+                for (const Line& partial_line : recursive_list)
                 {
-                    std::copy(line.tiles().cbegin(), line.tiles().cend(), &new_line[line_idx]);
+                    std::copy(partial_line.begin(), partial_line.end(), &new_line[line_idx]);
                     result.emplace_back(new_line);
                 }
             }

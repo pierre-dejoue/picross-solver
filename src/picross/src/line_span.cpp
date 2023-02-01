@@ -28,6 +28,11 @@ namespace Tiles
 } // namespace Tiles
 } // namespace
 
+LineSpan::LineSpan(const LineSpanW& line_span)
+    : LineSpan(line_span.type(), line_span.index(), line_span.size(), line_span.begin())
+{
+}
+
 bool LineSpan::is_completed() const
 {
     return std::none_of(begin(), end(), [](const Tile t) { return t == Tile::UNKNOWN; });
@@ -48,7 +53,7 @@ bool LineSpan::compatible(const LineSpan& other) const
 
 std::ostream& operator<<(std::ostream& ostream, const LineSpan& line)
 {
-    for (unsigned int idx = 0u; idx < line.size(); idx++)
+    for (int idx = 0u; idx < static_cast<int>(line.size()); idx++)
         ostream << Tiles::str(line[idx]);
     return ostream;
 }

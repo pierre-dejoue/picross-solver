@@ -350,7 +350,7 @@ bool WorkGrid<SolverPolicy>::update_line(const LineSpan& line, unsigned int nb_a
     assert(line.size() == static_cast<unsigned int>(line.type() == Line::ROW ? width() : height()));
 
     bool line_changed = false;
-    const auto set_tile_func = [this, &line_changed](Line::Type type, unsigned int idx) {
+    const auto set_tile_func = [this, &line_changed](Line::Type type, Line::Index idx) {
         m_line_has_updates[type][idx] = true;
         // mark the impacted line or column as "to be reduced"
         m_line_is_fully_reduced[type][idx] = false;
@@ -363,8 +363,8 @@ bool WorkGrid<SolverPolicy>::update_line(const LineSpan& line, unsigned int nb_a
     {
         for (Line::Index tile_idx = 0u; tile_idx < line_sz; tile_idx++)
         {
-            const bool tile_changed = update(tile_idx, line_index, line[tile_idx]);
-            line_is_complete &= (grid_line[tile_idx] != Tile::UNKNOWN);
+            const bool tile_changed = update(tile_idx, line_index, line[static_cast<int>(tile_idx)]);
+            line_is_complete &= (grid_line[static_cast<int>(tile_idx)] != Tile::UNKNOWN);
             if (tile_changed)
                 set_tile_func(Line::COL, tile_idx);
         }
@@ -374,8 +374,8 @@ bool WorkGrid<SolverPolicy>::update_line(const LineSpan& line, unsigned int nb_a
         assert(line_type == Line::COL);
         for (Line::Index tile_idx = 0u; tile_idx < line_sz; tile_idx++)
         {
-            const bool tile_changed = update(line_index, tile_idx, line[tile_idx]);
-            line_is_complete &= (grid_line[tile_idx] != Tile::UNKNOWN);
+            const bool tile_changed = update(line_index, tile_idx, line[static_cast<int>(tile_idx)]);
+            line_is_complete &= (grid_line[static_cast<int>(tile_idx)] != Tile::UNKNOWN);
             if (tile_changed)
                 set_tile_func(Line::ROW, tile_idx);
         }

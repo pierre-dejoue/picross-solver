@@ -87,7 +87,7 @@ Tile Grid::get(Line::Index x, Line::Index y) const
 {
     assert(x < m_width);
     assert(y < m_height);
-    return get_line(Line::COL, x)[y];
+    return get_line(Line::COL, x)[static_cast<int>(y)];
 }
 
 bool Grid::set(Line::Index x, Line::Index y, Tile val)

@@ -39,10 +39,11 @@ struct LineRange
  */
 Line operator+(const LineSpan& lhs, const LineSpan& rhs);
 Line operator-(const LineSpan& lhs, const LineSpan& rhs);
-void line_reduce(Line& lhs, const LineSpan& rhs);
+void line_reduce(LineSpanW& lhs, const LineSpan& rhs);
 bool is_line_uniform(const LineSpan& line, Tile color);
+void copy_line_span(LineSpanW& target, const LineSpan& source);
+void copy_line_span(Line& target, const LineSpan& source);
 Line line_from_line_span(const LineSpan& line_span);
-void copy_line_from_line_span(Line& line, const LineSpan& line_span);
 InputGrid::Constraint get_constraint_from(const LineSpan& line_span);
 
 } // namespace picross
