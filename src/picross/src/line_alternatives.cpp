@@ -270,7 +270,6 @@ bool LineAlternatives::Impl::update_range()
 
         if (tile == Tile::EMPTY)
         {
-            range.m_line_begin = line_idx + 1;
             if (expect_termination_zero)
             {
                 expect_termination_zero = false;
@@ -280,12 +279,16 @@ bool LineAlternatives::Impl::update_range()
                 range.m_completed_segments++;
                 range.m_constraint_begin++;
             }
+            range.m_line_begin = line_idx + 1;
         }
         else
         {
             assert(tile == Tile::FILLED);
             if (range.m_completed_segments == m_segments.size() - 1)
+            {
+                // Never fill the last segment (it may be non-zero terminated)
                 break;
+            }
             expect_termination_zero = true;
             count_filled++;
         }
