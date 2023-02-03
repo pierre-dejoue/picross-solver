@@ -64,8 +64,9 @@ PicrossFileFormat picross_file_format_from_filepath(std::string_view filepath)
     }
 }
 
-std::vector<InputGrid> parse_picross_file(std::string_view filepath, PicrossFileFormat format, const ErrorHandler& error_handler) noexcept
+std::vector<InputGrid> parse_picross_file(std::string_view filepath, PicrossFileFormat format, std::optional<OutputGrid>& goal, const ErrorHandler& error_handler) noexcept
 {
+    assert(!goal.has_value());
     try
     {
         switch(format)
@@ -81,14 +82,14 @@ std::vector<InputGrid> parse_picross_file(std::string_view filepath, PicrossFile
 
         case PicrossFileFormat::PBM:
         {
-            const auto output_grid = import_bitmap_pbm(std::string(filepath), error_handler);
-            return { picross::get_input_grid_from(output_grid) };
+            goal = import_bitmap_pbm(std::string(filepath), error_handler);
+            return { picross::get_input_grid_from(*goal) };
         }
 
         case PicrossFileFormat::OutputGrid:
         {
-            const auto output_grid = picross::io::parse_output_grid_from_file(filepath, error_handler);
-            return { picross::get_input_grid_from(output_grid) };
+            goal = picross::io::parse_output_grid_from_file(filepath, error_handler);
+            return { picross::get_input_grid_from(*goal) };
         }
 
         default:

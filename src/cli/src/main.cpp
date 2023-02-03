@@ -184,7 +184,8 @@ int main(int argc, char *argv[])
                 return picross::io::picross_file_format_from_filepath(filepath);
         }();
 
-        const auto grids_to_solve = picross::io::parse_picross_file(filepath, format, (validation_mode ? err_handler_validation : err_handler_classic));;
+        std::optional<picross::OutputGrid> goal;
+        const auto grids_to_solve = picross::io::parse_picross_file(filepath, format, goal, (validation_mode ? err_handler_validation : err_handler_classic));;
 
         if (validation_mode && !file_data.misc.empty()) { std::cout << file_data << std::endl; }
 
@@ -221,6 +222,10 @@ int main(int argc, char *argv[])
                     const auto width = input_grid.width();
                     const auto height = input_grid.height();
                     ConsoleObserver obs(width, height, std::cout);
+                    if (goal.has_value())
+                    {
+                        obs.verify_against_goal(*goal);
+                    }
                     if (!validation_mode)
                     {
                         if (args["verbose"])

@@ -6,55 +6,77 @@
 
 ConsoleObserver::ConsoleObserver(size_t width, size_t height, std::ostream& ostream)
     : GridObserver(width, height)
-    , ostream(ostream)
-    , nb_solved_grids(0u)
+    , m_ostream(ostream)
+    , m_goal()
+    , m_nb_solved_grids(0u)
 {
+}
+
+void ConsoleObserver::verify_against_goal(const picross::OutputGrid& goal)
+{
+    m_goal = goal;
 }
 
 void ConsoleObserver::observer_callback(picross::Solver::Event event, const picross::Line* line, unsigned int depth, unsigned int misc, const ObserverGrid& grid)
 {
-    ostream << event;
+    m_ostream << event;
     switch (event)
     {
     case picross::Solver::Event::BRANCHING:
         if (line)
         {
-            ostream << " NODE";
-            ostream << " known: " << str_line_full(*line);
-            ostream << " depth: " << depth;
-            ostream << " nb_alt: " << misc;
+            m_ostream << " NODE";
+            m_ostream << " known: " << str_line_full(*line);
+            m_ostream << " depth: " << depth;
+            m_ostream << " nb_alt: " << misc;
         }
         else
         {
-            ostream << " EDGE";
-            ostream << " depth: " << depth;
+            m_ostream << " EDGE";
+            m_ostream << " depth: " << depth;
         }
         break;
 
     case picross::Solver::Event::KNOWN_LINE:
-        ostream << " known: " << str_line_full(*line)
-                << " depth: " << depth
-                << " nb_alt: " << misc;
+        assert(line);
+        m_ostream << " known: " << str_line_full(*line)
+                  << " depth: " << depth
+                  << " nb_alt: " << misc;
         break;
 
     case picross::Solver::Event::DELTA_LINE:
-        ostream << " delta: " << str_line_full(*line)
-                << " depth: " << depth
-                << " nb_alt: " << misc;
+        assert(line);
+        m_ostream << " delta: " << str_line_full(*line)
+                  << " depth: " << depth
+                  << " nb_alt: " << misc;
         break;
 
     case picross::Solver::Event::SOLVED_GRID:
-        ostream << " nb " << ++nb_solved_grids << std::endl;
-        ostream << grid;
+        m_ostream << " nb " << ++m_nb_solved_grids << std::endl;
+        m_ostream << grid;
         break;
 
     case picross::Solver::Event::INTERNAL_STATE:
-        ostream << " state: " << misc
-                << " depth: " << depth;
+        m_ostream << " state: " << misc
+                  << " depth: " << depth;
         break;
 
     default:
         assert(0);  // Unknown Solver::Event
     }
-    ostream << std::endl;
+    m_ostream << std::endl;
+
+    // Detect discrepancy with set goal
+    if (m_goal.has_value() && depth == 0 && event == picross::Solver::Event::DELTA_LINE)
+    {
+        assert(line);
+        picross::LineId line_id(*line);
+        const picross::Line reference_line = m_goal->get_line(line_id);
+        if (!picross::are_compatible(grid.get_line(line_id), reference_line))
+        {
+            m_ostream << "MISMATCH";
+            m_ostream << "    goal: " << str_line_full(reference_line);
+            m_ostream << std::endl;
+        }
+    }
 }

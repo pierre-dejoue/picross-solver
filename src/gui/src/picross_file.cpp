@@ -27,7 +27,8 @@ void PicrossFile::visit_windows(bool& canBeErased, Settings& settings)
         {
             this->get_err_window().print(msg);
         };
-        std::vector<picross::InputGrid> grids_to_solve = picross::io::parse_picross_file(file_path, file_format, err_handler);
+        std::optional<picross::OutputGrid> goal;
+        std::vector<picross::InputGrid> grids_to_solve = picross::io::parse_picross_file(file_path, file_format, goal, err_handler);
         windows.reserve(grids_to_solve.size());
         for (auto& grid : grids_to_solve)
         {
