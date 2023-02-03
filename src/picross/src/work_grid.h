@@ -49,6 +49,7 @@ private:
     {
         INITIAL_PASS,
         PARTIAL_REDUCTION,
+        LINEAR_REDUCTION,
         FULL_REDUCTION,
         PROBING,
         BRANCHING
@@ -84,6 +85,7 @@ private:
     void sort_by_nb_alternatives();
     PassStatus single_line_initial_pass(Line::Type type, unsigned int index);
     PassStatus single_line_partial_reduction(Line::Type type, unsigned int index);
+    PassStatus single_line_linear_reduction(Line::Type type, unsigned int index);
     PassStatus single_line_full_reduction(Line::Type type, unsigned int index);
     template <State S>
     PassStatus full_grid_pass();

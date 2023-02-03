@@ -30,6 +30,8 @@ void merge_branching_grid_stats(GridStats& stats, const GridStats& branching_sta
     stats.max_initial_nb_alternatives = std::max(stats.max_initial_nb_alternatives, branching_stats.max_initial_nb_alternatives);
     stats.max_nb_alternatives_partial = std::max(stats.max_nb_alternatives_partial, branching_stats.max_nb_alternatives_partial);
     stats.max_nb_alternatives_partial_w_change = std::max(stats.max_nb_alternatives_partial_w_change, branching_stats.max_nb_alternatives_partial_w_change);
+    stats.max_nb_alternatives_linear = std::max(stats.max_nb_alternatives_linear, branching_stats.max_nb_alternatives_linear);
+    stats.max_nb_alternatives_linear_w_change = std::max(stats.max_nb_alternatives_linear_w_change, branching_stats.max_nb_alternatives_linear_w_change);
     stats.max_nb_alternatives_full = std::max(stats.max_nb_alternatives_full, branching_stats.max_nb_alternatives_full);
     stats.max_nb_alternatives_full_w_change = std::max(stats.max_nb_alternatives_full_w_change, branching_stats.max_nb_alternatives_full_w_change);
     stats.nb_reduce_list_of_lines_calls += branching_stats.nb_reduce_list_of_lines_calls;
@@ -38,6 +40,8 @@ void merge_branching_grid_stats(GridStats& stats, const GridStats& branching_sta
     stats.nb_full_grid_pass += branching_stats.nb_full_grid_pass;
     stats.nb_single_line_partial_reduction += branching_stats.nb_single_line_partial_reduction;
     stats.nb_single_line_partial_reduction_w_change += branching_stats.nb_single_line_partial_reduction_w_change;
+    stats.nb_single_line_linear_reduction += branching_stats.nb_single_line_linear_reduction;
+    stats.nb_single_line_linear_reduction_w_change += branching_stats.nb_single_line_linear_reduction_w_change;
     stats.nb_single_line_full_reduction += branching_stats.nb_single_line_full_reduction;
     stats.nb_single_line_full_reduction_w_change += branching_stats.nb_single_line_full_reduction_w_change;
 }
@@ -65,9 +69,11 @@ std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
     }
     ostream << std::endl;
     ostream << "  Max number of alternatives after a partial line reduction (change/all): " << stats.max_nb_alternatives_partial_w_change << "/" << stats.max_nb_alternatives_partial << std::endl;
+    ostream << "  Max number of alternatives after a  linear line reduction (change/all): " << stats.max_nb_alternatives_linear_w_change << "/" << stats.max_nb_alternatives_linear << std::endl;
     ostream << "  Max number of alternatives after a    full line reduction (change/all): " << stats.max_nb_alternatives_full_w_change << "/" << stats.max_nb_alternatives_full << std::endl;
     ostream << "  Number of full grid pass: " << stats.nb_full_grid_pass << std::endl;
     ostream << "  Number of single line partial reduction (change/all): " << stats.nb_single_line_partial_reduction_w_change << "/" << stats.nb_single_line_partial_reduction << std::endl;
+    ostream << "  Number of single line  linear reduction (change/all): " << stats.nb_single_line_linear_reduction_w_change << "/" << stats.nb_single_line_linear_reduction << std::endl;
     ostream << "  Number of single line    full reduction (change/all): " << stats.nb_single_line_full_reduction_w_change << "/" << stats.nb_single_line_full_reduction << std::endl;
 
     return ostream;

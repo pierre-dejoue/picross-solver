@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <iterator>
 #include <limits>
 #include <type_traits>
 #include <utility>
@@ -108,12 +109,18 @@ namespace
     class LineExt
     {
     public:
-        LineExt(const LineSpan& line_span)
-            : m_tiles(line_span.size() + 2, Tile::UNKNOWN)
+        LineExt(const LineSpan& line_span, Tile init_tile)
+            : m_tiles(line_span.size() + 2, init_tile)
             , m_line_span(line_span.type(), line_span.index(), line_span.size(), m_tiles.data() + 1u)
         {
             m_tiles.front() = Tile::EMPTY;
             m_tiles.back()  = Tile::EMPTY;
+        }
+
+        LineExt(const LineSpan& line_span)
+            : LineExt(line_span, Tile::UNKNOWN)
+        {
+            copy_line_span(m_line_span, line_span);
         }
         const LineSpanW& line_span() const { return m_line_span; }
         LineSpanW& line_span() { return m_line_span; }
@@ -121,7 +128,151 @@ namespace
         Line::Container m_tiles;
         LineSpanW       m_line_span;
     };
+} // namespace
+
+
+std::ostream& operator<<(std::ostream& out, const SegmentRange& segment_range)
+{
+    out << "SegmentRange{ left=" << segment_range.m_leftmost_index << ", right=" << segment_range.m_rightmost_index << " }";
+    return out;
 }
+
+std::ostream& operator<<(std::ostream& out, const LineHole& line_hole)
+{
+    out << "LineHole{ idx=" << line_hole.m_index << ", len=" << line_hole.m_length << " }";
+    return out;
+}
+
+std::vector<LineHole> line_holes(const LineSpan& known_tiles, int line_begin, int line_end)
+{
+    if (line_end == -1)
+    {
+        line_end = static_cast<int>(known_tiles.size());
+    }
+    assert(line_begin >= 0);
+    assert(line_begin <= line_end);
+    assert(line_end <= static_cast<int>(known_tiles.size()));
+    std::vector<LineHole> result;
+    bool new_hole = true;
+    for (int index = line_begin; index < line_end; index++)
+    {
+        const auto tile = known_tiles[index];
+        if (tile == Tile::EMPTY)
+        {
+            new_hole = true;
+        }
+        else
+        {
+            if (new_hole)
+            {
+                result.emplace_back(LineHole{ index, 1u });
+                new_hole = false;
+            }
+            else
+            {
+                assert(!result.empty());
+                result.back().m_length++;
+            }
+        }
+    }
+    assert(std::all_of(result.cbegin(), result.cend(), [](const LineHole& hole) { return hole.m_length > 0u; }));
+
+    return result;
+}
+
+
+namespace
+{
+    std::pair<bool, std::vector<SegmentRange>> local_find_segments_range(const LineSpan& known_tiles, const BidirectionalRange<false>& range)
+    {
+        const auto nb_segments = static_cast<std::size_t>(std::distance(range.m_constraint_begin, range.m_constraint_end));
+        std::vector<SegmentRange> result(nb_segments, SegmentRange{0, 0});
+        bool success = false;
+
+        auto l_holes = line_holes(known_tiles, range.m_line_begin, range.m_line_end);
+        auto r_holes = l_holes;
+
+        // Identify the leftmost configuration of the segments
+        {
+            auto constraint_it = range.m_constraint_begin;
+            const auto constraint_end = range.m_constraint_end;
+            auto hole_it = l_holes.begin();
+            const auto hole_end = l_holes.end();
+            assert(hole_it == hole_end || hole_it->m_index >= range.m_line_begin);
+            auto result_seg_it = result.begin();
+            const auto result_seg_end = result.end();
+            while (constraint_it != constraint_end && hole_it != hole_end)
+            {
+                assert(result_seg_it != result_seg_end);
+                const auto seg_len = *constraint_it;
+                if (seg_len <= hole_it->m_length)
+                {
+                    // Found a fit for a segment!
+                    result_seg_it->m_leftmost_index = hole_it->m_index;
+                    result_seg_it++;
+                    constraint_it++;
+                    if (seg_len + 1u < hole_it->m_length)
+                    {
+                        hole_it->m_length -= seg_len + 1u;
+                        hole_it->m_index += static_cast<int>(seg_len + 1u);
+                    }
+                    else
+                    {
+                        hole_it++;
+                    }
+                }
+                else
+                {
+                    hole_it++;
+                }
+            }
+            success = (constraint_it == constraint_end);
+        }
+
+        // Identify the rightmost configuration of the segments
+        if (success)
+        {
+            auto constraint_it = std::make_reverse_iterator(range.m_constraint_end);
+            const auto constraint_end = std::make_reverse_iterator(range.m_constraint_begin);
+            auto hole_it = std::make_reverse_iterator(r_holes.end());
+            const auto hole_end = std::make_reverse_iterator(r_holes.begin());
+            assert(hole_it == hole_end || (hole_it->m_index + static_cast<int>(hole_it->m_length)) <= range.m_line_end);
+            auto result_seg_it = std::make_reverse_iterator(result.end());
+            const auto result_seg_end = std::make_reverse_iterator(result.begin());
+            while (constraint_it != constraint_end && hole_it != hole_end)
+            {
+                assert(result_seg_it != result_seg_end);
+                const auto seg_len = *constraint_it;
+                if (seg_len <= hole_it->m_length)
+                {
+                    // Found a fit for a segment!
+                    result_seg_it->m_rightmost_index = hole_it->m_index + static_cast<int>(hole_it->m_length - seg_len);
+                    result_seg_it++;
+                    constraint_it++;
+                    if (seg_len + 1 < hole_it->m_length)
+                    {
+                        hole_it->m_length -= seg_len + 1u;
+                        // hole_it->m_index stays identical
+                    }
+                    else
+                    {
+                        hole_it++;
+                    }
+                }
+                else
+                {
+                    hole_it++;
+                }
+            }
+            // If a leftmost configuration of the segments was found, then a rightmost configuration exists
+            assert(constraint_it == constraint_end);
+        }
+
+        assert(!success || std::all_of(result.cbegin(), result.cend(), [](const auto& r) { return r.m_leftmost_index <= r.m_rightmost_index; }));
+        return std::make_pair(success, result);
+    }
+} // namespace
+
 
 struct LineAlternatives::Impl
 {
@@ -347,8 +498,8 @@ std::pair<Line, LineAlternatives::NbAlt> LineAlternatives::Impl::reduce_alternat
     int line_begin,
     int line_end)
 {
-    LineExt alternative_ext(m_known_tiles);
-    LineExt reduced_line_ext(m_known_tiles);
+    LineExt alternative_ext(m_known_tiles, Tile::UNKNOWN);
+    LineExt reduced_line_ext(m_known_tiles, Tile::UNKNOWN);
     ReducedLine reduced_line(reduced_line_ext.line_span());
     LineSpanW& alternative = alternative_ext.line_span();
     auto nb_alternatives = reduce_alternatives_recursive<Reversed>(reduced_line, alternative, remaining_zeros, constraint_it, constraint_partial_end, constraint_end, line_begin, line_end);
@@ -496,6 +647,91 @@ LineAlternatives::Reduction LineAlternatives::partial_reduction(unsigned int nb_
         return p_impl->reduce_alternatives(nb_constraints);
     else
         return from_line(p_impl->m_known_tiles, 0, true);
+}
+
+LineAlternatives::Reduction LineAlternatives::linear_reduction()
+{
+    bool valid = p_impl->update();
+    const auto& line_range = p_impl->m_bidirectional_range;
+    std::vector<SegmentRange> ranges;
+    const LineSpan& known_tiles = p_impl->m_known_tiles;
+    if (valid)
+    {
+        auto segments_range = local_find_segments_range(known_tiles, line_range);
+        valid = segments_range.first;
+        ranges = std::move(segments_range.second);
+    }
+    if (!valid)
+        return from_line(p_impl->m_known_tiles, 0, false);
+
+    Reduction result = from_line(known_tiles, 1, false);
+
+    LineExt empty_tiles_mask_extended_line(known_tiles, Tile::UNKNOWN);
+    LineSpanW empty_tiles_mask = empty_tiles_mask_extended_line.line_span();
+    for (int idx = line_range.m_line_begin; idx < line_range.m_line_end; idx++)
+        empty_tiles_mask[idx] = Tile::EMPTY;                                    // empty_tiles_mask:  '0??000000?????0'
+
+    LineExt reduction_mask_extended_line(known_tiles, Tile::UNKNOWN);
+    LineSpanW reduction_mask = reduction_mask_extended_line.line_span();        // reduction_mask:    '0?????????????0'
+
+    LineExt known_tiles_extended_line(known_tiles);
+    const LineSpan known_tiles_ext(known_tiles_extended_line.line_span());      // known_tiles_ext:   '0<known_tiles>0'
+
+    const auto nb_segments = ranges.size();
+    auto constraint_it = p_impl->m_bidirectional_range.m_constraint_begin;
+    const auto constraint_end = p_impl->m_bidirectional_range.m_constraint_end;
+    for (std::size_t k = 0; k < nb_segments; k++)
+    {
+        NbAlt nb_alt = 0u;
+        int min_index = static_cast<int>(known_tiles.size() + 1u);
+        int max_index = -1;
+        assert(constraint_it != constraint_end);
+        const int seg_length = static_cast<int>(*constraint_it);
+        for (int seg_index = ranges[k].m_leftmost_index; seg_index <= ranges[k].m_rightmost_index; seg_index++)
+        {
+            if (known_tiles_ext[seg_index - 1] == Tile::FILLED || known_tiles_ext[seg_index + seg_length] == Tile::FILLED)
+                continue;  // Not a match
+            bool match = true;
+            for (int idx = seg_index; idx < seg_index + seg_length; idx++)
+                if (known_tiles_ext[idx] == Tile::EMPTY) { match = false; break; }
+            if (!match)
+                continue;   // Not a match
+            // Match!
+            nb_alt++;
+            min_index = std::min(min_index, seg_index);
+            max_index = std::max(max_index, seg_index);
+            for (int idx = seg_index; idx < seg_index + seg_length; idx++)
+                empty_tiles_mask[idx] = Tile::UNKNOWN;
+        }
+        if (nb_alt == 1)
+        {
+            assert(min_index == max_index);
+            reduction_mask[min_index - 1] = Tile::EMPTY;
+            reduction_mask[min_index + seg_length] = Tile::EMPTY;
+        }
+        if (nb_alt > 0)
+        {
+            for (int idx = max_index; idx < min_index + seg_length; idx++)
+                reduction_mask[idx] = Tile::FILLED;
+        }
+        BinomialCoefficients::mult(result.nb_alternatives, nb_alt);
+        if (result.nb_alternatives == 0)
+            break;
+        constraint_it++;
+    }
+    result.reduced_line = result.reduced_line + LineSpan(reduction_mask);
+    if (are_compatible(known_tiles, LineSpan(empty_tiles_mask)))
+        result.reduced_line = result.reduced_line + LineSpan(empty_tiles_mask);
+    else
+        result.nb_alternatives = 0;
+    result.is_fully_reduced = (result.nb_alternatives == 1);
+    return result;
+}
+
+std::pair<bool, std::vector<SegmentRange>> LineAlternatives::find_segments_range() const
+{
+    BidirectionalRange<false> range(p_impl->m_segments, p_impl->m_line_length);
+    return local_find_segments_range(p_impl->m_known_tiles, range);
 }
 
 } // namespace picross

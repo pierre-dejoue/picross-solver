@@ -11,8 +11,8 @@ struct SolverPolicyBase
     bool m_branching_allowed = false;
     bool m_limit_on_max_nb_alternatives = false;
     unsigned int m_max_nb_alternatives_for_probing = 1 << 12;
-    unsigned int m_max_nb_alternatives_while_probing = 1 << 20;
-    unsigned int m_max_nb_alternatives = 1 << 30;
+    unsigned int m_max_nb_alternatives_while_probing = 1 << 16;
+    unsigned int m_max_nb_alternatives = 1 << 24;
 };
 
 struct SolverPolicy_RampUpMaxNbAlternatives : public SolverPolicyBase

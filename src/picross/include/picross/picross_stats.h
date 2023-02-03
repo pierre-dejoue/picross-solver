@@ -32,6 +32,8 @@ struct GridStats
     unsigned int max_initial_nb_alternatives = 0u;
     unsigned int max_nb_alternatives_partial = 0u;
     unsigned int max_nb_alternatives_partial_w_change = 0u;
+    unsigned int max_nb_alternatives_linear = 0u;
+    unsigned int max_nb_alternatives_linear_w_change = 0u;
     unsigned int max_nb_alternatives_full = 0u;
     unsigned int max_nb_alternatives_full_w_change = 0u;
     unsigned int nb_reduce_list_of_lines_calls = 0u;
@@ -40,6 +42,8 @@ struct GridStats
     unsigned int nb_full_grid_pass = 0u;
     unsigned int nb_single_line_partial_reduction = 0u;
     unsigned int nb_single_line_partial_reduction_w_change = 0u;
+    unsigned int nb_single_line_linear_reduction = 0u;
+    unsigned int nb_single_line_linear_reduction_w_change = 0u;
     unsigned int nb_single_line_full_reduction = 0u;
     unsigned int nb_single_line_full_reduction_w_change = 0u;
     std::vector<unsigned int> max_nb_alternatives_by_branching_depth;   // vector with max_branching_depth elements

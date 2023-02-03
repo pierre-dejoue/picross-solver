@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cassert>
+#include <cstdint>
 #include <limits>
 #include <vector>
 
@@ -15,7 +16,7 @@ namespace picross
 {
 namespace BinomialCoefficients
 {
-using Rep = unsigned int;
+using Rep = std::uint32_t;
 
 /*
  * The max value returned for a number of alternatives (indicates overflow)
@@ -41,6 +42,18 @@ constexpr Rep& add(Rep& lhs, const Rep rhs) noexcept
         assert(sum < rhs);
         lhs = overflowValue();
     }
+    return lhs;
+}
+
+/*
+ * Safely multiply number of alternatives, taking overflows into account
+ */
+constexpr Rep& mult(Rep& lhs, const Rep rhs) noexcept
+{
+    using MultInt = std::uint64_t;
+    static_assert(std::numeric_limits<Rep>::digits * 2 <= std::numeric_limits<MultInt>::digits);
+    const auto result = static_cast<MultInt>(lhs) *  static_cast<MultInt>(rhs);
+    lhs = result >= static_cast<MultInt>(overflowValue()) ? overflowValue() : static_cast<Rep>(result);
     return lhs;
 }
 

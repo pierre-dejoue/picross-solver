@@ -9,6 +9,7 @@
 #include "line_constraint.h"
 #include "line_span.h"
 
+#include <algorithm>
 #include <utility>
 
 
@@ -32,6 +33,11 @@ namespace
     LineAlternatives::Reduction partial_reduction(const LineConstraint& constraint, const Line& known_tiles, unsigned int nb_constraints)
     {
         return LineAlternatives(constraint, known_tiles, get_binomial()).partial_reduction(nb_constraints);
+    }
+
+    LineAlternatives::Reduction linear_reduction(const LineConstraint& constraint, const Line& known_tiles)
+    {
+        return LineAlternatives(constraint, known_tiles, get_binomial()).linear_reduction();
     }
 }
 
@@ -436,26 +442,165 @@ TEST_CASE("centerpiece-webpbn-10810-row-9", "[line_alternatives]")
     }
 }
 
-TEST_CASE("examples_of_full_reductions", "[line_alternatives]")
+TEST_CASE("line_holes", "[line_alternatives]")
+{
+    const auto known_tiles = build_line_from("..????###?#.??##??.?..??######?##..#..????##.??##?", Line::ROW, LINE_INDEX);
+    CHECK(known_tiles.size() == 50);
+    CHECK(line_holes(known_tiles)         == std::vector<LineHole>{ { 2, 9 }, { 12, 6 }, { 19, 1 }, { 22, 11 }, { 35, 1 }, { 38, 6 }, { 45, 5 } });
+    CHECK(line_holes(known_tiles, 5)      == std::vector<LineHole>{ { 5, 6 }, { 12, 6 }, { 19, 1 }, { 22, 11 }, { 35, 1 }, { 38, 6 }, { 45, 5 } });
+    CHECK(line_holes(known_tiles, 12)     == std::vector<LineHole>{           { 12, 6 }, { 19, 1 }, { 22, 11 }, { 35, 1 }, { 38, 6 }, { 45, 5 } });
+    CHECK(line_holes(known_tiles, 12, 35) == std::vector<LineHole>{           { 12, 6 }, { 19, 1 }, { 22, 11 } });
+}
+
+TEST_CASE("find_segments_range", "[line_alternatives]")
+{
+    {
+        const LineConstraint constraint(Line::ROW, { 3, 4, 4 });
+        const auto known_tiles = build_line_from("..???.?????.??.?.????????", Line::ROW, LINE_INDEX);
+        CHECK(known_tiles.size() == 25);
+        const auto [success, ranges] = LineAlternatives(constraint, known_tiles, get_binomial()).find_segments_range();
+        CHECK(success);
+        CHECK(ranges == std::vector<SegmentRange>{ { 2, 2 }, { 6, 7 }, { 17, 21 } });
+    }
+    {
+        const LineConstraint constraint(Line::ROW, { 3, 4, 2 });
+        const auto known_tiles = build_line_from('?', constraint.min_line_size(), Line::ROW, LINE_INDEX);
+        const auto [success, ranges] = LineAlternatives(constraint, known_tiles, get_binomial()).find_segments_range();
+        CHECK(success);
+        CHECK(ranges.size() == 3);
+        CHECK(std::all_of(ranges.cbegin(), ranges.cend(), [](const auto& r) { return r.m_leftmost_index == r.m_rightmost_index; }));
+    }
+    {
+        const LineConstraint constraint(Line::ROW, { 3, 2, 3 });
+        const auto known_tiles = build_line_from("??????...??????", Line::ROW, LINE_INDEX);
+        CHECK(known_tiles.size() == 15);
+        const auto [success, ranges] = LineAlternatives(constraint, known_tiles, get_binomial()).find_segments_range();
+        CHECK(success);
+        CHECK(ranges == std::vector<SegmentRange>{ { 0, 3 }, { 4, 9 }, { 9, 12 } });
+    }
+}
+
+TEST_CASE("linear_reduction_basic_use_cases", "[line_alternatives]")
+{
+    const LineConstraint constraint(Line::ROW, { 2, 2, 2 });
+    {
+        const auto known_tiles = build_line_from('?', 8, Line::ROW, LINE_INDEX);
+        const auto reduction = linear_reduction(constraint, known_tiles);
+        CHECK(reduction.reduced_line == build_line_from("##.##.##", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 1);
+        CHECK(reduction.is_fully_reduced);
+    }
+    {
+        const auto known_tiles = build_line_from("??????#??", Line::ROW, LINE_INDEX);
+        CHECK(known_tiles.size() == 9);
+        const auto reduction = linear_reduction(constraint, known_tiles);
+        CHECK(known_tiles + reduction.reduced_line == build_line_from("?#.##.##.", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 2);
+        CHECK(reduction.is_fully_reduced == false);
+    }
+    {
+        const auto known_tiles = build_line_from("??????.??", Line::ROW, LINE_INDEX);
+        CHECK(known_tiles.size() == 9);
+        const auto reduction = linear_reduction(constraint, known_tiles);
+        CHECK(known_tiles + reduction.reduced_line == build_line_from("?#??#?.##", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 4);
+        CHECK(reduction.is_fully_reduced == false);
+    }
+    {
+        const auto known_tiles = build_line_from('?', 9, Line::ROW, LINE_INDEX);
+        const auto reduction = linear_reduction(constraint, known_tiles);
+        CHECK(reduction.reduced_line == build_line_from("?#??#??#?", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 8);
+        CHECK(reduction.is_fully_reduced == false);
+    }
+    {
+        const auto known_tiles = build_line_from("?????.?.?.?.?.?.??", Line::ROW, LINE_INDEX);
+        const auto reduction = linear_reduction(constraint, known_tiles);
+        CHECK(known_tiles + reduction.reduced_line == build_line_from("##.##...........##", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 1);
+        CHECK(reduction.is_fully_reduced);
+    }
+    {
+        const auto known_tiles = build_line_from("???????.?.?.?.?.?.????", Line::ROW, LINE_INDEX);
+        const auto reduction = linear_reduction(constraint, known_tiles);
+        CHECK(known_tiles + reduction.reduced_line == build_line_from("???????...........????", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 27);
+        CHECK(reduction.is_fully_reduced == false);
+    }
+}
+
+TEST_CASE("linear_reduction_with_a_long_segment_of_ones", "[line_alternatives]")
+{
+    const LineConstraint constraint(Line::ROW, { 6, 1 });
+    {
+        const auto known_tiles = build_line_from('?', 8, Line::ROW, LINE_INDEX);
+        const auto reduction = linear_reduction(constraint, known_tiles);
+        CHECK(reduction.reduced_line == build_line_from("######.#", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 1);
+        CHECK(reduction.is_fully_reduced);
+    }
+    {
+        const auto known_tiles = build_line_from("??????#??", Line::ROW, LINE_INDEX);
+        CHECK(known_tiles.size() == 9);
+        const auto reduction = linear_reduction(constraint, known_tiles);
+        CHECK(known_tiles + reduction.reduced_line == build_line_from(".######.#", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 1);
+        CHECK(reduction.is_fully_reduced);
+    }
+    {
+        const auto known_tiles = build_line_from('?', 10, Line::ROW, LINE_INDEX);
+        CHECK(known_tiles.size() == 10);
+        const auto reduction = linear_reduction(constraint, known_tiles);
+        CHECK(reduction.reduced_line == build_line_from("??####????", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 9);
+        CHECK(reduction.is_fully_reduced == false);
+    }
+    {
+        const auto known_tiles = build_line_from("??????#???", Line::ROW, LINE_INDEX);
+        CHECK(known_tiles.size() == 10);
+        const auto reduction = linear_reduction(constraint, known_tiles);
+        CHECK(known_tiles + reduction.reduced_line == build_line_from(".?#####???", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 4);
+        CHECK(reduction.is_fully_reduced == false);
+    }
+}
+
+TEST_CASE("examples_of_full_vs_linear_reductions", "[line_alternatives]")
 {
     // Examples from tiger.non
     {
         const LineConstraint constraint(Line::COL, { 7, 6, 9, 3, 3, 4, 4 });
         const auto known_tiles    = build_line_from("..????###?#???##???????######?###?#??????##???##??", Line::COL, 34);
         const auto expected_delta = build_line_from("?????#???????#?????.###??????.???.?##..???????????", Line::COL, 34);
-        const auto reduction = full_reduction(constraint, known_tiles);
-        CHECK(known_tiles + reduction.reduced_line == known_tiles + expected_delta);
-        CHECK(reduction.nb_alternatives == 24);
-        CHECK(reduction.is_fully_reduced);
+        {
+            const auto reduction = full_reduction(constraint, known_tiles);
+            CHECK(known_tiles + reduction.reduced_line == known_tiles + expected_delta);
+            CHECK(reduction.nb_alternatives == 24);
+            CHECK(reduction.is_fully_reduced);
+        }
+        {
+            const auto reduction = linear_reduction(constraint, known_tiles);
+            //CHECK(known_tiles + reduction.reduced_line == known_tiles + expected_delta);
+            CHECK(reduction.nb_alternatives == 960);
+            CHECK(reduction.is_fully_reduced == false);
+        }
     }
     {
         const LineConstraint constraint(Line::COL, { 6, 4, 5, 8, 1, 1, 1, 4, 1, 2 });
         const auto known_tiles    = build_line_from("...??####?#?##?????#????#######?#.#.?????##???????", Line::COL, 35);
         const auto expected_delta = build_line_from("?????????????????##???.#???????.??????????????????", Line::COL, 35);
-        const auto reduction = full_reduction(constraint, known_tiles);
-        CHECK(known_tiles + reduction.reduced_line == known_tiles + expected_delta);
-        CHECK(reduction.nb_alternatives == 100);
-        CHECK(reduction.is_fully_reduced);
+        {
+            const auto reduction = full_reduction(constraint, known_tiles);
+            CHECK(known_tiles + reduction.reduced_line == known_tiles + expected_delta);
+            CHECK(reduction.nb_alternatives == 100);
+            CHECK(reduction.is_fully_reduced);
+        }
+        {
+            const auto reduction = linear_reduction(constraint, known_tiles);
+            //CHECK(known_tiles + reduction.reduced_line == known_tiles + expected_delta);
+            CHECK(reduction.nb_alternatives == 38400);
+            CHECK(reduction.is_fully_reduced == false);
+        }
     }
 }
 
