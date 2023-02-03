@@ -88,7 +88,7 @@ private:
 
 bool operator==(const Line& lhs, const Line& rhs);
 bool operator!=(const Line& lhs, const Line& rhs);
-
+bool are_compatible(const Line& lhs, const Line& rhs);
 std::ostream& operator<<(std::ostream& ostream, const Line& line);
 std::string str_line_type(Line::Type type);
 std::string str_line_full(const Line& line);
@@ -101,6 +101,10 @@ struct LineId
 {
     LineId(Line::Type type = Line::ROW, Line::Index index = 0u)
         : m_type(type), m_index(index)
+    {}
+
+    LineId(const Line& line)
+        : m_type(line.type()), m_index(line.index())
     {}
 
     Line::Type  m_type;

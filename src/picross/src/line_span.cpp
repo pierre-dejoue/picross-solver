@@ -40,9 +40,12 @@ bool LineSpan::is_completed() const
 
 bool LineSpan::compatible(const LineSpan& other) const
 {
-    assert(other.m_type == m_type);
-    assert(other.m_index == m_index);
-    assert(other.m_size == m_size);
+    if (other.m_type != m_type)
+        return false;
+    if (other.m_index != m_index)
+        return false;
+    if (other.m_size != m_size)
+        return false;
     for (size_t idx = 0u; idx < m_size; ++idx)
     {
         if (!Tiles::compatible(other.m_tiles[idx], m_tiles[idx]))
@@ -51,16 +54,29 @@ bool LineSpan::compatible(const LineSpan& other) const
     return true;
 }
 
-std::ostream& operator<<(std::ostream& ostream, const LineSpan& line)
+bool operator==(const LineSpan& lhs, const LineSpan& rhs)
 {
-    for (int idx = 0u; idx < static_cast<int>(line.size()); idx++)
-        ostream << Tiles::str(line[idx]);
-    return ostream;
+    return lhs.type() == rhs.type()
+        && lhs.index() == rhs.index()
+        && lhs.size() == rhs.size()
+        && std::equal(lhs.begin(), lhs.end(), rhs.begin());
+}
+
+bool operator!=(const LineSpan& lhs, const LineSpan& rhs)
+{
+    return !(lhs == rhs);
 }
 
 bool are_compatible(const LineSpan& lhs, const LineSpan& rhs)
 {
     return lhs.compatible(rhs);
+}
+
+std::ostream& operator<<(std::ostream& ostream, const LineSpan& line)
+{
+    for (int idx = 0u; idx < static_cast<int>(line.size()); idx++)
+        ostream << Tiles::str(line[idx]);
+    return ostream;
 }
 
 } // namespace picross

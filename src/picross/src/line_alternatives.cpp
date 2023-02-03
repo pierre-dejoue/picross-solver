@@ -98,12 +98,7 @@ namespace
     LineAlternatives::Reduction from_line(const LineSpan& line, LineAlternatives::NbAlt nb_alt, bool full)
     {
         LineAlternatives::Reduction result;
-        Line::Container tiles(line.size(), Tile::UNKNOWN);
-        for (std::size_t idx = 0u; idx < tiles.size(); idx++)
-        {
-            tiles[idx] = line[static_cast<int>(idx)];
-        }
-        result.reduced_line = Line(line.type(), line.index(), std::move(tiles));
+        result.reduced_line = line_from_line_span(line);
         result.nb_alternatives = nb_alt;
         result.is_fully_reduced = full;
         return result;

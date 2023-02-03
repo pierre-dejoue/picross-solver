@@ -5,6 +5,8 @@
  ******************************************************************************/
 #include "line.h"
 
+#include "line_span.h"
+
 #include <algorithm>
 #include <cassert>
 #include <exception>
@@ -157,16 +159,19 @@ bool Line::is_completed() const
 
 bool operator==(const Line& lhs, const Line& rhs)
 {
-    return lhs.type() == rhs.type()
-        && lhs.index() == rhs.index()
-        && lhs.size() == rhs.size()
-        && std::equal(lhs.begin(), lhs.end(), rhs.begin());
+    return LineSpan(lhs) == LineSpan(rhs);
 }
 
 
 bool operator!=(const Line& lhs, const Line& rhs)
 {
-    return !(lhs == rhs);
+    return LineSpan(lhs) != LineSpan(rhs);
+}
+
+
+bool are_compatible(const Line& lhs, const Line& rhs)
+{
+    return are_compatible(LineSpan(lhs), LineSpan(rhs));
 }
 
 
