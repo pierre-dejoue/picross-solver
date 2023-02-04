@@ -52,4 +52,25 @@ TEST_CASE("add", "[binomial]")
     }
 }
 
+TEST_CASE("mult", "[binomial]")
+{
+    BinomialCoefficients::Cache binomial;
+    {
+        BinomialCoefficients::Rep nb_alternatives{1};
+        BinomialCoefficients::mult(nb_alternatives, 5);
+        CHECK(nb_alternatives == 5);
+        BinomialCoefficients::mult(nb_alternatives, 7);
+        CHECK(nb_alternatives == 35);
+    }
+    {
+        constexpr auto MAX = BinomialCoefficients::overflowValue();
+        BinomialCoefficients::Rep nb_alternatives{1};
+        for (unsigned int count = 0; count < 16; count++)
+             BinomialCoefficients::mult(nb_alternatives, 4);
+        CHECK(nb_alternatives == MAX);
+        BinomialCoefficients::mult(nb_alternatives, 3);
+        CHECK(nb_alternatives == MAX);
+    }
+}
+
 } // namespace picross
