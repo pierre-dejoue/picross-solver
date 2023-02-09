@@ -29,9 +29,15 @@ namespace
     {
         return LineAlternatives(constraint, known_tiles, get_binomial()).partial_reduction(nb_constraints);
     }
+
+    LineAlternatives::Reduction linear_reduction(const LineConstraint& constraint, const Line& known_tiles)
+    {
+        return LineAlternatives(constraint, known_tiles, get_binomial()).linear_reduction();
+    }
 }
 
-TEST_CASE("Benchmark", "[line_alternatives]")
+#if 0
+TEST_CASE("Bench full reduction", "[line_alternatives]")
 {
     // Example from webpbn-03528-only-one.non
     {
@@ -51,7 +57,6 @@ TEST_CASE("Benchmark", "[line_alternatives]")
             CHECK(reduction.is_fully_reduced);
         }
     }
-#if 0
     // Example from tiger.non
     {
         const LineConstraint constraint(Line::ROW, { 2, 2, 2, 2, 3, 4, 2, 2, 3 });
@@ -88,7 +93,6 @@ TEST_CASE("Benchmark", "[line_alternatives]")
             CHECK(reduction.is_fully_reduced);
         }
     }
-#endif
     // Example from tiger.non
     {
         const LineConstraint constraint(Line::ROW, { 2, 2, 3, 3, 2, 3, 2, 2 });
@@ -105,6 +109,47 @@ TEST_CASE("Benchmark", "[line_alternatives]")
             CHECK((reduction.reduced_line - known_tiles) == expected_delta);
             CHECK(reduction.nb_alternatives == 3873724);
             CHECK(reduction.is_fully_reduced);
+        }
+    }
+}
+#endif
+
+TEST_CASE("Bench linear vs full reduction", "[line_alternatives]")
+{
+    const LineConstraint constraint(Line::ROW, { 3, 3, 3 });
+    const auto min_line_length = constraint.min_line_size();
+    CHECK(min_line_length == 11);
+    for (unsigned int extra_zeros = 2; extra_zeros <= 14; extra_zeros += 2)
+    {
+        const unsigned int nb_alt = ((extra_zeros + 1) * (extra_zeros + 2) * (extra_zeros + 3)) / 6;
+        const auto known_tiles    = build_line_from('?', min_line_length + extra_zeros, Line::ROW, 0);
+        {
+            LineAlternatives::Reduction reduction;
+            bool bench_run = false;
+            std::string bench_name = "Threes " + std::to_string(nb_alt) + " linear";
+            BENCHMARK(std::move(bench_name)) {
+                reduction = linear_reduction(constraint, known_tiles);
+                return bench_run = true;
+            };
+            if (bench_run)
+            {
+                CHECK(reduction.nb_alternatives == nb_alt);
+                CHECK(reduction.is_fully_reduced == false);
+            }
+        }
+        {
+            LineAlternatives::Reduction reduction;
+            bool bench_run = false;
+            std::string bench_name = "Threes " + std::to_string(nb_alt) + " full";
+            BENCHMARK(std::move(bench_name)) {
+                reduction = full_reduction(constraint, known_tiles);
+                return bench_run = true;
+            };
+            if (bench_run)
+            {
+                CHECK(reduction.nb_alternatives == nb_alt);
+                CHECK(reduction.is_fully_reduced);
+            }
         }
     }
 }

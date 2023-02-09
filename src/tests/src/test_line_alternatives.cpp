@@ -552,9 +552,9 @@ TEST_CASE("linear_reduction_basic_use_cases", "[line_alternatives]")
         const auto known_tiles = build_line_from("??????#??", Line::ROW, LINE_INDEX);
         CHECK(known_tiles.size() == 9);
         const auto reduction = linear_reduction(constraint, known_tiles);
-        CHECK(known_tiles + reduction.reduced_line == build_line_from("?#.##.##.", Line::ROW, LINE_INDEX));
-        CHECK(reduction.nb_alternatives == 2);
-        CHECK(reduction.is_fully_reduced == false);
+        CHECK(known_tiles + reduction.reduced_line == build_line_from("##.##.##.", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 1);
+        CHECK(reduction.is_fully_reduced);
     }
     {
         const auto known_tiles = build_line_from("??????.??", Line::ROW, LINE_INDEX);
@@ -568,7 +568,7 @@ TEST_CASE("linear_reduction_basic_use_cases", "[line_alternatives]")
         const auto known_tiles = build_line_from('?', 9, Line::ROW, LINE_INDEX);
         const auto reduction = linear_reduction(constraint, known_tiles);
         CHECK(reduction.reduced_line == build_line_from("?#??#??#?", Line::ROW, LINE_INDEX));
-        CHECK(reduction.nb_alternatives == 8);
+        CHECK(reduction.nb_alternatives == 4);
         CHECK(reduction.is_fully_reduced == false);
     }
     {
@@ -601,23 +601,23 @@ TEST_CASE("linear_reduction_symetrical_use_case", "[line_alternatives]")
         const auto known_tiles = build_line_from('?', 12, Line::ROW, LINE_INDEX);
         const auto reduction = linear_reduction(constraint, known_tiles);
         CHECK(reduction.reduced_line == build_line_from("?##??##??##?", Line::ROW, LINE_INDEX));
-        CHECK(reduction.nb_alternatives == 8);
+        CHECK(reduction.nb_alternatives == 4);
         CHECK(reduction.is_fully_reduced == false);
     }
     {
         const auto known_tiles = build_line_from("???#????????", Line::ROW, LINE_INDEX);
         CHECK(known_tiles.size() == 12);
         const auto reduction = linear_reduction(constraint, known_tiles);
-        CHECK(known_tiles + reduction.reduced_line == build_line_from(".###.###.##?", Line::ROW, LINE_INDEX));
-        CHECK(reduction.nb_alternatives == 2);
-        CHECK(reduction.is_fully_reduced == false);
+        CHECK(known_tiles + reduction.reduced_line == build_line_from(".###.###.###", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 1);
+        CHECK(reduction.is_fully_reduced);
     }
     {
         const auto known_tiles = build_line_from("???#?????????", Line::ROW, LINE_INDEX);
         CHECK(known_tiles.size() == 13);
         const auto reduction = linear_reduction(constraint, known_tiles);
         CHECK(known_tiles + reduction.reduced_line == build_line_from(".?##??##??#??", Line::ROW, LINE_INDEX));
-        CHECK(reduction.nb_alternatives == 12);
+        CHECK(reduction.nb_alternatives == 10);
         CHECK_FALSE(reduction.is_fully_reduced);
     }
 }
@@ -645,7 +645,7 @@ TEST_CASE("linear_reduction_with_a_long_segment_of_ones", "[line_alternatives]")
         CHECK(known_tiles.size() == 10);
         const auto reduction = linear_reduction(constraint, known_tiles);
         CHECK(reduction.reduced_line == build_line_from("??####????", Line::ROW, LINE_INDEX));
-        CHECK(reduction.nb_alternatives == 9);
+        CHECK(reduction.nb_alternatives == 6);
         CHECK(reduction.is_fully_reduced == false);
     }
     {
@@ -725,7 +725,7 @@ TEST_CASE("linear_vs_full_reduction", "[line_alternatives]")
         {
             const auto reduction = linear_reduction(constraint, known_tiles);
             CHECK(known_tiles + reduction.reduced_line == known_tiles + expected_delta_l);
-            CHECK(reduction.nb_alternatives == 7200);
+            CHECK(reduction.nb_alternatives == 3003);
             CHECK(reduction.is_fully_reduced == false);
         }
     }
@@ -742,7 +742,7 @@ TEST_CASE("linear_vs_full_reduction", "[line_alternatives]")
         {
             const auto reduction = linear_reduction(constraint, known_tiles);
             CHECK(known_tiles + reduction.reduced_line == known_tiles + expected_delta);
-            CHECK(reduction.nb_alternatives == 1980);
+            CHECK(reduction.nb_alternatives == 560);
             CHECK(reduction.is_fully_reduced == false);
         }
     }
@@ -759,7 +759,7 @@ TEST_CASE("linear_vs_full_reduction", "[line_alternatives]")
         {
             const auto reduction = linear_reduction(constraint, known_tiles);
             CHECK(known_tiles + reduction.reduced_line == known_tiles + expected_delta);
-            CHECK(reduction.nb_alternatives == 62974800);
+            CHECK(reduction.nb_alternatives == 4292145);
             CHECK(reduction.is_fully_reduced == false);
         }
     }
@@ -777,7 +777,7 @@ TEST_CASE("linear_vs_full_reduction", "[line_alternatives]")
         {
             const auto reduction = linear_reduction(constraint, known_tiles);
             CHECK(known_tiles + reduction.reduced_line == known_tiles + expected_delta_l);
-            CHECK(reduction.nb_alternatives == 87360);
+            CHECK(reduction.nb_alternatives == 31465);
             CHECK(reduction.is_fully_reduced == false);
         }
     }
@@ -813,7 +813,7 @@ TEST_CASE("linear_vs_full_reduction", "[line_alternatives]")
         {
             const auto reduction = linear_reduction(constraint, known_tiles);
             CHECK(known_tiles + reduction.reduced_line == known_tiles + expected_delta_l);
-            CHECK(reduction.nb_alternatives == 320);
+            CHECK(reduction.nb_alternatives == 286);
             CHECK(reduction.is_fully_reduced == false);
         }
     }
@@ -831,7 +831,7 @@ TEST_CASE("linear_vs_full_reduction", "[line_alternatives]")
         {
             const auto reduction = linear_reduction(constraint, known_tiles);
             CHECK(known_tiles + reduction.reduced_line == known_tiles + expected_delta_l);
-            CHECK(reduction.nb_alternatives == 200704);
+            CHECK(reduction.nb_alternatives == 1716);
             CHECK(reduction.is_fully_reduced == false);
         }
     }
@@ -848,7 +848,7 @@ TEST_CASE("linear_vs_full_reduction", "[line_alternatives]")
         {
             const auto reduction = linear_reduction(constraint, known_tiles);
             CHECK(known_tiles + reduction.reduced_line == known_tiles + expected_delta);
-            CHECK(reduction.nb_alternatives == 4294967295);
+            CHECK(reduction.nb_alternatives == 705432);
             CHECK(reduction.is_fully_reduced == false);
         }
     }
@@ -884,7 +884,7 @@ TEST_CASE("linear_vs_full_reduction", "[line_alternatives]")
         {
             const auto reduction = linear_reduction(constraint, known_tiles);
             CHECK(known_tiles + reduction.reduced_line == known_tiles + expected_delta_l);
-            CHECK(reduction.nb_alternatives == 4294967295);
+            CHECK(reduction.nb_alternatives == 3124550);
             CHECK(reduction.is_fully_reduced == false);
         }
     }

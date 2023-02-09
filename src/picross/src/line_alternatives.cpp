@@ -615,11 +615,13 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
     const auto nb_segments = ranges.size();
     auto constraint_it = m_bidirectional_range.m_constraint_begin;
     const auto constraint_end = m_bidirectional_range.m_constraint_end;
+    const auto line_begin =  m_bidirectional_range.m_line_begin;
+    const auto line_end = m_bidirectional_range.m_line_end;
     assert(nb_segments == static_cast<std::size_t>(std::distance(constraint_it, constraint_end)));
 
     LineExt empty_tiles_mask_extended_line(m_known_tiles, Tile::UNKNOWN);
     LineSpanW empty_tiles_mask = empty_tiles_mask_extended_line.line_span();
-    for (int idx = m_bidirectional_range.m_line_begin; idx < m_bidirectional_range.m_line_end; idx++)
+    for (int idx = line_begin; idx < line_end; idx++)
         empty_tiles_mask[idx] = Tile::EMPTY;                                    // empty_tiles_mask:  '0??000000?????0'
 
     LineExt reduction_mask_extended_line(m_known_tiles, Tile::UNKNOWN);
@@ -667,6 +669,30 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
         result.reduced_line = result.reduced_line + LineSpan(empty_tiles_mask);
     else
         result.nb_alternatives = 0;
+
+    // Compute over estimate of the nb of alternatives
+    if (result.nb_alternatives > 0 && nb_segments > 0)
+    {
+        const auto nb_zeros = static_cast<int>(std::count_if(result.reduced_line.begin() + line_begin, result.reduced_line.begin() + line_end, [](const Tile& tile) { return tile == Tile::EMPTY; }));
+        const auto remaining_zeros = m_remaining_zeros - static_cast<unsigned int>(std::max(0, nb_zeros - static_cast<int>(nb_segments - 1)));
+        if (remaining_zeros == 0)
+        {
+            for (int idx = line_begin; idx < line_end; idx++)
+            {
+                assert(idx >= 0);
+                auto& tile = result.reduced_line[static_cast<unsigned int>(idx)];
+                if (tile == Tile::UNKNOWN)
+                    tile = Tile::FILLED;
+            }
+            result.nb_alternatives = 1;
+            assert(result.reduced_line.is_completed());
+        }
+        else
+        {
+            result.nb_alternatives = std::min(result.nb_alternatives, compute_max_nb_of_alternatives(remaining_zeros, static_cast<unsigned int>(nb_segments), m_binomial));
+        }
+    }
+
     result.is_fully_reduced = (result.nb_alternatives == 1);
 
     return result;
@@ -719,9 +745,8 @@ LineAlternatives::NbAlt LineAlternatives::Impl::reduce_alternatives_recursive(
         if (check_compatibility_bw<Reversed>(alternative, line_begin, line_end))
         {
             reduce(reduced_line, alternative);
-            const unsigned int nb_buckets = static_cast<unsigned int>(std::distance(constraint_partial_end, constraint_end) + 1);
             assert(nb_alternatives == 0);
-            nb_alternatives = remaining_zeros > 0 ? m_binomial.partition_n_elts_into_k_buckets(remaining_zeros, nb_buckets) : 1u;
+            nb_alternatives = compute_max_nb_of_alternatives(remaining_zeros, constraint_partial_end, constraint_end, m_binomial);
         }
     }
     // Else, fill in the next segment of ones, then call recursively

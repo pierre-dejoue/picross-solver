@@ -34,6 +34,18 @@ unsigned int compute_min_line_size(SegmentIt begin, SegmentIt end)
 
 unsigned int compute_min_line_size(const Segments& segments);
 
+inline BinomialCoefficients::Rep compute_max_nb_of_alternatives(unsigned int nb_extra_zeros, unsigned int nb_segments, BinomialCoefficients::Cache& binomial)
+{
+    return nb_extra_zeros > 0 ? binomial.partition_n_elts_into_k_buckets(nb_extra_zeros, nb_segments + 1) : 1u;
+}
+
+template <typename SegmentIt>
+BinomialCoefficients::Rep compute_max_nb_of_alternatives(unsigned int extra_zeros, SegmentIt begin, SegmentIt end, BinomialCoefficients::Cache& binomial)
+{
+    const unsigned int nb_segments = static_cast<unsigned int>(std::distance(begin, end));
+    return compute_max_nb_of_alternatives(extra_zeros, nb_segments, binomial);
+}
+
 class LineConstraint
 {
 public:
