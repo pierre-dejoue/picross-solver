@@ -464,16 +464,18 @@ bool LineAlternatives::Impl::update_range()
         else
         {
             assert(tile == Tile::FILLED);
-            if (range.m_completed_segments == m_segments.size() - 1)
-            {
-                // Never fill the last segment (it may be non-zero terminated)
-                break;
-            }
+            if (range.m_constraint_begin == range.m_constraint_end)
+                return false;   // Did not expect another segment
             expect_termination_zero = true;
             count_filled++;
         }
     }
-    // Validate that the remaining constraints can fit in the unknown part of the line
+    if (expect_termination_zero)
+    {
+        assert(range.m_constraint_begin != range.m_constraint_end);
+        if (count_filled > *range.m_constraint_begin)
+            return false;
+    }
     assert(range.m_line_begin <= range.m_line_end);
     return true;
 }
@@ -556,10 +558,7 @@ bool LineAlternatives::Impl::narrow_down_segments_range(std::vector<SegmentRange
 
     // Left to right pass to refine the rightmost index of each segment
     if (nb_segments > 0)
-    {
         next_segment_max_index(ranges[0].m_rightmost_index, 0, m_bidirectional_range.m_line_begin);
-        assert(ranges[0].m_leftmost_index <= ranges[0].m_rightmost_index);
-    }
     auto constraint_it = constraint_begin;
     for (std::size_t k = 0; k + 1u < nb_segments; k++)
     {
@@ -584,7 +583,6 @@ bool LineAlternatives::Impl::narrow_down_segments_range(std::vector<SegmentRange
     {
         assert(constraint_it != constraint_end && std::next(constraint_it) == constraint_end);
         prev_segment_min_index(ranges[nb_segments - 1].m_leftmost_index, *constraint_it, m_bidirectional_range.m_line_end);
-        assert(ranges[nb_segments - 1].m_leftmost_index <= ranges[nb_segments - 1].m_rightmost_index);
         for (std::size_t k = nb_segments - 1; k > 0; k--)
         {
             assert(std::distance(constraint_begin, constraint_it) == static_cast<std::ptrdiff_t>(k));
@@ -605,7 +603,8 @@ bool LineAlternatives::Impl::narrow_down_segments_range(std::vector<SegmentRange
         }
     }
 
-    return true;
+    // Check consistency of the ranges and return
+    return std::all_of(ranges.cbegin(), ranges.cend(), [](const auto& range) { return range.m_leftmost_index <= range.m_rightmost_index; });
 }
 
 // Linear reduction considers each segment independently, therefore leading to a O(k.n) reduction, where k is the number of segment and n is the line length
