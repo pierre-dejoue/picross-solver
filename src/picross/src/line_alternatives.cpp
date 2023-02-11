@@ -733,15 +733,17 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
         result.nb_alternatives = 0;
 
     // Filled tiles masks
-    for (int mask_idx = line_begin; mask_idx < line_end; mask_idx++)
-    {
-        if (m_known_tiles[mask_idx] == Tile::FILLED)
+    if (result.nb_alternatives > 0)
+        for (int mask_idx = line_begin; mask_idx < line_end; mask_idx++)
         {
-            const LineSpan filled_tiles_mask(m_filled_tiles_mask_extended_lines[static_cast<std::size_t>(mask_idx)].line_span());
-            assert(filled_tiles_mask[mask_idx] == Tile::FILLED);
-            result.reduced_line = result.reduced_line + filled_tiles_mask;
+            if (m_known_tiles[mask_idx] == Tile::FILLED)
+            {
+                const LineSpan filled_tiles_mask(m_filled_tiles_mask_extended_lines[static_cast<std::size_t>(mask_idx)].line_span());
+                assert(filled_tiles_mask[mask_idx] == Tile::FILLED);
+                result.reduced_line = result.reduced_line + filled_tiles_mask;
+            }
         }
-    }
+
 
     // Compute over estimate of the nb of alternatives
     if (result.nb_alternatives > 0 && nb_segments > 0)

@@ -202,6 +202,24 @@ TEST_CASE("reduction_contradictory_use_case_d", "[line_alternatives]")
     }
 }
 
+TEST_CASE("reduction_contradictory_use_case_e", "[line_alternatives]")
+{
+    const LineConstraint constraint(Line::ROW, { 3, 2 });
+    const auto known_tiles = build_line_from("????###.#...????", Line::ROW, LINE_INDEX);
+    {
+        const auto reduction = partial_reduction(constraint, known_tiles, 1);
+        CHECK(reduction.nb_alternatives == 0);
+    }
+    {
+        const auto reduction = linear_reduction(constraint, known_tiles);
+        CHECK(reduction.nb_alternatives == 0);
+    }
+    {
+        const auto reduction = full_reduction(constraint, known_tiles);
+        CHECK(reduction.nb_alternatives == 0);
+    }
+}
+
 TEST_CASE("partial_reduction_symetrical_use_case", "[line_alternatives]")
 {
     const LineConstraint constraint(Line::ROW, { 3, 3, 3 });
