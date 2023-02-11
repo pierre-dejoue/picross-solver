@@ -7,6 +7,7 @@ project(picross_solver
 option(PICROSS_BUILD_APP "Build the test application" OFF)
 option(PICROSS_BUILD_CLI "Build the command line app" OFF)
 option(PICROSS_BUILD_TESTS "Build and run unit tests" OFF)
+option(PICROSS_BUILD_EXAMPLES "Build the examples" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -42,6 +43,11 @@ endif()
 # Tests
 if(PICROSS_BUILD_TESTS)
     add_subdirectory(src/tests)
+endif()
+
+# Examples
+if(PICROSS_BUILD_EXAMPLES)
+    add_subdirectory(src/examples)
 endif()
 
 set(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_SOURCE_DIR}/LICENSE)

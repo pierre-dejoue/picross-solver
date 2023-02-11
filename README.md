@@ -73,10 +73,12 @@ The library CMake's build exports the following target: `picross::picross`
 Below is an example of how to use the library.
 The API is accessible via a unique header file [`<picross/picross.h>`](src/picross/include/picross/picross.h)
 
+_Source: [example_1.cpp](src/examples/src/example_1.cpp)_
 ```cpp
 #include <picross/picross.h>
 
 #include <cassert>
+#include <cstdlib>
 #include <iostream>
 
 int main()
@@ -102,18 +104,23 @@ int main()
 
     // [Optional] Check the puzzle validity
     const auto [check_is_ok, check_msg] = picross::check_input_grid(puzzle);
-    assert(check_is_ok);
+    if (!check_is_ok)
+        return EXIT_FAILURE;
 
-    // Solve it
+    // Solve the puzzle
     const auto solver = picross::get_ref_solver();
     assert(solver);
-    const auto result = solver->solve(puzzle);
-    assert(result.status == picross::Solver::Status::OK);
+    constexpr unsigned int max_nb_solutions = 2;
+    const auto result = solver->solve(puzzle, max_nb_solutions);
+    if (result.status != picross::Solver::Status::OK)
+        return EXIT_FAILURE;
 
-    // Print out the solution
-    assert(result.solutions.size() == 1);
-    const auto& solution = result.solutions.front();
-    std::cout << solution.grid << std::endl;
+    // Print out the solutions
+    assert(!result.solutions.empty());
+    for (const auto& solution : result.solutions)
+        std::cout << solution.grid << std::endl;
+
+    return EXIT_SUCCESS;
 }
 ```
 

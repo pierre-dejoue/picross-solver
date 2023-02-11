@@ -4,54 +4,6 @@
 #include <utils/text_io.h>
 
 
-// This is the example used in the project README
-TEST_CASE("Puzzle: Note", "[solver]")
-{
-    // Puzzle definition
-    const picross::InputGrid::Constraints rows {
-        { 3 },
-        { 1, 1 },
-        { 1, 1 },
-        { 3 },
-        { 3 },
-        { }
-    };
-    const picross::InputGrid::Constraints cols {
-        { },
-        { 2 },
-        { 2 },
-        { 5 },
-        { 1 },
-        { 3 }
-    };
-    picross::InputGrid puzzle(rows, cols, "Note");
-
-    // [Optional] Check the puzzle validity
-    const auto [check_is_ok, check_msg] = picross::check_input_grid(puzzle);
-    REQUIRE(check_is_ok);
-
-    // Solve it
-    const auto solver = picross::get_ref_solver();
-    REQUIRE(solver);
-    const auto result = solver->solve(puzzle);
-
-    CHECK(result.status == picross::Solver::Status::OK);
-    REQUIRE(result.solutions.size() == 1);
-    const auto& solution = result.solutions.front();
-
-    picross::OutputGrid expected = picross::build_output_grid_from(6, 6, R"(
-        ...###
-        ...#.#
-        ...#.#
-        .###..
-        .###..
-        ......
-    )");
-
-    CHECK(solution.branching_depth == 0);
-    CHECK(solution.grid == expected);
-}
-
 namespace picross
 {
 
@@ -111,7 +63,7 @@ TEST_CASE("A puzzle with no solution", "[solver]")
 
     InputGrid puzzle(rows, cols, "Zero");
 
-    const auto [check_is_ok, check_msg] = picross::check_input_grid(puzzle);
+    const auto [check_is_ok, check_msg] = check_input_grid(puzzle);
     CHECK(check_is_ok);
 
     const auto solver = get_ref_solver();
@@ -122,6 +74,53 @@ TEST_CASE("A puzzle with no solution", "[solver]")
 
     const auto validation_result = validate_input_grid(*solver, puzzle);
     CHECK(validation_result.code == 0);
+}
+
+TEST_CASE("Puzzle: Note", "[solver]")
+{
+    // Puzzle definition
+    const InputGrid::Constraints rows {
+        { 3 },
+        { 1, 1 },
+        { 1, 1 },
+        { 3 },
+        { 3 },
+        { }
+    };
+    const InputGrid::Constraints cols {
+        { },
+        { 2 },
+        { 2 },
+        { 5 },
+        { 1 },
+        { 3 }
+    };
+    InputGrid puzzle(rows, cols, "Note");
+
+    // [Optional] Check the puzzle validity
+    const auto [check_is_ok, check_msg] = check_input_grid(puzzle);
+    CHECK(check_is_ok);
+
+    // Solve it
+    const auto solver = get_ref_solver();
+    REQUIRE(solver);
+    const auto result = solver->solve(puzzle);
+
+    CHECK(result.status == Solver::Status::OK);
+    REQUIRE(result.solutions.size() == 1);
+    const auto& solution = result.solutions.front();
+
+    OutputGrid expected = build_output_grid_from(6, 6, R"(
+        ...###
+        ...#.#
+        ...#.#
+        .###..
+        .###..
+        ......
+    )");
+
+    CHECK(solution.branching_depth == 0);
+    CHECK(solution.grid == expected);
 }
 
 TEST_CASE("Puzzle: Smile", "[solver]")
@@ -140,7 +139,7 @@ TEST_CASE("Puzzle: Smile", "[solver]")
 
     InputGrid puzzle(rows, cols, "Smile");
 
-    const auto [check_is_ok, check_msg] = picross::check_input_grid(puzzle);
+    const auto [check_is_ok, check_msg] = check_input_grid(puzzle);
     CHECK(check_is_ok);
 
     const auto solver = get_ref_solver();
@@ -193,7 +192,7 @@ TEST_CASE("Puzzle: Notes", "[solver]")
 
     InputGrid puzzle(rows, cols, "Notes");
 
-    const auto [check_is_ok, check_msg] = picross::check_input_grid(puzzle);
+    const auto [check_is_ok, check_msg] = check_input_grid(puzzle);
     CHECK(check_is_ok);
 
     const auto solver = get_ref_solver();
@@ -254,7 +253,7 @@ TEST_CASE("Puzzle: Flip", "[solver]")
 
     InputGrid puzzle(rows, cols, "Flip");
 
-    const auto [check_is_ok, check_msg] = picross::check_input_grid(puzzle);
+    const auto [check_is_ok, check_msg] = check_input_grid(puzzle);
     CHECK(check_is_ok);
 
     //
@@ -401,7 +400,7 @@ TEST_CASE("Puzzle: Cameraman", "[solver]")
 
     InputGrid puzzle = get_input_grid_from(expected);
 
-    const auto [check_is_ok, check_msg] = picross::check_input_grid(puzzle);
+    const auto [check_is_ok, check_msg] = check_input_grid(puzzle);
     CHECK(check_is_ok);
 
     const auto solver = get_ref_solver();
