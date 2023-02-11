@@ -25,11 +25,11 @@ GRID 1: Fish
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4368
-  Max number of alternatives after a partial line reduction (change/all): 1365/4037
-  Max number of alternatives after a    full line reduction (change/all): 79/231
-  Number of full grid pass: 49
-  Number of single line partial reduction (change/all): 138/307
-  Number of single line    full reduction (change/all): 32/50
+  Max number of alternatives after a  linear line reduction (change/all): 3360/4368
+  Max number of alternatives after a    full line reduction (change/all): 119/126
+  Number of full grid pass: 22
+  Number of single line  linear reduction (change/all): 19/82
+  Number of single line    full reduction (change/all): 129/196
 
 
 
@@ -65,11 +65,9 @@ GRID 2: Two Notes
     > Total number of alternatives being tested (probing/branching): 14/2
     > Max number of alternatives by branching depth: 2
   Max number of alternatives on an empty line (initial grid pass): 36
-  Max number of alternatives after a partial line reduction (change/all): 5/36
-  Max number of alternatives after a    full line reduction (change/all): 0/0
+  Max number of alternatives after a    full line reduction (change/all): 5/36
   Number of full grid pass: 42
-  Number of single line partial reduction (change/all): 206/373
-  Number of single line    full reduction (change/all): 0/0
+  Number of single line    full reduction (change/all): 206/373
 
 
 

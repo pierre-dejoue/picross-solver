@@ -48,11 +48,11 @@ GRID 1: Mum
     > Total number of alternatives being tested (probing/branching): 32/0
     > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 13037895
-  Max number of alternatives after a partial line reduction (change/all): 5311735/13037895
-  Max number of alternatives after a    full line reduction (change/all): 120648/1081575
-  Number of full grid pass: 461
-  Number of single line partial reduction (change/all): 575/2295
-  Number of single line    full reduction (change/all): 518/858
+  Max number of alternatives after a  linear line reduction (change/all): 13037895/13037895
+  Max number of alternatives after a    full line reduction (change/all): 1596/245157
+  Number of full grid pass: 137
+  Number of single line  linear reduction (change/all): 451/1491
+  Number of single line    full reduction (change/all): 630/1020
 
 
 

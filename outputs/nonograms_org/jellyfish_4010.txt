@@ -45,11 +45,11 @@ GRID 1: Jellyfish
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 293930
-  Max number of alternatives after a partial line reduction (change/all): 125970/125970
-  Max number of alternatives after a    full line reduction (change/all): 132/210
-  Number of full grid pass: 67
-  Number of single line partial reduction (change/all): 462/958
-  Number of single line    full reduction (change/all): 38/56
+  Max number of alternatives after a  linear line reduction (change/all): 293930/293930
+  Max number of alternatives after a    full line reduction (change/all): 133/210
+  Number of full grid pass: 12
+  Number of single line  linear reduction (change/all): 169/310
+  Number of single line    full reduction (change/all): 181/244
 
 
 

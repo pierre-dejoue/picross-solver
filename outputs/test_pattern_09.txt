@@ -10,11 +10,9 @@ GRID 1: Smile
     > Total number of alternatives being tested (probing/branching): 2/0
     > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 3
-  Max number of alternatives after a partial line reduction (change/all): 2/3
-  Max number of alternatives after a    full line reduction (change/all): 0/0
+  Max number of alternatives after a    full line reduction (change/all): 2/3
   Number of full grid pass: 8
-  Number of single line partial reduction (change/all): 9/21
-  Number of single line    full reduction (change/all): 0/0
+  Number of single line    full reduction (change/all): 9/21
 
 
 

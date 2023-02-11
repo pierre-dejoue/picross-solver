@@ -11,11 +11,9 @@ GRID 1: Note
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 10
-  Max number of alternatives after a partial line reduction (change/all): 3/4
-  Max number of alternatives after a    full line reduction (change/all): 0/0
+  Max number of alternatives after a    full line reduction (change/all): 3/4
   Number of full grid pass: 4
-  Number of single line partial reduction (change/all): 12/20
-  Number of single line    full reduction (change/all): 0/0
+  Number of single line    full reduction (change/all): 12/20
 
 
 

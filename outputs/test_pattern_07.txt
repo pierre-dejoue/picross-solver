@@ -50,11 +50,11 @@ GRID 1: Two Cakes
     > Total number of alternatives being tested (probing/branching): 25/2
     > Max number of alternatives by branching depth: 2
   Max number of alternatives on an empty line (initial grid pass): 816
-  Max number of alternatives after a partial line reduction (change/all): 211/659
-  Max number of alternatives after a    full line reduction (change/all): 0/574
-  Number of full grid pass: 82
-  Number of single line partial reduction (change/all): 590/1182
-  Number of single line    full reduction (change/all): 0/36
+  Max number of alternatives after a  linear line reduction (change/all): 560/680
+  Max number of alternatives after a    full line reduction (change/all): 97/574
+  Number of full grid pass: 68
+  Number of single line  linear reduction (change/all): 45/126
+  Number of single line    full reduction (change/all): 542/933
 
 
 

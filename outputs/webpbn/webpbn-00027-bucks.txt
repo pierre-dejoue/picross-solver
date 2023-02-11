@@ -31,11 +31,11 @@ GRID 1: Bucks
     > Total number of alternatives being tested (probing/branching): 4/0
     > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 125970
-  Max number of alternatives after a partial line reduction (change/all): 50388/125970
-  Max number of alternatives after a    full line reduction (change/all): 40/40
-  Number of full grid pass: 34
-  Number of single line partial reduction (change/all): 198/423
-  Number of single line    full reduction (change/all): 6/17
+  Max number of alternatives after a  linear line reduction (change/all): 116280/125970
+  Max number of alternatives after a    full line reduction (change/all): 40/154
+  Number of full grid pass: 20
+  Number of single line  linear reduction (change/all): 42/57
+  Number of single line    full reduction (change/all): 82/172
 
 
 

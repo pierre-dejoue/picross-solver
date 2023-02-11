@@ -25,11 +25,11 @@ GRID 1: The Ugly Duckling
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 8008
-  Max number of alternatives after a partial line reduction (change/all): 3003/5005
-  Max number of alternatives after a    full line reduction (change/all): 22/30
-  Number of full grid pass: 33
-  Number of single line partial reduction (change/all): 128/290
-  Number of single line    full reduction (change/all): 52/72
+  Max number of alternatives after a  linear line reduction (change/all): 8008/8008
+  Max number of alternatives after a    full line reduction (change/all): 246/246
+  Number of full grid pass: 9
+  Number of single line  linear reduction (change/all): 39/67
+  Number of single line    full reduction (change/all): 102/147
 
 
 

@@ -28,11 +28,11 @@ GRID 1: Smoke
     > Total number of alternatives being tested (probing/branching): 22/0
     > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 3003
-  Max number of alternatives after a partial line reduction (change/all): 792/2547
-  Max number of alternatives after a    full line reduction (change/all): 553/897
-  Number of full grid pass: 96
-  Number of single line partial reduction (change/all): 284/629
-  Number of single line    full reduction (change/all): 12/60
+  Max number of alternatives after a  linear line reduction (change/all): 1716/3003
+  Max number of alternatives after a    full line reduction (change/all): 136/897
+  Number of full grid pass: 67
+  Number of single line  linear reduction (change/all): 27/148
+  Number of single line    full reduction (change/all): 300/540
 
 
 

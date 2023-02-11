@@ -118,11 +118,9 @@ GRID 1: Dots
     > Total number of alternatives being tested (probing/branching): 49/26
     > Max number of alternatives by branching depth: 6 2 2 2
   Max number of alternatives on an empty line (initial grid pass): 6
-  Max number of alternatives after a partial line reduction (change/all): 3/6
-  Max number of alternatives after a    full line reduction (change/all): 0/0
+  Max number of alternatives after a    full line reduction (change/all): 3/6
   Number of full grid pass: 254
-  Number of single line partial reduction (change/all): 373/626
-  Number of single line    full reduction (change/all): 0/0
+  Number of single line    full reduction (change/all): 373/626
 
 
 

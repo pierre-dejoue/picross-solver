@@ -65,11 +65,11 @@ GRID 1: Sun
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 1121099408
-  Max number of alternatives after a partial line reduction (change/all): 470044135/1120922660
-  Max number of alternatives after a    full line reduction (change/all): 41655/170373
-  Number of full grid pass: 377
-  Number of single line partial reduction (change/all): 395/1218
-  Number of single line    full reduction (change/all): 628/966
+  Max number of alternatives after a  linear line reduction (change/all): 347373600/1121099408
+  Max number of alternatives after a    full line reduction (change/all): 226/226
+  Number of full grid pass: 32
+  Number of single line  linear reduction (change/all): 430/1015
+  Number of single line    full reduction (change/all): 403/577
 
 
 

@@ -1,6 +1,6 @@
 GRID 1: Tiger
   Size: 75x50
-  Solution nb 1: (branching depth: 1)
+  Solution nb 1: (branching depth: 0)
   .........####..................................................####........
   .......###.####..............................................###..##.......
   ......##....#####..........................................####....##......
@@ -53,16 +53,13 @@ GRID 1: Tiger
   ..............##..............################................##...........
 
   Number of solutions found: 1
-  Max branching depth: 1
-    > Hypothesis (probing/branching) on 2/0 lines
-    > Total number of alternatives being tested (probing/branching): 17/0
-    > Max number of alternatives by branching depth: 0
+  Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4294967295 (overflow!)
-  Max number of alternatives after a partial line reduction (change/all): 4294967295/4294967295
-  Max number of alternatives after a    full line reduction (change/all): 73555732/137381407
-  Number of full grid pass: 625
-  Number of single line partial reduction (change/all): 535/1871
-  Number of single line    full reduction (change/all): 854/1449
+  Max number of alternatives after a  linear line reduction (change/all): 4294967295/4294967295
+  Max number of alternatives after a    full line reduction (change/all): 210/210
+  Number of full grid pass: 36
+  Number of single line  linear reduction (change/all): 560/1348
+  Number of single line    full reduction (change/all): 344/552
 
 
 

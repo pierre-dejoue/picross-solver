@@ -43,11 +43,11 @@ GRID 1: Petroglyph
     > Total number of alternatives being tested (probing/branching): 29/0
     > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 480700
-  Max number of alternatives after a partial line reduction (change/all): 75474/477367
-  Max number of alternatives after a    full line reduction (change/all): 4787/230230
-  Number of full grid pass: 166
-  Number of single line partial reduction (change/all): 768/2501
-  Number of single line    full reduction (change/all): 136/298
+  Max number of alternatives after a  linear line reduction (change/all): 480700/480700
+  Max number of alternatives after a    full line reduction (change/all): 172/230230
+  Number of full grid pass: 83
+  Number of single line  linear reduction (change/all): 578/2123
+  Number of single line    full reduction (change/all): 278/555
 
 
 

@@ -10,11 +10,11 @@ GRID 1: Snake
     > Total number of alternatives being tested (probing/branching): 2/0
     > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 330
-  Max number of alternatives after a partial line reduction (change/all): 120/330
-  Max number of alternatives after a    full line reduction (change/all): 0/330
-  Number of full grid pass: 22
-  Number of single line partial reduction (change/all): 49/100
-  Number of single line    full reduction (change/all): 0/2
+  Max number of alternatives after a  linear line reduction (change/all): 330/330
+  Max number of alternatives after a    full line reduction (change/all): 56/330
+  Number of full grid pass: 18
+  Number of single line  linear reduction (change/all): 1/4
+  Number of single line    full reduction (change/all): 48/93
 
 
 
