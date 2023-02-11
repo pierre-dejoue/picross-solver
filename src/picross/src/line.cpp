@@ -218,22 +218,6 @@ InputGrid::Constraint get_constraint_from(const Line& line)
     return get_constraint_from(LineSpan(line));
 }
 
-void copy_line_span(LineSpanW& target, const LineSpan& source)
-{
-    assert(target.type() == source.type());
-    assert(target.index() == source.index());
-    assert(target.size() == source.size());
-    const int sz = static_cast<int>(source.size());
-    for (int idx = 0; idx < sz; idx++)
-        target[idx] = source[idx];
-}
-
-void copy_line_span(Line& target, const LineSpan& source)
-{
-    LineSpanW target_w(target);
-    copy_line_span(target_w, source);
-}
-
 Line line_from_line_span(const LineSpan& line_span)
 {
     Line line(line_span.type(), line_span.index(), line_span.size());

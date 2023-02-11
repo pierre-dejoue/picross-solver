@@ -41,9 +41,25 @@ Line operator+(const LineSpan& lhs, const LineSpan& rhs);
 Line operator-(const LineSpan& lhs, const LineSpan& rhs);
 void line_reduce(LineSpanW& lhs, const LineSpan& rhs);
 bool is_line_uniform(const LineSpan& line, Tile color);
-void copy_line_span(LineSpanW& target, const LineSpan& source);
-void copy_line_span(Line& target, const LineSpan& source);
 Line line_from_line_span(const LineSpan& line_span);
 InputGrid::Constraint get_constraint_from(const LineSpan& line_span);
+
+template <typename LineSpanT>
+void copy_line_span(LineSpanW& target, const LineSpanT& source)
+{
+    assert(target.type() == source.type());
+    assert(target.index() == source.index());
+    assert(target.size() == source.size());
+    const int line_sz = static_cast<int>(source.size());
+    for (int idx = 0; idx < line_sz; idx++)
+        target[idx] = source[idx];
+}
+
+template <typename LineSpanT>
+void copy_line_span(Line& target, const LineSpanT& source)
+{
+    LineSpanW target_w(target);
+    copy_line_span(target_w, source);
+}
 
 } // namespace picross
