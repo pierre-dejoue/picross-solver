@@ -5,14 +5,15 @@ namespace picross
 
 struct SolverPolicyBase
 {
-    static constexpr unsigned int MIN_NB_ALTERNATIVES = 1 << 6;
+    static constexpr unsigned int MIN_NB_ALTERNATIVES = 1 << 10;
     static constexpr unsigned int PARTIAL_REDUCE_NB_CONSTRAINTS = 1;
 
     bool m_branching_allowed = false;
     bool m_limit_on_max_nb_alternatives = false;
+    unsigned int m_min_nb_alternatives_for_linear_reduction = 1 << 8;
     unsigned int m_max_nb_alternatives_for_probing = 1 << 12;
     unsigned int m_max_nb_alternatives_while_probing = 1 << 16;
-    unsigned int m_max_nb_alternatives = 1 << 24;
+    unsigned int m_max_nb_alternatives = 1 << 20;
 };
 
 struct SolverPolicy_RampUpMaxNbAlternatives : public SolverPolicyBase

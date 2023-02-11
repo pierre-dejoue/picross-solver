@@ -48,7 +48,6 @@ private:
     enum class State
     {
         INITIAL_PASS,
-        PARTIAL_REDUCTION,
         LINEAR_REDUCTION,
         FULL_REDUCTION,
         PROBING,

@@ -208,25 +208,12 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
             {
             case State::INITIAL_PASS:
                 pass_status = full_grid_pass<State::INITIAL_PASS>();
-                m_state = State::PARTIAL_REDUCTION;
-                break;
-
-            case State::PARTIAL_REDUCTION:
-                pass_status = full_grid_pass<State::PARTIAL_REDUCTION>();
-                if (!pass_status.grid_changed)
-                {
-                    m_state = State::LINEAR_REDUCTION;
-                    sort_by_nb_alternatives();
-                }
+                m_state = State::LINEAR_REDUCTION;
                 break;
 
             case State::LINEAR_REDUCTION:
                 pass_status = full_grid_pass<State::LINEAR_REDUCTION>();
-                if (pass_status.grid_changed)
-                {
-                    m_state = State::PARTIAL_REDUCTION;
-                }
-                else
+                if (!pass_status.grid_changed)
                 {
                     m_state = State::FULL_REDUCTION;
                     sort_by_nb_alternatives();
@@ -244,7 +231,7 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
                     // Max number of alternatives for the next full grid pass
                     m_max_nb_alternatives = m_solver_policy.get_max_nb_alternatives(m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines);
                     if (pass_status.grid_changed)
-                        m_state = State::PARTIAL_REDUCTION;
+                        m_state = State::LINEAR_REDUCTION;
                 }
                 break;
 
@@ -259,7 +246,7 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
                 if (probing_result.m_status == Solver::Status::CONTRADICTORY_GRID)
                     pass_status.contradictory = true;
                 if (probing_result.m_grid_has_changed)
-                    m_state = State::PARTIAL_REDUCTION;
+                    m_state = State::LINEAR_REDUCTION;
                 else
                     m_state = State::BRANCHING;
                 break;
@@ -659,13 +646,18 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::full_grid_pa
         {
             status += single_line_initial_pass(it->m_type, it->m_index);
         }
-        else if constexpr (S == State::PARTIAL_REDUCTION)
-        {
-            status += single_line_partial_reduction(it->m_type, it->m_index);
-        }
         else if constexpr (S == State::LINEAR_REDUCTION)
         {
-            status += single_line_linear_reduction(it->m_type, it->m_index);
+            if (m_nb_alternatives[it->m_type][it->m_index] > m_solver_policy.m_min_nb_alternatives_for_linear_reduction)
+            {
+                status += single_line_linear_reduction(it->m_type, it->m_index);
+            }
+            else
+            {
+                // For small number of alternatives (as estimated previously) favor full reduction which will have better
+                // performance, find all the line solvable tiles and return a precise nb of alternatives
+                status += single_line_full_reduction(it->m_type, it->m_index);
+            }
         }
         else
         {
@@ -764,7 +756,7 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
     for (const Line& guess_line : list_of_all_alternatives)
     {
         // Copy current grid state to a nested grid
-        WorkGrid<SolverPolicy> nested_work_grid(*this, solver_policy, State::PARTIAL_REDUCTION);
+        WorkGrid<SolverPolicy> nested_work_grid(*this, solver_policy, State::LINEAR_REDUCTION);
         if (m_observer)
         {
             m_observer(Solver::Event::BRANCHING, nullptr, nested_work_grid.m_branching_depth, 0);
@@ -872,7 +864,7 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
     for (const Line& guess_line : list_of_all_alternatives)
     {
         // Copy current grid state to a nested grid
-        WorkGrid<SolverPolicy> nested_work_grid(*this, m_solver_policy, State::PARTIAL_REDUCTION);
+        WorkGrid<SolverPolicy> nested_work_grid(*this, m_solver_policy, State::LINEAR_REDUCTION);
         if (m_observer)
         {
             m_observer(Solver::Event::BRANCHING, nullptr, nested_work_grid.m_branching_depth, 0);
