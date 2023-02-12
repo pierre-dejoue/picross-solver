@@ -136,6 +136,9 @@ std::ostream& operator<<(std::ostream& ostream, Solver::Event event)
     case Solver::Event::INTERNAL_STATE:
         ostream << "INTERNAL_STATE";
         break;
+    case Solver::Event::PROGRESS:
+        ostream << "PROGRESS";
+        break;
     default:
         assert(0);  // Unknown Solver::Event
     }

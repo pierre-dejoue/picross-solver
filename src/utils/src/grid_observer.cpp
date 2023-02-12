@@ -95,6 +95,9 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
         assert(depth == current_depth);
         break;
 
+    case picross::Solver::Event::PROGRESS:
+        break;
+
     default:
         assert(0);  // Unknown Solver::Event
     }

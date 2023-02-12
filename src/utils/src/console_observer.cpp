@@ -1,6 +1,7 @@
 #include <utils/console_observer.h>
 
 #include <cassert>
+#include <cstdint>
 #include <exception>
 
 
@@ -58,6 +59,11 @@ void ConsoleObserver::observer_callback(picross::Solver::Event event, const picr
 
     case picross::Solver::Event::INTERNAL_STATE:
         m_ostream << " state: " << misc
+                  << " depth: " << depth;
+        break;
+
+    case picross::Solver::Event::PROGRESS:
+        m_ostream << " progress: " << reinterpret_cast<const float&>(static_cast<const std::uint32_t&>(misc))
                   << " depth: " << depth;
         break;
 

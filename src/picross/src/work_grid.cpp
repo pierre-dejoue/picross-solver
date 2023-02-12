@@ -15,10 +15,13 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <exception>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <optional>
+#include <type_traits>
 
 
 namespace picross
@@ -70,11 +73,35 @@ void update_line_range(LineRange& range, const std::vector<bool>& source)
     while (range.m_begin < range.m_end && source[range.m_end - 1u] == B) { range.m_end--; }
     assert(range.m_begin <= range.m_end);
 }
+
+template <typename RET_UINT>
+RET_UINT progress_bar(const std::pair<float, float>& progress_bar, LineAlternatives::NbAlt progress, LineAlternatives::NbAlt nb_alternatives)
+{
+    static_assert(std::is_integral_v<RET_UINT> && std::is_unsigned_v<RET_UINT>);
+    static_assert(std::numeric_limits<RET_UINT>::digits >= std::numeric_limits<std::uint32_t>::digits);
+    assert(progress <= nb_alternatives);
+    const float ratio_f = static_cast<float>(progress) / static_cast<float>(nb_alternatives);
+    assert(0.f <= ratio_f && ratio_f <= 1.f);
+    const float progress_f = progress_bar.first + (progress_bar.second - progress_bar.first) * ratio_f;
+    const std::uint32_t ratio = reinterpret_cast<const std::uint32_t&>(progress_f);
+    return static_cast<RET_UINT>(ratio);
+}
+
+std::pair<float, float> nested_progress_bar(const std::pair<float, float>& progress_bar, LineAlternatives::NbAlt progress, LineAlternatives::NbAlt nb_alternatives)
+{
+    assert(progress < nb_alternatives);
+    const float ratio_min_f = static_cast<float>(progress)     / static_cast<float>(nb_alternatives);
+    const float ratio_max_f = static_cast<float>(progress + 1) / static_cast<float>(nb_alternatives);
+    assert(0.f <= ratio_min_f && ratio_min_f <= 1.f);
+    assert(0.f <= ratio_max_f && ratio_max_f <= 1.f);
+    return std::make_pair(progress_bar.first + (progress_bar.second - progress_bar.first) * ratio_min_f, progress_bar.first + (progress_bar.second - progress_bar.first) * ratio_max_f);
+}
+
 }  // namespace
 
 
 template <typename SolverPolicy>
-WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Solver::Observer observer, Solver::Abort abort_function)
+WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Solver::Observer observer, Solver::Abort abort_function, float min_progress, float max_progress)
     : Grid(grid.width(), grid.height(), grid.name())
     , m_state(State::INITIAL_PASS)
     , m_solver_policy(solver_policy)
@@ -93,6 +120,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
     , m_max_nb_alternatives(SolverPolicy::MIN_NB_ALTERNATIVES)
     , m_branching_depth(0u)
     , m_probing_depth_incr(0u)
+    , m_progress_bar(min_progress, max_progress)
     , m_binomial(std::make_shared<BinomialCoefficients::Cache>())
 {
     assert(m_binomial);
@@ -131,7 +159,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
 
 
 template <typename SolverPolicy>
-WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, State initial_state)
+WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, State initial_state, float min_progress, float max_progress)
     : Grid(parent)
     , m_state(initial_state)
     , m_solver_policy(solver_policy)
@@ -150,6 +178,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& sol
     , m_max_nb_alternatives(SolverPolicy::MIN_NB_ALTERNATIVES)
     , m_branching_depth(parent.m_branching_depth + 1u)
     , m_probing_depth_incr(0u)
+    , m_progress_bar(min_progress, max_progress)
     , m_binomial(parent.m_binomial)
 {
     assert(m_binomial);
@@ -753,10 +782,12 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
     solver_policy.m_branching_allowed = false;
     solver_policy.m_limit_on_max_nb_alternatives = true;
     solver_policy.m_max_nb_alternatives = m_solver_policy.m_max_nb_alternatives_while_probing;
+    LineAlternatives::NbAlt progress = 0u;
     for (const Line& guess_line : list_of_all_alternatives)
     {
         // Copy current grid state to a nested grid
-        WorkGrid<SolverPolicy> nested_work_grid(*this, solver_policy, State::LINEAR_REDUCTION);
+        const auto nested_progress = nested_progress_bar(m_progress_bar, progress, nb_alt);
+        WorkGrid<SolverPolicy> nested_work_grid(*this, solver_policy, State::LINEAR_REDUCTION, nested_progress.first, nested_progress.second);
         if (m_observer)
         {
             m_observer(Solver::Event::BRANCHING, nullptr, nested_work_grid.m_branching_depth, 0);
@@ -794,6 +825,8 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
             else
                 reduced_grid->reduce(static_cast<Grid&>(nested_work_grid));
         }
+
+        progress++;
     }
 
     // Repeat start branching message
@@ -861,10 +894,12 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
 
     Solver::Status status = Solver::Status::OK;
     bool flag_solution_found = false;
+    LineAlternatives::NbAlt progress = 0u;
     for (const Line& guess_line : list_of_all_alternatives)
     {
         // Copy current grid state to a nested grid
-        WorkGrid<SolverPolicy> nested_work_grid(*this, m_solver_policy, State::LINEAR_REDUCTION);
+        const auto nested_progress = nested_progress_bar(m_progress_bar, progress, nb_alt);
+        WorkGrid<SolverPolicy> nested_work_grid(*this, m_solver_policy, State::LINEAR_REDUCTION, nested_progress.first, nested_progress.second);
         if (m_observer)
         {
             m_observer(Solver::Event::BRANCHING, nullptr, nested_work_grid.m_branching_depth, 0);
@@ -890,6 +925,13 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
         }
 
         flag_solution_found |= (status == Solver::Status::OK);
+
+        // Progress bar
+        progress++;
+        if (m_observer)
+        {
+            m_observer(Solver::Event::PROGRESS, nullptr, nested_work_grid.m_branching_depth, progress_bar<unsigned int>(m_progress_bar, progress, nb_alt));
+        }
 
         if (status == Solver::Status::ABORTED)
             return status;

@@ -10,6 +10,7 @@
  ******************************************************************************/
 #include <picross/picross.h>
 #include <utils/console_observer.h>
+#include <utils/console_progress_observer.h>
 #include <utils/duration_meas.h>
 #include <utils/input_grid_utils.h>
 #include <utils/picross_file_io.h>
@@ -94,6 +95,9 @@ int main(int argc, char *argv[])
       {
         "verbose", { "-v", "--verbose" },
         "Print additional debug information", 0 },
+      {
+        "progress", { "--progress" },
+        "Print branching progress in percent", 0 },
       {
         "max-nb-solutions", { "--max-nb-solutions" },
         "Limit the number of solutions returned per grid", 1 },
@@ -226,11 +230,16 @@ int main(int argc, char *argv[])
                     {
                         obs.verify_against_goal(*goal);
                     }
+                    ConsoleProgressObserver progress_obs(std::cout);
                     if (!validation_mode)
                     {
                         if (args["verbose"])
                         {
                             solver->set_observer(std::reference_wrapper<ConsoleObserver>(obs));
+                        }
+                        else if (args["progress"])
+                        {
+                            solver->set_observer(std::reference_wrapper<ConsoleProgressObserver>(progress_obs));
                         }
                     }
 

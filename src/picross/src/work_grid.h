@@ -61,7 +61,7 @@ private:
         bool            m_grid_has_changed  = false;
     };
 public:
-    WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Solver::Observer observer = Solver::Observer(), Solver::Abort abort_function = Solver::Abort());
+    WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Solver::Observer observer = Solver::Observer(), Solver::Abort abort_function = Solver::Abort(), float min_progress = 0.f, float max_progress = 1.f);
     // Not copyable nor movable
     WorkGrid(const WorkGrid&) = delete;
     WorkGrid(WorkGrid&&) noexcept = delete;
@@ -69,7 +69,7 @@ public:
     WorkGrid& operator=(WorkGrid&&) noexcept = delete;
 private:
     // Allocate nested work grid
-    WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, State initial_state);
+    WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, State initial_state, float min_progress, float max_progress);
 public:
     void set_stats(GridStats* stats);
     Solver::Status line_solve(const Solver::SolutionFound& solution_found);
@@ -112,6 +112,7 @@ private:
     unsigned int                                    m_max_nb_alternatives;
     unsigned int                                    m_branching_depth;
     unsigned int                                    m_probing_depth_incr;
+    std::pair<float, float>                         m_progress_bar;
     std::shared_ptr<BinomialCoefficients::Cache>    m_binomial;
 };
 

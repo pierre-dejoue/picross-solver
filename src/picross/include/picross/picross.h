@@ -263,7 +263,13 @@ public:
     //
     //  * event = INTERNAL_STATE    line = nullptr              depth is set        misc = state
     //
-    enum class Event { KNOWN_LINE, DELTA_LINE, BRANCHING, SOLVED_GRID, INTERNAL_STATE };
+    //      Internal state of the solver (no semantic can be deduced from the public API, it's just an integer)
+    //
+    //  * event = PROGRESS          line = nullptr              deptb is set        misc = reinterpret_cast<uint32_t>(progress);
+    //
+    //      Progress is a float between 0.f and 1.f
+    //
+    enum class Event { KNOWN_LINE, DELTA_LINE, BRANCHING, SOLVED_GRID, INTERNAL_STATE, PROGRESS };
     using Observer = std::function<void(Event,const Line*,unsigned int,unsigned int)>;
     virtual void set_observer(Observer observer) = 0;
 
