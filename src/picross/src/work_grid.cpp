@@ -101,7 +101,7 @@ std::pair<float, float> nested_progress_bar(const std::pair<float, float>& progr
 
 
 template <typename SolverPolicy>
-WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Solver::Observer observer, Solver::Abort abort_function, float min_progress, float max_progress)
+WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Observer observer, Solver::Abort abort_function, float min_progress, float max_progress)
     : Grid(grid.width(), grid.height(), grid.name())
     , m_state(State::INITIAL_PASS)
     , m_solver_policy(solver_policy)
@@ -230,7 +230,7 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
         {
             if (m_observer)
             {
-                m_observer(Solver::Event::INTERNAL_STATE, nullptr, m_branching_depth, static_cast<unsigned int>(m_state));
+                m_observer(ObserverEvent::INTERNAL_STATE, nullptr, m_branching_depth, static_cast<unsigned int>(m_state));
             }
 
             switch (m_state)
@@ -336,7 +336,7 @@ Solver::Status WorkGrid<SolverPolicy>::solve(const Solver::SolutionFound& soluti
             assert(m_state == State::BRANCHING);
             if (m_observer)
             {
-                m_observer(Solver::Event::INTERNAL_STATE, nullptr, m_branching_depth, static_cast<unsigned int>(m_state));
+                m_observer(ObserverEvent::INTERNAL_STATE, nullptr, m_branching_depth, static_cast<unsigned int>(m_state));
             }
 
             // Make a guess
@@ -418,13 +418,13 @@ bool WorkGrid<SolverPolicy>::update_line(const LineSpan& line, unsigned int nb_a
     {
         if (line_changed)
         {
-            m_observer(Solver::Event::KNOWN_LINE, &observer_original_line, m_branching_depth, observer_original_nb_alt);
+            m_observer(ObserverEvent::KNOWN_LINE, &observer_original_line, m_branching_depth, observer_original_nb_alt);
             const Line delta = get_line(line_type, line_index) - observer_original_line;
-            m_observer(Solver::Event::DELTA_LINE, &delta, m_branching_depth, nb_alt);
+            m_observer(ObserverEvent::DELTA_LINE, &delta, m_branching_depth, nb_alt);
         }
         else
         {
-            m_observer(Solver::Event::KNOWN_LINE, &observer_original_line, m_branching_depth, nb_alt);
+            m_observer(ObserverEvent::KNOWN_LINE, &observer_original_line, m_branching_depth, nb_alt);
         }
     }
 
@@ -767,7 +767,7 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
     if (m_observer)
     {
         const auto line_known_tiles = line_from_line_span(known_tiles);
-        m_observer(Solver::Event::BRANCHING, &line_known_tiles, m_branching_depth, nb_alt);
+        m_observer(ObserverEvent::BRANCHING, &line_known_tiles, m_branching_depth, nb_alt);
     }
 
     if (m_grid_stats != nullptr)
@@ -790,7 +790,7 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
         WorkGrid<SolverPolicy> nested_work_grid(*this, solver_policy, State::LINEAR_REDUCTION, nested_progress.first, nested_progress.second);
         if (m_observer)
         {
-            m_observer(Solver::Event::BRANCHING, nullptr, nested_work_grid.m_branching_depth, 0);
+            m_observer(ObserverEvent::BRANCHING, nullptr, nested_work_grid.m_branching_depth, 0);
         }
 
         // Set one line in the new_grid according to the hypothesis we made. That line is then complete
@@ -833,7 +833,7 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
     if (m_observer)
     {
         const auto line_known_tiles = line_from_line_span(known_tiles);
-        m_observer(Solver::Event::BRANCHING, &line_known_tiles, m_branching_depth, nb_alt);
+        m_observer(ObserverEvent::BRANCHING, &line_known_tiles, m_branching_depth, nb_alt);
     }
 
     if (!reduced_grid)
@@ -879,7 +879,7 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
     if (m_observer)
     {
         const auto line_known_tiles = line_from_line_span(known_tiles);
-        m_observer(Solver::Event::BRANCHING, &line_known_tiles, m_branching_depth, nb_alt);
+        m_observer(ObserverEvent::BRANCHING, &line_known_tiles, m_branching_depth, nb_alt);
     }
 
     if (m_grid_stats != nullptr)
@@ -902,7 +902,7 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
         WorkGrid<SolverPolicy> nested_work_grid(*this, m_solver_policy, State::LINEAR_REDUCTION, nested_progress.first, nested_progress.second);
         if (m_observer)
         {
-            m_observer(Solver::Event::BRANCHING, nullptr, nested_work_grid.m_branching_depth, 0);
+            m_observer(ObserverEvent::BRANCHING, nullptr, nested_work_grid.m_branching_depth, 0);
         }
 
         // Set one line in the new_grid according to the hypothesis we made. That line is then complete
@@ -930,7 +930,7 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
         progress++;
         if (m_observer)
         {
-            m_observer(Solver::Event::PROGRESS, nullptr, nested_work_grid.m_branching_depth, progress_bar<unsigned int>(m_progress_bar, progress, nb_alt));
+            m_observer(ObserverEvent::PROGRESS, nullptr, nested_work_grid.m_branching_depth, progress_bar<unsigned int>(m_progress_bar, progress, nb_alt));
         }
 
         if (status == Solver::Status::ABORTED)
@@ -941,7 +941,7 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
     if (m_observer)
     {
         const auto line_known_tiles = line_from_line_span(known_tiles);
-        m_observer(Solver::Event::BRANCHING, &line_known_tiles, m_branching_depth, nb_alt);
+        m_observer(ObserverEvent::BRANCHING, &line_known_tiles, m_branching_depth, nb_alt);
     }
 
     return flag_solution_found ? Solver::Status::OK : Solver::Status::CONTRADICTORY_GRID;
@@ -965,7 +965,7 @@ bool WorkGrid<SolverPolicy>::found_solution(const Solver::SolutionFound& solutio
     assert(is_valid_solution());
     const auto adjusted_branching_depth = m_branching_depth + m_probing_depth_incr;
     if (m_grid_stats != nullptr) { m_grid_stats->nb_solutions++; }
-    if (m_observer) { m_observer(Solver::Event::SOLVED_GRID, nullptr, adjusted_branching_depth, 0); }
+    if (m_observer) { m_observer(ObserverEvent::SOLVED_GRID, nullptr, adjusted_branching_depth, 0); }
 
     // Shallow copy of only the grid data
     return solution_found(Solver::Solution{ OutputGrid(*this), adjusted_branching_depth, FULL_SOLUTION });

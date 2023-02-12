@@ -18,12 +18,12 @@ void ConsoleObserver::verify_against_goal(const picross::OutputGrid& goal)
     m_goal = goal;
 }
 
-void ConsoleObserver::observer_callback(picross::Solver::Event event, const picross::Line* line, unsigned int depth, unsigned int misc, const ObserverGrid& grid)
+void ConsoleObserver::observer_callback(picross::ObserverEvent event, const picross::Line* line, unsigned int depth, unsigned int misc, const ObserverGrid& grid)
 {
     m_ostream << event;
     switch (event)
     {
-    case picross::Solver::Event::BRANCHING:
+    case picross::ObserverEvent::BRANCHING:
         if (line)
         {
             m_ostream << " NODE";
@@ -38,42 +38,42 @@ void ConsoleObserver::observer_callback(picross::Solver::Event event, const picr
         }
         break;
 
-    case picross::Solver::Event::KNOWN_LINE:
+    case picross::ObserverEvent::KNOWN_LINE:
         assert(line);
         m_ostream << " known: " << str_line_full(*line)
                   << " depth: " << depth
                   << " nb_alt: " << misc;
         break;
 
-    case picross::Solver::Event::DELTA_LINE:
+    case picross::ObserverEvent::DELTA_LINE:
         assert(line);
         m_ostream << " delta: " << str_line_full(*line)
                   << " depth: " << depth
                   << " nb_alt: " << misc;
         break;
 
-    case picross::Solver::Event::SOLVED_GRID:
+    case picross::ObserverEvent::SOLVED_GRID:
         m_ostream << " nb " << ++m_nb_solved_grids << std::endl;
         m_ostream << grid;
         break;
 
-    case picross::Solver::Event::INTERNAL_STATE:
+    case picross::ObserverEvent::INTERNAL_STATE:
         m_ostream << " state: " << misc
                   << " depth: " << depth;
         break;
 
-    case picross::Solver::Event::PROGRESS:
+    case picross::ObserverEvent::PROGRESS:
         m_ostream << " progress: " << reinterpret_cast<const float&>(static_cast<const std::uint32_t&>(misc))
                   << " depth: " << depth;
         break;
 
     default:
-        assert(0);  // Unknown Solver::Event
+        assert(0);  // Unknown ObserverEvent
     }
     m_ostream << std::endl;
 
     // Detect discrepancy with set goal
-    if (m_goal.has_value() && depth == 0 && event == picross::Solver::Event::DELTA_LINE)
+    if (m_goal.has_value() && depth == 0 && event == picross::ObserverEvent::DELTA_LINE)
     {
         assert(line);
         picross::LineId line_id(*line);

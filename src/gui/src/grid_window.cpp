@@ -130,7 +130,7 @@ namespace
     }
 } // Anonymous namespace
 
-GridWindow::LineEvent::LineEvent(picross::Solver::Event event, const picross::Line* line, const ObserverGrid& grid)
+GridWindow::LineEvent::LineEvent(picross::ObserverEvent event, const picross::Line* line, const ObserverGrid& grid)
     : event(event)
     , event_line()
     , grid(grid)
@@ -363,7 +363,7 @@ void GridWindow::reset_solutions()
     text_buffer->buffer.appendf("Grid %s\n", str_input_grid_size(grid).c_str());
 }
 
-void GridWindow::observer_callback(picross::Solver::Event event, const picross::Line* line, unsigned int, unsigned int, const ObserverGrid& grid)
+void GridWindow::observer_callback(picross::ObserverEvent event, const picross::Line* line, unsigned int, unsigned int, const ObserverGrid& grid)
 {
     std::unique_lock<std::mutex> lock(line_mutex);
     if (line_events.size() >= speed)
@@ -396,7 +396,7 @@ unsigned int GridWindow::process_line_events(std::vector<LineEvent>& events)
             solutions.back() = std::move(event.grid);
         }
 
-        if (event.event == picross::Solver::Event::SOLVED_GRID)
+        if (event.event == picross::ObserverEvent::SOLVED_GRID)
         {
             valid_solutions++;
             allocate_new_solution = true;              // Allocate new solution on next event

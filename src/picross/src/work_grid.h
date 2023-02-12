@@ -61,7 +61,7 @@ private:
         bool            m_grid_has_changed  = false;
     };
 public:
-    WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Solver::Observer observer = Solver::Observer(), Solver::Abort abort_function = Solver::Abort(), float min_progress = 0.f, float max_progress = 1.f);
+    WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Observer observer = Observer(), Solver::Abort abort_function = Solver::Abort(), float min_progress = 0.f, float max_progress = 1.f);
     // Not copyable nor movable
     WorkGrid(const WorkGrid&) = delete;
     WorkGrid(WorkGrid&&) noexcept = delete;
@@ -107,7 +107,7 @@ private:
     AllLines                                        m_all_lines;
     AllLines::iterator                              m_uncompleted_lines_end;
     GridStats*                                      m_grid_stats;        // If not null, the solver will store some stats in that structure
-    Solver::Observer                                m_observer;          // If not empty, the solver will notify the observer of its progress
+    Observer                                        m_observer;          // If not empty, the solver will notify the observer of its progress
     Solver::Abort                                   m_abort_function;    // If not empty, the solver will regularly call this function and abort if it returns true
     unsigned int                                    m_max_nb_alternatives;
     unsigned int                                    m_branching_depth;

@@ -11,19 +11,19 @@ ConsoleProgressObserver::ConsoleProgressObserver(std::ostream& ostream)
 {
 }
 
-void ConsoleProgressObserver::operator()(picross::Solver::Event event, const picross::Line*, unsigned int depth, unsigned int misc)
+void ConsoleProgressObserver::operator()(picross::ObserverEvent event, const picross::Line*, unsigned int depth, unsigned int misc)
 {
     switch (event)
     {
-    case picross::Solver::Event::BRANCHING:
-    case picross::Solver::Event::KNOWN_LINE:
-    case picross::Solver::Event::DELTA_LINE:
-    case picross::Solver::Event::SOLVED_GRID:
-    case picross::Solver::Event::INTERNAL_STATE:
+    case picross::ObserverEvent::BRANCHING:
+    case picross::ObserverEvent::KNOWN_LINE:
+    case picross::ObserverEvent::DELTA_LINE:
+    case picross::ObserverEvent::SOLVED_GRID:
+    case picross::ObserverEvent::INTERNAL_STATE:
         // Ignore
         break;
 
-    case picross::Solver::Event::PROGRESS:
+    case picross::ObserverEvent::PROGRESS:
     {
         const float current_progress = reinterpret_cast<const float&>(static_cast<const std::uint32_t&>(misc));
         if ((current_progress - m_previous_progress) > 0.001f)
@@ -37,6 +37,6 @@ void ConsoleProgressObserver::operator()(picross::Solver::Event event, const pic
     }
 
     default:
-        assert(0);  // Unknown Solver::Event
+        assert(0);  // Unknown ObserverEvent
     }
 }

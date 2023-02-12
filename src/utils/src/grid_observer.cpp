@@ -35,14 +35,14 @@ GridObserver::GridObserver(const picross::InputGrid& grid)
 {
 }
 
-void GridObserver::operator()(picross::Solver::Event event, const picross::Line* line, unsigned int depth, unsigned int misc)
+void GridObserver::operator()(picross::ObserverEvent event, const picross::Line* line, unsigned int depth, unsigned int misc)
 {
     const auto width = grids[0].width();
     const auto height = grids[0].height();
 
     switch (event)
     {
-    case picross::Solver::Event::BRANCHING:
+    case picross::ObserverEvent::BRANCHING:
         if (!line)
         {
             // BRANCHING EDGE event
@@ -61,10 +61,10 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
         current_depth = depth;
         break;
 
-    case picross::Solver::Event::KNOWN_LINE:
+    case picross::ObserverEvent::KNOWN_LINE:
         break;
 
-    case picross::Solver::Event::DELTA_LINE:
+    case picross::ObserverEvent::DELTA_LINE:
     {
         assert(depth == current_depth);
         const size_t index = line->index();
@@ -88,18 +88,18 @@ void GridObserver::operator()(picross::Solver::Event event, const picross::Line*
         break;
     }
 
-    case picross::Solver::Event::SOLVED_GRID:
+    case picross::ObserverEvent::SOLVED_GRID:
         break;
 
-    case picross::Solver::Event::INTERNAL_STATE:
+    case picross::ObserverEvent::INTERNAL_STATE:
         assert(depth == current_depth);
         break;
 
-    case picross::Solver::Event::PROGRESS:
+    case picross::ObserverEvent::PROGRESS:
         break;
 
     default:
-        assert(0);  // Unknown Solver::Event
+        assert(0);  // Unknown ObserverEvent
     }
 
     assert(current_depth < grids.size());

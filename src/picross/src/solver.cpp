@@ -117,30 +117,30 @@ std::ostream& operator<<(std::ostream& ostream, Solver::Status status)
 }
 
 
-std::ostream& operator<<(std::ostream& ostream, Solver::Event event)
+std::ostream& operator<<(std::ostream& ostream, ObserverEvent event)
 {
     switch (event)
     {
-    case Solver::Event::BRANCHING:
+    case ObserverEvent::BRANCHING:
         ostream << "BRANCHING";
         break;
-    case Solver::Event::KNOWN_LINE:
+    case ObserverEvent::KNOWN_LINE:
         ostream << "KNOWN_LINE";
         break;
-    case Solver::Event::DELTA_LINE:
+    case ObserverEvent::DELTA_LINE:
         ostream << "DELTA_LINE";
         break;
-    case Solver::Event::SOLVED_GRID:
+    case ObserverEvent::SOLVED_GRID:
         ostream << "SOLVED_GRID";
         break;
-    case Solver::Event::INTERNAL_STATE:
+    case ObserverEvent::INTERNAL_STATE:
         ostream << "INTERNAL_STATE";
         break;
-    case Solver::Event::PROGRESS:
+    case ObserverEvent::PROGRESS:
         ostream << "PROGRESS";
         break;
     default:
-        assert(0);  // Unknown Solver::Event
+        assert(0);  // Unknown ObserverEvent
     }
     return ostream;
 }

@@ -13,7 +13,7 @@ class ConsoleProgressObserver final
 public:
     explicit ConsoleProgressObserver(std::ostream& ostream);
 
-    void operator()(picross::Solver::Event event, const picross::Line* line, unsigned int depth, unsigned int misc);
+    void operator()(picross::ObserverEvent event, const picross::Line* line, unsigned int depth, unsigned int misc);
 
 private:
     std::ostream&   m_ostream;
