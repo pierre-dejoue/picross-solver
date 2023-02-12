@@ -128,7 +128,7 @@ namespace
         draw_list->AddRectFilled(tl_tile_corner, br_tile_corner, filled ? get_color_tile_filled(depth) : get_color_tile_empty(depth), rounding);
         draw_list->AddRect(tl_tile_corner, br_tile_corner, get_color_tile_border(depth), rounding);
     }
-} // Anonymous namespace
+} // namespace
 
 GridWindow::LineEvent::LineEvent(picross::ObserverEvent event, const picross::Line* line, const ObserverGrid& grid)
     : event(event)
@@ -360,7 +360,7 @@ void GridWindow::reset_solutions()
     const size_t width = grid.width();
     const size_t height = grid.height();
     text_buffer->buffer.clear();
-    text_buffer->buffer.appendf("Grid %s\n", str_input_grid_size(grid).c_str());
+    text_buffer->buffer.appendf("Grid %s\n", picross::str_input_grid_size(grid).c_str());
 }
 
 void GridWindow::observer_callback(picross::ObserverEvent event, const picross::Line* line, unsigned int, unsigned int, const ObserverGrid& grid)

@@ -17,10 +17,25 @@
 #include <picross/picross.h>
 
 #include <memory>
+#include <ostream>
 #include <vector>
 
 namespace picross
 {
+
+/*
+ * State of the grid solver
+ */
+enum class WorkGridState
+{
+    INITIAL_PASS,
+    LINEAR_REDUCTION,
+    FULL_REDUCTION,
+    PROBING,
+    BRANCHING
+};
+
+std::ostream& operator<<(std::ostream& ostream, WorkGridState state);
 
 /*
  * WorkGrid class
@@ -45,14 +60,6 @@ private:
             return *this;
         }
     };
-    enum class State
-    {
-        INITIAL_PASS,
-        LINEAR_REDUCTION,
-        FULL_REDUCTION,
-        PROBING,
-        BRANCHING
-    };
     using AllLines = std::vector<LineId>;
 private:
     struct ProbingResult
@@ -69,7 +76,7 @@ public:
     WorkGrid& operator=(WorkGrid&&) noexcept = delete;
 private:
     // Allocate nested work grid
-    WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, State initial_state, float min_progress, float max_progress);
+    WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, WorkGridState initial_state, float min_progress, float max_progress);
 public:
     void set_stats(GridStats* stats);
     Solver::Status line_solve(const Solver::SolutionFound& solution_found);
@@ -86,7 +93,7 @@ private:
     PassStatus single_line_partial_reduction(Line::Type type, unsigned int index);
     PassStatus single_line_linear_reduction(Line::Type type, unsigned int index);
     PassStatus single_line_full_reduction(Line::Type type, unsigned int index);
-    template <State S>
+    template <WorkGridState S>
     PassStatus full_grid_pass();
     ProbingResult probe();
     ProbingResult probe(LineId line_id);
@@ -94,7 +101,7 @@ private:
     bool is_valid_solution() const;
     bool found_solution(const Solver::SolutionFound& solution_found) const;
 private:
-    State                                           m_state;
+    WorkGridState                                   m_state;
     const SolverPolicy                              m_solver_policy;
     std::vector<LineConstraint>                     m_constraints[2];
     std::vector<LineAlternatives>                   m_alternatives[2];

@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
         {
             ValidationModeData grid_data = file_data;
             grid_data.gridname = input_grid.name();
-            grid_data.size = str_input_grid_size(input_grid);
+            grid_data.size = picross::str_input_grid_size(input_grid);
 
             try
             {

@@ -15,6 +15,7 @@
 #include <exception>
 #include <memory>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -145,6 +146,12 @@ std::ostream& operator<<(std::ostream& ostream, ObserverEvent event)
     return ostream;
 }
 
+std::string str_solver_internal_state(unsigned int internal_state)
+{
+    std::stringstream ss;
+    ss << static_cast<WorkGridState>(internal_state);
+    return ss.str();
+}
 
 ValidationResult validate_input_grid(const Solver& solver, const InputGrid& input_grid)
 {

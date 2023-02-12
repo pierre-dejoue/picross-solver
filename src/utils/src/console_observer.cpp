@@ -27,7 +27,7 @@ void ConsoleObserver::observer_callback(picross::ObserverEvent event, const picr
         if (line)
         {
             m_ostream << " NODE";
-            m_ostream << " known: " << str_line_full(*line);
+            m_ostream << " known: " << picross::str_line_full(*line);
             m_ostream << " depth: " << depth;
             m_ostream << " nb_alt: " << misc;
         }
@@ -40,14 +40,14 @@ void ConsoleObserver::observer_callback(picross::ObserverEvent event, const picr
 
     case picross::ObserverEvent::KNOWN_LINE:
         assert(line);
-        m_ostream << " known: " << str_line_full(*line)
+        m_ostream << " known: " << picross::str_line_full(*line)
                   << " depth: " << depth
                   << " nb_alt: " << misc;
         break;
 
     case picross::ObserverEvent::DELTA_LINE:
         assert(line);
-        m_ostream << " delta: " << str_line_full(*line)
+        m_ostream << " delta: " << picross::str_line_full(*line)
                   << " depth: " << depth
                   << " nb_alt: " << misc;
         break;
@@ -58,7 +58,7 @@ void ConsoleObserver::observer_callback(picross::ObserverEvent event, const picr
         break;
 
     case picross::ObserverEvent::INTERNAL_STATE:
-        m_ostream << " state: " << misc
+        m_ostream << " state: " << picross::str_solver_internal_state(misc)
                   << " depth: " << depth;
         break;
 
@@ -81,7 +81,7 @@ void ConsoleObserver::observer_callback(picross::ObserverEvent event, const picr
         if (!picross::are_compatible(grid.get_line(line_id), reference_line))
         {
             m_ostream << "MISMATCH";
-            m_ostream << "    goal: " << str_line_full(reference_line);
+            m_ostream << "    goal: " << picross::str_line_full(reference_line);
             m_ostream << std::endl;
         }
     }

@@ -100,10 +100,42 @@ std::pair<float, float> nested_progress_bar(const std::pair<float, float>& progr
 }  // namespace
 
 
+std::ostream& operator<<(std::ostream& ostream, WorkGridState state)
+{
+    switch(state)
+    {
+    case WorkGridState::INITIAL_PASS:
+        ostream << "INITIAL_PASS";
+        break;
+
+    case WorkGridState::LINEAR_REDUCTION:
+        ostream << "LINEAR_REDUCTION";
+        break;
+
+    case WorkGridState::FULL_REDUCTION:
+        ostream << "FULL_REDUCTION";
+        break;
+
+    case WorkGridState::PROBING:
+        ostream << "PROBING";
+        break;
+
+    case WorkGridState::BRANCHING:
+        ostream << "BRANCHING";
+        break;
+
+    default:
+        assert(0);
+        ostream << "UNKNOWN";
+    }
+    return ostream;
+}
+
+
 template <typename SolverPolicy>
 WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Observer observer, Solver::Abort abort_function, float min_progress, float max_progress)
     : Grid(grid.width(), grid.height(), grid.name())
-    , m_state(State::INITIAL_PASS)
+    , m_state(WorkGridState::INITIAL_PASS)
     , m_solver_policy(solver_policy)
     , m_constraints()
     , m_alternatives()
@@ -159,7 +191,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
 
 
 template <typename SolverPolicy>
-WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, State initial_state, float min_progress, float max_progress)
+WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, WorkGridState initial_state, float min_progress, float max_progress)
     : Grid(parent)
     , m_state(initial_state)
     , m_solver_policy(solver_policy)
@@ -226,7 +258,7 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
         bool grid_completed = false;
         PassStatus pass_status;
 
-        while (m_state != State::BRANCHING && !grid_completed)
+        while (m_state != WorkGridState::BRANCHING && !grid_completed)
         {
             if (m_observer)
             {
@@ -235,53 +267,53 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
 
             switch (m_state)
             {
-            case State::INITIAL_PASS:
-                pass_status = full_grid_pass<State::INITIAL_PASS>();
-                m_state = State::LINEAR_REDUCTION;
+            case WorkGridState::INITIAL_PASS:
+                pass_status = full_grid_pass<WorkGridState::INITIAL_PASS>();
+                m_state = WorkGridState::LINEAR_REDUCTION;
                 break;
 
-            case State::LINEAR_REDUCTION:
-                pass_status = full_grid_pass<State::LINEAR_REDUCTION>();
+            case WorkGridState::LINEAR_REDUCTION:
+                pass_status = full_grid_pass<WorkGridState::LINEAR_REDUCTION>();
                 if (!pass_status.grid_changed)
                 {
-                    m_state = State::FULL_REDUCTION;
+                    m_state = WorkGridState::FULL_REDUCTION;
                     sort_by_nb_alternatives();
                 }
                 break;
 
-            case State::FULL_REDUCTION:
-                pass_status = full_grid_pass<State::FULL_REDUCTION>();
+            case WorkGridState::FULL_REDUCTION:
+                pass_status = full_grid_pass<WorkGridState::FULL_REDUCTION>();
                 if (m_solver_policy.switch_to_branching(m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines))
                 {
-                    m_state = probing ? State::BRANCHING : State::PROBING;
+                    m_state = probing ? WorkGridState::BRANCHING : WorkGridState::PROBING;
                 }
                 else
                 {
                     // Max number of alternatives for the next full grid pass
                     m_max_nb_alternatives = m_solver_policy.get_max_nb_alternatives(m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines);
                     if (pass_status.grid_changed)
-                        m_state = State::LINEAR_REDUCTION;
+                        m_state = WorkGridState::LINEAR_REDUCTION;
                 }
                 break;
 
-            case State::PROBING:
+            case WorkGridState::PROBING:
             {
                 if (!m_solver_policy.m_branching_allowed)
                 {
-                    m_state = State::BRANCHING;
+                    m_state = WorkGridState::BRANCHING;
                     break;
                 }
                 const auto probing_result = probe();
                 if (probing_result.m_status == Solver::Status::CONTRADICTORY_GRID)
                     pass_status.contradictory = true;
                 if (probing_result.m_grid_has_changed)
-                    m_state = State::LINEAR_REDUCTION;
+                    m_state = WorkGridState::LINEAR_REDUCTION;
                 else
-                    m_state = State::BRANCHING;
+                    m_state = WorkGridState::BRANCHING;
                 break;
             }
 
-            case State::BRANCHING:
+            case WorkGridState::BRANCHING:
             default:
                 assert(0);
                 break;
@@ -333,7 +365,7 @@ Solver::Status WorkGrid<SolverPolicy>::solve(const Solver::SolutionFound& soluti
     {
         if (m_solver_policy.m_branching_allowed)
         {
-            assert(m_state == State::BRANCHING);
+            assert(m_state == WorkGridState::BRANCHING);
             if (m_observer)
             {
                 m_observer(ObserverEvent::INTERNAL_STATE, nullptr, m_branching_depth, static_cast<unsigned int>(m_state));
@@ -661,7 +693,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_
 // Reduce all columns and all rows. Return false if no change was made on the grid.
 // Return true if the grid was changed during the full pass
 template <typename SolverPolicy>
-template <typename WorkGrid<SolverPolicy>::State S>
+template <WorkGridState S>
 typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::full_grid_pass()
 {
     PassStatus status;
@@ -671,11 +703,11 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::full_grid_pa
     {
         if (m_line_completed[it->m_type][it->m_index])
             continue;
-        if constexpr (S == State::INITIAL_PASS)
+        if constexpr (S == WorkGridState::INITIAL_PASS)
         {
             status += single_line_initial_pass(it->m_type, it->m_index);
         }
-        else if constexpr (S == State::LINEAR_REDUCTION)
+        else if constexpr (S == WorkGridState::LINEAR_REDUCTION)
         {
             if (m_nb_alternatives[it->m_type][it->m_index] > m_solver_policy.m_min_nb_alternatives_for_linear_reduction)
             {
@@ -690,7 +722,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::full_grid_pa
         }
         else
         {
-            static_assert(S == State::FULL_REDUCTION);
+            static_assert(S == WorkGridState::FULL_REDUCTION);
             status += single_line_full_reduction(it->m_type, it->m_index);
         }
         if (status.contradictory)
@@ -698,7 +730,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::full_grid_pa
         if (m_abort_function && m_abort_function())
             throw PicrossSolverAborted();
     }
-    if constexpr (S == State::INITIAL_PASS)
+    if constexpr (S == WorkGridState::INITIAL_PASS)
     {
         for(auto it = m_all_lines.begin(); it != m_uncompleted_lines_end; ++it)
             m_line_has_updates[it->m_type][it->m_index] = true;
@@ -787,7 +819,7 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
     {
         // Copy current grid state to a nested grid
         const auto nested_progress = nested_progress_bar(m_progress_bar, progress, nb_alt);
-        WorkGrid<SolverPolicy> nested_work_grid(*this, solver_policy, State::LINEAR_REDUCTION, nested_progress.first, nested_progress.second);
+        WorkGrid<SolverPolicy> nested_work_grid(*this, solver_policy, WorkGridState::LINEAR_REDUCTION, nested_progress.first, nested_progress.second);
         if (m_observer)
         {
             m_observer(ObserverEvent::BRANCHING, nullptr, nested_work_grid.m_branching_depth, 0);
@@ -899,7 +931,7 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
     {
         // Copy current grid state to a nested grid
         const auto nested_progress = nested_progress_bar(m_progress_bar, progress, nb_alt);
-        WorkGrid<SolverPolicy> nested_work_grid(*this, m_solver_policy, State::LINEAR_REDUCTION, nested_progress.first, nested_progress.second);
+        WorkGrid<SolverPolicy> nested_work_grid(*this, m_solver_policy, WorkGridState::LINEAR_REDUCTION, nested_progress.first, nested_progress.second);
         if (m_observer)
         {
             m_observer(ObserverEvent::BRANCHING, nullptr, nested_work_grid.m_branching_depth, 0);
