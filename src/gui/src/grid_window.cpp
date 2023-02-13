@@ -94,11 +94,24 @@ namespace
         return Colors[cycling_color_index(depth)];
     }
 
+    size_t get_tile_size(int size_enum)
+    {
+        // The tile size includes the thickness of the grid (1 pixel), unless for values smaller than 4 in which case the tiles are in contact with each other
+        static const std::vector<size_t> TileSizes = { 2, 5, 9, 12, 16 };
+        return TileSizes.at(static_cast<size_t>(size_enum));
+    }
+
+    size_t background_grid_thickness(size_t tile_size)
+    {
+        // Note that tile_size includes the grid thickness if the grid outline is visible
+        return tile_size > 3 ? 1 : 0;
+    }
+
     void draw_background_grid(ImDrawList* draw_list, ImVec2 tl_corner, size_t tile_size, size_t width, size_t height, bool outline = false)
     {
         const ImVec2 br_corner = ImVec2(tl_corner.x + static_cast<float>(width * tile_size), tl_corner.y + static_cast<float>(height * tile_size));
         draw_list->AddRectFilled(tl_corner, br_corner, ColorGridBack);
-        if (outline)
+        if (background_grid_thickness(tile_size) > 0 && outline)
         {
             for (size_t i = 0u; i <= width; ++i)
             {
@@ -115,18 +128,22 @@ namespace
 
     void draw_tile(ImDrawList* draw_list, ImVec2 tl_corner, size_t tile_size, size_t i, size_t j, bool filled, unsigned int depth = 0, float size_ratio = 1.f, float rounding_ratio = 0.f)
     {
+        const bool draw_border = tile_size > 6;
+        const auto grid_thickness = background_grid_thickness(tile_size);
+
         assert(0.f < size_ratio && size_ratio <= 1.f);
         assert(0.f <= rounding_ratio && rounding_ratio <= 1.f);
-        const float padding = static_cast<float>(tile_size - 1) * 0.5f * (1.f - size_ratio);
-        const float rounding = static_cast<float>(tile_size - 1) * 0.5f * rounding_ratio;
+        const float padding = draw_border ? static_cast<float>(tile_size - 1) * 0.5f * (1.f - size_ratio) : 0.f;
+        const float rounding = draw_border ? static_cast<float>(tile_size - 1) * 0.5f * rounding_ratio : 0.f;
         const ImVec2 tl_tile_corner = ImVec2(
-            tl_corner.x + static_cast<float>(i * tile_size + 1) + padding,
-            tl_corner.y + static_cast<float>(j * tile_size + 1) + padding);
+            tl_corner.x + static_cast<float>(i * tile_size + grid_thickness) + padding,
+            tl_corner.y + static_cast<float>(j * tile_size + grid_thickness) + padding);
         const ImVec2 br_tile_corner = ImVec2(
             tl_corner.x + static_cast<float>((i+1) * tile_size) - padding,
             tl_corner.y + static_cast<float>((j+1) * tile_size) - padding);
         draw_list->AddRectFilled(tl_tile_corner, br_tile_corner, filled ? get_color_tile_filled(depth) : get_color_tile_empty(depth), rounding);
-        draw_list->AddRect(tl_tile_corner, br_tile_corner, get_color_tile_border(depth), rounding);
+        if (draw_border)
+            draw_list->AddRect(tl_tile_corner, br_tile_corner, get_color_tile_border(depth), rounding);
     }
 } // namespace
 
@@ -198,8 +215,7 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
 
     max_nb_solutions = solver_settings.limit_solutions ? static_cast<unsigned int>(solver_settings.max_nb_solutions) : 0u;
 
-    static const std::vector<size_t> TileSizes = { 12, 18, 24 };
-    const size_t tile_size = TileSizes.at(static_cast<size_t>(tile_settings.size_enum));
+    const size_t tile_size = get_tile_size(tile_settings.size_enum);
 
     ImGui::SetNextWindowSize(ImVec2(20 + static_cast<float>(width * tile_size), 100 + static_cast<float>(height * tile_size)));
 

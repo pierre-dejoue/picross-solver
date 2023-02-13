@@ -34,15 +34,18 @@ void SettingsWindow::visit(bool& canBeErased)
 
         ImGui::Text("Size: ");
         ImGui::SameLine();
-        ImGui::RadioButton("small", &tile_settings->size_enum, 0);
+        ImGui::RadioButton("XS", &tile_settings->size_enum, 0);
         ImGui::SameLine();
-        ImGui::RadioButton("medium", &tile_settings->size_enum, 1);
+        ImGui::RadioButton("S", &tile_settings->size_enum, 1);
         ImGui::SameLine();
-        ImGui::RadioButton("large", &tile_settings->size_enum, 2);
+        ImGui::RadioButton("M", &tile_settings->size_enum, 2);
+        ImGui::SameLine();
+        ImGui::RadioButton("L", &tile_settings->size_enum, 3);
+        ImGui::SameLine();
+        ImGui::RadioButton("XL", &tile_settings->size_enum, 4);
 
-        ImGui::SliderFloat("Rounding ratio", &tile_settings->rounding_ratio, limits.rounding_ratio.min, limits.rounding_ratio.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
-
-        ImGui::SliderFloat("Size ratio", &tile_settings->size_ratio, limits.size_ratio.min, limits.size_ratio.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+        //ImGui::SliderFloat("Rounding ratio", &tile_settings->rounding_ratio, limits.rounding_ratio.min, limits.rounding_ratio.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+        //ImGui::SliderFloat("Size ratio", &tile_settings->size_ratio, limits.size_ratio.min, limits.size_ratio.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 
         ImGui::Unindent();
     }

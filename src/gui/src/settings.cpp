@@ -10,9 +10,9 @@ namespace
     {
         Settings::TileLimits result;
 
-        result.size_enum.default = 1;
+        result.size_enum.default = 2;
         result.size_enum.min = 0;
-        result.size_enum.max = 2;
+        result.size_enum.max = 4;
 
         result.rounding_ratio.default = 0.f;
         result.rounding_ratio.min = 0.f;
