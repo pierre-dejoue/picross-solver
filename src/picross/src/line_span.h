@@ -2,6 +2,7 @@
 
 #include <picross/picross.h>
 
+#include <cassert>
 #include <cstddef>
 
 
@@ -34,6 +35,18 @@ public:
     const Tile* end() const { return m_tiles + m_size; }
     bool is_completed() const;
     bool compatible(const LineSpan& other) const;
+
+    LineSpan head(int idx) const
+    {
+        assert(idx >= 0);
+        return LineSpan(m_type, m_index, static_cast<std::size_t>(idx), m_tiles);
+    }
+
+    LineSpan tail(int idx) const
+    {
+        assert(static_cast<std::size_t>(idx) <= m_size);
+        return LineSpan(m_type, m_index, m_size - static_cast<std::size_t>(idx), m_tiles + idx);
+    }
 
 private:
     const Line::Type    m_type;
@@ -73,6 +86,18 @@ public:
     Tile& operator[](int idx) { return m_tiles[idx]; }
     Tile* begin() { return m_tiles; }
     Tile* end() { return m_tiles + m_size; }
+
+    LineSpanW head(int idx)
+    {
+        assert(idx >= 0);
+        return LineSpanW(m_type, m_index, static_cast<std::size_t>(idx), m_tiles);
+    }
+
+    LineSpanW tail(int idx)
+    {
+        assert(static_cast<std::size_t>(idx) <= m_size);
+        return LineSpanW(m_type, m_index, m_size - static_cast<std::size_t>(idx), m_tiles + idx);
+    }
 
 private:
     const Line::Type    m_type;

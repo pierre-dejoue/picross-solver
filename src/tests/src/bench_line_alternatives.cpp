@@ -92,7 +92,6 @@ TEST_CASE("Bench full reduction", "[line_alternatives]")
             CHECK(reduction.is_fully_reduced);
         }
     }
-#if 0
     // Example from tiger.non
     {
         const LineConstraint constraint(Line::ROW, { 2, 2, 2, 2, 3, 4, 2, 2, 3 });
@@ -107,7 +106,7 @@ TEST_CASE("Bench full reduction", "[line_alternatives]")
         if (bench_run)
         {
             CHECK((reduction.reduced_line - known_tiles) == expected_delta);
-            CHECK(reduction.nb_alternatives == 8714484);
+            CHECK(reduction.nb_alternatives == 88714484);
             CHECK(reduction.is_fully_reduced);
         }
     }
@@ -129,7 +128,6 @@ TEST_CASE("Bench full reduction", "[line_alternatives]")
             CHECK(reduction.is_fully_reduced);
         }
     }
-#endif
     // Example from tiger.non
     {
         const LineConstraint constraint(Line::ROW, { 2, 2, 3, 3, 2, 3, 2, 2 });
