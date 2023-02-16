@@ -1,4 +1,5 @@
 # Source: https://www.nonograms.org/nonograms/i/3016
+# Unknown author
 # 50x60
 GRID Barque
 ROWS

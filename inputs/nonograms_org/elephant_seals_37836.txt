@@ -1,4 +1,5 @@
 # Source: https://www.nonograms.org/nonograms/i/37836
+# Author: Lalopop
 # 20x15
 GRID Elephant Seals
 ROWS

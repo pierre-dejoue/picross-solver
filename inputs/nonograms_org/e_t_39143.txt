@@ -1,4 +1,5 @@
 # Source: https://www.nonograms.org/nonograms/i/39143
+# Author: yesyesgrampictures
 # 15x9
 GRID E.T.
 ROWS

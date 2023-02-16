@@ -1,4 +1,5 @@
 # Source: https://www.nonograms.org/nonograms/i/6361
+# Author: Kimi_Raikkonen
 # 25x40
 GRID Giraffe
 ROWS

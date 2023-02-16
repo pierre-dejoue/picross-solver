@@ -1,4 +1,5 @@
 # Source: https://www.nonograms.org/nonograms/i/42735
+# Author: Katich
 # 40x40
 GRID Wolverine
 ROWS

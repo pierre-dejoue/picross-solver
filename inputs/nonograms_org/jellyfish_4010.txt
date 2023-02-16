@@ -1,4 +1,5 @@
 # Source: https://www.nonograms.org/nonograms/i/4010
+# Author: Irina-belko61
 # 33x40
 GRID Jellyfish
 ROWS
