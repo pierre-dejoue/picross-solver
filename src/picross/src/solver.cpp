@@ -37,7 +37,7 @@ Solver::Result RefSolver<BranchingAllowed>::solve(const InputGrid& input_grid, u
 
     SolverPolicy_RampUpMaxNbAlternatives solver_policy;
     solver_policy.m_branching_allowed = BranchingAllowed;
-    solver_policy.m_limit_on_max_nb_alternatives = BranchingAllowed;
+    solver_policy.m_limit_on_max_nb_alternatives = false;
 
     WorkGrid<SolverPolicy_RampUpMaxNbAlternatives> work_grid(input_grid, solver_policy, m_observer, m_abort_function);
     work_grid.set_stats(m_stats);
@@ -66,7 +66,7 @@ Solver::Status RefSolver<BranchingAllowed>::solve(const InputGrid& input_grid, S
 
     SolverPolicy_RampUpMaxNbAlternatives solver_policy;
     solver_policy.m_branching_allowed = BranchingAllowed;
-    solver_policy.m_limit_on_max_nb_alternatives = BranchingAllowed;
+    solver_policy.m_limit_on_max_nb_alternatives = false;
 
     WorkGrid<SolverPolicy_RampUpMaxNbAlternatives> work_grid(input_grid, solver_policy, m_observer, m_abort_function);
     work_grid.set_stats(m_stats);

@@ -364,26 +364,30 @@ namespace
             , m_line_length(line_length)
         {}
 
-        TailReduce tail_reduce(unsigned int k, unsigned int n)
+        TailReduce tail_reduce(unsigned int k, int n)
         {
-            assert(n < m_line_length);
-            unsigned int offset = k * arithmetic_sum_up_to(m_line_length) + n * m_line_length + n - arithmetic_sum_up_to(n);
+            assert(0 <= n && n < static_cast<int>(m_line_length));
+            const auto uns_n = static_cast<unsigned int>(n);
+            unsigned int offset = k * arithmetic_sum_up_to(m_line_length) + uns_n * m_line_length + uns_n - arithmetic_sum_up_to(uns_n);
             assert(offset < m_all_reduce_lines.size());
             return TailReduce(
-                        LineSpanW(m_all_reduce_lines.type(), m_all_reduce_lines.index(), m_line_length - n, m_all_reduce_lines.begin() + offset),
-                        nb_alternatives(k, n));
+                        LineSpanW(m_all_reduce_lines.type(), m_all_reduce_lines.index(), m_line_length - uns_n, m_all_reduce_lines.begin() + offset),
+                        nb_alternatives(k, uns_n));
         }
 
-        void record_reduction(unsigned int k, unsigned int n, LineAlternatives::NbAlt nb_alt)
+        void record_reduction(unsigned int k, int n, LineAlternatives::NbAlt nb_alt)
         {
-            assert(n < m_line_length);
-            nb_alternatives(k, n) = nb_alt;
-            recorded(k, n) = 1;
+            assert(0 <= n && n < static_cast<int>(m_line_length));
+            const auto uns_n = static_cast<unsigned int>(n);
+            nb_alternatives(k, uns_n) = nb_alt;
+            recorded(k, uns_n) = 1;
         }
 
-        bool is_recorded(unsigned int k, unsigned int n) const
+        bool is_recorded(unsigned int k, int n) const
         {
-            return const_cast<TailReduceArray*>(this)->recorded(k, n) != 0;
+            assert(0 <= n && n < static_cast<int>(m_line_length));
+            const auto uns_n = static_cast<unsigned int>(n);
+            return const_cast<TailReduceArray*>(this)->recorded(k, uns_n) != 0;
         }
 
     private:
@@ -982,7 +986,7 @@ TailReduce LineAlternatives::Impl::reduce_all_alternatives_recursive(
     auto reduced_tail = result.m_reduced_tail.head(line_end - line_begin);
     ReducedLine reduced_line_tail(reduced_tail);
     LineSpanW alternative_tail = alternative.head(line_end).tail(line_begin);
-    assert(alternative_tail.size() == (line_end - line_begin));
+    assert(alternative_tail.size() == static_cast<std::size_t>(line_end - line_begin));
 
     const int nb_ones = static_cast<int>(*constraint_it);
     const bool is_last_constraint = (constraint_it + 1 == constraint_end);
@@ -1057,11 +1061,12 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_all_alternatives()
 {
     const auto& range_l = m_bidirectional_range;
     Line reduced_line = line_from_line_span(m_known_tiles);
+    LineSpanW reduced_line_span(reduced_line);
     if ((range_l.m_constraint_begin == range_l.m_constraint_end) || (range_l.m_line_begin == range_l.m_line_end))
     {
         for (int idx = range_l.m_line_begin; idx < range_l.m_line_end; idx++)
         {
-            reduced_line[idx] = Tile::EMPTY;
+            reduced_line_span[idx] = Tile::EMPTY;
         }
         const bool match = check_compatibility_bw<false>(LineSpanW(reduced_line), range_l.m_line_begin, range_l.m_line_end);
         return Reduction { std::move(reduced_line), match ? NbAlt{1} : NbAlt{0}, true };
@@ -1075,7 +1080,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_all_alternatives()
         const auto reduction = reduce_all_alternatives_recursive(alternative_buffer.line_span(), tail_reduce_array.get(), static_cast<int>(m_remaining_zeros), range_l.m_constraint_begin, range_l.m_constraint_end, range_l.m_line_begin, range_l.m_line_end);
         for (int idx = range_l.m_line_begin; idx < range_l.m_line_end; idx++)
         {
-            reduced_line[idx] = reduction.m_reduced_tail[idx - range_l.m_line_begin];
+            reduced_line_span[idx] = reduction.m_reduced_tail[idx - range_l.m_line_begin];
         }
         return Reduction { std::move(reduced_line), reduction.m_nb_alt, true };
     }

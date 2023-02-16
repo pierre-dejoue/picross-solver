@@ -924,6 +924,9 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
         max_nb_alt = std::max(max_nb_alt, nb_alt);
     }
 
+    auto solver_policy = m_solver_policy;
+    solver_policy.m_limit_on_max_nb_alternatives = true;
+
     Solver::Status status = Solver::Status::OK;
     bool flag_solution_found = false;
     LineAlternatives::NbAlt progress = 0u;
@@ -931,7 +934,7 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
     {
         // Copy current grid state to a nested grid
         const auto nested_progress = nested_progress_bar(m_progress_bar, progress, nb_alt);
-        WorkGrid<SolverPolicy> nested_work_grid(*this, m_solver_policy, WorkGridState::LINEAR_REDUCTION, nested_progress.first, nested_progress.second);
+        WorkGrid<SolverPolicy> nested_work_grid(*this, solver_policy, WorkGridState::LINEAR_REDUCTION, nested_progress.first, nested_progress.second);
         if (m_observer)
         {
             m_observer(ObserverEvent::BRANCHING, nullptr, nested_work_grid.m_branching_depth, 0);

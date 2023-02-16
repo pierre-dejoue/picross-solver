@@ -13,7 +13,7 @@ struct SolverPolicyBase
     unsigned int m_min_nb_alternatives_for_linear_reduction = 1 << 8;
     unsigned int m_max_nb_alternatives_for_probing = 1 << 12;
     unsigned int m_max_nb_alternatives_while_probing = 1 << 16;
-    unsigned int m_max_nb_alternatives = 1 << 20;
+    unsigned int m_max_nb_alternatives = 1 << 26;
 };
 
 struct SolverPolicy_RampUpMaxNbAlternatives : public SolverPolicyBase
