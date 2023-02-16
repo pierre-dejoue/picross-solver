@@ -130,6 +130,29 @@ namespace
         Line::Container m_tiles;
         LineSpanW       m_line_span;
     };
+
+    // An array of LineExt
+    class LineExtArray
+    {
+    public:
+        LineExtArray(const LineSpan& line_span, std::size_t count, Tile init_tile)
+            : m_tiles(count * (line_span.size() + 1u) + 1u, init_tile)
+            , m_line_spans()
+        {
+            m_tiles[0] = Tile::EMPTY;
+            for (std::size_t c = 1u; c <= count; c++)
+                m_tiles[c * (line_span.size() + 1u)] = Tile::EMPTY;
+            m_line_spans.reserve(count);
+            for (std::size_t c = 0u; c < count; c++)
+                m_line_spans.emplace_back(line_span.type(), line_span.index(), line_span.size(), m_tiles.data() + c * (line_span.size() + 1u) + 1u);
+        }
+
+        const LineSpanW& line_span(int idx) const { assert(idx >=0); return m_line_spans[static_cast<unsigned int>(idx)]; }
+        LineSpanW& line_span(int idx) {  assert(idx >=0); return m_line_spans[static_cast<unsigned int>(idx)]; }
+    private:
+        Line::Container         m_tiles;
+        std::vector<LineSpanW>  m_line_spans;
+    };
 } // namespace
 
 
@@ -363,8 +386,6 @@ struct LineAlternatives::Impl
     unsigned int                    m_remaining_zeros;
     BidirectionalRange<false>       m_bidirectional_range;
     BidirectionalRange<true>        m_bidirectional_range_reverse;
-    LineExt                         m_empty_tiles_mask_extended_line;
-    std::vector<LineExt>            m_filled_tiles_mask_extended_lines;
 };
 
 LineAlternatives::Impl::Impl(const LineConstraint& constraints, const LineSpan& known_tiles, BinomialCoefficients::Cache& binomial)
@@ -377,13 +398,8 @@ LineAlternatives::Impl::Impl(const LineConstraint& constraints, const LineSpan& 
     , m_remaining_zeros(m_line_length - constraints.min_line_size())
     , m_bidirectional_range(constraints.segments(), m_line_length)
     , m_bidirectional_range_reverse(constraints.segments(), m_line_length)
-    , m_empty_tiles_mask_extended_line(known_tiles, Tile::EMPTY)
-    , m_filled_tiles_mask_extended_lines()
 {
     assert(m_line_length >= constraints.min_line_size());
-    m_filled_tiles_mask_extended_lines.reserve(m_line_length);
-    for (std::size_t idx = 0; idx < m_line_length; idx++)
-        m_filled_tiles_mask_extended_lines.emplace_back(m_known_tiles, Tile::UNKNOWN);
 }
 
 LineAlternatives::Impl::Impl(const Impl& other, const LineSpan& known_tiles)
@@ -396,8 +412,6 @@ LineAlternatives::Impl::Impl(const Impl& other, const LineSpan& known_tiles)
     , m_remaining_zeros(other.m_remaining_zeros)
     , m_bidirectional_range(other.m_bidirectional_range)
     , m_bidirectional_range_reverse(other.m_bidirectional_range_reverse)
-    , m_empty_tiles_mask_extended_line(other.m_empty_tiles_mask_extended_line)
-    , m_filled_tiles_mask_extended_lines(other.m_filled_tiles_mask_extended_lines)
 {
     assert(m_line_length == m_known_tiles.size());
 }
@@ -648,8 +662,10 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
     const auto line_end = m_bidirectional_range.m_line_end;
     assert(nb_segments == static_cast<std::size_t>(std::distance(constraint_it, constraint_end)));
 
+    LineExtArray tiles_masks(m_known_tiles, m_known_tiles.size() + 1u, Tile::UNKNOWN);
+
     // empty_tiles_mask:  '0??000000?????0'
-    LineSpanW& empty_tiles_mask = m_empty_tiles_mask_extended_line.line_span();
+    LineSpanW& empty_tiles_mask = tiles_masks.line_span(0);
     for (int idx = 0; idx < line_begin; idx++) { empty_tiles_mask[idx] = Tile::UNKNOWN; }
     for (int idx = line_begin; idx < line_end; idx++) { empty_tiles_mask[idx] = Tile::EMPTY; }
     for (int idx = line_end; idx < static_cast<int>(m_line_length); idx++) { empty_tiles_mask[idx] = Tile::UNKNOWN; }
@@ -657,7 +673,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
     // reset filled tiles masks
     for (int mask_idx = line_begin; mask_idx < line_end; mask_idx++)
     {
-        LineSpanW& filled_tiles_mask = m_filled_tiles_mask_extended_lines[static_cast<std::size_t>(mask_idx)].line_span();
+        LineSpanW& filled_tiles_mask = tiles_masks.line_span(mask_idx + 1);
         for (int idx = 0; idx < static_cast<int>(m_line_length); idx++)
             filled_tiles_mask[idx] = Tile::UNKNOWN;
     }
@@ -692,7 +708,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
                     empty_tiles_mask[idx] = Tile::UNKNOWN;
 
                     // Filled tiles masks
-                    LineSpanW& filled_tiles_mask = m_filled_tiles_mask_extended_lines[static_cast<std::size_t>(idx)].line_span();
+                    LineSpanW& filled_tiles_mask = tiles_masks.line_span(idx + 1);
                     if (filled_tiles_mask[idx] == Tile::UNKNOWN)
                     {
                         // First segment
@@ -738,7 +754,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
         {
             if (m_known_tiles[mask_idx] == Tile::FILLED)
             {
-                const LineSpan filled_tiles_mask(m_filled_tiles_mask_extended_lines[static_cast<std::size_t>(mask_idx)].line_span());
+                const LineSpan filled_tiles_mask(tiles_masks.line_span(mask_idx + 1));
                 assert(filled_tiles_mask[mask_idx] == Tile::FILLED);
                 result.reduced_line = result.reduced_line + filled_tiles_mask;
             }
