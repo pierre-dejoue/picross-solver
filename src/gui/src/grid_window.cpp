@@ -7,9 +7,8 @@
 #include <utils/picross_file_io.h>
 #include <utils/strings.h>
 
-#include "portable-file-dialogs.h"
-
 #include <imgui.h>
+#include <portable-file-dialogs.h>
 
 #include <iostream>
 #include <optional>
