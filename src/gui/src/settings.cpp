@@ -48,9 +48,9 @@ namespace
         result.show_branching.min = false;
         result.show_branching.max = true;
 
-        result.speed.default = 10;
+        result.speed.default = 20;
         result.speed.min = 0;
-        result.speed.max = 20;
+        result.speed.max = 40;
 
         return result;
     }

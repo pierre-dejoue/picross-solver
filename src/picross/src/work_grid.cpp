@@ -615,7 +615,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_
 {
     PassStatus status;
 
-    if (m_line_is_fully_reduced[type][index])
+    if (m_line_is_fully_reduced[type][index] || !m_line_has_updates[type][index])
     {
         return status;
     }
@@ -709,16 +709,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::full_grid_pa
         }
         else if constexpr (S == WorkGridState::LINEAR_REDUCTION)
         {
-            if (m_nb_alternatives[it->m_type][it->m_index] > m_solver_policy.m_min_nb_alternatives_for_linear_reduction)
-            {
-                status += single_line_linear_reduction(it->m_type, it->m_index);
-            }
-            else
-            {
-                // For small number of alternatives (as estimated previously) favor full reduction which will have better
-                // performance, find all the line solvable tiles and return a precise nb of alternatives
-                status += single_line_full_reduction(it->m_type, it->m_index);
-            }
+            status += single_line_linear_reduction(it->m_type, it->m_index);
         }
         else
         {
