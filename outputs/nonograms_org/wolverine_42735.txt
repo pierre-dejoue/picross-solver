@@ -45,11 +45,11 @@ GRID 1: Wolverine
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 13037895
-  Max number of alternatives after a  linear line reduction (change/all): 7726160/13037895
+  Max number of alternatives after a  linear line reduction (change/all): 13037895/13037895
   Max number of alternatives after a    full line reduction (change/all): 1070/1070
-  Number of full grid pass: 49
-  Number of single line  linear reduction (change/all): 332/1429
-  Number of single line    full reduction (change/all): 279/439
+  Number of full grid pass: 65
+  Number of single line  linear reduction (change/all): 613/1283
+  Number of single line    full reduction (change/all): 4/74
 
 
 

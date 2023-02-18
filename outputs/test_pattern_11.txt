@@ -36,9 +36,11 @@ GRID 1: Centerpiece edge
     > Total number of alternatives being tested (probing/branching): 12/3
     > Max number of alternatives by branching depth: 3
   Max number of alternatives on an empty line (initial grid pass): 21
-  Max number of alternatives after a    full line reduction (change/all): 3/10
+  Max number of alternatives after a  linear line reduction (change/all): 4/10
+  Max number of alternatives after a    full line reduction (change/all): 0/3
   Number of full grid pass: 48
-  Number of single line    full reduction (change/all): 140/171
+  Number of single line  linear reduction (change/all): 140/185
+  Number of single line    full reduction (change/all): 0/8
 
 
 

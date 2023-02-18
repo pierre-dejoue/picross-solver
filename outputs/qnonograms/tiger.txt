@@ -56,10 +56,10 @@ GRID 1: Tiger
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4294967295 (overflow!)
   Max number of alternatives after a  linear line reduction (change/all): 4294967295/4294967295
-  Max number of alternatives after a    full line reduction (change/all): 210/210
-  Number of full grid pass: 36
-  Number of single line  linear reduction (change/all): 560/1348
-  Number of single line    full reduction (change/all): 344/552
+  Max number of alternatives after a    full line reduction (change/all): 6/22
+  Number of full grid pass: 43
+  Number of single line  linear reduction (change/all): 877/1842
+  Number of single line    full reduction (change/all): 2/42
 
 
 

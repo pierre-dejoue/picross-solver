@@ -26,10 +26,10 @@ GRID 1: Judo
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4368
   Max number of alternatives after a  linear line reduction (change/all): 4368/4368
-  Max number of alternatives after a    full line reduction (change/all): 125/220
-  Number of full grid pass: 20
-  Number of single line  linear reduction (change/all): 25/170
-  Number of single line    full reduction (change/all): 131/218
+  Max number of alternatives after a    full line reduction (change/all): 31/541
+  Number of full grid pass: 30
+  Number of single line  linear reduction (change/all): 157/397
+  Number of single line    full reduction (change/all): 1/37
 
 
 

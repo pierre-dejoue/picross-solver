@@ -87,9 +87,9 @@ GRID 1: Lighthouse
   Max number of alternatives on an empty line (initial grid pass): 4294967295 (overflow!)
   Max number of alternatives after a  linear line reduction (change/all): 4294967295/4294967295
   Max number of alternatives after a    full line reduction (change/all): 1036/3060
-  Number of full grid pass: 75
-  Number of single line  linear reduction (change/all): 907/4624
-  Number of single line    full reduction (change/all): 435/709
+  Number of full grid pass: 106
+  Number of single line  linear reduction (change/all): 1340/2930
+  Number of single line    full reduction (change/all): 10/108
 
 
 

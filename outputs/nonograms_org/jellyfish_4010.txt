@@ -46,10 +46,8 @@ GRID 1: Jellyfish
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 293930
   Max number of alternatives after a  linear line reduction (change/all): 293930/293930
-  Max number of alternatives after a    full line reduction (change/all): 133/210
-  Number of full grid pass: 12
-  Number of single line  linear reduction (change/all): 169/310
-  Number of single line    full reduction (change/all): 181/244
+  Number of full grid pass: 18
+  Number of single line  linear reduction (change/all): 382/715
 
 
 

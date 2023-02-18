@@ -41,10 +41,8 @@ GRID 1: Not a Weed
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 98280
   Max number of alternatives after a  linear line reduction (change/all): 21168/98280
-  Max number of alternatives after a    full line reduction (change/all): 185/252
-  Number of full grid pass: 16
-  Number of single line  linear reduction (change/all): 97/287
-  Number of single line    full reduction (change/all): 177/281
+  Number of full grid pass: 18
+  Number of single line  linear reduction (change/all): 301/562
 
 
 

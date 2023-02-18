@@ -11,10 +11,10 @@ GRID 1: Snake
     > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 330
   Max number of alternatives after a  linear line reduction (change/all): 330/330
-  Max number of alternatives after a    full line reduction (change/all): 56/330
+  Max number of alternatives after a    full line reduction (change/all): 0/330
   Number of full grid pass: 18
-  Number of single line  linear reduction (change/all): 1/4
-  Number of single line    full reduction (change/all): 48/93
+  Number of single line  linear reduction (change/all): 49/103
+  Number of single line    full reduction (change/all): 0/22
 
 
 

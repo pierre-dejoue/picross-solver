@@ -54,10 +54,10 @@ GRID 1: Wild Tattoo
     > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 28048800
   Max number of alternatives after a  linear line reduction (change/all): 28048800/28048800
-  Max number of alternatives after a    full line reduction (change/all): 153/60098
-  Number of full grid pass: 40
-  Number of single line  linear reduction (change/all): 345/1227
-  Number of single line    full reduction (change/all): 273/500
+  Max number of alternatives after a    full line reduction (change/all): 2964/60098
+  Number of full grid pass: 53
+  Number of single line  linear reduction (change/all): 607/1294
+  Number of single line    full reduction (change/all): 5/119
 
 
 

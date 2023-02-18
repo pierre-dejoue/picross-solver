@@ -138,10 +138,10 @@ GRID 1: Centerpiece corner
   Solution nb 10: (branching depth: 3)
   #.####.######
   .#....##..###
-  #.#.#..#.####
-  #...##.####.#
-  #.##...###..#
-  #..#.#.######
+  #.#..#.#.####
+  #..##..####.#
+  #..##..###..#
+  #.#..#.######
   .#..#......#.
   #.#.#..#.#..#
   #....##..##.#
@@ -153,10 +153,10 @@ GRID 1: Centerpiece corner
   Solution nb 11: (branching depth: 3)
   #.####.######
   .#....##..###
-  #.#..#.#.####
-  #..##..####.#
-  #..##..###..#
-  #.#..#.######
+  #.#.#..#.####
+  #...##.####.#
+  #.##...###..#
+  #..#.#.######
   .#..#......#.
   #.#.#..#.#..#
   #....##..##.#
@@ -303,10 +303,10 @@ GRID 1: Centerpiece corner
   Solution nb 21: (branching depth: 3)
   #.####.######
   .#....##..###
-  #.#.#..#.####
-  #...##.####.#
-  #.##...###..#
-  #..#.#.######
+  #.#..#.#.####
+  #..##..####.#
+  #..##..###..#
+  #.#..#.######
   .#..#......#.
   #.#.#..#..#.#
   #....##.##..#
@@ -318,10 +318,10 @@ GRID 1: Centerpiece corner
   Solution nb 22: (branching depth: 3)
   #.####.######
   .#....##..###
-  #.#..#.#.####
-  #..##..####.#
-  #..##..###..#
-  #.#..#.######
+  #.#.#..#.####
+  #...##.####.#
+  #.##...###..#
+  #..#.#.######
   .#..#......#.
   #.#.#..#..#.#
   #....##.##..#
@@ -465,7 +465,7 @@ GRID 1: Centerpiece corner
   .#....#....#.
   #.####.####.#
 
-  Solution nb 32: (branching depth: 3)
+  Solution nb 32: (branching depth: 4)
   #.####.######
   .#....##..###
   #..#.#.#.####
@@ -480,7 +480,7 @@ GRID 1: Centerpiece corner
   .#....#....#.
   #.####.####.#
 
-  Solution nb 33: (branching depth: 3)
+  Solution nb 33: (branching depth: 4)
   #.####.######
   .#....##..###
   #..#.#.#.####
@@ -497,13 +497,15 @@ GRID 1: Centerpiece corner
 
   Number of solutions found: 33
   Max branching depth: 4
-    > Hypothesis (probing/branching) on 25/19 lines
-    > Total number of alternatives being tested (probing/branching): 103/51
+    > Hypothesis (probing/branching) on 4/20 lines
+    > Total number of alternatives being tested (probing/branching): 24/54
     > Max number of alternatives by branching depth: 3 2 3 3
   Max number of alternatives on an empty line (initial grid pass): 165
-  Max number of alternatives after a    full line reduction (change/all): 15/84
-  Number of full grid pass: 526
-  Number of single line    full reduction (change/all): 1639/2047
+  Max number of alternatives after a  linear line reduction (change/all): 28/84
+  Max number of alternatives after a    full line reduction (change/all): 0/15
+  Number of full grid pass: 322
+  Number of single line  linear reduction (change/all): 816/1311
+  Number of single line    full reduction (change/all): 0/232
 
 
 

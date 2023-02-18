@@ -30,9 +30,11 @@ GRID 1: Two Notes
     > Total number of alternatives being tested (probing/branching): 14/2
     > Max number of alternatives by branching depth: 2
   Max number of alternatives on an empty line (initial grid pass): 36
-  Max number of alternatives after a    full line reduction (change/all): 5/36
+  Max number of alternatives after a  linear line reduction (change/all): 8/36
+  Max number of alternatives after a    full line reduction (change/all): 0/36
   Number of full grid pass: 42
-  Number of single line    full reduction (change/all): 206/373
+  Number of single line  linear reduction (change/all): 206/379
+  Number of single line    full reduction (change/all): 0/38
 
 
 

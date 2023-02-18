@@ -67,9 +67,9 @@ GRID 1: Barque
   Max number of alternatives on an empty line (initial grid pass): 1852482996
   Max number of alternatives after a  linear line reduction (change/all): 1852482996/1852482996
   Max number of alternatives after a    full line reduction (change/all): 19964/54264
-  Number of full grid pass: 46
-  Number of single line  linear reduction (change/all): 572/2099
-  Number of single line    full reduction (change/all): 246/420
+  Number of full grid pass: 54
+  Number of single line  linear reduction (change/all): 800/1635
+  Number of single line    full reduction (change/all): 3/51
 
 
 
