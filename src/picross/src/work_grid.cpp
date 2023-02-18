@@ -124,6 +124,10 @@ std::ostream& operator<<(std::ostream& ostream, WorkGridState state)
         ostream << "BRANCHING";
         break;
 
+    case WorkGridState::STOP_SOLVER:
+        ostream << "STOP_SOLVER";
+        break;
+
     default:
         assert(0);
         ostream << "UNKNOWN";
@@ -250,7 +254,7 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
 }
 
 template <typename SolverPolicy>
-Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& solution_found, bool probing)
+Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& solution_found, bool currently_probing)
 {
     Solver::Status status = Solver::Status::OK;
     try
@@ -258,7 +262,7 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
         bool grid_completed = false;
         PassStatus pass_status;
 
-        while (m_state != WorkGridState::BRANCHING && !grid_completed)
+        while (m_state != WorkGridState::BRANCHING && m_state != WorkGridState::STOP_SOLVER && !grid_completed)
         {
             if (m_observer)
             {
@@ -283,26 +287,29 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
 
             case WorkGridState::FULL_REDUCTION:
                 pass_status = full_grid_pass<WorkGridState::FULL_REDUCTION>();
-                if (m_solver_policy.switch_to_branching(m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines))
-                {
-                    m_state = probing ? WorkGridState::BRANCHING : WorkGridState::PROBING;
-                }
-                else
+                if (m_solver_policy.continue_line_solving(m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines))
                 {
                     // Max number of alternatives for the next full grid pass
                     m_max_nb_alternatives = m_solver_policy.get_max_nb_alternatives(m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines);
                     if (pass_status.grid_changed)
                         m_state = WorkGridState::LINEAR_REDUCTION;
                 }
+                else if (!currently_probing && m_solver_policy.switch_to_probing(m_branching_depth, m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines))
+                {
+                    m_state = WorkGridState::PROBING;
+                }
+                else if (m_solver_policy.switch_to_branching(m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines))
+                {
+                    m_state = WorkGridState::BRANCHING;
+                }
+                else
+                {
+                    m_state = WorkGridState::STOP_SOLVER;
+                }
                 break;
 
             case WorkGridState::PROBING:
             {
-                if (!m_solver_policy.m_branching_allowed)
-                {
-                    m_state = WorkGridState::BRANCHING;
-                    break;
-                }
                 const auto probing_result = probe();
                 if (probing_result.m_status == Solver::Status::CONTRADICTORY_GRID)
                     pass_status.contradictory = true;
@@ -314,6 +321,7 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
             }
 
             case WorkGridState::BRANCHING:
+            case WorkGridState::STOP_SOLVER:
             default:
                 assert(0);
                 break;
@@ -328,14 +336,14 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
         // Are we done?
         if (grid_completed)
         {
-            if (!probing)
+            if (currently_probing)
             {
-                const bool cont = found_solution(solution_found);
-                status = cont ? Solver::Status::OK : Solver::Status::ABORTED;
+                status = Solver::Status::OK;
             }
             else
             {
-                status = Solver::Status::OK;
+                const bool cont = found_solution(solution_found);
+                status = cont ? Solver::Status::OK : Solver::Status::ABORTED;
             }
         }
         // If we are not, the grid is either contradictory or not line solvable
@@ -363,19 +371,22 @@ Solver::Status WorkGrid<SolverPolicy>::solve(const Solver::SolutionFound& soluti
 
     if (status == Solver::Status::NOT_LINE_SOLVABLE)
     {
-        if (m_solver_policy.m_branching_allowed)
+        if (m_state == WorkGridState::BRANCHING)
         {
-            assert(m_state == WorkGridState::BRANCHING);
+            assert(m_solver_policy.m_branching_allowed);
             if (m_observer)
             {
                 m_observer(ObserverEvent::INTERNAL_STATE, nullptr, m_branching_depth, static_cast<unsigned int>(m_state));
             }
 
-            // Make a guess
+            // Make a guess (branch search)
             status = branch(solution_found);
         }
-        else if (m_branching_depth == 0)
+        else
         {
+            assert(!m_solver_policy.m_branching_allowed);
+            assert(m_branching_depth == 0);
+
             // Partial solution
             solution_found(Solver::Solution{ OutputGrid(*this), m_branching_depth, PARTIAL_SOLUTION });
         }

@@ -32,7 +32,8 @@ enum class WorkGridState
     LINEAR_REDUCTION,
     FULL_REDUCTION,
     PROBING,
-    BRANCHING
+    BRANCHING,
+    STOP_SOLVER
 };
 
 std::ostream& operator<<(std::ostream& ostream, WorkGridState state);
@@ -82,7 +83,7 @@ public:
     Solver::Status line_solve(const Solver::SolutionFound& solution_found);
     Solver::Status solve(const Solver::SolutionFound& solution_found);
 private:
-    Solver::Status line_solve(const Solver::SolutionFound& solution_found, bool probing);
+    Solver::Status line_solve(const Solver::SolutionFound& solution_found, bool currently_probing);
     bool all_lines_completed() const;
     bool update_line(const LineSpan& line, unsigned int nb_alt);
     void partition_completed_lines();

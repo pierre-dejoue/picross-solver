@@ -18,7 +18,9 @@ struct SolverPolicyBase
 struct SolverPolicy_RampUpMaxNbAlternatives : public SolverPolicyBase
 {
     unsigned int get_max_nb_alternatives(unsigned int previous_max_nb_alternatives, bool grid_changed, unsigned int skipped_lines) const;
+    bool continue_line_solving(unsigned int max_nb_alternatives, bool grid_changed, unsigned int skipped_lines) const;
     bool switch_to_branching(unsigned int max_nb_alternatives, bool grid_changed, unsigned int skipped_lines) const;
+    bool switch_to_probing(unsigned int branching_depth, unsigned int max_nb_alternatives, bool grid_changed, unsigned int skipped_lines) const;
 };
 
 } // namespace picross
