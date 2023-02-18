@@ -1,0 +1,35 @@
+GRID 1: Mozaic
+  Size: 40x20
+  Solution nb 1: (branching depth: 15)
+  ####.#..#..##...###.###...##..#..#.####.
+  #.....##.##..##.#.#.#.#.##..##.##.....#.
+  #.######.##...#...#.#...#...##.######.#.
+  ..#........##.###.###.###.##........#...
+  #.#.####.#.##...#.....#...##.#.####.#.##
+  #.###..#.#...##.###.###.##...#.#..###.#.
+  #.....##.###.##...#.#...##.###.##.....##
+  .###..#........##..#..##........#..###..
+  ...#..#.######.##..#..##.######.#..#....
+  ##.##.#.#....#...#...#...#....#.#.##.##.
+  #.....#...##.###.##.##.###.##...#.....#.
+  #.###.###.#........#........#.###.###.#.
+  ..#.....#.#.######.#.######.#.#.....#...
+  #...#####.#.#....#.#.#....#.#.#####...#.
+  ###.#.....#...##...#...##...#.....#.###.
+  ....#.###.###.#.........#.###.###.#.....
+  .####.#.#.....#.###.###.#.....#.#.####.#
+  .#......##.##...#.....#...##.##......#.#
+  ...###...#.#..#...###...#..#.#...###...#
+  #..#.#..##.##.###.#.#.###.##.##..#.#..##
+
+  Number of solutions found: 1
+  Max branching depth: 20
+    > Hypothesis (probing/branching) on 3/633266 lines
+    > Total number of alternatives being tested (probing/branching): 3641/3844312
+    > Max number of alternatives by branching depth: 15 56 56 60 18 20 18 6 6 7 7 5 4 3 6 6 6 5 3 3
+  Max number of alternatives on an empty line (initial grid pass): 6906900
+  Max number of alternatives after a  linear line reduction (change/all): 6906900/6906900
+  Max number of alternatives after a    full line reduction (change/all): 45386/6906900
+  Number of full grid pass: 17159074
+  Number of single line  linear reduction (change/all): 72218772/150936736
+  Number of single line    full reduction (change/all): 419267/14714758
