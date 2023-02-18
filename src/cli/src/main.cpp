@@ -24,6 +24,7 @@
 #include <exception>
 #include <functional>
 #include <iostream>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -33,7 +34,7 @@
 namespace
 {
 
-    const std::string validation_mode_format = "File,Grid,Size,Valid,Difficulty,Timing (ms),Misc";
+    const std::string validation_mode_format = "File,Grid,Size,Valid,Difficulty,Timing (ms),Misc,Linear reduction,Full reduction,Depth,Search alts";
 
     struct ValidationModeData
     {
@@ -44,6 +45,7 @@ namespace
         std::string size;
         picross::ValidationResult validation_result;
         float timing_ms;
+        std::optional<picross::GridStats> grid_stats;
         std::string misc;
     };
 
@@ -60,10 +62,16 @@ namespace
         ostream << (data.validation_result.code == 1 && (data.validation_result.branching_depth == 0u) ? "LINE" : "") << ',';
         if (data.timing_ms >= 0.f)
             ostream << data.timing_ms;
-        if (!data.validation_result.msg.empty())
-            ostream << ",\"" << data.validation_result.msg << "\"";
-        if (!data.misc.empty())
-            ostream << ",\"" << data.misc << "\"";
+        ostream << ",";
+        if (!data.validation_result.msg.empty() || !data.misc.empty())
+            ostream << "\"" << (data.misc.empty() ? data.validation_result.msg : data.misc) << "\"";
+        if (data.grid_stats.has_value())
+        {
+            ostream << "," << (data.grid_stats->nb_single_line_linear_reduction + data.grid_stats->nb_single_line_linear_reduction_w_change);
+            ostream << "," << (data.grid_stats->nb_single_line_full_reduction   + data.grid_stats->nb_single_line_full_reduction_w_change);
+            ostream << "," << data.grid_stats->max_branching_depth;
+            ostream << "," << (data.grid_stats->total_nb_branching_alternatives + data.grid_stats->total_nb_probing_alternatives);
+        }
         return ostream;
     }
 
@@ -217,7 +225,7 @@ int main(int argc, char *argv[])
 
                 if (input_ok)
                 {
-                    if (args["verbose"])
+                    if (args["verbose"] && !validation_mode)
                     {
                         stream_input_grid_constraints(std::cout, input_grid);
                     }
@@ -253,6 +261,11 @@ int main(int argc, char *argv[])
                     std::chrono::duration<float, std::milli> time_ms;
                     if (validation_mode)
                     {
+                        /* Stats */
+                        picross::GridStats stats;
+                        if (args["verbose"])
+                            solver->set_stats(stats);
+
                         /* Validate the grid */
                         {
                             DurationMeas<float, std::milli> meas_ms(time_ms);
@@ -260,10 +273,12 @@ int main(int argc, char *argv[])
                         }
                         if (!args["no-timing"])
                             grid_data.timing_ms = time_ms.count();
+                        if (args["verbose"])
+                            grid_data.grid_stats = stats;
                     }
                     else
                     {
-                        /* Reset stats */
+                        /* Stats */
                         picross::GridStats stats;
                         solver->set_stats(stats);
 
