@@ -326,6 +326,7 @@ namespace
         return std::make_pair(success, result);
     }
 
+#if PICROSS_FILLED_TILLED_MASKS
     void set_single_segment(LineSpanW& line, int seg_begin, int seg_length)
     {
         const int line_sz = static_cast<int>(line.size());
@@ -337,6 +338,7 @@ namespace
         line[seg_begin + seg_length] = Tile::EMPTY;
         for (int idx = seg_begin + seg_length + 1; idx < line_sz; idx++) { line[idx] = Tile::UNKNOWN; }
     }
+#endif
 
     struct TailReduce
     {
@@ -746,7 +748,11 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
     const auto line_end = m_bidirectional_range.m_line_end;
     assert(nb_segments == static_cast<std::size_t>(std::distance(constraint_it, constraint_end)));
 
+#if PICROSS_FILLED_TILLED_MASKS
     LineExtArray tiles_masks(m_known_tiles, m_known_tiles.size() + 1u, Tile::UNKNOWN);
+#else
+    LineExtArray tiles_masks(m_known_tiles, 1u, Tile::UNKNOWN);
+#endif
 
     // empty_tiles_mask:  '0??000000?????0'
     LineSpanW& empty_tiles_mask = tiles_masks.line_span(0);
@@ -754,6 +760,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
     for (int idx = line_begin; idx < line_end; idx++) { empty_tiles_mask[idx] = Tile::EMPTY; }
     for (int idx = line_end; idx < static_cast<int>(m_line_length); idx++) { empty_tiles_mask[idx] = Tile::UNKNOWN; }
 
+#if PICROSS_FILLED_TILLED_MASKS
     // reset filled tiles masks
     for (int mask_idx = line_begin; mask_idx < line_end; mask_idx++)
     {
@@ -762,12 +769,13 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
             filled_tiles_mask[idx] = Tile::UNKNOWN;
     }
 
+    LineExt segment_extended_line(m_known_tiles, Tile::UNKNOWN);
+    LineSpanW& segment_ext = segment_extended_line.line_span();
+#endif
+
     // reduction_mask:    '0?????????????0'
     LineExt reduction_mask_extended_line(m_known_tiles, Tile::UNKNOWN);
     LineSpanW& reduction_mask = reduction_mask_extended_line.line_span();
-
-    LineExt segment_extended_line(m_known_tiles, Tile::UNKNOWN);
-    LineSpanW& segment_ext = segment_extended_line.line_span();
 
     Reduction result = from_line(m_known_tiles, 1, false);
     for (std::size_t k = 0; k < nb_segments; k++)
@@ -785,12 +793,15 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
                 min_index = std::min(min_index, seg_index);
                 max_index = std::max(max_index, seg_index);
                 const int seg_index_end = seg_index + static_cast<int>(seg_length);
+#if PICROSS_FILLED_TILLED_MASKS
                 set_single_segment(segment_ext, seg_index, static_cast<int>(seg_length));
+#endif
                 for (int idx = seg_index; idx < seg_index_end; idx++)
                 {
                     // Empty tiles mask
                     empty_tiles_mask[idx] = Tile::UNKNOWN;
 
+#if PICROSS_FILLED_TILLED_MASKS
                     // Filled tiles masks
                     LineSpanW& filled_tiles_mask = tiles_masks.line_span(idx + 1);
                     if (filled_tiles_mask[idx] == Tile::UNKNOWN)
@@ -804,6 +815,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
                         assert(filled_tiles_mask[idx] == Tile::FILLED);
                         reduce_alternative(filled_tiles_mask, segment_ext);
                     }
+#endif
                 }
             }
         }
@@ -832,6 +844,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
     else
         result.nb_alternatives = 0;
 
+#if PICROSS_FILLED_TILLED_MASKS
     // Filled tiles masks
     if (result.nb_alternatives > 0)
         for (int mask_idx = line_begin; mask_idx < line_end; mask_idx++)
@@ -843,6 +856,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
                 result.reduced_line = result.reduced_line + filled_tiles_mask;
             }
         }
+#endif
 
     // Compute over estimate of the nb of alternatives
     if (result.nb_alternatives > 0 && nb_segments > 0)
