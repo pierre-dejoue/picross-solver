@@ -927,7 +927,6 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
     }
 
     auto solver_policy = m_solver_policy;
-    solver_policy.m_limit_on_max_nb_alternatives = true;
 
     Solver::Status status = Solver::Status::OK;
     bool flag_solution_found = false;
