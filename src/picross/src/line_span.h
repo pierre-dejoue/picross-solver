@@ -41,7 +41,6 @@ public:
         assert(idx >= 0);
         return LineSpan(m_type, m_index, static_cast<std::size_t>(idx), m_tiles);
     }
-
     LineSpan tail(int idx) const
     {
         assert(static_cast<std::size_t>(idx) <= m_size);
@@ -87,6 +86,11 @@ public:
     Tile* begin() { return m_tiles; }
     Tile* end() { return m_tiles + m_size; }
 
+    template <typename LineSpanT>
+    LineSpanW& operator+=(const LineSpanT& rhs);
+    template <typename LineSpanT>
+    LineSpanW& operator-=(const LineSpanT& rhs);
+
     LineSpanW head(int idx)
     {
         assert(idx >= 0);
@@ -106,5 +110,25 @@ private:
     Tile* const         m_tiles;
 };
 
+void line_add(LineSpanW& lhs, const LineSpan& rhs);
+void line_add(LineSpanW& lhs, const LineSpanW& rhs);
+void line_delta(LineSpanW& lhs, const LineSpan& rhs);
+void line_delta(LineSpanW& lhs, const LineSpanW& rhs);
+void line_reduce(LineSpanW& lhs, const LineSpan& rhs);
+void line_reduce(LineSpanW& lhs, const LineSpanW& rhs);
+
+template <typename LineSpanT>
+LineSpanW& LineSpanW::operator+=(const LineSpanT& rhs)
+{
+    line_add(*this, rhs);
+    return *this;
+}
+
+template <typename LineSpanT>
+LineSpanW& LineSpanW::operator-=(const LineSpanT& rhs)
+{
+    line_delta(*this, rhs);
+    return *this;
+}
 
 } // namespace picross

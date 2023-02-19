@@ -15,6 +15,11 @@ class LineSpan;
 
 struct LineHole
 {
+    LineHole(int index, unsigned int length = 0u)
+        : m_index(index)
+        , m_length(length)
+    {}
+
     int          m_index;
     unsigned int m_length;
 };

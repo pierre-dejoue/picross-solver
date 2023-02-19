@@ -20,31 +20,6 @@
 namespace picross
 {
 
-namespace
-{
-namespace Tiles
-{
-    inline Tile add(Tile t1, Tile t2)
-    {
-        if (t1 == t2 || t2 == Tile::UNKNOWN) { return t1; }
-        else { assert(t1 == Tile::UNKNOWN); return t2; }
-    }
-
-    inline Tile delta(Tile t1, Tile t2)
-    {
-        if (t1 == t2) { return Tile::UNKNOWN; }
-        else { assert(t2 == Tile::UNKNOWN); return t1; }
-    }
-
-    inline Tile reduce(Tile t1, Tile t2)
-    {
-        if (t1 == t2) { return t1; }
-        return Tile::UNKNOWN;
-    }
-} // namespace Tiles
-} // namespace
-
-
 Line::Line(Line::Type type, Line::Index index, size_t size, Tile init_tile) :
     m_type(type),
     m_index(index),
@@ -87,54 +62,25 @@ Line& Line::operator=(Line&& other) noexcept
 }
 
 
-/* The addition combines the information of two lines into a single one.
- * Return false if the lines are not compatible, in which case 'this' is not modified.
- *
- * Example:
- *         line1:    ....##??????
- *         line2:    ..????##..??
- * line1 + line2:    ....####..??
- */
 Line operator+(const LineSpan& lhs, const LineSpan& rhs)
 {
     assert(are_compatible(lhs, rhs));
     Line sum = line_from_line_span(lhs);
-    std::transform(lhs.begin(), lhs.end(), rhs.begin(), &sum[0], Tiles::add);
+    LineSpanW sum_span(sum);
+    sum_span += rhs;
     return sum;
 }
 
 
-/* The substraction computes the delta between lhs and rhs, such that lhs = rhs + delta
- *
- * Example:
- *  (this) lhs:      ....####..??
- *         rhs:      ..????##..??
- *         delta:    ??..##??????
- */
 Line operator-(const LineSpan& lhs, const LineSpan& rhs)
 {
     assert(lhs.type() == rhs.type());
     assert(lhs.index() == rhs.index());
     assert(lhs.size() == rhs.size());
-    Line::Container delta_tiles(lhs.size(), Tile::UNKNOWN);
-    std::transform(lhs.begin(), lhs.end(), rhs.begin(), delta_tiles.begin(), Tiles::delta);
-    return Line(lhs.type(), lhs.index(), std::move(delta_tiles));
-}
-
-
-/* line_reduce() captures the information that is common to two lines.
- *
- * Example:
- *           lhs:    ??..######..
- *           rhs:    ??....######
- *        reduce:    ??..??####??
- */
-void line_reduce(LineSpanW& lhs, const LineSpan& rhs)
-{
-    assert(lhs.type() == rhs.type());
-    assert(lhs.index() == rhs.index());
-    assert(lhs.size() == rhs.size());
-    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), Tiles::reduce);
+    Line delta = line_from_line_span(lhs);
+    LineSpanW delta_span(delta);
+    delta_span -= rhs;
+    return delta;
 }
 
 

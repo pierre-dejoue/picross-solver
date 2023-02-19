@@ -207,30 +207,26 @@ std::vector<LineHole> line_holes(const LineSpan& known_tiles, int line_begin, in
     assert(line_begin <= line_end);
     assert(line_end <= static_cast<int>(known_tiles.size()));
     std::vector<LineHole> result;
+    result.reserve(static_cast<std::size_t>((line_end - line_begin) / 2));
     bool new_hole = true;
+    unsigned int* p_current_length = nullptr;
     for (int index = line_begin; index < line_end; index++)
     {
-        const auto tile = known_tiles[index];
+        const auto& tile = known_tiles[index];
         if (tile == Tile::EMPTY)
         {
             new_hole = true;
+            continue;
         }
-        else
+        if (new_hole)
         {
-            if (new_hole)
-            {
-                result.emplace_back(LineHole{ index, 1u });
-                new_hole = false;
-            }
-            else
-            {
-                assert(!result.empty());
-                result.back().m_length++;
-            }
+            p_current_length = &(result.emplace_back(index).m_length);
+            new_hole = false;
         }
+        assert(p_current_length != nullptr);
+        (*p_current_length)++;
     }
     assert(std::all_of(result.cbegin(), result.cend(), [](const LineHole& hole) { return hole.m_length > 0u; }));
-
     return result;
 }
 
@@ -323,7 +319,7 @@ namespace
         }
 
         assert(!success || std::all_of(result.cbegin(), result.cend(), [](const auto& r) { return r.m_leftmost_index <= r.m_rightmost_index; }));
-        return std::make_pair(success, result);
+        return std::make_pair(success, std::move(result));
     }
 
 #if PICROSS_FILLED_TILLED_MASKS
@@ -778,6 +774,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
     LineSpanW& reduction_mask = reduction_mask_extended_line.line_span();
 
     Reduction result = from_line(m_known_tiles, 1, false);
+    LineSpanW reduced_line(result.reduced_line);
     for (std::size_t k = 0; k < nb_segments; k++)
     {
         NbAlt nb_alt = 0u;
@@ -836,11 +833,11 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
         constraint_it++;
     }
 
-    result.reduced_line = result.reduced_line + LineSpan(reduction_mask);
+    reduced_line += reduction_mask;
 
     // Empty tiles mask
     if (are_compatible(m_known_tiles, LineSpan(empty_tiles_mask)))
-        result.reduced_line = result.reduced_line + LineSpan(empty_tiles_mask);
+        reduced_line += LineSpan(empty_tiles_mask);
     else
         result.nb_alternatives = 0;
 
@@ -853,7 +850,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
             {
                 const LineSpan filled_tiles_mask(tiles_masks.line_span(mask_idx + 1));
                 assert(filled_tiles_mask[mask_idx] == Tile::FILLED);
-                result.reduced_line = result.reduced_line + filled_tiles_mask;
+                reduced_line += filled_tiles_mask;
             }
         }
 #endif
@@ -861,14 +858,14 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
     // Compute over estimate of the nb of alternatives
     if (result.nb_alternatives > 0 && nb_segments > 0)
     {
-        const auto nb_zeros = static_cast<int>(std::count_if(result.reduced_line.begin() + line_begin, result.reduced_line.begin() + line_end, [](const Tile& tile) { return tile == Tile::EMPTY; }));
+        const auto nb_zeros = static_cast<int>(std::count_if(reduced_line.begin() + line_begin, reduced_line.begin() + line_end, [](const Tile& tile) { return tile == Tile::EMPTY; }));
         const auto remaining_zeros = m_remaining_zeros - static_cast<unsigned int>(std::max(0, nb_zeros - static_cast<int>(nb_segments - 1)));
         if (remaining_zeros == 0)
         {
             for (int idx = line_begin; idx < line_end; idx++)
             {
                 assert(idx >= 0);
-                auto& tile = result.reduced_line[static_cast<unsigned int>(idx)];
+                auto& tile = reduced_line[idx];
                 if (tile == Tile::UNKNOWN)
                     tile = Tile::FILLED;
             }
@@ -1074,16 +1071,16 @@ TailReduce LineAlternatives::Impl::reduce_all_alternatives_recursive(
 LineAlternatives::Reduction LineAlternatives::Impl::reduce_all_alternatives()
 {
     const auto& range_l = m_bidirectional_range;
-    Line reduced_line = line_from_line_span(m_known_tiles);
-    LineSpanW reduced_line_span(reduced_line);
+    Line reduced_line_raw = line_from_line_span(m_known_tiles);
+    LineSpanW reduced_line(reduced_line_raw);
     if ((range_l.m_constraint_begin == range_l.m_constraint_end) || (range_l.m_line_begin == range_l.m_line_end))
     {
         for (int idx = range_l.m_line_begin; idx < range_l.m_line_end; idx++)
         {
-            reduced_line_span[idx] = Tile::EMPTY;
+            reduced_line[idx] = Tile::EMPTY;
         }
-        const bool match = check_compatibility_bw<false>(LineSpanW(reduced_line), range_l.m_line_begin, range_l.m_line_end);
-        return Reduction { std::move(reduced_line), match ? NbAlt{1} : NbAlt{0}, true };
+        const bool match = check_compatibility_bw<false>(reduced_line, range_l.m_line_begin, range_l.m_line_end);
+        return Reduction { std::move(reduced_line_raw), match ? NbAlt{1} : NbAlt{0}, true };
     }
     else
     {
@@ -1094,9 +1091,9 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_all_alternatives()
         const auto reduction = reduce_all_alternatives_recursive(alternative_buffer.line_span(), tail_reduce_array.get(), static_cast<int>(m_remaining_zeros), range_l.m_constraint_begin, range_l.m_constraint_end, range_l.m_line_begin, range_l.m_line_end);
         for (int idx = range_l.m_line_begin; idx < range_l.m_line_end; idx++)
         {
-            reduced_line_span[idx] = reduction.m_reduced_tail[idx - range_l.m_line_begin];
+            reduced_line[idx] = reduction.m_reduced_tail[idx - range_l.m_line_begin];
         }
-        return Reduction { std::move(reduced_line), reduction.m_nb_alt, true };
+        return Reduction { std::move(reduced_line_raw), reduction.m_nb_alt, true };
     }
 }
 
@@ -1179,23 +1176,23 @@ LineAlternatives::Reduction LineAlternatives::partial_reduction(unsigned int nb_
 LineAlternatives::Reduction LineAlternatives::linear_reduction()
 {
     const LineSpan& known_tiles = p_impl->m_known_tiles;
-    const Reduction result = from_line(known_tiles, 0, false);
+    const auto invalid_result = [](const LineSpan& line) -> Reduction { return from_line(line, 0, false); };
 
     // Update extended copy of known tiles and bidirectional ranges
     bool valid = p_impl->update();
     if (!valid)
-        return result;
+        return invalid_result(known_tiles);
 
     // Compute the leftmost and rightmost position of each segment
     std::vector<SegmentRange> ranges;
     std::tie(valid, ranges) = local_find_segments_range(known_tiles, p_impl->m_bidirectional_range);
     if (!valid)
-        return result;
+        return invalid_result(known_tiles);
 
     // Narrow down the leftmost and rightmost ranges
     valid = p_impl->narrow_down_segments_range(ranges);
     if (!valid)
-        return result;
+        return invalid_result(known_tiles);
 
     // Compute the linear reduction
     return p_impl->linear_reduction(ranges);
