@@ -25,3 +25,7 @@ target_link_libraries(picross_solver_cli
 set_target_warnings(picross_solver_cli OFF)
 
 install(TARGETS picross_solver_cli)
+
+add_custom_target(picross_cli_version
+    $<TARGET_FILE:picross_solver_cli> --version
+)

@@ -9,6 +9,7 @@
  * Copyright (c) 2010-2023 Pierre DEJOUE
  ******************************************************************************/
 #include <picross/picross.h>
+#include <utils/compiler_info.h>
 #include <utils/console_observer.h>
 #include <utils/console_progress_observer.h>
 #include <utils/duration_meas.h>
@@ -98,6 +99,9 @@ int main(int argc, char *argv[])
         "help", { "-h", "--help" },
         "Print usage note and exit", 0 },
       {
+        "version", { "--version" },
+        "Print version and exit", 0 },
+      {
         "no-timing", { "--no-timing" },
         "Do not print out timing measurements", 0 },
       {
@@ -149,6 +153,15 @@ int main(int argc, char *argv[])
         std::cerr << usage_note.str();
         exit(0);
     }
+
+    if (args["version"])
+    {
+        std::cerr << "Picross Solver " << picross::get_version_string() << std::endl;
+        std::cerr << std::endl;
+        print_compiler_info(std::cerr);
+        exit(0);
+    }
+
 
     const auto max_nb_solutions = args["max-nb-solutions"].as<unsigned int>(0u);
     const bool validation_mode = args["validation-mode"];
