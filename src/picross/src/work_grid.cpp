@@ -828,8 +828,7 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
         }
 
         // Set one line in the new_grid according to the hypothesis we made. That line is then complete
-        const bool changed = nested_work_grid.update_line(guess_line, 1u);
-        assert(changed);
+        nested_work_grid.update_line(guess_line, 1u);
         nested_work_grid.m_line_is_fully_reduced[guess_line.type()][guess_line.index()] = true;
         assert(nested_work_grid.m_line_completed[guess_line.type()][guess_line.index()]);
         nested_work_grid.partition_completed_lines();
@@ -942,8 +941,7 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
         }
 
         // Set one line in the new_grid according to the hypothesis we made. That line is then complete
-        const bool changed = nested_work_grid.update_line(guess_line, 1u);
-        assert(changed);
+        nested_work_grid.update_line(guess_line, 1u);
         nested_work_grid.m_line_is_fully_reduced[guess_line.type()][guess_line.index()] = true;
         assert(nested_work_grid.m_line_completed[guess_line.type()][guess_line.index()]);
         nested_work_grid.partition_completed_lines();
