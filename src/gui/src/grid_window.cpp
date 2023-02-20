@@ -489,7 +489,7 @@ void GridWindow::save_grid()
             this->text_buffer->buffer.appendf("%s\n", msg);
         };
 
-        const auto solution = solutions.empty() ? std::nullopt : std::optional<picross::OutputGrid>(solutions[0]);
+        const auto solution = (solutions.empty() || !solutions[0].is_completed()) ? std::nullopt : std::optional<picross::OutputGrid>(solutions[0]);
         const auto format = picross::io::picross_file_format_from_filepath(file_path);
         picross::io::save_picross_file(file_path, format, grid, solution, err_handler);
     }

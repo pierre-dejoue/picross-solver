@@ -551,12 +551,41 @@ void write_constraints_non_format(std::ostream& ostream, const std::vector<Input
     }
 }
 
-inline void write_metadata_non_format(std::ostream& ostream, const std::map<std::string, std::string>& meta, const std::string& key, const std::string& quote = "\"")
+void write_metadata_non_format(std::ostream& ostream, const std::map<std::string, std::string>& meta, const std::string& key, bool quoted = true)
 {
-    if (meta.count(key)) { ostream << key << ' ' << quote << meta.at(key) << quote << std::endl; }
+    const std::string quote = quoted ? "\"" : "";
+    if (meta.count(key) && !meta.at(key).empty())
+    {
+        ostream << key << ' ' << quote << meta.at(key) << quote << std::endl;
+    }
+    else if (!quote.empty())
+    {
+        ostream << key << ' ' << quote << quote << std::endl;
+    }
+    else
+    {
+        ostream << key << std::endl;
+    }
 }
 
-} // anonymous namespace
+void write_goal_non_format(std::ostream& ostream, const OutputGrid& goal)
+{
+    assert(goal.is_completed());
+    const char quote = '"';
+    ostream << "goal " << quote;
+    // Tiles from top left of the puzzle along the first row, then the second row, etc.
+    // 0 is a blank; anything else is a filled tile.
+    for (unsigned int y = 0; y < goal.height(); y++)
+        for (unsigned int x = 0; x < goal.width(); x++)
+        {
+            const Tile& tile = goal.get_tile(x, y);
+            assert(tile == Tile::EMPTY || tile == Tile::FILLED);
+            ostream << (tile == Tile::EMPTY ? '0' : '1');
+        }
+    ostream << quote << std::endl;
+}
+
+} // Anonymous namespace
 
 std::vector<InputGrid> parse_input_file_native(std::string_view filepath, const ErrorHandler& error_handler) noexcept
 {
@@ -593,13 +622,14 @@ void write_input_grid_nin_format(std::ostream& ostream, const InputGrid& input_g
     write_constraints_nin_format(ostream, input_grid.m_cols);
 }
 
-void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_grid)
+void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_grid, std::optional<OutputGrid> goal)
 {
+    constexpr bool NON_QUOTED = false;
     write_metadata_non_format(ostream, input_grid.m_metadata, "catalogue");
     ostream << "title \"" << input_grid.m_name << '\"' << std::endl;
     write_metadata_non_format(ostream, input_grid.m_metadata, "by");
     write_metadata_non_format(ostream, input_grid.m_metadata, "copyright");
-    write_metadata_non_format(ostream, input_grid.m_metadata, "license", "");
+    write_metadata_non_format(ostream, input_grid.m_metadata, "license", NON_QUOTED);
 
     ostream << "width " << input_grid.m_cols.size() << std::endl;
     ostream << "height " << input_grid.m_rows.size() << std::endl;
@@ -611,6 +641,12 @@ void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_g
     ostream << std::endl;
     ostream << "columns" << std::endl;
     write_constraints_non_format(ostream, input_grid.m_cols);
+
+    if (goal.has_value())
+    {
+        ostream << std::endl;
+        write_goal_non_format(ostream, goal.value());
+    }
 }
 
 } // namespace io

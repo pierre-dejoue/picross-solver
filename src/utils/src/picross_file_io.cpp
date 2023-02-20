@@ -143,7 +143,7 @@ void save_picross_file(std::string_view filepath, PicrossFileFormat format, cons
             std::ofstream out(filepath.data());
             if (!out.good())
                 error_handler("Error writing file " + std::string(filepath), 1);
-            picross::io::write_input_grid_non_format(out, input_grid);
+            picross::io::write_input_grid_non_format(out, input_grid, goal);
             break;
         }
 

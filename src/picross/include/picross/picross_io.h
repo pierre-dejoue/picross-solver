@@ -10,8 +10,10 @@
 #pragma once
 
 #include "picross_input_grid.h"
+#include "picross_output_grid.h"
 
 #include <functional>
+#include <optional>
 #include <ostream>
 #include <string_view>
 #include <vector>
@@ -77,7 +79,7 @@ void write_input_grid_nin_format(std::ostream& ostream, const InputGrid& input_g
 /*
  * Stream writer, NON file format
  */
-void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_grid);
+void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_grid, std::optional<OutputGrid> goal = std::nullopt);
 
 } // namespace io
 } // namespace picross
