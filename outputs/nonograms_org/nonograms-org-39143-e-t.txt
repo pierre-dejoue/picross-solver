@@ -1,0 +1,22 @@
+GRID 1: E.T.
+  Size: 15x9
+  Solution nb 1: (branching depth: 0)
+  ...........##..
+  .###.......##..
+  .###.......##..
+  .#..........#..
+  .######.######.
+  .#.#.#...#..##.
+  .###.......###.
+  .###.......#.#.
+  ##.##.....##.##
+
+  Number of solutions found: 1
+  Max branching depth: 0
+  Max number of alternatives on an empty line (initial grid pass): 252
+  Max number of alternatives after a  linear line reduction (change/all): 15/36
+  Number of full grid pass: 4
+  Number of single line  linear reduction (change/all): 27/36
+
+
+
