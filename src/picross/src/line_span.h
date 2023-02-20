@@ -110,6 +110,9 @@ private:
     Tile* const         m_tiles;
 };
 
+bool operator==(const LineSpanW& lhs, const LineSpanW& rhs);
+bool operator!=(const LineSpanW& lhs, const LineSpanW& rhs);
+
 void line_add(LineSpanW& lhs, const LineSpan& rhs);
 void line_add(LineSpanW& lhs, const LineSpanW& rhs);
 void line_delta(LineSpanW& lhs, const LineSpan& rhs);

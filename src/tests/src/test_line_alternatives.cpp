@@ -634,8 +634,8 @@ TEST_CASE("linear_reduction_symetrical_use_case", "[line_alternatives]")
         const auto known_tiles = build_line_from("???#?????????", Line::ROW, LINE_INDEX);
         CHECK(known_tiles.size() == 13);
         const auto reduction = linear_reduction(constraint, known_tiles);
-        CHECK(known_tiles + reduction.reduced_line == build_line_from(".?##??##??#??", Line::ROW, LINE_INDEX));
-        CHECK(reduction.nb_alternatives == 10);
+        CHECK(known_tiles + reduction.reduced_line == build_line_from(".?##??##??##?", Line::ROW, LINE_INDEX));
+        CHECK(reduction.nb_alternatives == 8);
         CHECK_FALSE(reduction.is_fully_reduced);
     }
 }
@@ -706,6 +706,19 @@ TEST_CASE("linear_reduction_almost_completed_line", "[line_alternatives]")
         CHECK(known_tiles + reduction.reduced_line == build_line_from("###.......####", Line::ROW, LINE_INDEX));
         CHECK(reduction.nb_alternatives == 1);
         CHECK(reduction.is_fully_reduced);
+    }
+}
+
+TEST_CASE("linear_reduction_non_regression_a", "[line_alternatives]")
+{
+    // An assertion occured on ROW 47 of puzzle webpbn-03541-sign.non
+    const LineConstraint constraint(Line::ROW, { 5, 4, 3 });
+    {
+        // There is no solution to this line solving
+        const auto known_tiles = build_line_from("........???????????????????????????????????#?###??##.?????..", Line::ROW, 47);
+        const auto reduction = linear_reduction(constraint, known_tiles);
+        CHECK(reduction.nb_alternatives == 0);
+        CHECK(reduction.is_fully_reduced == false);
     }
 }
 

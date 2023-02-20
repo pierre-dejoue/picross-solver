@@ -90,6 +90,19 @@ bool are_compatible(const LineSpan& lhs, const LineSpan& rhs)
     return lhs.compatible(rhs);
 }
 
+bool operator==(const LineSpanW& lhs, const LineSpanW& rhs)
+{
+    return lhs.type() == rhs.type()
+        && lhs.index() == rhs.index()
+        && lhs.size() == rhs.size()
+        && std::equal(lhs.begin(), lhs.end(), rhs.begin());
+}
+
+bool operator!=(const LineSpanW& lhs, const LineSpanW& rhs)
+{
+    return !(lhs == rhs);
+}
+
 std::ostream& operator<<(std::ostream& ostream, const LineSpan& line)
 {
     for (int idx = 0u; idx < static_cast<int>(line.size()); idx++)

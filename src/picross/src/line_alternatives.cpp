@@ -409,6 +409,18 @@ namespace
         std::vector<char>                       m_recorded;
         unsigned int                            m_line_length;
     };
+
+    bool check_ref_line_compatibility_bw_segment(const LineSpanW& ref_line, int segment_begin_index, unsigned int segment_length)
+    {
+        const int segment_end_index = segment_begin_index + static_cast<int>(segment_length);
+        if (ref_line[segment_begin_index - 1] == Tile::FILLED || ref_line[segment_end_index] == Tile::FILLED)
+            return false;
+        for (int idx = segment_begin_index; idx < segment_end_index; idx++)
+            if (ref_line[idx] == Tile::EMPTY)
+                return false;
+        return true;
+    }
+
 } // namespace
 
 
@@ -421,8 +433,6 @@ struct LineAlternatives::Impl
     bool check_compatibility_bw(const LineSpanW& alternative, int start_idx, int end_idx) const;
 
     bool check_compatibility_bw_segment(int segment_begin_index, unsigned int segment_length) const;
-
-    bool check_compatibility_bw_segment();
 
     unsigned int nb_unknown_tiles() const;
 
@@ -476,7 +486,7 @@ struct LineAlternatives::Impl
     const Segments&                     m_segments;
     const LineSpan                      m_known_tiles;
     LineExt                             m_known_tiles_extended_copy;
-    const LineSpan                      m_known_tiles_ext;
+    const LineSpanW                     m_known_tiles_ext;
     BinomialCoefficients::Cache&        m_binomial;
     const unsigned int                  m_line_length;
     unsigned int                        m_remaining_zeros;
@@ -488,7 +498,7 @@ LineAlternatives::Impl::Impl(const LineConstraint& constraints, const LineSpan& 
     : m_segments(constraints.segments())
     , m_known_tiles(known_tiles)
     , m_known_tiles_extended_copy(known_tiles)
-    , m_known_tiles_ext(LineSpan(m_known_tiles_extended_copy.line_span()))
+    , m_known_tiles_ext(m_known_tiles_extended_copy.line_span())
     , m_binomial(binomial)
     , m_line_length(static_cast<unsigned int>(known_tiles.size()))
     , m_remaining_zeros(m_line_length - constraints.min_line_size())
@@ -502,7 +512,7 @@ LineAlternatives::Impl::Impl(const Impl& other, const LineSpan& known_tiles)
     : m_segments(other.m_segments)
     , m_known_tiles(known_tiles)
     , m_known_tiles_extended_copy(known_tiles)
-    , m_known_tiles_ext(LineSpan(m_known_tiles_extended_copy.line_span()))
+    , m_known_tiles_ext(m_known_tiles_extended_copy.line_span())
     , m_binomial(other.m_binomial)
     , m_line_length(other.m_line_length)
     , m_remaining_zeros(other.m_remaining_zeros)
@@ -531,13 +541,7 @@ bool LineAlternatives::Impl::check_compatibility_bw(const LineSpanW& alternative
 // Returns true if the segment matches the current known tiles
 bool LineAlternatives::Impl::check_compatibility_bw_segment(int segment_begin_index, unsigned int segment_length) const
 {
-    const int segment_end_index = segment_begin_index + static_cast<int>(segment_length);
-    if (m_known_tiles_ext[segment_begin_index - 1] == Tile::FILLED || m_known_tiles_ext[segment_end_index] == Tile::FILLED)
-        return false;
-    for (int idx = segment_begin_index; idx < segment_end_index; idx++)
-        if (m_known_tiles_ext[idx] == Tile::EMPTY)
-            return false;
-    return true;
+    return check_ref_line_compatibility_bw_segment(m_known_tiles_ext, segment_begin_index, segment_length);
 }
 
 unsigned int LineAlternatives::Impl::nb_unknown_tiles() const
@@ -735,7 +739,7 @@ bool LineAlternatives::Impl::narrow_down_segments_range(std::vector<SegmentRange
 // Linear reduction considers each segment independently, therefore leading to a O(k.n) reduction, where k is the number of segment and n is the line length
 LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::vector<SegmentRange>& ranges)
 {
-    assert(m_known_tiles == m_known_tiles_ext);     // Assert that update() was called
+    assert(m_known_tiles == LineSpan(m_known_tiles_ext));     // Assert that update() was called
 
     const auto nb_segments = ranges.size();
     auto constraint_it = m_bidirectional_range.m_constraint_begin;
@@ -769,9 +773,9 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
     LineSpanW& segment_ext = segment_extended_line.line_span();
 #endif
 
-    // reduction_mask:    '0?????????????0'
-    LineExt reduction_mask_extended_line(m_known_tiles, Tile::UNKNOWN);
+    LineExt reduction_mask_extended_line(m_known_tiles);
     LineSpanW& reduction_mask = reduction_mask_extended_line.line_span();
+    assert(reduction_mask == m_known_tiles_ext);
 
     Reduction result = from_line(m_known_tiles, 1, false);
     LineSpanW reduced_line(result.reduced_line);
@@ -784,7 +788,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
         const unsigned int seg_length = *constraint_it;
         for (int seg_index = ranges[k].m_leftmost_index; seg_index <= ranges[k].m_rightmost_index; seg_index++)
         {
-            if (check_compatibility_bw_segment(seg_index, seg_length))
+            if (check_ref_line_compatibility_bw_segment(reduction_mask, seg_index, seg_length))
             {
                 nb_alt++;
                 min_index = std::min(min_index, seg_index);
@@ -858,9 +862,13 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
     // Compute over estimate of the nb of alternatives
     if (result.nb_alternatives > 0 && nb_segments > 0)
     {
-        const auto nb_zeros = static_cast<int>(std::count_if(reduced_line.begin() + line_begin, reduced_line.begin() + line_end, [](const Tile& tile) { return tile == Tile::EMPTY; }));
-        const auto remaining_zeros = m_remaining_zeros - static_cast<unsigned int>(std::max(0, nb_zeros - static_cast<int>(nb_segments - 1)));
-        if (remaining_zeros == 0)
+        const int nb_zeros = static_cast<int>(std::count_if(reduced_line.begin() + line_begin, reduced_line.begin() + line_end, [](const Tile& tile) { return tile == Tile::EMPTY; }));
+        const int remaining_zeros = static_cast<int>(m_remaining_zeros) - std::max(0, nb_zeros - static_cast<int>(nb_segments - 1));
+        if (remaining_zeros < 0)
+        {
+            result.nb_alternatives = 0;
+        }
+        else if (remaining_zeros == 0)
         {
             for (int idx = line_begin; idx < line_end; idx++)
             {
@@ -874,7 +882,8 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
         }
         else
         {
-            result.nb_alternatives = std::min(result.nb_alternatives, compute_max_nb_of_alternatives(remaining_zeros, static_cast<unsigned int>(nb_segments), m_binomial));
+            assert(remaining_zeros > 0);
+            result.nb_alternatives = std::min(result.nb_alternatives, compute_max_nb_of_alternatives(static_cast<unsigned int>(remaining_zeros), static_cast<unsigned int>(nb_segments), m_binomial));
         }
     }
 
