@@ -315,7 +315,7 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
                     pass_status.contradictory = true;
                 if (probing_result.m_grid_has_changed)
                     m_state = WorkGridState::LINEAR_REDUCTION;
-                else
+                else if (!probing_result.m_continue_probing)
                     m_state = WorkGridState::BRANCHING;
                 break;
             }
@@ -748,11 +748,28 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe()
 {
     assert(m_solver_policy.m_branching_allowed);
     ProbingResult result{};
-    std::vector<LineId> candidate_lines = sorted_edges();
+    std::vector<LineId> candidate_lines;
+    const auto edges = sorted_edges();
+    for (const LineId& edge : edges)
+    {
+        if (m_nb_alternatives[edge.m_type][edge.m_index] < m_solver_policy.m_max_nb_alternatives_probing_edge)
+        {
+            candidate_lines.emplace_back(edge);
+        }
+    }
+    sort_by_nb_alternatives();
+    for (auto idx = 0u; idx < m_solver_policy.m_nb_of_lines_for_probing_round && idx < m_all_lines.size(); idx++)
+    {
+        const LineId& line_id = m_all_lines[idx];
+        if (!m_line_completed[line_id.m_type][line_id.m_index] &&
+            m_nb_alternatives[line_id.m_type][line_id.m_index] < m_solver_policy.m_max_nb_alternatives_probing_other)
+        {
+            candidate_lines.emplace_back(line_id);
+        }
+    }
     for (auto candidate : candidate_lines)
     {
-        if (!m_line_probed[candidate.m_type][candidate.m_index] &&
-            m_nb_alternatives[candidate.m_type][candidate.m_index] < m_solver_policy.m_max_nb_alternatives_for_probing)
+        if (!m_line_probed[candidate.m_type][candidate.m_index])
         {
             result = probe(candidate);
             switch (result.m_status)
@@ -771,6 +788,7 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe()
             }
             if (result.m_grid_has_changed)
             {
+                result.m_continue_probing = true;
                 m_probing_depth_incr = 1u;
                 break;
             }
@@ -814,8 +832,6 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
     Solver::SolutionFound do_nothing_with_found_solution = [](Solver::Solution&&) -> bool { assert(0); return true; };
     auto solver_policy = m_solver_policy;
     solver_policy.m_branching_allowed = false;
-    solver_policy.m_limit_on_max_nb_alternatives = true;
-    solver_policy.m_max_nb_alternatives = m_solver_policy.m_max_nb_alternatives_while_probing;
     LineAlternatives::NbAlt progress = 0u;
     for (const Line& guess_line : list_of_all_alternatives)
     {

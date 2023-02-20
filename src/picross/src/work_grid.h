@@ -67,6 +67,7 @@ private:
     {
         Solver::Status  m_status            = Solver::Status::OK;
         bool            m_grid_has_changed  = false;
+        bool            m_continue_probing  = false;
     };
 public:
     WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Observer observer = Observer(), Solver::Abort abort_function = Solver::Abort(), float min_progress = 0.f, float max_progress = 1.f);
