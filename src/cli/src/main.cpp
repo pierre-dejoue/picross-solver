@@ -25,6 +25,7 @@
 #include <exception>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -162,8 +163,7 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-
-    const auto max_nb_solutions = args["max-nb-solutions"].as<unsigned int>(0u);
+    const auto max_nb_solutions = std::max(1u, args["max-nb-solutions"].as<unsigned int>(std::numeric_limits<unsigned int>::max()));
     const bool validation_mode = args["validation-mode"];
     const std::chrono::seconds timeout_duration(args["timeout"].as<unsigned int>(0u));
 
@@ -311,7 +311,7 @@ int main(int argc, char *argv[])
                             }
                             output_solution_grid(std::cout, solution.grid, 2);
                             std::cout << std::endl;
-                            return max_nb_solutions == 0 || nb < max_nb_solutions;
+                            return nb < max_nb_solutions;
                         };
 
                         /* Solve the grid */
