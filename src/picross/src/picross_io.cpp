@@ -605,9 +605,8 @@ std::vector<InputGrid> parse_input_file_non_format(std::string_view filepath, co
 void write_input_grid_native(std::ostream& ostream, const InputGrid& input_grid)
 {
     for (const auto& kvp : input_grid.m_metadata)
-    {
-        ostream << "# " << kvp.first << ' ' << kvp.second << std::endl;
-    }
+        if (!kvp.second.empty())
+            ostream << "# " << kvp.first << ": " << kvp.second << std::endl;
     ostream << "GRID " << input_grid.name() << std::endl;
     ostream << "ROWS" << std::endl;
     write_constraints_native_format(ostream, input_grid.m_rows);
