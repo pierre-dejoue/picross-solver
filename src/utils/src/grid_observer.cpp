@@ -92,7 +92,6 @@ void GridObserver::operator()(picross::ObserverEvent event, const picross::Line*
         break;
 
     case picross::ObserverEvent::INTERNAL_STATE:
-        assert(depth == current_depth);
         break;
 
     case picross::ObserverEvent::PROGRESS:
