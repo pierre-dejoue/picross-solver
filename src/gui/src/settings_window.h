@@ -14,7 +14,13 @@ public:
     void visit(bool& can_be_erased);
 
 private:
+    struct Animation
+    {
+        int last_speed = 0;
+        bool paused = false;
+    };
+private:
     Settings& settings;
     std::string title;
-
+    Animation animation;
 };

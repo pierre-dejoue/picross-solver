@@ -4,9 +4,12 @@
 
 #include <imgui.h>
 
+#include <cassert>
+
 SettingsWindow::SettingsWindow(Settings& settings)
     : settings(settings)
     , title("Settings")
+    , animation()
 {
 }
 
@@ -79,9 +82,27 @@ void SettingsWindow::visit(bool& can_be_erased)
         ImGui::BulletText("Animation");
         ImGui::Indent();
 
-        ImGui::Checkbox("Show branching", &animation_settings->show_branching);
+        ImGui::Checkbox("Show branching with colors", &animation_settings->show_branching);
 
+        // Pause button
+        if (!animation.paused && ImGui::Button("Pause"))
+        {
+            animation.paused = true;
+            animation.last_speed = animation_settings->speed;
+            animation_settings->speed = 0;
+        }
+        else if (animation.paused && ImGui::Button("Resume"))
+        {
+            animation.paused = false;
+            animation_settings->speed = animation.last_speed;
+        }
+
+        // Speed slider
         ImGui::SliderInt("speed", &animation_settings->speed, limits.speed.min, limits.speed.max, "%d", ImGuiSliderFlags_AlwaysClamp);
+        assert(animation_settings->speed >= 0);
+
+        // Modifyng the speed while in pause will unpause
+        if (animation_settings->speed > 0) { animation.paused = false; }
 
         ImGui::Unindent();
     }
