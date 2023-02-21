@@ -1,4 +1,4 @@
-# 20xx20 grid based on Picross DS, Free mode, level 1-J
+# 20x20 grid based on Picross DS, Free mode, level 1-J
 # This grid has two solutions
 GRID Two Cakes
 ROWS
