@@ -829,7 +829,7 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
     }
 
     std::optional<GridSnapshot<Line::ROW>> reduced_grid;
-    Solver::SolutionFound do_nothing_with_found_solution = [](Solver::Solution&&) -> bool { assert(0); return true; };
+    Solver::SolutionFound do_nothing_with_found_solution = [](Solver::Solution&&) -> bool { return true; };
     auto solver_policy = m_solver_policy;
     solver_policy.m_branching_allowed = false;
     LineAlternatives::NbAlt progress = 0u;
