@@ -10,6 +10,7 @@ include(pfd)
 
 set(GUI_SOURCES
     src/err_window.cpp
+    src/grid_info.cpp
     src/grid_window.cpp
     src/main.cpp
     src/picross_file.cpp

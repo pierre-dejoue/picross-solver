@@ -1,5 +1,7 @@
 #pragma once
 
+#include "grid_info.h"
+
 #include <picross/picross.h>
 #include <utils/grid_observer.h>
 
@@ -44,6 +46,7 @@ private:
 private:
     picross::InputGrid grid;
     std::string title;
+    std::unique_ptr<GridInfo> info;
     std::thread solver_thread;
     bool solver_thread_start;
     std::atomic<bool> solver_thread_completed;

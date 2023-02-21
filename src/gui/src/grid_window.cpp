@@ -167,6 +167,7 @@ GridWindow::GridWindow(picross::InputGrid&& grid, std::string_view source, bool 
     : GridObserver(grid)
     , grid(std::move(grid))
     , title()
+    , info()
     , solver_thread()
     , solver_thread_start(start_thread)
     , solver_thread_completed(false)
@@ -302,6 +303,22 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
     if (ImGui::Button("Save as"))
     {
         save_grid();
+    }
+
+    // Info button
+    ImGui::SameLine();
+    if (ImGui::Button("Info") && !info)
+    {
+        info = std::make_unique<GridInfo>(grid);
+    }
+
+    // Visit info window
+    if (info)
+    {
+        bool can_be_erased = false;
+        info->visit(can_be_erased);
+        if (can_be_erased)
+            info.reset();
     }
 
     // Text
