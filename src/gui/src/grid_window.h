@@ -30,7 +30,7 @@ public:
     GridWindow(const GridWindow&) = delete;
     GridWindow& operator=(const GridWindow&) = delete;
 
-    void visit(bool& canBeErased, Settings& settings);
+    void visit(bool& can_be_erased, Settings& settings);
 
     bool abort_solver_thread() const;
 

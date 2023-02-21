@@ -21,19 +21,20 @@ ErrWindow::ErrWindow(std::string_view filename)
 
 ErrWindow::~ErrWindow() = default;
 
-void ErrWindow::visit(bool& canBeErased)
+void ErrWindow::visit(bool& can_be_erased)
 {
     ImGui::SetNextWindowSizeConstraints(ImVec2(0, 300), ImVec2(FLT_MAX, 600));
 
-    bool isWindowOpen;
-    if (!ImGui::Begin(pImpl->title.c_str(), &isWindowOpen, ImGuiWindowFlags_AlwaysAutoResize))
+    constexpr ImGuiWindowFlags win_flags = ImGuiWindowFlags_AlwaysAutoResize;
+    bool is_window_open = true;
+    if (!ImGui::Begin(pImpl->title.c_str(), &is_window_open, win_flags))
     {
         // Collapsed
-        canBeErased = !isWindowOpen;
+        can_be_erased = !is_window_open;
         ImGui::End();
         return;
     }
-    canBeErased = !isWindowOpen;
+    can_be_erased = !is_window_open;
 
     {
         std::lock_guard<std::mutex> lock(pImpl->text_buffer_lock);

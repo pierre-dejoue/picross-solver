@@ -17,9 +17,9 @@ PicrossFile::PicrossFile(std::string_view path, picross::io::PicrossFileFormat f
 
 PicrossFile::~PicrossFile() = default;
 
-void PicrossFile::visit_windows(bool& canBeErased, Settings& settings)
+void PicrossFile::visit_windows(bool& can_be_erased, Settings& settings)
 {
-    canBeErased = false;
+    can_be_erased = false;
     if (!is_file_open)
     {
         is_file_open = true;
@@ -37,27 +37,27 @@ void PicrossFile::visit_windows(bool& canBeErased, Settings& settings)
     }
     else
     {
-        canBeErased = true;
+        can_be_erased = true;
 
         // Grid windows
         for (auto it = std::begin(windows); it != std::end(windows);)
         {
-            bool windowCanBeErased = false;
-            (*it)->visit(windowCanBeErased, settings);
-            canBeErased &= windowCanBeErased;
-            it = windowCanBeErased ? windows.erase(it) : std::next(it);
+            bool window_can_be_erased = false;
+            (*it)->visit(window_can_be_erased, settings);
+            can_be_erased &= window_can_be_erased;
+            it = window_can_be_erased ? windows.erase(it) : std::next(it);
         }
 
         // Error window
         if (err_window)
         {
-            bool windowCanBeErased = false;
-            err_window->visit(windowCanBeErased);
-            if (windowCanBeErased)
+            bool window_can_be_erased = false;
+            err_window->visit(window_can_be_erased);
+            if (window_can_be_erased)
             {
                 err_window.reset();
             }
-            canBeErased &= windowCanBeErased;
+            can_be_erased &= window_can_be_erased;
         }
     }
 }

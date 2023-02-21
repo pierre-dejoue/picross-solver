@@ -196,7 +196,7 @@ GridWindow::~GridWindow()
     }
 }
 
-void GridWindow::visit(bool& canBeErased, Settings& settings)
+void GridWindow::visit(bool& can_be_erased, Settings& settings)
 {
     const size_t width = grid.width();
     const size_t height = grid.height();
@@ -216,17 +216,20 @@ void GridWindow::visit(bool& canBeErased, Settings& settings)
 
     const size_t tile_size = get_tile_size(tile_settings.size_enum);
 
-    ImGui::SetNextWindowSize(ImVec2(20 + static_cast<float>(width * tile_size), 100 + static_cast<float>(height * tile_size)));
+    const float min_win_width  = 20.f + static_cast<float>(width * tile_size);
+    const float min_win_height = 100.f + static_cast<float>(height * tile_size);
+    ImGui::SetNextWindowSizeConstraints(ImVec2(min_win_width, min_win_height), ImVec2(FLT_MAX, FLT_MAX));
 
-    bool isWindowOpen = true;
-    if (!ImGui::Begin(title.c_str(), &isWindowOpen))
+    constexpr ImGuiWindowFlags win_flags = ImGuiWindowFlags_AlwaysAutoResize;
+    bool is_window_open = true;
+    if (!ImGui::Begin(title.c_str(), &is_window_open, win_flags))
     {
         // Collapsed
-        canBeErased = !isWindowOpen;
+        can_be_erased = !is_window_open;
         ImGui::End();
         return;
     }
-    canBeErased = !isWindowOpen;
+    can_be_erased = !is_window_open;
 
     // Solver thread state
     const bool solver_thread_active = solver_thread.joinable();

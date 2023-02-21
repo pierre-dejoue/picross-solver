@@ -146,16 +146,16 @@ void Settings::open_window()
     read_animation_settings();
 }
 
-void Settings::visit_window(bool& canBeErased)
+void Settings::visit_window(bool& can_be_erased)
 {
-    canBeErased = false;
+    can_be_erased = false;
     if (tile_settings || solver_settings || animation_settings || settings_window)
     {
         auto& settings_window_ref = get_settings_window();
-        bool windowCanBeErased = false;
-        settings_window_ref.visit(windowCanBeErased);
-        assert(!windowCanBeErased); // Do not erase settings window once open
-        canBeErased &= windowCanBeErased;
+        bool window_can_be_erased = false;
+        settings_window_ref.visit(window_can_be_erased);
+        assert(!window_can_be_erased); // Do not erase settings window once open
+        can_be_erased &= window_can_be_erased;
     }
 }
 

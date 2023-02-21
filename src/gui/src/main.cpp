@@ -138,15 +138,15 @@ int main(int argc, char *argv[])
         // Picross files windows (one window per grid, so possibly multiple windows per file)
         for (auto it = std::begin(picross_files); it != std::end(picross_files);)
         {
-            bool canBeErased = false;
-            (*it)->visit_windows(canBeErased, settings);
-            it = canBeErased ? picross_files.erase(it) : std::next(it);
+            bool can_be_erased = false;
+            (*it)->visit_windows(can_be_erased, settings);
+            it = can_be_erased ? picross_files.erase(it) : std::next(it);
         }
 
         // Settings window
         {
-            bool canBeErased = false;
-            settings.visit_window(canBeErased);
+            bool can_be_erased = false;
+            settings.visit_window(can_be_erased);
         }
 
 #if PICROSS_GUI_IMGUI_DEMO

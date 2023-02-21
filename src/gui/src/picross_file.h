@@ -18,7 +18,7 @@ public:
     explicit PicrossFile(std::string_view path, picross::io::PicrossFileFormat format);
     ~PicrossFile();
 
-    void visit_windows(bool& canBeErased, Settings& settings);
+    void visit_windows(bool& can_be_erased, Settings& settings);
 
 private:
     ErrWindow& get_err_window();

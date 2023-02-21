@@ -11,7 +11,7 @@ public:
     SettingsWindow(const SettingsWindow&) = delete;
     SettingsWindow& operator=(const SettingsWindow&) = delete;
 
-    void visit(bool& canBeErased);
+    void visit(bool& can_be_erased);
 
 private:
     Settings& settings;
