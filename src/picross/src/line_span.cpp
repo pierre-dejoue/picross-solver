@@ -103,11 +103,11 @@ bool operator!=(const LineSpanW& lhs, const LineSpanW& rhs)
     return !(lhs == rhs);
 }
 
-std::ostream& operator<<(std::ostream& ostream, const LineSpan& line)
+std::ostream& operator<<(std::ostream& out, const LineSpan& line)
 {
     for (int idx = 0u; idx < static_cast<int>(line.size()); idx++)
-        ostream << Tiles::str(line[idx]);
-    return ostream;
+        out << Tiles::str(line[idx]);
+    return out;
 }
 
 /* The addition combines the information of two lines into a single one.

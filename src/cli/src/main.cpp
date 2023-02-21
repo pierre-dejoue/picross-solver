@@ -55,33 +55,33 @@ namespace
     {
     }
 
-    std::ostream& operator<<(std::ostream& ostream, const ValidationModeData& data)
+    std::ostream& operator<<(std::ostream& out, const ValidationModeData& data)
     {
-        ostream << data.filename << ',';
-        ostream << data.gridname << ',';
-        ostream << data.size << ',';
-        ostream << picross::str_validation_code(data.validation_result.code) << ',';
-        ostream << (data.validation_result.code == 1 && (data.validation_result.branching_depth == 0u) ? "LINE" : "") << ',';
+        out << data.filename << ',';
+        out << data.gridname << ',';
+        out << data.size << ',';
+        out << picross::str_validation_code(data.validation_result.code) << ',';
+        out << (data.validation_result.code == 1 && (data.validation_result.branching_depth == 0u) ? "LINE" : "") << ',';
         if (data.timing_ms >= 0.f)
-            ostream << data.timing_ms;
-        ostream << ",";
+            out << data.timing_ms;
+        out << ",";
         if (!data.validation_result.msg.empty() || !data.misc.empty())
-            ostream << "\"" << (data.misc.empty() ? data.validation_result.msg : data.misc) << "\"";
+            out << "\"" << (data.misc.empty() ? data.validation_result.msg : data.misc) << "\"";
         if (data.grid_stats.has_value())
         {
-            ostream << "," << (data.grid_stats->nb_single_line_linear_reduction + data.grid_stats->nb_single_line_linear_reduction_w_change);
-            ostream << "," << (data.grid_stats->nb_single_line_full_reduction   + data.grid_stats->nb_single_line_full_reduction_w_change);
-            ostream << "," << data.grid_stats->max_branching_depth;
-            ostream << "," << (data.grid_stats->total_nb_branching_alternatives + data.grid_stats->total_nb_probing_alternatives);
+            out << "," << (data.grid_stats->nb_single_line_linear_reduction + data.grid_stats->nb_single_line_linear_reduction_w_change);
+            out << "," << (data.grid_stats->nb_single_line_full_reduction   + data.grid_stats->nb_single_line_full_reduction_w_change);
+            out << "," << data.grid_stats->max_branching_depth;
+            out << "," << (data.grid_stats->total_nb_branching_alternatives + data.grid_stats->total_nb_probing_alternatives);
         }
-        return ostream;
+        return out;
     }
 
-    void output_solution_grid(std::ostream& ostream, const picross::OutputGrid& grid, unsigned int indent = 0)
+    void output_solution_grid(std::ostream& out, const picross::OutputGrid& grid, unsigned int indent = 0)
     {
         const std::string ind(indent, ' ');
         for (unsigned int y = 0u; y < grid.height(); y++)
-            ostream << ind << grid.get_line<picross::Line::ROW>(y) << std::endl;
+            out << ind << grid.get_line<picross::Line::ROW>(y) << std::endl;
     }
 } // namespace
 

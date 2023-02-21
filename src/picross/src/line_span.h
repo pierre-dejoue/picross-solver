@@ -57,7 +57,7 @@ private:
 bool operator==(const LineSpan& lhs, const LineSpan& rhs);
 bool operator!=(const LineSpan& lhs, const LineSpan& rhs);
 bool are_compatible(const LineSpan& lhs, const LineSpan& rhs);
-std::ostream& operator<<(std::ostream& ostream, const LineSpan& line);
+std::ostream& operator<<(std::ostream& out, const LineSpan& line);
 
 
 class LineSpanW

@@ -121,25 +121,23 @@ bool are_compatible(const Line& lhs, const Line& rhs)
 }
 
 
-std::ostream& operator<<(std::ostream& ostream, const Line& line)
+std::ostream& operator<<(std::ostream& out, const Line& line)
 {
-    return ostream << LineSpan(line);
+    return out << LineSpan(line);
 }
 
 
 std::string str_line_full(const Line& line)
 {
     std::stringstream ss;
-    ss << str_line_type(line.type()) << " " << std::setw(3) << line.index() << " " << LineSpan(line);
+    ss << LineId(line) << " " << LineSpan(line);
     return ss.str();
 }
 
 
-std::string str_line_id(const LineId& line_id)
+std::ostream& operator<<(std::ostream& out, const LineId& line_id)
 {
-    std::stringstream ss;
-    ss << str_line_type(line_id.m_type) << " " << std::setw(3) << line_id.m_index;
-    return ss.str();
+   return out << str_line_type(line_id.m_type) << " " << std::setw(3) << line_id.m_index;
 }
 
 

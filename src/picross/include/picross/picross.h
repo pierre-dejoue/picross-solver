@@ -118,7 +118,7 @@ public:
     virtual void set_abort_function(Abort abort) = 0;
 };
 
-std::ostream& operator<<(std::ostream& ostream, Solver::Status status);
+std::ostream& operator<<(std::ostream& out, Solver::Status status);
 
 
 /*

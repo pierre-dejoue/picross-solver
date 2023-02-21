@@ -20,7 +20,7 @@ enum class PicrossFileFormat
     OutputGrid
 };
 
-std::ostream& operator<<(std::ostream& ostream, PicrossFileFormat format);
+std::ostream& operator<<(std::ostream& out, PicrossFileFormat format);
 
 PicrossFileFormat picross_file_format_from_filepath(std::string_view filepath);
 

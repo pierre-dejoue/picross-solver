@@ -15,31 +15,31 @@ namespace picross
 namespace io
 {
 
-std::ostream& operator<<(std::ostream& ostream, PicrossFileFormat format)
+std::ostream& operator<<(std::ostream& out, PicrossFileFormat format)
 {
     switch(format)
     {
     case PicrossFileFormat::Native:
-        ostream << "Native";
+        out << "Native";
         break;
     case PicrossFileFormat::NIN:
-        ostream << "NIN";
+        out << "NIN";
         break;
     case PicrossFileFormat::NON:
-        ostream << "NON";
+        out << "NON";
         break;
     case PicrossFileFormat::PBM:
-        ostream << "PBM";
+        out << "PBM";
         break;
     case PicrossFileFormat::OutputGrid:
-        ostream << "OutputGrid";
+        out << "OutputGrid";
         break;
     default:
         assert(0);
-        ostream << "Unknown";
+        out << "Unknown";
         break;
     }
-    return ostream;
+    return out;
 }
 
 PicrossFileFormat picross_file_format_from_filepath(std::string_view filepath)

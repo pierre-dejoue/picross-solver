@@ -56,7 +56,7 @@ private:
     Container               m_col_major;
 };
 
-std::ostream& operator<<(std::ostream& ostream, const Grid& grid);
+std::ostream& operator<<(std::ostream& out, const Grid& grid);
 
 template <Line::Type T>
 class GridSnapshot

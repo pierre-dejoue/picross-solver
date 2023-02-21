@@ -205,20 +205,14 @@ bool LineConstraint::compatible(const LineSpan& line) const
     return segments == m_segments;
 }
 
-void LineConstraint::print(std::ostream& ostream) const
+std::ostream& operator<<(std::ostream& out, const LineConstraint& constraint)
 {
-    ostream << "Constraint on a " << str_line_type(m_type) << ": [ ";
-    for (const auto& seg : m_segments)
+    out << "Constraint on a " << str_line_type(constraint.m_type) << ": [ ";
+    for (const auto& seg : constraint.m_segments)
     {
-        ostream << seg << " ";
+        out << seg << " ";
     }
-    ostream << "]; min_line_size = " << m_min_line_size;
-}
-
-std::ostream& operator<<(std::ostream& ostream, const LineConstraint& constraint)
-{
-    constraint.print(ostream);
-    return ostream;
+    return out << "]; min_line_size = " << constraint.m_min_line_size;
 }
 
 } // namespace picross

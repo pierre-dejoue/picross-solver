@@ -95,55 +95,55 @@ void RefSolver<BranchingAllowed>::set_abort_function(Abort abort)
 }
 
 
-std::ostream& operator<<(std::ostream& ostream, Solver::Status status)
+std::ostream& operator<<(std::ostream& out, Solver::Status status)
 {
     switch (status)
     {
     case Solver::Status::OK:
-        ostream << "OK";
+        out << "OK";
         break;
     case Solver::Status::ABORTED:
-        ostream << "ABORTED";
+        out << "ABORTED";
         break;
     case Solver::Status::CONTRADICTORY_GRID:
-        ostream << "CONTRADICTORY_GRID";
+        out << "CONTRADICTORY_GRID";
         break;
     case Solver::Status::NOT_LINE_SOLVABLE:
-        ostream << "NOT_LINE_SOLVABLE";
+        out << "NOT_LINE_SOLVABLE";
         break;
     default:
         assert(0);  // Unknown Solver::Status
     }
-    return ostream;
+    return out;
 }
 
 
-std::ostream& operator<<(std::ostream& ostream, ObserverEvent event)
+std::ostream& operator<<(std::ostream& out, ObserverEvent event)
 {
     switch (event)
     {
     case ObserverEvent::BRANCHING:
-        ostream << "BRANCHING";
+        out << "BRANCHING";
         break;
     case ObserverEvent::KNOWN_LINE:
-        ostream << "KNOWN_LINE";
+        out << "KNOWN_LINE";
         break;
     case ObserverEvent::DELTA_LINE:
-        ostream << "DELTA_LINE";
+        out << "DELTA_LINE";
         break;
     case ObserverEvent::SOLVED_GRID:
-        ostream << "SOLVED_GRID";
+        out << "SOLVED_GRID";
         break;
     case ObserverEvent::INTERNAL_STATE:
-        ostream << "INTERNAL_STATE";
+        out << "INTERNAL_STATE";
         break;
     case ObserverEvent::PROGRESS:
-        ostream << "PROGRESS";
+        out << "PROGRESS";
         break;
     default:
         assert(0);  // Unknown ObserverEvent
     }
-    return ostream;
+    return out;
 }
 
 std::string str_solver_internal_state(unsigned int internal_state)

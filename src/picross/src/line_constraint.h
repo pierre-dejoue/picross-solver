@@ -61,9 +61,8 @@ public:
     bool compatible(const LineSpan& line) const;
 private:
     unsigned int max_segment_size() const;
-    void print(std::ostream& ostream) const;
 public:
-    friend std::ostream& operator<<(std::ostream& ostream, const LineConstraint& constraint);
+    friend std::ostream& operator<<(std::ostream& out, const LineConstraint& constraint);
 private:
     Line::Type          m_type;                     // Row or column
     Segments            m_segments;             // Size of the contiguous blocks of filled tiles

@@ -162,11 +162,11 @@ bool operator!=(const Grid& lhs, const Grid& rhs)
     return !(lhs == rhs);
 }
 
-std::ostream& operator<<(std::ostream& ostream, const Grid& grid)
+std::ostream& operator<<(std::ostream& out, const Grid& grid)
 {
     for (unsigned int y = 0u; y < grid.height(); y++)
-        ostream << grid.get_line(Line::ROW, y) << std::endl;
-    return ostream;
+        out << grid.get_line(Line::ROW, y) << std::endl;
+    return out;
 }
 
 

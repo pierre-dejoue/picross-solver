@@ -46,57 +46,57 @@ void merge_branching_grid_stats(GridStats& stats, const GridStats& branching_sta
     stats.nb_single_line_full_reduction_w_change += branching_stats.nb_single_line_full_reduction_w_change;
 }
 
-std::ostream& operator<<(std::ostream& ostream, const GridStats& stats)
+std::ostream& operator<<(std::ostream& out, const GridStats& stats)
 {
-    ostream << "  Number of solutions found: " << stats.nb_solutions << std::endl;
-    ostream << "  Max branching depth: " << stats.max_branching_depth << std::endl;
+    out << "  Number of solutions found: " << stats.nb_solutions << std::endl;
+    out << "  Max branching depth: " << stats.max_branching_depth << std::endl;
 
     if (stats.max_branching_depth > 0u)
     {
-        ostream << "    > Hypothesis (probing/branching) on " << stats.nb_probing_calls << "/" << stats.nb_branching_calls << " lines" << std::endl;
-        ostream << "    > Total number of alternatives being tested (probing/branching): " << stats.total_nb_probing_alternatives << "/" << stats.total_nb_branching_alternatives << std::endl;
+        out << "    > Hypothesis (probing/branching) on " << stats.nb_probing_calls << "/" << stats.nb_branching_calls << " lines" << std::endl;
+        out << "    > Total number of alternatives being tested (probing/branching): " << stats.total_nb_probing_alternatives << "/" << stats.total_nb_branching_alternatives << std::endl;
         assert(stats.max_nb_alternatives_by_branching_depth.size() == stats.max_branching_depth);
-        ostream << "    > Max number of alternatives by branching depth:";
+        out << "    > Max number of alternatives by branching depth:";
         for (const auto& max_alternatives : stats.max_nb_alternatives_by_branching_depth)
         {
-            ostream << " " << max_alternatives;
+            out << " " << max_alternatives;
         }
-        ostream << std::endl;
+        out << std::endl;
     }
 
-    ostream << "  Max number of alternatives on an empty line (initial grid pass): " << stats.max_initial_nb_alternatives;
-    if (stats.max_initial_nb_alternatives == BinomialCoefficients::overflowValue()) { ostream << " (overflow!)"; }
-    ostream << std::endl;
+    out << "  Max number of alternatives on an empty line (initial grid pass): " << stats.max_initial_nb_alternatives;
+    if (stats.max_initial_nb_alternatives == BinomialCoefficients::overflowValue()) { out << " (overflow!)"; }
+    out << std::endl;
 
     if (stats.max_nb_alternatives_partial_w_change > 0 || stats.max_nb_alternatives_partial)
     {
-        ostream << "  Max number of alternatives after a partial line reduction (change/all): " << stats.max_nb_alternatives_partial_w_change << "/" << stats.max_nb_alternatives_partial << std::endl;
+        out << "  Max number of alternatives after a partial line reduction (change/all): " << stats.max_nb_alternatives_partial_w_change << "/" << stats.max_nb_alternatives_partial << std::endl;
     }
     if (stats.max_nb_alternatives_linear_w_change > 0 || stats.max_nb_alternatives_linear)
     {
-        ostream << "  Max number of alternatives after a  linear line reduction (change/all): " << stats.max_nb_alternatives_linear_w_change << "/" << stats.max_nb_alternatives_linear << std::endl;
+        out << "  Max number of alternatives after a  linear line reduction (change/all): " << stats.max_nb_alternatives_linear_w_change << "/" << stats.max_nb_alternatives_linear << std::endl;
     }
     if (stats.max_nb_alternatives_full_w_change > 0 || stats.max_nb_alternatives_full)
     {
-        ostream << "  Max number of alternatives after a    full line reduction (change/all): " << stats.max_nb_alternatives_full_w_change << "/" << stats.max_nb_alternatives_full << std::endl;
+        out << "  Max number of alternatives after a    full line reduction (change/all): " << stats.max_nb_alternatives_full_w_change << "/" << stats.max_nb_alternatives_full << std::endl;
     }
 
-    ostream << "  Number of full grid pass: " << stats.nb_full_grid_pass << std::endl;
+    out << "  Number of full grid pass: " << stats.nb_full_grid_pass << std::endl;
 
     if (stats.nb_single_line_partial_reduction_w_change > 0 || stats.nb_single_line_partial_reduction > 0)
     {
-        ostream << "  Number of single line partial reduction (change/all): " << stats.nb_single_line_partial_reduction_w_change << "/" << stats.nb_single_line_partial_reduction << std::endl;
+        out << "  Number of single line partial reduction (change/all): " << stats.nb_single_line_partial_reduction_w_change << "/" << stats.nb_single_line_partial_reduction << std::endl;
     }
     if (stats.nb_single_line_linear_reduction_w_change > 0 || stats.nb_single_line_linear_reduction > 0)
     {
-        ostream << "  Number of single line  linear reduction (change/all): " << stats.nb_single_line_linear_reduction_w_change << "/" << stats.nb_single_line_linear_reduction << std::endl;
+        out << "  Number of single line  linear reduction (change/all): " << stats.nb_single_line_linear_reduction_w_change << "/" << stats.nb_single_line_linear_reduction << std::endl;
     }
     if (stats.nb_single_line_full_reduction_w_change > 0 || stats.nb_single_line_full_reduction > 0)
     {
-        ostream << "  Number of single line    full reduction (change/all): " << stats.nb_single_line_full_reduction_w_change << "/" << stats.nb_single_line_full_reduction << std::endl;
+        out << "  Number of single line    full reduction (change/all): " << stats.nb_single_line_full_reduction_w_change << "/" << stats.nb_single_line_full_reduction << std::endl;
     }
 
-    return ostream;
+    return out;
 }
 
 } // namespace picross

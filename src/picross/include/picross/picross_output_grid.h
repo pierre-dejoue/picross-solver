@@ -77,7 +77,7 @@ private:
 bool operator==(const Line& lhs, const Line& rhs);
 bool operator!=(const Line& lhs, const Line& rhs);
 bool are_compatible(const Line& lhs, const Line& rhs);
-std::ostream& operator<<(std::ostream& ostream, const Line& line);
+std::ostream& operator<<(std::ostream& out, const Line& line);
 std::string str_line_type(Line::Type type);
 std::string str_line_full(const Line& line);
 
@@ -99,7 +99,7 @@ struct LineId
     Line::Index m_index;
 };
 
-std::string str_line_id(const LineId& line_id);
+std::ostream& operator<<(std::ostream& out, const LineId& line_id);
 
 
 /*
@@ -144,7 +144,7 @@ public:
     friend bool operator==(const OutputGrid& lhs, const OutputGrid& rhs);
     friend bool operator!=(const OutputGrid& lhs, const OutputGrid& rhs);
 
-    friend std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid);
+    friend std::ostream& operator<<(std::ostream& out, const OutputGrid& grid);
 private:
     std::unique_ptr<Grid> p_grid;
 };

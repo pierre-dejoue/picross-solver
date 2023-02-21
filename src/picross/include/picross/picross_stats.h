@@ -49,6 +49,6 @@ struct GridStats
     std::vector<unsigned int> max_nb_alternatives_by_branching_depth;   // vector with max_branching_depth elements
 };
 
-std::ostream& operator<<(std::ostream& ostream, const GridStats& stats);
+std::ostream& operator<<(std::ostream& out, const GridStats& stats);
 
 } // namespace picross

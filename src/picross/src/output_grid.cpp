@@ -121,9 +121,9 @@ bool operator!=(const OutputGrid& lhs, const OutputGrid& rhs)
     return !(lhs == rhs);
 }
 
-std::ostream& operator<<(std::ostream& ostream, const OutputGrid& grid)
+std::ostream& operator<<(std::ostream& out, const OutputGrid& grid)
 {
-    return ostream << *grid.p_grid;
+    return out << *grid.p_grid;
 }
 
 } // namespace picross

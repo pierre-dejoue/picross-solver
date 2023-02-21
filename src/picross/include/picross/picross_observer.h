@@ -66,7 +66,7 @@ enum class ObserverEvent {
 class Line;
 using Observer = std::function<void(ObserverEvent,const Line*,unsigned int,unsigned int)>;
 
-std::ostream& operator<<(std::ostream& ostream, ObserverEvent event);
+std::ostream& operator<<(std::ostream& out, ObserverEvent event);
 
 std::string str_solver_internal_state(unsigned int internal_state);
 

@@ -36,7 +36,7 @@ enum class WorkGridState
     STOP_SOLVER
 };
 
-std::ostream& operator<<(std::ostream& ostream, WorkGridState state);
+std::ostream& operator<<(std::ostream& out, WorkGridState state);
 
 /*
  * WorkGrid class

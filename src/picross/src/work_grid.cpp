@@ -100,39 +100,39 @@ std::pair<float, float> nested_progress_bar(const std::pair<float, float>& progr
 }  // namespace
 
 
-std::ostream& operator<<(std::ostream& ostream, WorkGridState state)
+std::ostream& operator<<(std::ostream& out, WorkGridState state)
 {
     switch(state)
     {
     case WorkGridState::INITIAL_PASS:
-        ostream << "INITIAL_PASS";
+        out << "INITIAL_PASS";
         break;
 
     case WorkGridState::LINEAR_REDUCTION:
-        ostream << "LINEAR_REDUCTION";
+        out << "LINEAR_REDUCTION";
         break;
 
     case WorkGridState::FULL_REDUCTION:
-        ostream << "FULL_REDUCTION";
+        out << "FULL_REDUCTION";
         break;
 
     case WorkGridState::PROBING:
-        ostream << "PROBING";
+        out << "PROBING";
         break;
 
     case WorkGridState::BRANCHING:
-        ostream << "BRANCHING";
+        out << "BRANCHING";
         break;
 
     case WorkGridState::STOP_SOLVER:
-        ostream << "STOP_SOLVER";
+        out << "STOP_SOLVER";
         break;
 
     default:
         assert(0);
-        ostream << "UNKNOWN";
+        out << "UNKNOWN";
     }
-    return ostream;
+    return out;
 }
 
 
