@@ -50,18 +50,13 @@ namespace
         }
 
         // Check that all constraints match
+        const auto check_line_constraint = [&](const LineId line_id) {
+            if (!LineConstraint(line_id.m_type, get_constraint(input_grid, line_id)).compatible(output_grid.get_line(line_id))) { non_matching(line_id); }
+        };
         for (unsigned int x = 0u; x < input_grid.width(); x++)
-        {
-            LineId line_id(Line::COL, x);
-            if (!LineConstraint(Line::COL, input_grid.m_cols[x]).compatible(output_grid.get_line(line_id)))
-                non_matching(line_id);
-        }
+            check_line_constraint(LineId(Line::COL, x));
         for (unsigned int y = 0u; y < input_grid.height(); y++)
-        {
-            LineId line_id(Line::ROW, y);
-            if (!LineConstraint(Line::ROW, input_grid.m_rows[y]).compatible(output_grid.get_line(line_id)))
-                non_matching(line_id);
-        }
+            check_line_constraint(LineId(Line::ROW, y));
     }
 }
 
@@ -87,22 +82,21 @@ std::vector<LineId> list_incompatible_lines(const InputGrid& input_grid, const O
 InputGrid get_input_grid_from(const OutputGrid& grid)
 {
     assert(grid.is_completed());
-    InputGrid result;
+    InputGrid::Constraints rows, cols;
 
-    result.m_name = grid.name();
-
-    result.m_rows.reserve(grid.height());
+    rows.reserve(grid.height());
     for (unsigned int y = 0u; y < grid.height(); y++)
     {
-        result.m_rows.emplace_back(get_constraint_from(grid.get_line<Line::ROW>(y)));
+        rows.emplace_back(get_constraint_from(grid.get_line<Line::ROW>(y)));
     }
 
-    result.m_cols.reserve(grid.width());
+    cols.reserve(grid.width());
     for (unsigned int x = 0u; x < grid.width(); x++)
     {
-        result.m_cols.emplace_back(get_constraint_from(grid.get_line<Line::COL>(x)));
+        cols.emplace_back(get_constraint_from(grid.get_line<Line::COL>(x)));
     }
 
+    InputGrid result(std::move(rows), std::move(cols), grid.name());
     assert(result.width() == grid.width());
     assert(result.height() == grid.height());
     return result;

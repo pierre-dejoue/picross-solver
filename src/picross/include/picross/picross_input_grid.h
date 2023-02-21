@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <map>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -25,25 +26,35 @@ namespace picross
  *   A data structure to store the information related to an unsolved Picross grid.
  *   This is basically the input information of the solver.
  */
-struct InputGrid
+class InputGrid
 {
+public:
     // Constraint that applies to a line (row or column)
-    // It gives the size of each of the groups of contiguous filled tiles
+    // It gives the size of each group of contiguous filled tiles
     using Constraint = std::vector<unsigned int>;
     using Constraints = std::vector<Constraint>;
 
-    InputGrid() = default;
-    InputGrid(const Constraints& rows, const Constraints& cols, const std::string& name = std::string{});
-    InputGrid(Constraints&& rows, Constraints&& cols, const std::string& name = std::string{});
+    // Optional grid metadata
+    using Metadata = std::map<std::string, std::string>;
+
+    InputGrid(const Constraints& rows, const Constraints& cols, const std::string_view name = "");
+    InputGrid(Constraints&& rows, Constraints&& cols, const std::string_view name = "");
 
     std::size_t width() const { return m_cols.size(); }
     std::size_t height() const { return m_rows.size(); }
-    const std::string& name() const { return m_name; }
+    const Constraints& rows() const { return m_rows; }
+    const Constraints& cols() const { return m_cols; }
+    std::string_view name() const { return m_name; }
+    const Metadata& metadata() const { return m_metadata; }
 
-    Constraints                         m_rows;
-    Constraints                         m_cols;
-    std::string                         m_name;
-    std::map<std::string, std::string>  m_metadata;      // Optional
+    void set_name(const std::string_view name);
+    void set_metadata(std::string_view key, std::string_view data);
+
+private:
+    Constraints     m_rows;
+    Constraints     m_cols;
+    std::string     m_name;
+    Metadata        m_metadata;
 };
 
 

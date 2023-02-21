@@ -39,7 +39,7 @@ constexpr bool FULL_SOLUTION = false;
 std::vector<LineConstraint> build_constraints_from(Line::Type type, const InputGrid& grid)
 {
     std::vector<LineConstraint> output;
-    const InputGrid::Constraints& input = type == Line::ROW ? grid.m_rows : grid.m_cols;
+    const InputGrid::Constraints& input = get_constraints(grid, type);
     output.reserve(input.size());
     std::transform(input.cbegin(), input.cend(), std::back_inserter(output), [type](const auto& c) { return LineConstraint(type, c); });
     return output;

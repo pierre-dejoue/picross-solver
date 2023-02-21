@@ -8,25 +8,35 @@
 namespace picross
 {
 
-InputGrid::InputGrid(const Constraints& rows, const Constraints& cols, const std::string& name)
+InputGrid::InputGrid(const Constraints& rows, const Constraints& cols, const std::string_view name)
     : m_rows(rows)
     , m_cols(cols)
     , m_name(name)
     , m_metadata()
 {}
 
-InputGrid::InputGrid(Constraints&& rows, Constraints&& cols, const std::string& name)
+InputGrid::InputGrid(Constraints&& rows, Constraints&& cols, const std::string_view name)
     : m_rows(std::move(rows))
     , m_cols(std::move(cols))
     , m_name(name)
     , m_metadata()
 {}
 
+void InputGrid::set_name(const std::string_view name)
+{
+    m_name = std::string(name);
+}
+
+void InputGrid::set_metadata(std::string_view key, std::string_view data)
+{
+    m_metadata.insert_or_assign(std::string(key), std::string(data));
+}
+
 std::string str_input_grid_size(const InputGrid& grid)
 {
-    std::ostringstream oss;
-    oss << grid.m_cols.size() << "x" << grid.m_rows.size();
-    return oss.str();
+    std::stringstream ss;
+    ss << grid.cols().size() << "x" << grid.rows().size();
+    return ss.str();
 }
 
 std::pair<bool, std::string> check_input_grid(const InputGrid& grid)
@@ -36,8 +46,8 @@ std::pair<bool, std::string> check_input_grid(const InputGrid& grid)
     //  -> same number of painted cells on rows and columns
     //  -> for each constraint min_line_size is smaller than the width or height of the row or column, respectively.
 
-    const auto width  = static_cast<unsigned int>(grid.m_cols.size());
-    const auto height = static_cast<unsigned int>(grid.m_rows.size());
+    const auto width  = static_cast<unsigned int>(grid.width());
+    const auto height = static_cast<unsigned int>(grid.height());
 
     if (height == 0u)
     {
@@ -52,7 +62,7 @@ std::pair<bool, std::string> check_input_grid(const InputGrid& grid)
         return std::make_pair(false, oss.str());
     }
     unsigned int nb_tiles_on_rows = 0u;
-    for (const auto& c : grid.m_rows)
+    for (const auto& c : grid.rows())
     {
         LineConstraint row(Line::ROW, c);
         nb_tiles_on_rows += row.nb_filled_tiles();
@@ -64,7 +74,7 @@ std::pair<bool, std::string> check_input_grid(const InputGrid& grid)
         }
     }
     unsigned int nb_tiles_on_cols = 0u;
-    for (const auto& c : grid.m_cols)
+    for (const auto& c : grid.cols())
     {
         LineConstraint col(Line::COL, c);
         nb_tiles_on_cols += col.nb_filled_tiles();

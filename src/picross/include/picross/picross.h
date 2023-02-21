@@ -179,6 +179,13 @@ std::vector<LineId> list_incompatible_lines(const InputGrid& input_grid, const O
 
 
 /*
+ * Utility functions on InputGrid using LineId
+ */
+const InputGrid::Constraints& get_constraints(const InputGrid& input_grid, Line::Type type);
+const InputGrid::Constraint   get_constraint(const InputGrid& input_grid, LineId line_id);
+
+
+/*
  * Utility functions to build an input constraint from a fully defined Line,
  * or an InputGrid from a fully defined OutputGrid (no Tile::UNKNOWN)
  */

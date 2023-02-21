@@ -69,17 +69,17 @@ std::vector<InputGrid> parse_input_file_non_format(std::string_view filepath, co
 /*
  * Stream writer, native file format
  */
-void write_input_grid_native(std::ostream& ostream, const InputGrid& input_grid);
+void write_input_grid_native(std::ostream& out, const InputGrid& input_grid);
 
 /*
  * Stream writer, NIN file format
  */
-void write_input_grid_nin_format(std::ostream& ostream, const InputGrid& input_grid);
+void write_input_grid_nin_format(std::ostream& out, const InputGrid& input_grid);
 
 /*
  * Stream writer, NON file format
  */
-void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_grid, std::optional<OutputGrid> goal = std::nullopt);
+void write_input_grid_non_format(std::ostream& out, const InputGrid& input_grid, std::optional<OutputGrid> goal = std::nullopt);
 
 } // namespace io
 } // namespace picross

@@ -169,4 +169,15 @@ Line line_from_line_span(const LineSpan& line_span)
     return line;
 }
 
+const InputGrid::Constraints& get_constraints(const InputGrid& input_grid, Line::Type type)
+{
+    assert(type == Line::ROW || type == Line::COL);
+    return type == Line::ROW ? input_grid.rows() : input_grid.cols();
+}
+
+const InputGrid::Constraint get_constraint(const InputGrid& input_grid, LineId line_id)
+{
+    return get_constraints(input_grid, line_id.m_type).at(line_id.m_index);
+}
+
 } // namespace picross

@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <ostream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 
@@ -17,7 +18,7 @@ class Grid
 public:
     using Container = std::vector<Tile>;
 public:
-    Grid(std::size_t width, std::size_t height, const std::string& name = std::string{});
+    Grid(std::size_t width, std::size_t height, std::string_view name = "");
 
     Grid(const Grid&) = default;
     Grid(Grid&&) noexcept = default;

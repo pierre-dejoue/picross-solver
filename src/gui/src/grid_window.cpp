@@ -182,7 +182,7 @@ GridWindow::GridWindow(picross::InputGrid&& grid, std::string_view source, bool 
     , max_nb_solutions(0u)
     , speed(1u)
 {
-    title = this->grid.name() + " (" + source.data() + ")";
+    title = std::string(this->grid.name()) + " (" + source.data() + ")";
 }
 
 GridWindow::~GridWindow()

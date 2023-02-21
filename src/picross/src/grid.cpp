@@ -38,7 +38,7 @@ namespace Tiles
 } // namespace
 
 
-Grid::Grid(std::size_t width, std::size_t height, const std::string& name)
+Grid::Grid(std::size_t width, std::size_t height, std::string_view name)
     : m_width(width)
     , m_height(height)
     , m_name(name)

@@ -35,6 +35,14 @@ struct FileFormat
     struct Non {};
 };
 
+struct IOInputGrid
+{
+    InputGrid::Constraints      m_rows;
+    InputGrid::Constraints      m_cols;
+    std::string                 m_name;
+    InputGrid::Metadata         m_metadata;
+};
+
 template <typename F>
 class FileParser;
 
@@ -58,7 +66,7 @@ public:
     {
     }
 
-    void parse_line(const std::string& line_to_parse, std::vector<picross::InputGrid>& grids, const ErrorHandler& error_handler)
+    void parse_line(const std::string& line_to_parse, std::vector<IOInputGrid>& grids, const ErrorHandler& error_handler)
     {
         std::istringstream iss(line_to_parse);
         std::string token;
@@ -189,7 +197,7 @@ public:
     {
     }
 
-    void parse_line(const std::string& line_to_parse, std::vector<picross::InputGrid>& grids, const ErrorHandler& error_handler)
+    void parse_line(const std::string& line_to_parse, std::vector<IOInputGrid>& grids, const ErrorHandler& error_handler)
     {
         UNUSED(error_handler);
 
@@ -302,7 +310,7 @@ public:
 
     }
 
-    void parse_line(const std::string& line_to_parse, std::vector<picross::InputGrid>& grids, const ErrorHandler& error_handler)
+    void parse_line(const std::string& line_to_parse, std::vector<IOInputGrid>& grids, const ErrorHandler& error_handler)
     {
         std::istringstream iss(line_to_parse);
         std::string token;
@@ -396,7 +404,7 @@ public:
             {
                 std::stringbuf remaining;
                 iss >> &remaining;
-                grid.m_metadata.insert({token, extract_text_in_quotes_or_ltrim(remaining.str())});
+                grid.m_metadata.insert_or_assign(token, extract_text_in_quotes_or_ltrim(remaining.str()));
             }
             else if (is_ignored_token(token))
             {
@@ -472,6 +480,7 @@ std::vector<InputGrid> parse_input_file_generic(std::string_view filepath, const
 
     try
     {
+        std::vector<IOInputGrid> grids;
         std::ifstream inputstream(filepath.data());
         if (inputstream.is_open())
         {
@@ -484,13 +493,20 @@ std::vector<InputGrid> parse_input_file_generic(std::string_view filepath, const
             {
                 line_nb++;
                 inputstream.getline(line, INPUT_BUFFER_SZ - 1);
-                parser.parse_line(std::string(line), result, [line_nb, &line, &error_handler](std::string_view msg, ExitCode code)
+                parser.parse_line(std::string(line), grids, [line_nb, &line, &error_handler](std::string_view msg, ExitCode code)
                     {
                         std::ostringstream oss;
                         oss << "Parsing error [" << msg << "] on line " << line_nb << ": " << line;
                         error_handler(oss.str(), code);
                     });
             }
+            std::for_each(grids.begin(), grids.end(), [&result](IOInputGrid& io_grid) {
+                result.emplace_back(std::move(io_grid.m_rows), std::move(io_grid.m_cols), io_grid.m_name);
+                for (const auto& [key, data] : io_grid.m_metadata)
+                {
+                    result.back().set_metadata(key, data);
+                }
+            });
         }
         else
         {
@@ -509,70 +525,70 @@ std::vector<InputGrid> parse_input_file_generic(std::string_view filepath, const
     return result;
 }
 
-void write_constraints_native_format(std::ostream& ostream, const std::vector<InputGrid::Constraint>& constraints)
+void write_constraints_native_format(std::ostream& out, const std::vector<InputGrid::Constraint>& constraints)
 {
     for (const auto& constraint: constraints)
     {
-        ostream << "[ ";
-        std::copy(constraint.cbegin(), constraint.cend(), std::ostream_iterator<InputGrid::Constraint::value_type>(ostream, " "));
-        ostream << ']' << std::endl;
+        out << "[ ";
+        std::copy(constraint.cbegin(), constraint.cend(), std::ostream_iterator<InputGrid::Constraint::value_type>(out, " "));
+        out << ']' << std::endl;
     }
 }
 
-void write_constraints_nin_format(std::ostream& ostream, const std::vector<InputGrid::Constraint>& constraints)
+void write_constraints_nin_format(std::ostream& out, const std::vector<InputGrid::Constraint>& constraints)
 {
     for (const auto& constraint : constraints)
     {
         if (constraint.empty())
         {
-            ostream << 0 << std::endl;
+            out << 0 << std::endl;
         }
         else
         {
-            std::copy(constraint.cbegin(), std::prev(constraint.cend()), std::ostream_iterator<InputGrid::Constraint::value_type>(ostream, " "));
-            ostream << constraint.back() << std::endl;
+            std::copy(constraint.cbegin(), std::prev(constraint.cend()), std::ostream_iterator<InputGrid::Constraint::value_type>(out, " "));
+            out << constraint.back() << std::endl;
         }
     }
 }
 
-void write_constraints_non_format(std::ostream& ostream, const std::vector<InputGrid::Constraint>& constraints)
+void write_constraints_non_format(std::ostream& out, const std::vector<InputGrid::Constraint>& constraints)
 {
     for (const auto& constraint : constraints)
     {
         if (constraint.empty())
         {
-            ostream << 0 << std::endl;
+            out << 0 << std::endl;
         }
         else
         {
-            std::copy(constraint.cbegin(), std::prev(constraint.cend()), std::ostream_iterator<InputGrid::Constraint::value_type>(ostream, ","));
-            ostream << constraint.back() << std::endl;
+            std::copy(constraint.cbegin(), std::prev(constraint.cend()), std::ostream_iterator<InputGrid::Constraint::value_type>(out, ","));
+            out << constraint.back() << std::endl;
         }
     }
 }
 
-void write_metadata_non_format(std::ostream& ostream, const std::map<std::string, std::string>& meta, const std::string& key, bool quoted = true)
+void write_metadata_non_format(std::ostream& out, const std::map<std::string, std::string>& meta, const std::string& key, bool quoted = true)
 {
     const std::string quote = quoted ? "\"" : "";
     if (meta.count(key) && !meta.at(key).empty())
     {
-        ostream << key << ' ' << quote << meta.at(key) << quote << std::endl;
+        out << key << ' ' << quote << meta.at(key) << quote << std::endl;
     }
     else if (!quote.empty())
     {
-        ostream << key << ' ' << quote << quote << std::endl;
+        out << key << ' ' << quote << quote << std::endl;
     }
     else
     {
-        ostream << key << std::endl;
+        out << key << std::endl;
     }
 }
 
-void write_goal_non_format(std::ostream& ostream, const OutputGrid& goal)
+void write_goal_non_format(std::ostream& out, const OutputGrid& goal)
 {
     assert(goal.is_completed());
     const char quote = '"';
-    ostream << "goal " << quote;
+    out << "goal " << quote;
     // Tiles from top left of the puzzle along the first row, then the second row, etc.
     // 0 is a blank; anything else is a filled tile.
     for (unsigned int y = 0; y < goal.height(); y++)
@@ -580,9 +596,9 @@ void write_goal_non_format(std::ostream& ostream, const OutputGrid& goal)
         {
             const Tile& tile = goal.get_tile(x, y);
             assert(tile == Tile::EMPTY || tile == Tile::FILLED);
-            ostream << (tile == Tile::EMPTY ? '0' : '1');
+            out << (tile == Tile::EMPTY ? '0' : '1');
         }
-    ostream << quote << std::endl;
+    out << quote << std::endl;
 }
 
 } // Anonymous namespace
@@ -602,49 +618,49 @@ std::vector<InputGrid> parse_input_file_non_format(std::string_view filepath, co
     return parse_input_file_generic<FileFormat::Non>(filepath, error_handler);
 }
 
-void write_input_grid_native(std::ostream& ostream, const InputGrid& input_grid)
+void write_input_grid_native(std::ostream& out, const InputGrid& input_grid)
 {
-    for (const auto& kvp : input_grid.m_metadata)
-        if (!kvp.second.empty())
-            ostream << "# " << kvp.first << ": " << kvp.second << std::endl;
-    ostream << "GRID " << input_grid.name() << std::endl;
-    ostream << "ROWS" << std::endl;
-    write_constraints_native_format(ostream, input_grid.m_rows);
-    ostream << "COLUMNS" << std::endl;
-    write_constraints_native_format(ostream, input_grid.m_cols);
+    for (const auto& [key, data] : input_grid.metadata())
+        if (!data.empty())
+            out << "# " << key << ": " << data << std::endl;
+    out << "GRID " << input_grid.name() << std::endl;
+    out << "ROWS" << std::endl;
+    write_constraints_native_format(out, input_grid.rows());
+    out << "COLUMNS" << std::endl;
+    write_constraints_native_format(out, input_grid.cols());
 }
 
-void write_input_grid_nin_format(std::ostream& ostream, const InputGrid& input_grid)
+void write_input_grid_nin_format(std::ostream& out, const InputGrid& input_grid)
 {
-    ostream << input_grid.width() << " " << input_grid.height();
-    write_constraints_nin_format(ostream, input_grid.m_rows);
-    write_constraints_nin_format(ostream, input_grid.m_cols);
+    out << input_grid.width() << " " << input_grid.height();
+    write_constraints_nin_format(out, input_grid.rows());
+    write_constraints_nin_format(out, input_grid.cols());
 }
 
-void write_input_grid_non_format(std::ostream& ostream, const InputGrid& input_grid, std::optional<OutputGrid> goal)
+void write_input_grid_non_format(std::ostream& out, const InputGrid& input_grid, std::optional<OutputGrid> goal)
 {
     constexpr bool NON_QUOTED = false;
-    write_metadata_non_format(ostream, input_grid.m_metadata, "catalogue");
-    ostream << "title \"" << input_grid.m_name << '\"' << std::endl;
-    write_metadata_non_format(ostream, input_grid.m_metadata, "by");
-    write_metadata_non_format(ostream, input_grid.m_metadata, "copyright");
-    write_metadata_non_format(ostream, input_grid.m_metadata, "license", NON_QUOTED);
+    write_metadata_non_format(out, input_grid.metadata(), "catalogue");
+    out << "title \"" << input_grid.name() << '\"' << std::endl;
+    write_metadata_non_format(out, input_grid.metadata(), "by");
+    write_metadata_non_format(out, input_grid.metadata(), "copyright");
+    write_metadata_non_format(out, input_grid.metadata(), "license", NON_QUOTED);
 
-    ostream << "width " << input_grid.m_cols.size() << std::endl;
-    ostream << "height " << input_grid.m_rows.size() << std::endl;
+    out << "width " << input_grid.width() << std::endl;
+    out << "height " << input_grid.height() << std::endl;
 
-    ostream << std::endl;
-    ostream << "rows" << std::endl;
-    write_constraints_non_format(ostream, input_grid.m_rows);
+    out << std::endl;
+    out << "rows" << std::endl;
+    write_constraints_non_format(out, input_grid.rows());
 
-    ostream << std::endl;
-    ostream << "columns" << std::endl;
-    write_constraints_non_format(ostream, input_grid.m_cols);
+    out << std::endl;
+    out << "columns" << std::endl;
+    write_constraints_non_format(out, input_grid.cols());
 
     if (goal.has_value())
     {
-        ostream << std::endl;
-        write_goal_non_format(ostream, goal.value());
+        out << std::endl;
+        write_goal_non_format(out, goal.value());
     }
 }
 
