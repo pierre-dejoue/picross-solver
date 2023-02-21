@@ -1,6 +1,6 @@
 #include "solver_policy.h"
 
-#include "macros.h"
+#include <stdutils/macros.h>
 
 #include <algorithm>
 #include <cassert>

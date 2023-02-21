@@ -1,7 +1,7 @@
 #include "picross_file.h"
 
 #include <picross/picross.h>
-#include <utils/strings.h>
+#include <stdutils/string.h>
 
 #include <cassert>
 #include <iostream>
@@ -32,7 +32,7 @@ void PicrossFile::visit_windows(bool& can_be_erased, Settings& settings)
         windows.reserve(grids_to_solve.size());
         for (auto& grid : grids_to_solve)
         {
-            windows.push_back(std::make_unique<GridWindow>(std::move(grid), file_name(file_path)));
+            windows.push_back(std::make_unique<GridWindow>(std::move(grid), stdutils::string::filename(file_path)));
         }
     }
     else

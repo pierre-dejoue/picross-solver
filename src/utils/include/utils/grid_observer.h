@@ -1,9 +1,10 @@
 #pragma once
 
+#include <picross/picross.h>
+
 #include <cstddef>
 #include <vector>
 
-#include <picross/picross.h>
 
 class ObserverGrid : public picross::OutputGrid
 {

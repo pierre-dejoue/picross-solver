@@ -22,6 +22,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Stdutils
+add_subdirectory(src/stdutils)
+
 # Picross library
 add_subdirectory(src/picross)
 
@@ -49,6 +52,9 @@ endif()
 if(PICROSS_BUILD_EXAMPLES)
     add_subdirectory(src/examples)
 endif()
+
+install(EXPORT picross_project NAMESPACE picross:: DESTINATION lib/picross)
+install(FILES ${PROJECT_SOURCE_DIR}/LICENSE DESTINATION .)
 
 set(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_SOURCE_DIR}/LICENSE)
 include(CPack)

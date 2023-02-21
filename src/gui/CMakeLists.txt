@@ -31,6 +31,7 @@ endif()
 
 target_link_libraries(picross_solver
     PRIVATE
+    stdutils
     picross::picross
     picross::utils
     imgui

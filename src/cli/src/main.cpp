@@ -9,14 +9,14 @@
  * Copyright (c) 2010-2023 Pierre DEJOUE
  ******************************************************************************/
 #include <picross/picross.h>
+
+#include <stdutils/chrono.h>
+#include <stdutils/string.h>
 #include <utils/compiler_info.h>
 #include <utils/console_observer.h>
 #include <utils/console_progress_observer.h>
-#include <utils/duration_meas.h>
 #include <utils/input_grid_utils.h>
 #include <utils/picross_file_io.h>
-#include <utils/strings.h>
-#include <utils/timeout.h>
 
 #include <argagg/argagg.hpp>
 
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
     for (const char* filepath : args.pos)
     {
         ValidationModeData file_data;
-        file_data.filename = file_name(filepath);
+        file_data.filename = stdutils::string::filename(filepath);
 
         const picross::io::ErrorHandler err_handler_classic = [&return_status, &file_data](std::string_view msg, picross::io::ExitCode code)
         {
@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
                     /* Set timeout */
                     if (timeout_duration > std::chrono::seconds::zero())
                     {
-                        Timeout<std::chrono::seconds> timeout_clock(timeout_duration);
+                        stdutils::chrono::Timeout<std::chrono::seconds> timeout_clock(timeout_duration);
                         solver->set_abort_function([&timeout_clock]() { return timeout_clock.has_expired(); });
                     }
 
@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
 
                         /* Validate the grid */
                         {
-                            DurationMeas<float, std::milli> meas_ms(time_ms);
+                            stdutils::chrono::DurationMeas<float, std::milli> meas_ms(time_ms);
                             grid_data.validation_result = picross::validate_input_grid(*solver, input_grid);
                         }
                         if (!args["no-timing"])
@@ -317,7 +317,7 @@ int main(int argc, char *argv[])
                         /* Solve the grid */
                         picross::Solver::Status solver_status;
                         {
-                            DurationMeas<float, std::milli> meas_ms(time_ms);
+                            stdutils::chrono::DurationMeas<float, std::milli> meas_ms(time_ms);
                             solver_status = solver->solve(input_grid, solution_found);
                         }
 

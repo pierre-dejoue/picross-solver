@@ -1,6 +1,6 @@
 #include <utils/bitmap_io.h>
 
-#include <utils/strings.h>
+#include <stdutils/string.h>
 
 #include <pnm.hpp>
 
@@ -14,7 +14,7 @@ picross::OutputGrid import_bitmap_pbm(const std::string& filepath, const picross
     try
     {
         const pnm::pbm_image bitmap = pnm::read_pbm(filepath);
-        const auto grid_name = file_name_wo_extension(filepath);
+        const auto grid_name = stdutils::string::filename_wo_extension(filepath);
         picross::OutputGrid output_grid(bitmap.width(), bitmap.height(), grid_name);
         std::size_t y = 0u;
         for (const auto& line : bitmap.lines())

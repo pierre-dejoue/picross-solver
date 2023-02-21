@@ -3,9 +3,9 @@
 #include "err_window.h"
 #include "settings.h"
 
+#include <stdutils/string.h>
 #include <picross/picross.h>
 #include <utils/picross_file_io.h>
-#include <utils/strings.h>
 
 #include <imgui.h>
 #include <portable-file-dialogs.h>
@@ -14,6 +14,7 @@
 #include <optional>
 #include <sstream>
 #include <utility>
+
 
 namespace
 {

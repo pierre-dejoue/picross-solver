@@ -1,8 +1,8 @@
 #include "grid_info.h"
 
 #include <picross/picross.h>
+#include <stdutils/string.h>
 #include <utils/input_grid_utils.h>
-#include <utils/strings.h>
 
 #include <imgui.h>
 
@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string_view>
 #include <utility>
+
 
 namespace
 {
@@ -37,7 +38,7 @@ GridInfo::GridInfo(const picross::InputGrid& grid)
     grid_metadata.emplace_back("Size", picross::str_input_grid_size(grid));
     for (const auto&[key, data] : grid.metadata())
     {
-        grid_metadata.emplace_back(str_capitalize(key), data);
+        grid_metadata.emplace_back(stdutils::string::capitalize(key), data);
     }
 }
 

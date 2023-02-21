@@ -1,7 +1,7 @@
 #include <utils/picross_file_io.h>
 
+#include <stdutils/string.h>
 #include <utils/bitmap_io.h>
-#include <utils/strings.h>
 #include <utils/text_io.h>
 
 #include <cassert>
@@ -44,7 +44,8 @@ std::ostream& operator<<(std::ostream& out, PicrossFileFormat format)
 
 PicrossFileFormat picross_file_format_from_filepath(std::string_view filepath)
 {
-    const std::string ext = str_tolower(file_extension(filepath));
+    std::string ext = stdutils::string::file_extension(filepath);
+    ext = stdutils::string::tolower(ext);
     if (ext == "nin")
     {
         return PicrossFileFormat::NIN;

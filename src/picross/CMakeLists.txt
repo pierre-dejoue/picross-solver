@@ -38,11 +38,14 @@ target_include_directories(picross
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+target_link_libraries(picross
+    PRIVATE
+    stdutils
+)
+
 set_target_warnings(picross ON)
 
 set_property(TARGET picross PROPERTY FOLDER "libraries")
 
 install(TARGETS picross EXPORT picross_project)
-install(EXPORT picross_project NAMESPACE picross:: DESTINATION lib/picross)
 install(DIRECTORY include/picross DESTINATION include)      # Public headers
-install(FILES ${PROJECT_SOURCE_DIR}/LICENSE DESTINATION .)

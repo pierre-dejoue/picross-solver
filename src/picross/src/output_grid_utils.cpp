@@ -7,7 +7,8 @@
 
 #include "line_constraint.h"
 #include "line_span.h"
-#include "macros.h"
+
+#include <stdutils/macros.h>
 
 #include <cassert>
 #include <exception>

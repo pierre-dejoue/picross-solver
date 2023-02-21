@@ -7,7 +7,7 @@
  ******************************************************************************/
 #include <picross/picross_io.h>
 
-#include "macros.h"
+#include <stdutils/macros.h>
 
 #include <algorithm>
 #include <cassert>

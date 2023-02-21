@@ -13,7 +13,6 @@ set(LIB_SOURCES
     src/grid_observer.cpp
     src/input_grid_utils.cpp
     src/picross_file_io.cpp
-    src/strings.cpp
     src/text_io.cpp
 )
 
@@ -35,6 +34,7 @@ target_include_directories(utils
 
 target_link_libraries(utils
     PRIVATE
+    stdutils
     picross::picross
     pnm++
 )

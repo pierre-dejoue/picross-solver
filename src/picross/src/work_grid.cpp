@@ -7,11 +7,12 @@
 
 #include "grid.h"
 #include "line.h"
-#include "macros.h"
 #include "picross_stats_internal.h"
 #include "solver_policy.h"
 
 #include <picross/picross.h>
+
+#include <stdutils/macros.h>
 
 #include <algorithm>
 #include <cassert>

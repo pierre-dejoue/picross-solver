@@ -12,9 +12,10 @@
 #include "line.h"
 #include "line_alternatives.h"
 #include "line_constraint.h"
-#include "macros.h"
 
 #include <picross/picross.h>
+
+#include <stdutils/macros.h>
 
 #include <memory>
 #include <ostream>
