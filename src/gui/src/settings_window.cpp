@@ -12,6 +12,8 @@ SettingsWindow::SettingsWindow(Settings& settings)
 
 void SettingsWindow::visit(bool& can_be_erased)
 {
+    can_be_erased = false;        // Cannot close
+
     ImGui::SetNextWindowSizeConstraints(ImVec2(0, 300), ImVec2(FLT_MAX, 600));
 
     constexpr ImGuiWindowFlags win_flags = ImGuiWindowFlags_AlwaysAutoResize;
@@ -19,11 +21,9 @@ void SettingsWindow::visit(bool& can_be_erased)
     if (!ImGui::Begin(title.c_str(), &is_window_open, win_flags))
     {
         // Collapsed
-        can_be_erased = !is_window_open;
         ImGui::End();
         return;
     }
-    can_be_erased = false;        // Cannot close
 
     Settings::Tile* tile_settings = settings.get_tile_settings();
     if (tile_settings)
