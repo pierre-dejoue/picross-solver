@@ -148,14 +148,11 @@ namespace
 } // namespace
 
 GridWindow::LineEvent::LineEvent(picross::ObserverEvent event, const picross::Line* line, const ObserverGrid& grid)
-    : event(event)
-    , event_line()
-    , grid(grid)
+    : m_event(event)
+    , m_line_id()
+    , m_grid(grid)
 {
-    if (line)
-    {
-        event_line = std::make_unique<picross::Line>(*line);
-    }
+    if (line) { m_line_id = std::make_optional<picross::LineId>(*line); }
 }
 
 struct GridWindow::TextBufferImpl
@@ -173,6 +170,7 @@ GridWindow::GridWindow(picross::InputGrid&& grid, std::string_view source, bool 
     , solver_thread_start(start_thread)
     , solver_thread_completed(false)
     , solver_thread_abort(false)
+    , solver_progress(0.f)
     , text_buffer(std::make_unique<TextBufferImpl>())
     , solutions()
     , valid_solutions(0)
@@ -243,6 +241,7 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
         reset_solutions();
         solver_thread_completed = false;
         std::swap(solver_thread, std::thread(&GridWindow::solve_picross_grid, this));
+        solver_progress = 0.f;
         solver_thread_start = false;
     }
     // If solver thread is active
@@ -399,8 +398,12 @@ void GridWindow::reset_solutions()
     text_buffer->buffer.appendf("Grid %s\n", picross::str_input_grid_size(grid).c_str());
 }
 
-void GridWindow::observer_callback(picross::ObserverEvent event, const picross::Line* line, unsigned int, unsigned int, const ObserverGrid& grid)
+void GridWindow::observer_callback(picross::ObserverEvent event, const picross::Line* line, unsigned int, unsigned int misc, const ObserverGrid& grid)
 {
+    // Filter out events useless to the GUI
+    if (event != picross::ObserverEvent::DELTA_LINE && event != picross::ObserverEvent::SOLVED_GRID && event != picross::ObserverEvent::PROGRESS)
+        return;
+
     std::unique_lock<std::mutex> lock(line_mutex);
     if (line_events.size() >= speed)
     {
@@ -409,6 +412,11 @@ void GridWindow::observer_callback(picross::ObserverEvent event, const picross::
             return (this->speed > 0u && this->line_events.empty())
                 ||  this->abort_solver_thread();
         });
+    }
+    if (event == picross::ObserverEvent::PROGRESS)
+    {
+        // Only indicative
+        solver_progress = reinterpret_cast<const float&>(static_cast<const std::uint32_t&>(misc));
     }
     line_events.emplace_back(event, line, grid);
 }
@@ -425,14 +433,14 @@ unsigned int GridWindow::process_line_events(std::vector<LineEvent>& events)
         {
             allocate_new_solution = false;
             count_allocated++;
-            solutions.emplace_back(std::move(event.grid));
+            solutions.emplace_back(std::move(event.m_grid));
         }
         else
         {
-            solutions.back() = std::move(event.grid);
+            solutions.back() = std::move(event.m_grid);
         }
 
-        if (event.event == picross::ObserverEvent::SOLVED_GRID)
+        if (event.m_event == picross::ObserverEvent::SOLVED_GRID)
         {
             valid_solutions++;
             allocate_new_solution = true;              // Allocate new solution on next event

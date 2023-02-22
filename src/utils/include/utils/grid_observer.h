@@ -10,14 +10,21 @@ class ObserverGrid : public picross::OutputGrid
 {
     friend class GridObserver;
 public:
-    ObserverGrid(std::size_t width, std::size_t height, const std::string& name = "");
+    ObserverGrid(std::size_t width, std::size_t height, unsigned depth, const std::string& name = "");
+    ObserverGrid(const ObserverGrid& other) = default;
+    ObserverGrid(ObserverGrid&& other) noexcept = default;
+    ObserverGrid& operator=(const ObserverGrid& other);
+    ObserverGrid& operator=(ObserverGrid&& other) noexcept = default;
 
+    unsigned int get_grid_depth() const { return m_depth; }
     unsigned int get_depth(std::size_t x, std::size_t y) const;
 
 private:
     void set_tile(std::size_t x, std::size_t y, picross::Tile t, unsigned int d);
 
-    std::vector<unsigned int> depth_grid;
+private:
+    unsigned int                m_depth;        // Global search depth
+    std::vector<unsigned int>   m_depth_grid;   // Search depth per tile
 };
 
 class GridObserver
@@ -36,6 +43,6 @@ private:
     virtual void observer_callback(picross::ObserverEvent event, const picross::Line* line, unsigned int depth, unsigned int misc, const ObserverGrid& grid) = 0;
 
 private:
-    std::vector<ObserverGrid> grids;
-    std::size_t current_depth;
+    std::vector<ObserverGrid> m_grids;
+    unsigned int              m_current_depth;
 };

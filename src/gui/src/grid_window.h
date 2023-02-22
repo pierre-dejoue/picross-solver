@@ -9,6 +9,7 @@
 #include <condition_variable>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -22,9 +23,9 @@ public:
     {
         LineEvent(picross::ObserverEvent event, const picross::Line* line, const ObserverGrid& grid);
 
-        picross::ObserverEvent event;
-        std::unique_ptr<picross::Line> event_line;
-        ObserverGrid grid;
+        picross::ObserverEvent          m_event;
+        std::optional<picross::LineId>  m_line_id;
+        ObserverGrid                    m_grid;
     };
 public:
     GridWindow(picross::InputGrid&& grid, std::string_view source, bool start_thread = true);
@@ -51,6 +52,7 @@ private:
     bool solver_thread_start;
     std::atomic<bool> solver_thread_completed;
     std::atomic<bool> solver_thread_abort;
+    float solver_progress;
     struct TextBufferImpl;
     std::unique_ptr<TextBufferImpl> text_buffer;
     std::vector<ObserverGrid> solutions;
