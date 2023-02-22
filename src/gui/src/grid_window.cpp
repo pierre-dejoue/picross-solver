@@ -170,6 +170,7 @@ GridWindow::GridWindow(picross::InputGrid&& grid, std::string_view source, bool 
     , solver_thread_start(start_thread)
     , solver_thread_completed(false)
     , solver_thread_abort(false)
+    , solver_thread_stats()
     , solver_progress(0.f)
     , text_buffer(std::make_unique<TextBufferImpl>())
     , solutions()
@@ -239,9 +240,9 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
     {
         assert(!solver_thread_active);
         reset_solutions();
+        if (info) { info->update_solver_status(0u, 0.f); }
         solver_thread_completed = false;
         std::swap(solver_thread, std::thread(&GridWindow::solve_picross_grid, this));
-        solver_progress = 0.f;
         solver_thread_start = false;
     }
     // If solver thread is active
@@ -254,6 +255,7 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
             std::swap(solver_thread, std::thread());
             assert(!solver_thread.joinable());
             std::cerr << "End of solver thread for grid " << grid.name() << std::endl;
+            if (info) { info->solver_completed(solver_thread_stats); }
         }
 
         // Fetch the latest observer events
@@ -265,7 +267,6 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
                 local_events.reserve(speed);
                 std::swap(local_events, line_events);
             }
-
         }
         if (!local_events.empty())
         {
@@ -277,6 +278,13 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
 
             // If we opened a new solution tab, make sure it is auto-selected once
             tab_auto_select_last_solution = added_solutions > 0;
+
+            if (info && !solver_thread_completed)
+            {
+                std::lock_guard<std::mutex> lock(line_mutex);
+                const auto current_depth = solutions.empty() ? 0u : solutions.back().get_grid_depth();
+                info->update_solver_status(current_depth, solver_progress);
+            }
         }
     }
     // Remove the last solution if not valid
@@ -310,6 +318,19 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
     if (ImGui::Button("Info") && !info)
     {
         info = std::make_unique<GridInfo>(grid);
+        {
+            std::lock_guard<std::mutex> lock(line_mutex);
+            assert(!solutions.empty());
+            if (solver_thread_completed)
+            {
+                info->solver_completed(solver_thread_stats);
+            }
+            else
+            {
+                const auto current_depth = solutions.empty() ? 0u : solutions.back().get_grid_depth();
+                info->update_solver_status(current_depth, solver_progress);
+            }
+        }
     }
 
     // Visit info window
@@ -390,6 +411,7 @@ void GridWindow::reset_solutions()
     tabs.clear();
     observer_clear();
     line_events.clear();
+    solver_progress = 0.f;
 
     // Clear text buffer and print out the grid size
     const size_t width = grid.width();
@@ -462,6 +484,8 @@ void GridWindow::solve_picross_grid()
 {
     assert(!solver_thread_completed);
 
+    solver_thread_stats = picross::GridStats();
+
     const auto solver = picross::get_ref_solver();
     unsigned count_grids = 0u;
 
@@ -470,6 +494,7 @@ void GridWindow::solve_picross_grid()
     if (check)
     {
         solver->set_observer(std::reference_wrapper<GridObserver>(*this));
+        solver->set_stats(solver_thread_stats);
         solver->set_abort_function([this]() { return this->abort_solver_thread(); });
         const auto solver_result = solver->solve(grid, max_nb_solutions);
         if (solver_result.status == picross::Solver::Status::ABORTED)

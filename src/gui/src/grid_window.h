@@ -52,6 +52,7 @@ private:
     bool solver_thread_start;
     std::atomic<bool> solver_thread_completed;
     std::atomic<bool> solver_thread_abort;
+    picross::GridStats solver_thread_stats;
     float solver_progress;
     struct TextBufferImpl;
     std::unique_ptr<TextBufferImpl> text_buffer;

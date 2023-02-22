@@ -17,6 +17,7 @@
 namespace
 {
     constexpr std::string_view GRID_INFO = "Grid Info";
+    constexpr std::string_view SOLVER_STATS = "Solver Stats";
     constexpr std::string_view GRID_CONSTRAINTS = "Grid Constraints";
     constexpr std::string_view GRID_ROWS = "Rows";
     constexpr std::string_view GRID_COLS = "Columns";
@@ -25,7 +26,8 @@ namespace
     {
         None        = 0,
         Basic       = 1 << 0,
-        Constraints = 1 << 1
+        Stats       = 1 << 1,
+        Constraints = 1 << 2
     };
 }
 
@@ -33,6 +35,10 @@ GridInfo::GridInfo(const picross::InputGrid& grid)
     : grid(grid)
     , title(std::string(grid.name()) + " Info")
     , grid_metadata()
+    , solver_stats()
+    , solver_stats_mutex()
+    , solver_stats_flag()
+    , solver_stats_info()
 {
     grid_metadata.emplace_back("Name", grid.name());
     grid_metadata.emplace_back("Size", picross::str_input_grid_size(grid));
@@ -56,6 +62,12 @@ void GridInfo::visit(bool& can_be_erased)
     }
     can_be_erased = !is_window_open;
 
+    // Stats
+    if (solver_stats_flag)
+    {
+        refresh_stats_info();
+    }
+
     unsigned int active_sections = 0;
     const ImVec2 cell_padding(7, 4);
     constexpr ImGuiTableFlags table_flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable;
@@ -76,6 +88,33 @@ void GridInfo::visit(bool& can_be_erased)
             ImGui::TableSetupColumn("data", ImGuiTableColumnFlags_WidthStretch);
             //ImGui::TableHeadersRow();
             for (const auto& [key, data] : grid_metadata)
+            {
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::TextUnformatted(key.c_str());
+                ImGui::TableNextColumn();
+                ImGui::TextUnformatted(data.c_str());
+            }
+            ImGui::EndTable();
+        }
+        ImGui::PopStyleVar();
+
+        ImGui::TreePop();
+    }
+
+    // Solver stats
+    ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+    if (ImGui::TreeNode(SOLVER_STATS.data()))
+    {
+        active_sections |= static_cast<unsigned int>(GridInfoSection::Stats);
+
+        ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, cell_padding);
+        if (ImGui::BeginTable("table_stats", 2, table_flags))
+        {
+            ImGui::TableSetupColumn("key", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize);
+            ImGui::TableSetupColumn("data", ImGuiTableColumnFlags_WidthStretch);
+            //ImGui::TableHeadersRow();
+            for (const auto& [key, data] : solver_stats_info)
             {
                 ImGui::TableNextRow();
                 ImGui::TableNextColumn();
@@ -152,21 +191,80 @@ void GridInfo::visit(bool& can_be_erased)
     }
 }
 
+void GridInfo::update_solver_status(unsigned int current_depth, float progress)
+{
+    std::lock_guard<std::mutex> lock(solver_stats_mutex);
+    solver_stats.m_ongoing = true;
+    solver_stats.m_current_depth = current_depth;
+    solver_stats.m_progress = progress;
+    solver_stats_flag = true;
+}
+
+void GridInfo::solver_completed(const picross::GridStats& stats)
+{
+    std::lock_guard<std::mutex> lock(solver_stats_mutex);
+    solver_stats.m_ongoing = false;
+    solver_stats.m_grid_stats = stats;
+    solver_stats.m_current_depth = 0u;
+    solver_stats.m_progress = 1.f;
+    solver_stats_flag = true;
+}
+
+void GridInfo::refresh_stats_info()
+{
+    std::lock_guard<std::mutex> lock(solver_stats_mutex);
+    solver_stats_info.clear();
+    solver_stats_info.emplace_back("Solving", solver_stats.m_ongoing ? "ONGOING" : "DONE");
+    std::string_view difficulty = picross::str_difficulty_code(difficulty_code(solver_stats.m_grid_stats));
+    if (solver_stats.m_ongoing)
+    {
+        solver_stats_info.emplace_back("Current depth", std::to_string(solver_stats.m_current_depth));
+        solver_stats_info.emplace_back("Progress", std::to_string(solver_stats.m_progress));
+    }
+    else
+    {
+        solver_stats_info.emplace_back("Difficulty", difficulty);
+        solver_stats_info.emplace_back("Nb solutions", std::to_string(solver_stats.m_grid_stats.nb_solutions));
+        solver_stats_info.emplace_back("Max depth", std::to_string(solver_stats.m_grid_stats.max_branching_depth));
+    }
+    solver_stats_flag = false;
+}
+
+namespace
+{
+    std::size_t key_col_width(const GridInfo::InfoMap& map)
+    {
+        std::size_t result = 0;
+        for (const auto& kvp: map)
+            result = std::max(result, kvp.first.size());
+        result += 2;
+        return result;
+    }
+}
+
 std::string GridInfo::info_as_string(unsigned int active_sections) const
 {
     std::stringstream out;
-    std::size_t key_col_width = 0;
-    for (const auto& kvp: grid_metadata)
-        key_col_width = std::max(key_col_width, kvp.first.size());
-    key_col_width += 2;
 
     // Basic grid info
     out << GRID_INFO;
     if (active_sections & static_cast<unsigned int>(GridInfoSection::Basic))
     {
         out << std::endl;
+        const auto key_w = key_col_width(grid_metadata);
         for (const auto&[key, data]: grid_metadata)
-            out << "  " << std::setw(key_col_width) << std::left << key << data << std::endl;
+            out << "  " << std::setw(key_w) << std::left << key << data << std::endl;
+    }
+    out << std::endl;
+
+    // Solver stats
+    out << SOLVER_STATS;
+    if (active_sections & static_cast<unsigned int>(GridInfoSection::Stats))
+    {
+        out << std::endl;
+        const auto key_w = key_col_width(solver_stats_info);
+        for (const auto&[key, data]: solver_stats_info)
+            out << "  " << std::setw(key_w) << std::left << key << data << std::endl;
     }
     out << std::endl;
 
