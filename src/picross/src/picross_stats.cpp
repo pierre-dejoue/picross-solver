@@ -1,4 +1,4 @@
-#include <picross/picross_stats.h>
+#include <picross/picross.h>
 #include "picross_stats_internal.h"
 
 #include "binomial.h"
@@ -10,6 +10,11 @@
 
 namespace picross
 {
+
+DifficultyCode difficulty_code(const GridStats& grid_stats)
+{
+    return difficulty_code(grid_stats.nb_solutions, grid_stats.max_branching_depth);
+}
 
 void merge_branching_grid_stats(GridStats& stats, const GridStats& branching_stats)
 {
@@ -48,6 +53,7 @@ void merge_branching_grid_stats(GridStats& stats, const GridStats& branching_sta
 
 std::ostream& operator<<(std::ostream& out, const GridStats& stats)
 {
+    out << "  Difficulty: " << str_difficulty_code(difficulty_code(stats)) << std::endl;
     out << "  Number of solutions found: " << stats.nb_solutions << std::endl;
     out << "  Max branching depth: " << stats.max_branching_depth << std::endl;
 

@@ -184,6 +184,11 @@ ValidationResult validate_input_grid(const Solver& solver, const InputGrid& inpu
 DifficultyCode difficulty_code(std::size_t nb_solutions, unsigned int min_branching_depth);
 
 /*
+ * Utility function to compute the difficulty code from a GridStats
+ */
+DifficultyCode difficulty_code(const GridStats& grid_stats);
+
+/*
  * Functions to test an output grid against a set of input contraints
  *
  * - is_solution: returns true if the output grid is a solution of the set of constraints

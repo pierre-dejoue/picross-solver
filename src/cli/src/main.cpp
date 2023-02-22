@@ -89,6 +89,7 @@ namespace
             out << ',' << data.validation_result.branching_depth;
             out << ',' << data.grid_stats->max_branching_depth;
             out << ',' << (data.grid_stats->total_nb_branching_alternatives + data.grid_stats->total_nb_probing_alternatives);
+            assert(picross::difficulty_code(data.grid_stats.value()) == data.validation_result.difficulty_code);
         }
         return out;
     }
