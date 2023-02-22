@@ -8,6 +8,7 @@
 #include <picross/picross_io.h>
 
 #include <stdutils/macros.h>
+#include <stdutils/string.h>
 
 #include <algorithm>
 #include <cassert>
@@ -622,7 +623,8 @@ void write_input_grid_native(std::ostream& out, const InputGrid& input_grid)
 {
     for (const auto& [key, data] : input_grid.metadata())
         if (!data.empty())
-            out << "# " << key << ": " << data << std::endl;
+            out << "# " << stdutils::string::capitalize(key) << ": " << data << std::endl;
+    out << "# Size: " << str_input_grid_size(input_grid) << std::endl;
     out << "GRID " << input_grid.name() << std::endl;
     out << "ROWS" << std::endl;
     write_constraints_native_format(out, input_grid.rows());
