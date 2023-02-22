@@ -36,11 +36,17 @@
 namespace
 {
 
-    const std::string validation_mode_format = "File,Grid,Size,Valid,Difficulty,Timing (ms),Misc,Linear reduction,Full reduction,Depth,Search alts";
-
     struct ValidationModeData
     {
-        ValidationModeData();
+        ValidationModeData()
+            : filename()
+            , gridname()
+            , size()
+            , validation_result()
+            , timing_ms(-1.f)
+            , grid_stats()
+            , misc()
+        {}
 
         std::string filename;
         std::string gridname;
@@ -51,8 +57,17 @@ namespace
         std::string misc;
     };
 
-    ValidationModeData::ValidationModeData() : filename(), gridname(), size(), validation_result{ -1, 0u, "" }, timing_ms(-1.f), misc()
+    void stream_out_validation_mode_header(std::ostream& out, bool verbose)
     {
+        static const std::vector<std::string> fields =
+            { "File", "Grid", "Size", "Valid", "Difficulty", "Timing (ms)", "Misc",
+              "Linear reductions", "Full reductions", "Min depth", "Max depth", "Searched line alternatives" };
+
+        out << fields.at(0);
+        const std::size_t last_idx = verbose ? fields.size() : 7;
+        for (std::size_t idx = 1; idx < last_idx; idx++)
+            out << ',' << fields.at(idx);
+        out << std::endl;
     }
 
     std::ostream& operator<<(std::ostream& out, const ValidationModeData& data)
@@ -60,19 +75,20 @@ namespace
         out << data.filename << ',';
         out << data.gridname << ',';
         out << data.size << ',';
-        out << picross::str_validation_code(data.validation_result.code) << ',';
-        out << (data.validation_result.code == 1 && (data.validation_result.branching_depth == 0u) ? "LINE" : "") << ',';
+        out << picross::str_validation_code(data.validation_result.validation_code) << ',';
+        out << picross::str_difficulty_code(data.validation_result.difficulty_code) << ',';
         if (data.timing_ms >= 0.f)
             out << data.timing_ms;
-        out << ",";
+        out << ',';
         if (!data.validation_result.msg.empty() || !data.misc.empty())
-            out << "\"" << (data.misc.empty() ? data.validation_result.msg : data.misc) << "\"";
+            out << '"' << (data.misc.empty() ? data.validation_result.msg : data.misc) << '"';
         if (data.grid_stats.has_value())
         {
-            out << "," << (data.grid_stats->nb_single_line_linear_reduction + data.grid_stats->nb_single_line_linear_reduction_w_change);
-            out << "," << (data.grid_stats->nb_single_line_full_reduction   + data.grid_stats->nb_single_line_full_reduction_w_change);
-            out << "," << data.grid_stats->max_branching_depth;
-            out << "," << (data.grid_stats->total_nb_branching_alternatives + data.grid_stats->total_nb_probing_alternatives);
+            out << ',' << (data.grid_stats->nb_single_line_linear_reduction + data.grid_stats->nb_single_line_linear_reduction_w_change);
+            out << ',' << (data.grid_stats->nb_single_line_full_reduction   + data.grid_stats->nb_single_line_full_reduction_w_change);
+            out << ',' << data.validation_result.branching_depth;
+            out << ',' << data.grid_stats->max_branching_depth;
+            out << ',' << (data.grid_stats->total_nb_branching_alternatives + data.grid_stats->total_nb_probing_alternatives);
         }
         return out;
     }
@@ -165,6 +181,7 @@ int main(int argc, char *argv[])
 
     const auto max_nb_solutions = std::max(1u, args["max-nb-solutions"].as<unsigned int>(std::numeric_limits<unsigned int>::max()));
     const bool validation_mode = args["validation-mode"];
+    const bool verbose_mode = args["verbose"];
     const std::chrono::seconds timeout_duration(args["timeout"].as<unsigned int>(0u));
 
     // Positional arguments
@@ -177,7 +194,7 @@ int main(int argc, char *argv[])
     int return_status = 0;
     unsigned int count_grids = 0u;
 
-    if (validation_mode) { std::cout << validation_mode_format << std::endl; }
+    if (validation_mode) { stream_out_validation_mode_header(std::cout, verbose_mode); }
 
     /* Solver */
     const auto solver = args["line-solver"] ? picross::get_line_solver() : picross::get_ref_solver();
@@ -233,12 +250,12 @@ int main(int argc, char *argv[])
 
                 /* Sanity check of the input data */
                 const auto [input_ok, check_msg] = picross::check_input_grid(input_grid);
-                grid_data.validation_result.code = input_ok ? 0 : -1;
+                grid_data.validation_result.validation_code = input_ok ? 0 : -1;
                 grid_data.misc = check_msg;
 
                 if (input_ok)
                 {
-                    if (args["verbose"] && !validation_mode)
+                    if (verbose_mode && !validation_mode)
                     {
                         stream_input_grid_constraints(std::cout, input_grid);
                     }
@@ -254,7 +271,7 @@ int main(int argc, char *argv[])
                     ConsoleProgressObserver progress_obs(std::cout);
                     if (!validation_mode)
                     {
-                        if (args["verbose"])
+                        if (verbose_mode)
                         {
                             solver->set_observer(std::reference_wrapper<ConsoleObserver>(obs));
                         }
@@ -276,7 +293,7 @@ int main(int argc, char *argv[])
                     {
                         /* Stats */
                         picross::GridStats stats;
-                        if (args["verbose"])
+                        if (verbose_mode)
                             solver->set_stats(stats);
 
                         /* Validate the grid */
@@ -286,7 +303,7 @@ int main(int argc, char *argv[])
                         }
                         if (!args["no-timing"])
                             grid_data.timing_ms = time_ms.count();
-                        if (args["verbose"])
+                        if (verbose_mode)
                             grid_data.grid_stats = stats;
                     }
                     else
@@ -364,7 +381,7 @@ int main(int argc, char *argv[])
             {
                 if (validation_mode)
                 {
-                    grid_data.validation_result.code = -1;
+                    grid_data.validation_result.validation_code = -1;   // ERR
                     grid_data.misc = "EXCPT " + std::string(e.what());
                 }
                 else

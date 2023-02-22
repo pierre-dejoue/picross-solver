@@ -139,30 +139,49 @@ std::unique_ptr<Solver> get_line_solver();
  *  -1  ERR     The input grid is invalid
  *   0  ZERO    No solution found
  *   1  OK      Valid grid with a unique solution
- *   2  MULT    The solution is not unique
+ *  >1  MULT    The solution is not unique (the code is equal to the number of solutions found)
  */
 using ValidationCode = int;
 std::string_view str_validation_code(ValidationCode code);
 
 
 /*
+ * Difficulty code:
+ *
+ *   0  NOT_APPLICABLE   Either the grid is invalid, or the solver did not return a solution
+ *   1  LINE             Unique solution, and the grid is line-solvable
+ *   2  BRANCH           Unique solution, but not line-solvable (some guessing required)
+ *   3  MULT             The solution is not unique
+ */
+using DifficultyCode = int;
+std::string_view str_difficulty_code(ValidationCode code);
+
+
+/*
  * Validation method: check that the input grid is valid and has a unique solution.
  *
- * Return the validation code (ERR, ZERO, OK, MULT), the branching depth required to solve it (which determines
- * if the grid is line solvable or not), and an optional message regarding the grid validation process.
+ * Returns: The validation code (ERR, ZERO, OK, MULT) ; the difficulty code (N/A, LINE, BRANCH, MULT) ;
+ * the minmal branching depths of the found solutions ; and an optional message regarding the grid validation process.
  *
- * NB: The case where the input grid's constraint are not compatible is reported as an ERR (-1): contradictory grid.
+ * NB: The case where the input grid's constraint are not compatible is reported as an ZERO (0) with msg "Contradictory grid".
  *     An input grid for which the constraints are coherent should have at least one solution. Therefore the validation
  *     code ZERO (0) can only be returned if the solver just gave up finding a solution.
  */
 struct ValidationResult
 {
-    ValidationCode code;
-    unsigned int branching_depth;
-    std::string msg;
+    ValidationCode validation_code = 0;
+    DifficultyCode difficulty_code = 0;
+    unsigned int branching_depth   = 0;
+    std::string msg{};
 };
 ValidationResult validate_input_grid(const Solver& solver, const InputGrid& input_grid);
 
+/*
+ * Utility function to compute the difficulty code based on:
+ *  - The number of solutions found
+ *  - The minimal branching depth required to find one of those solutions (0 means no branching required)
+ */
+DifficultyCode difficulty_code(std::size_t nb_solutions, unsigned int min_branching_depth);
 
 /*
  * Functions to test an output grid against a set of input contraints

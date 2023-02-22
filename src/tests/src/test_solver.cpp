@@ -73,7 +73,8 @@ TEST_CASE("A puzzle with no solution", "[solver]")
     REQUIRE(result.solutions.empty());
 
     const auto validation_result = validate_input_grid(*solver, puzzle);
-    CHECK(validation_result.code == 0);
+    CHECK(validation_result.validation_code == 0);
+    CHECK(validation_result.difficulty_code == 0);
 }
 
 TEST_CASE("Puzzle: Note", "[solver]")
@@ -121,6 +122,10 @@ TEST_CASE("Puzzle: Note", "[solver]")
 
     CHECK(solution.branching_depth == 0);
     CHECK(solution.grid == expected);
+
+    const auto validation_result = validate_input_grid(*solver, puzzle);
+    CHECK(validation_result.validation_code == 1);  // OK
+    CHECK(validation_result.difficulty_code == 1);  // LINE
 }
 
 TEST_CASE("Puzzle: Smile", "[solver]")
@@ -159,7 +164,8 @@ TEST_CASE("Puzzle: Smile", "[solver]")
     CHECK(solution.grid == expected);
 
     const auto validation_result = validate_input_grid(*solver, puzzle);
-    CHECK(validation_result.code == 1);
+    CHECK(validation_result.validation_code == 1);  // OK
+    CHECK(validation_result.difficulty_code == 2);  // BRANCH
 }
 
 TEST_CASE("Puzzle: Notes", "[solver]")
@@ -369,7 +375,8 @@ TEST_CASE("Puzzle: A piece of Centerpiece", "[solver]")
     CHECK(solution_grids == expected_solutions);
 
     const auto validation_result = validate_input_grid(*solver, puzzle);
-    CHECK(validation_result.code == 2);
+    CHECK(validation_result.validation_code > 1);   // MULT
+    CHECK(validation_result.difficulty_code == 3);  // MULT
 }
 
 TEST_CASE("Puzzle: Cameraman", "[solver]")
@@ -440,7 +447,8 @@ TEST_CASE("Puzzle: 3-DOM", "[solver]")
     CHECK(solution.grid == expected);
 
     const auto validation_result = validate_input_grid(*solver, puzzle);
-    CHECK(validation_result.code == 1);
+    CHECK(validation_result.validation_code == 1);  // OK
+    CHECK(validation_result.difficulty_code == 2);  // BRANCH
 }
 
 } // namespace picross
