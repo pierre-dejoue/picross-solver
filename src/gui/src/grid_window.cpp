@@ -194,6 +194,8 @@ GridWindow::GridWindow(picross::InputGrid&& grid, std::string_view source, bool 
     , line_mutex()
     , max_nb_solutions(0u)
     , speed(1u)
+    , ftl_enabled(false)
+    , ftl_req_snapshot(false)
 {
     title = std::string(this->grid.name()) + " (" + source.data() + ")";
 }
@@ -217,9 +219,14 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
     const Settings::Solver& solver_settings = settings.read_solver_settings();
     const Settings::Animation& animation_settings = settings.read_animation_settings();
 
-    if (animation_settings.speed != speed)
+    ftl_enabled = animation_settings.ftl;
+    if (ftl_enabled)
+        ftl_req_snapshot = true;
+
+    auto target_speed = ftl_enabled ? 10 : animation_settings.speed;
+    if (speed != target_speed)
     {
-        speed = animation_settings.speed;
+        speed = target_speed;
         line_cv.notify_one();
     }
 
@@ -438,6 +445,10 @@ void GridWindow::observer_callback(picross::ObserverEvent event, const picross::
 {
     // Filter out events useless to the GUI
     if (event != picross::ObserverEvent::DELTA_LINE && event != picross::ObserverEvent::SOLVED_GRID && event != picross::ObserverEvent::PROGRESS)
+        return;
+
+    // In "FTL" mode, we skip all events except the SOLVED_GRID, or if a snapshot is requested by the rendering thread (once per frame)
+    if (ftl_enabled && event != picross::ObserverEvent::SOLVED_GRID && !ftl_req_snapshot.exchange(false))
         return;
 
     std::unique_lock<std::mutex> lock(line_mutex);

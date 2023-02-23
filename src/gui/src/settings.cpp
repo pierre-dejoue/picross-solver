@@ -22,9 +22,7 @@ namespace
         result.size_ratio.min = 0.001f;
         result.size_ratio.max = 1.f;
 
-        result.hide_depth_greater.default = false;
-        result.hide_depth_greater.min = false;
-        result.hide_depth_greater.max = true;
+        result.hide_depth_greater = Settings::limits_false;
 
         result.hide_depth_value.default = 2;
         result.hide_depth_value.min = 1;
@@ -37,9 +35,7 @@ namespace
     {
         Settings::SolverLimits result;
 
-        result.limit_solutions.default = true;
-        result.limit_solutions.min = false;
-        result.limit_solutions.max = true;
+        result.limit_solutions = Settings::limits_true;
 
         result.max_nb_solutions.default = 2;
         result.max_nb_solutions.min = 1;
@@ -52,9 +48,9 @@ namespace
     {
         Settings::AnimationLimits result;
 
-        result.show_branching.default = true;
-        result.show_branching.min = false;
-        result.show_branching.max = true;
+        result.show_branching = Settings::limits_true;
+
+        result.ftl = Settings::limits_false;
 
         result.speed.default = 20;
         result.speed.min = 0;
@@ -135,6 +131,7 @@ const Settings::Animation& Settings::read_animation_settings()
     {
         animation_settings = std::make_unique<Animation>();
         animation_settings->show_branching = read_animation_settings_limits().show_branching.default;
+        animation_settings->ftl = read_animation_settings_limits().ftl.default;
         animation_settings->speed = read_animation_settings_limits().speed.default;
     }
     assert(animation_settings);

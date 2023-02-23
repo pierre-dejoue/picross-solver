@@ -51,7 +51,7 @@ void SettingsWindow::visit(bool& can_be_erased)
         //ImGui::SliderFloat("Rounding ratio", &tile_settings->rounding_ratio, limits.rounding_ratio.min, limits.rounding_ratio.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         //ImGui::SliderFloat("Size ratio", &tile_settings->size_ratio, limits.size_ratio.min, limits.size_ratio.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 
-        ImGui::Checkbox("Hide for depth greater than ", &tile_settings->hide_depth_greater);
+        ImGui::Checkbox("Hide for depth greater than:", &tile_settings->hide_depth_greater);
         if (tile_settings->hide_depth_greater)
         {
             ImGui::SameLine();
@@ -72,7 +72,7 @@ void SettingsWindow::visit(bool& can_be_erased)
         ImGui::BulletText("Solver");
         ImGui::Indent();
 
-        ImGui::Checkbox("Max number of solutions ", &solver_settings->limit_solutions);
+        ImGui::Checkbox("Max number of solutions:", &solver_settings->limit_solutions);
         if (solver_settings->limit_solutions)
         {
             ImGui::SameLine();
@@ -93,25 +93,41 @@ void SettingsWindow::visit(bool& can_be_erased)
 
         ImGui::Checkbox("Show branching with colors", &animation_settings->show_branching);
 
+        ImGui::TextUnformatted("Speed:");
+
+        // FTL (Faster Than Light)
+        ImGui::SameLine();
+        ImGui::Checkbox("FTL", &animation_settings->ftl);
+
+        if (!animation_settings->ftl)
+        {
+            // Speed slider
+            ImGui::SameLine();
+            ImGui::SliderInt("##speed", &animation_settings->speed, limits.speed.min, limits.speed.max, "%d", ImGuiSliderFlags_AlwaysClamp);
+            assert(animation_settings->speed >= 0);
+
+            // Modifying the speed while in pause will unpause
+            if (animation_settings->speed > 0) { animation.paused = false; }
+        }
+
+        // Enabling FTL while in pause will unpause
+        if (animation_settings->ftl) { animation.paused = false; }
+
         // Pause button
         if (!animation.paused && ImGui::Button("Pause"))
         {
             animation.paused = true;
+            animation.ftl = animation_settings->ftl;
             animation.last_speed = animation_settings->speed;
+            animation_settings->ftl = false;
             animation_settings->speed = 0;
         }
         else if (animation.paused && ImGui::Button("Resume"))
         {
             animation.paused = false;
+            animation_settings->ftl = animation.ftl;
             animation_settings->speed = animation.last_speed;
         }
-
-        // Speed slider
-        ImGui::SliderInt("speed", &animation_settings->speed, limits.speed.min, limits.speed.max, "%d", ImGuiSliderFlags_AlwaysClamp);
-        assert(animation_settings->speed >= 0);
-
-        // Modifyng the speed while in pause will unpause
-        if (animation_settings->speed > 0) { animation.paused = false; }
 
         ImGui::Unindent();
     }

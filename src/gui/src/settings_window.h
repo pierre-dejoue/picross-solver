@@ -17,6 +17,7 @@ private:
     struct Animation
     {
         int last_speed = 0;
+        bool ftl = false;
         bool paused = false;
     };
 private:

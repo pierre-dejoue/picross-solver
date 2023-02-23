@@ -17,6 +17,8 @@ public:
 
         void clamp(T& v) const { v = std::max(min, std::min(v, max)); }
     };
+    static constexpr Limits<bool> limits_true{ true, false, true };
+    static constexpr Limits<bool> limits_false{ false, false, true };
     struct TileLimits
     {
         Limits<int> size_enum;
@@ -46,11 +48,13 @@ public:
     struct AnimationLimits
     {
         Limits<bool> show_branching;
+        Limits<bool> ftl;
         Limits<int> speed;
     };
     struct Animation
     {
         bool show_branching;
+        bool ftl;
         int speed;
     };
 

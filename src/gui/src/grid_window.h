@@ -18,6 +18,7 @@ class Settings;
 
 class GridWindow : public GridObserver
 {
+    static_assert(std::atomic<bool>::is_always_lock_free);
 public:
     struct LineEvent
     {
@@ -66,4 +67,6 @@ private:
     std::mutex line_mutex;
     unsigned int max_nb_solutions;
     std::atomic<int> speed;
+    std::atomic<bool> ftl_enabled;
+    std::atomic<bool> ftl_req_snapshot;
 };
