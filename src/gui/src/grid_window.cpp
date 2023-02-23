@@ -36,13 +36,13 @@ namespace
     constexpr ImU32 ColorTileDepth2Empty = IM_COL32(216, 224, 212, 255);
 
     // Branching colors (periodical from there)
-    constexpr ImU32 ColorTileDepthCyc0Border = IM_COL32(52, 20, 114, 255);
-    constexpr ImU32 ColorTileDepthCyc0Filled = IM_COL32(135, 90, 135, 255);
-    constexpr ImU32 ColorTileDepthCyc0Empty = IM_COL32(224, 216, 224, 255);
+    constexpr ImU32 ColorTileDepthCyc0Border = IM_COL32(114, 52, 20, 255);
+    constexpr ImU32 ColorTileDepthCyc0Filled = IM_COL32(135, 135, 90, 255);
+    constexpr ImU32 ColorTileDepthCyc0Empty = IM_COL32(224, 224, 216, 255);
 
-    constexpr ImU32 ColorTileDepthCyc1Border = IM_COL32(114, 52, 20, 255);
-    constexpr ImU32 ColorTileDepthCyc1Filled = IM_COL32(135, 135, 90, 255);
-    constexpr ImU32 ColorTileDepthCyc1Empty = IM_COL32(224, 224, 216, 255);
+    constexpr ImU32 ColorTileDepthCyc1Border = IM_COL32(52, 20, 114, 255);
+    constexpr ImU32 ColorTileDepthCyc1Filled = IM_COL32(135, 90, 135, 255);
+    constexpr ImU32 ColorTileDepthCyc1Empty = IM_COL32(224, 216, 224, 255);
 
     constexpr ImU32 ColorTileDepthCyc2Border = IM_COL32(20, 114, 54, 255);
     constexpr ImU32 ColorTileDepthCyc2Filled = IM_COL32(90, 135, 135, 255);
