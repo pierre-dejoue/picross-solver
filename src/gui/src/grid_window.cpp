@@ -48,6 +48,11 @@ namespace
     constexpr ImU32 ColorTileDepthCyc2Filled = IM_COL32(90, 135, 135, 255);
     constexpr ImU32 ColorTileDepthCyc2Empty = IM_COL32(216, 224, 224, 255);
 
+    // Hidden tile colors (branching depth = 0)
+    constexpr ImU32 ColorHiddenTileBorder = IM_COL32(180, 180, 230, 255);
+    constexpr ImU32 ColorHiddenTileFilled = IM_COL32(220, 220, 240, 255);
+    constexpr ImU32 ColorHiddenTileEmpty = IM_COL32(245, 245, 250, 255);
+
     unsigned int cycling_color_index(unsigned int depth)
     {
         return depth < 3
@@ -126,7 +131,7 @@ namespace
         }
     }
 
-    void draw_tile(ImDrawList* draw_list, ImVec2 tl_corner, size_t tile_size, size_t i, size_t j, bool filled, unsigned int depth = 0, float size_ratio = 1.f, float rounding_ratio = 0.f)
+    void draw_tile(ImDrawList* draw_list, ImVec2 tl_corner, size_t tile_size, size_t i, size_t j, bool filled, bool hidden, unsigned int color_depth = 0, float size_ratio = 1.f, float rounding_ratio = 0.f)
     {
         const bool draw_border = tile_size > 6;
         const auto grid_thickness = background_grid_thickness(tile_size);
@@ -141,9 +146,15 @@ namespace
         const ImVec2 br_tile_corner = ImVec2(
             tl_corner.x + static_cast<float>((i+1) * tile_size) - padding,
             tl_corner.y + static_cast<float>((j+1) * tile_size) - padding);
-        draw_list->AddRectFilled(tl_tile_corner, br_tile_corner, filled ? get_color_tile_filled(depth) : get_color_tile_empty(depth), rounding);
+        const ImU32 tile_color = hidden
+            ? (filled ? ColorHiddenTileFilled : ColorHiddenTileEmpty)
+            : (filled ? get_color_tile_filled(color_depth) : get_color_tile_empty(color_depth));
+        draw_list->AddRectFilled(tl_tile_corner, br_tile_corner, tile_color, rounding);
         if (draw_border)
-            draw_list->AddRect(tl_tile_corner, br_tile_corner, get_color_tile_border(depth), rounding);
+        {
+            const ImU32 border_color = hidden ? ColorHiddenTileBorder : get_color_tile_border(color_depth);
+            draw_list->AddRect(tl_tile_corner, br_tile_corner, border_color, rounding);
+        }
     }
 } // namespace
 
@@ -379,12 +390,15 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
                     for (size_t j = 0u; j < height; ++j)
                     {
                         const auto tile = solution.get_tile(i, j);
-                        const auto depth = animation_settings.show_branching && solver_thread_active && idx + 1 == solutions.size()
-                            ? solution.get_depth(i, j)
+                        const auto depth = solution.get_depth(i, j);
+                        const auto color_depth = animation_settings.show_branching && solver_thread_active && idx + 1 == solutions.size()
+                            ? depth
                             : 0;
                         if (tile == picross::Tile::UNKNOWN)
                             continue;
-                        draw_tile(draw_list, grid_tl_corner, tile_size, i, j, tile == picross::Tile::FILLED, depth, tile_settings.size_ratio, tile_settings.rounding_ratio);
+                        const bool filled = tile == picross::Tile::FILLED;
+                        const bool hidden = tile_settings.hide_depth_greater ? (depth >= tile_settings.hide_depth_value) : false;
+                        draw_tile(draw_list, grid_tl_corner, tile_size, i, j, filled, hidden, color_depth, tile_settings.size_ratio, tile_settings.rounding_ratio);
                     }
 
                 ImGui::EndTabItem();

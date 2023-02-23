@@ -51,6 +51,14 @@ void SettingsWindow::visit(bool& can_be_erased)
         //ImGui::SliderFloat("Rounding ratio", &tile_settings->rounding_ratio, limits.rounding_ratio.min, limits.rounding_ratio.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         //ImGui::SliderFloat("Size ratio", &tile_settings->size_ratio, limits.size_ratio.min, limits.size_ratio.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 
+        ImGui::Checkbox("Hide for depth greater than ", &tile_settings->hide_depth_greater);
+        if (tile_settings->hide_depth_greater)
+        {
+            ImGui::SameLine();
+            ImGui::InputInt("##depth", &tile_settings->hide_depth_value);
+            limits.hide_depth_value.clamp(tile_settings->hide_depth_value);
+        }
+
         ImGui::Unindent();
     }
 
@@ -64,11 +72,12 @@ void SettingsWindow::visit(bool& can_be_erased)
         ImGui::BulletText("Solver");
         ImGui::Indent();
 
-        ImGui::Checkbox("Max number of solutions", &solver_settings->limit_solutions);
+        ImGui::Checkbox("Max number of solutions ", &solver_settings->limit_solutions);
         if (solver_settings->limit_solutions)
         {
             ImGui::SameLine();
-            ImGui::InputInt("nb_sols", &solver_settings->max_nb_solutions);
+            ImGui::InputInt("##nb_sols", &solver_settings->max_nb_solutions);
+            limits.max_nb_solutions.clamp(solver_settings->max_nb_solutions);
         }
 
         ImGui::Unindent();

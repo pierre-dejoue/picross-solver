@@ -2,6 +2,7 @@
 
 #include "settings_window.h"
 
+#include <algorithm>
 #include <memory>
 
 class Settings
@@ -13,18 +14,24 @@ public:
         T default;
         T min;
         T max;
+
+        void clamp(T& v) const { v = std::max(min, std::min(v, max)); }
     };
     struct TileLimits
     {
         Limits<int> size_enum;
         Limits<float> rounding_ratio;
         Limits<float> size_ratio;
+        Limits<bool> hide_depth_greater;
+        Limits<int> hide_depth_value;
     };
     struct Tile
     {
         int size_enum;
         float rounding_ratio;
         float size_ratio;
+        bool hide_depth_greater;
+        int hide_depth_value;
     };
     struct SolverLimits
     {

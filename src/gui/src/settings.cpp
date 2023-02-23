@@ -22,6 +22,14 @@ namespace
         result.size_ratio.min = 0.001f;
         result.size_ratio.max = 1.f;
 
+        result.hide_depth_greater.default = false;
+        result.hide_depth_greater.min = false;
+        result.hide_depth_greater.max = true;
+
+        result.hide_depth_value.default = 2;
+        result.hide_depth_value.min = 1;
+        result.hide_depth_value.max = 1000;
+
         return result;
     }
 
@@ -78,6 +86,8 @@ const Settings::Tile& Settings::read_tile_settings()
         tile_settings->size_enum = read_tile_settings_limits().size_enum.default;
         tile_settings->rounding_ratio = read_tile_settings_limits().rounding_ratio.default;
         tile_settings->size_ratio = read_tile_settings_limits().size_ratio.default;
+        tile_settings->hide_depth_greater = read_tile_settings_limits().hide_depth_greater.default;
+        tile_settings->hide_depth_value = read_tile_settings_limits().hide_depth_value.default;
     }
     assert(tile_settings);
     return *tile_settings;
