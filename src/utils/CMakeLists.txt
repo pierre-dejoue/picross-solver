@@ -7,7 +7,6 @@ include(pnm)
 
 set(LIB_SOURCES
     src/bitmap_io.cpp
-    src/compiler_info.cpp
     src/console_observer.cpp
     src/console_progress_observer.cpp
     src/grid_observer.cpp

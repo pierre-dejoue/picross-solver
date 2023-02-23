@@ -11,8 +11,8 @@
 #include <picross/picross.h>
 
 #include <stdutils/chrono.h>
+#include <stdutils/platform.h>
 #include <stdutils/string.h>
-#include <utils/compiler_info.h>
 #include <utils/console_observer.h>
 #include <utils/console_progress_observer.h>
 #include <utils/input_grid_utils.h>
@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
     {
         std::cerr << "Picross Solver " << picross::get_version_string() << std::endl;
         std::cerr << std::endl;
-        print_compiler_info(std::cerr);
+        stdutils::platform::print_compiler_all_info(std::cerr);
         exit(0);
     }
 

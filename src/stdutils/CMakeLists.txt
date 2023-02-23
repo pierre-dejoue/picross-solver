@@ -5,6 +5,7 @@
 include(compiler_options)
 
 set(LIB_SOURCES
+    src/platform.cpp
     src/string.cpp
 )
 
@@ -21,6 +22,12 @@ target_include_directories(stdutils
 )
 
 set_target_warnings(stdutils ON)
+
+if(MSVC)
+    # Correct definition of macro __cplusplus on Visual Studio
+    # https://devblogs.microsoft.com/cppblog/msvc-now-correctly-reports-__cplusplus/
+    target_compile_options(stdutils PRIVATE "/Zc:__cplusplus")
+endif()
 
 set_property(TARGET stdutils PROPERTY FOLDER "libraries")
 
