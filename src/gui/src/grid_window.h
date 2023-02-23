@@ -21,10 +21,11 @@ class GridWindow : public GridObserver
 public:
     struct LineEvent
     {
-        LineEvent(picross::ObserverEvent event, const picross::Line* line, const ObserverGrid& grid);
+        LineEvent(picross::ObserverEvent event, const picross::Line* line, unsigned int misc, const ObserverGrid& grid);
 
         picross::ObserverEvent          m_event;
         std::optional<picross::LineId>  m_line_id;
+        unsigned int                    m_misc;
         ObserverGrid                    m_grid;
     };
 public:

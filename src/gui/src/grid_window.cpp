@@ -158,9 +158,10 @@ namespace
     }
 } // namespace
 
-GridWindow::LineEvent::LineEvent(picross::ObserverEvent event, const picross::Line* line, const ObserverGrid& grid)
+GridWindow::LineEvent::LineEvent(picross::ObserverEvent event, const picross::Line* line, unsigned int misc, const ObserverGrid& grid)
     : m_event(event)
     , m_line_id()
+    , m_misc(misc)
     , m_grid(grid)
 {
     if (line) { m_line_id = std::make_optional<picross::LineId>(*line); }
@@ -292,7 +293,6 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
 
             if (info && !solver_thread_completed)
             {
-                std::lock_guard<std::mutex> lock(line_mutex);
                 const auto current_depth = solutions.empty() ? 0u : solutions.back().get_grid_depth();
                 info->update_solver_status(current_depth, solver_progress);
             }
@@ -449,12 +449,7 @@ void GridWindow::observer_callback(picross::ObserverEvent event, const picross::
                 ||  this->abort_solver_thread();
         });
     }
-    if (event == picross::ObserverEvent::PROGRESS)
-    {
-        // Only indicative
-        solver_progress = reinterpret_cast<const float&>(static_cast<const std::uint32_t&>(misc));
-    }
-    line_events.emplace_back(event, line, grid);
+    line_events.emplace_back(event, line, misc, grid);
 }
 
 unsigned int GridWindow::process_line_events(std::vector<LineEvent>& events)
@@ -465,6 +460,13 @@ unsigned int GridWindow::process_line_events(std::vector<LineEvent>& events)
 
     for (auto& event : events)
     {
+        if (event.m_event == picross::ObserverEvent::PROGRESS)
+        {
+            // Only indicative
+            solver_progress = reinterpret_cast<const float&>(static_cast<const std::uint32_t&>(event.m_misc));
+            continue;
+        }
+        assert(event.m_event == picross::ObserverEvent::DELTA_LINE || event.m_event == picross::ObserverEvent::SOLVED_GRID);
         if (allocate_new_solution || solutions.empty())
         {
             allocate_new_solution = false;
