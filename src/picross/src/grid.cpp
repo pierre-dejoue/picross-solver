@@ -51,9 +51,8 @@ Grid::Grid(std::size_t width, std::size_t height, std::string_view name)
 
 Grid& Grid::operator=(const Grid& other)
 {
-    const_cast<std::size_t&>(m_width) = other.m_width;
-    const_cast<std::size_t&>(m_height) = other.m_height;
-    const_cast<std::string&>(m_name) = other.m_name;
+    assert(m_width == other.m_width);
+    assert(m_height == other.m_height);
     m_row_major = other.m_row_major;
     m_col_major = other.m_col_major;
     return *this;
@@ -61,9 +60,8 @@ Grid& Grid::operator=(const Grid& other)
 
 Grid& Grid::operator=(Grid&& other) noexcept
 {
-    const_cast<std::size_t&>(m_width) = other.m_width;
-    const_cast<std::size_t&>(m_height) = other.m_height;
-    const_cast<std::string&>(m_name) = std::move(other.m_name);
+    assert(m_width == other.m_width);
+    assert(m_height == other.m_height);
     m_row_major = std::move(other.m_row_major);
     m_col_major = std::move(other.m_col_major);
     return *this;

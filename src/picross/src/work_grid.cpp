@@ -55,15 +55,6 @@ std::vector<LineAlternatives> build_line_alternatives_from(Line::Type type, cons
     return output;
 }
 
-std::vector<LineAlternatives> export_line_alternatives_to_new_grid(Line::Type type, const std::vector<LineAlternatives>& alternatives, const Grid& new_grid)
-{
-    std::vector<LineAlternatives> output;
-    output.reserve(alternatives.size());
-    Line::Index idx = 0;
-    std::transform(alternatives.cbegin(), alternatives.cend(), std::back_inserter(output), [type, &new_grid, &idx](const auto& alt) { return LineAlternatives(alt, new_grid.get_line(type, idx++)); });
-    return output;
-}
-
 template <bool B>
 void update_line_range(LineRange& range, const std::vector<bool>& source)
 {
@@ -222,8 +213,8 @@ WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent, const SolverPolicy& sol
 
     m_constraints[Line::ROW] = parent.m_constraints[Line::ROW];
     m_constraints[Line::COL] = parent.m_constraints[Line::COL];
-    m_alternatives[Line::ROW] = export_line_alternatives_to_new_grid(Line::ROW, parent.m_alternatives[Line::ROW], *this);
-    m_alternatives[Line::COL] = export_line_alternatives_to_new_grid(Line::COL, parent.m_alternatives[Line::COL], *this);
+    m_alternatives[Line::ROW] = build_line_alternatives_from(Line::ROW, m_constraints[Line::ROW], static_cast<const Grid&>(*this), *m_binomial);
+    m_alternatives[Line::COL] = build_line_alternatives_from(Line::COL, m_constraints[Line::COL], static_cast<const Grid&>(*this), *m_binomial);
     m_line_completed[Line::ROW] = parent.m_line_completed[Line::ROW];
     m_line_completed[Line::COL] = parent.m_line_completed[Line::COL];
     m_line_has_updates[Line::ROW] = parent.m_line_has_updates[Line::ROW];

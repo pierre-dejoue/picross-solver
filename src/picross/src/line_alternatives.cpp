@@ -64,7 +64,6 @@ namespace
         ConstraintIT m_constraint_end;
         int m_line_begin;
         int m_line_end;
-        unsigned int m_completed_segments;       // From range begin. A completed segment is zero-terminated.
     };
 
     template <>
@@ -73,7 +72,6 @@ namespace
         , m_constraint_end(segs.cend())
         , m_line_begin(0)
         , m_line_end(static_cast<int>(line_length))
-        , m_completed_segments(0u)
     {
     }
 
@@ -83,7 +81,6 @@ namespace
         , m_constraint_end(segs.crend())
         , m_line_begin(0)
         , m_line_end(static_cast<int>(line_length))
-        , m_completed_segments(0u)
     {
     }
 
@@ -585,7 +582,6 @@ bool LineAlternatives::Impl::update_range()
                 if (count_filled != *range.m_constraint_begin)
                     return false;
                 count_filled = 0;
-                range.m_completed_segments++;
                 range.m_constraint_begin++;
             }
             range.m_line_begin = line_idx + 1;
@@ -623,16 +619,14 @@ bool LineAlternatives::Impl::update()
 
     range_r.m_line_end = static_cast<int>(m_line_length) - range_l.m_line_begin;
     assert(range_r.m_line_begin <= range_r.m_line_end);
-    assert(range_l.m_completed_segments == std::distance(m_segments.cbegin(), range_l.m_constraint_begin));
-    range_r.m_constraint_end = m_segments.crend() - range_l.m_completed_segments;
+    range_r.m_constraint_end = std::make_reverse_iterator(range_l.m_constraint_begin);
 
     const bool valid_r = update_range<true>();
     if (!valid_r)
         return false;
 
     range_l.m_line_end = static_cast<int>(m_line_length) - range_r.m_line_begin;
-    assert(range_r.m_completed_segments == std::distance(m_segments.crbegin(), range_r.m_constraint_begin));
-    range_l.m_constraint_end = m_segments.cend() - range_r.m_completed_segments;
+    range_l.m_constraint_end = range_r.m_constraint_begin.base();
 
     assert(range_l.m_line_begin <= range_l.m_line_end);
     const auto min_line_size_l = compute_min_line_size(range_l.m_constraint_begin, range_l.m_constraint_end);
@@ -1108,7 +1102,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_all_alternatives()
 
 LineAlternatives::Reduction LineAlternatives::Impl::reduce_alternatives(unsigned int nb_constraints)
 {
-    if (m_bidirectional_range.m_completed_segments + m_bidirectional_range_reverse.m_completed_segments + 2 * nb_constraints >= m_segments.size())
+    if (2 * nb_constraints >= std::distance(m_bidirectional_range.m_constraint_begin, m_bidirectional_range.m_constraint_end))
     {
         return reduce_all_alternatives();
     }
