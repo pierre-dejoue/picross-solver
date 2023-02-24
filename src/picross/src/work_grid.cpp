@@ -151,6 +151,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
     , m_probing_depth_incr(0u)
     , m_progress_bar(min_progress, max_progress)
     , m_nested_work_grid()
+    , m_branch_line_cache(grid.width(), grid.height())
     , m_binomial(std::make_shared<BinomialCoefficients::Cache>())
 {
     assert(m_binomial);
@@ -211,6 +212,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent)
     , m_probing_depth_incr(0u)
     , m_progress_bar(parent.m_progress_bar)
     , m_nested_work_grid()
+    , m_branch_line_cache(parent.width(), parent.height())
     , m_binomial(parent.m_binomial)
 {
     assert(m_binomial);
@@ -826,13 +828,17 @@ template <typename SolverPolicy>
 typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(LineId line_id)
 {
     ProbingResult result{};
+    assert(m_line_is_fully_reduced[line_id.m_type][line_id.m_index]);
 
     const LineConstraint& line_constraint = m_constraints[line_id.m_type][line_id.m_index];
-    const LineSpan& known_tiles = get_line(line_id.m_type, line_id.m_index);
+    const LineSpan known_tiles = get_line(line_id.m_type, line_id.m_index);
 
     // Probe lines only once per solve
     assert(!m_line_probed[line_id.m_type][line_id.m_index]);
     m_line_probed[line_id.m_type][line_id.m_index] = true;
+
+    // Cache the full reduction of all the possible orthogonal lines
+    fill_cache_with_orthogonal_lines(line_id);
 
     // Build all alternatives for that row or column
     const auto list_of_all_alternatives = line_constraint.build_all_possible_lines(known_tiles);
@@ -874,6 +880,9 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
         probing_work_grid.update_line(guess_line, 1u);
         probing_work_grid.m_line_is_fully_reduced[guess_line.type()][guess_line.index()] = true;
         assert(probing_work_grid.m_line_completed[guess_line.type()][guess_line.index()]);
+
+        // Set orthogonal lines retrived from cache
+        set_orthogonal_lines_from_cache(probing_work_grid, guess_line);
         probing_work_grid.partition_completed_lines();
 
         // Solve the new grid!
@@ -917,7 +926,7 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
 
     for (Line::Index row_idx = 0; row_idx < height(); row_idx++)
     {
-        const auto& reduced_line = reduced_grid->get_line(row_idx);
+        const auto reduced_line = reduced_grid->get_line(row_idx);
         const auto nb_alternatives = m_nb_alternatives[Line::ROW][row_idx];
         const bool line_changed = update_line(reduced_line, nb_alternatives);
         result.m_grid_has_changed |= line_changed;
@@ -939,10 +948,14 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
     // Find the row or column not yet solved with the minimal alternative lines.
     sort_by_nb_alternatives();
     const LineId& found_line = m_all_lines.front();
+    assert(m_line_is_fully_reduced[found_line.m_type][found_line.m_index]);
     const LineConstraint& line_constraint = m_constraints[found_line.m_type][found_line.m_index];
-    const LineSpan& known_tiles = get_line(found_line.m_type, found_line.m_index);
+    const LineSpan known_tiles = get_line(found_line.m_type, found_line.m_index);
     const auto nb_alt = m_nb_alternatives[found_line.m_type][found_line.m_index];
     assert(nb_alt >= 2);
+
+    // Cache the full reduction of all the possible orthogonal lines
+    fill_cache_with_orthogonal_lines(found_line);
 
     // Build all alternatives for that row or column
     const auto list_of_all_alternatives = line_constraint.build_all_possible_lines(known_tiles);
@@ -987,6 +1000,9 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
         branching_work_grid.update_line(guess_line, 1u);
         branching_work_grid.m_line_is_fully_reduced[guess_line.type()][guess_line.index()] = true;
         assert(branching_work_grid.m_line_completed[guess_line.type()][guess_line.index()]);
+
+        // Set orthogonal lines retrived from cache
+        set_orthogonal_lines_from_cache(branching_work_grid, guess_line);
         branching_work_grid.partition_completed_lines();
 
         // Solve the new grid!
@@ -1043,6 +1059,59 @@ bool WorkGrid<SolverPolicy>::found_solution(const Solver::SolutionFound& solutio
 
     // Shallow copy of only the grid data
     return solution_found(Solver::Solution{ OutputGrid(*this), adjusted_branching_depth, FULL_SOLUTION });
+}
+
+template <typename SolverPolicy>
+void WorkGrid<SolverPolicy>::fill_cache_with_orthogonal_lines(LineId line_id)
+{
+    const LineSpan known_tiles = get_line(line_id.m_type, line_id.m_index);
+    const Line::Type orth_type = line_id.m_type == Line::ROW ? Line::COL : Line::ROW;
+    std::size_t orth_idx = 0u;
+    for (Tile tile : known_tiles)
+    {
+        if (tile == Tile::UNKNOWN)
+        {
+            const LineConstraint& constraint = m_constraints[orth_type][orth_idx];
+            Line orth_line = line_from_line_span(get_line(orth_type, static_cast<unsigned int>(orth_idx)));
+            for (Tile key : { Tile::EMPTY, Tile::FILLED })
+            {
+                orth_line[line_id.m_index] = key;
+                const auto reduction = LineAlternatives(constraint, orth_line, *m_binomial).linear_reduction();
+                m_branch_line_cache.store_line(LineId(orth_type, static_cast<unsigned int>(orth_idx)), key, reduction.reduced_line, reduction.nb_alternatives);
+                if (m_grid_stats != nullptr)
+                {
+                    m_grid_stats->nb_single_line_linear_reduction++;
+                    m_grid_stats->max_nb_alternatives_linear = std::max(m_grid_stats->max_nb_alternatives_linear, reduction.nb_alternatives);
+                }
+            }
+        }
+        orth_idx++;
+    }
+}
+
+template <typename SolverPolicy>
+void WorkGrid<SolverPolicy>::set_orthogonal_lines_from_cache(WorkGrid& target_grid, const LineSpan& alternative) const
+{
+    const LineId line_id(alternative.type(), alternative.index());
+    const LineSpan known_tiles = get_line(line_id.m_type, line_id.m_index);
+    const Line::Type orth_type = line_id.m_type == Line::ROW ? Line::COL : Line::ROW;
+    std::size_t orth_idx = 0u;
+    for (Tile tile : known_tiles)
+    {
+        if (tile == Tile::UNKNOWN)
+        {
+            const Tile key = alternative[static_cast<int>(orth_idx)];
+            assert(key != Tile::UNKNOWN);
+            const auto orth_line_entry = m_branch_line_cache.read_line(LineId(orth_type, static_cast<unsigned int>(orth_idx)), key);
+            target_grid.update_line(orth_line_entry.m_line_span, orth_line_entry.m_nb_alt);
+
+            // Since all lines of the grid are supposed to have been fully reduced before the solver will probe/branch, we are not supposed
+            // to be in the situation where nb_alt = 0 (which would mean the tile on the orthogonal line could be found by a line solve).
+            assert(orth_line_entry.m_nb_alt != 0);
+            target_grid.m_line_is_fully_reduced[orth_type][orth_idx] = (orth_line_entry.m_nb_alt == 1);
+        }
+        orth_idx++;
+    }
 }
 
 // Explicit template instantiations

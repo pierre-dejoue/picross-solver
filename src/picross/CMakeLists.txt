@@ -12,6 +12,7 @@ set(LIB_SOURCES
     src/input_grid.cpp
     src/line.cpp
     src/line_alternatives.cpp
+    src/line_cache.cpp
     src/line_constraint.cpp
     src/line_span.cpp
     src/output_grid.cpp

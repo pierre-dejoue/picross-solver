@@ -11,6 +11,7 @@
 #include "grid.h"
 #include "line.h"
 #include "line_alternatives.h"
+#include "line_cache.h"
 #include "line_constraint.h"
 
 #include <picross/picross.h>
@@ -103,6 +104,8 @@ private:
     Solver::Status branch(const Solver::SolutionFound& solution_found);
     bool is_valid_solution() const;
     bool found_solution(const Solver::SolutionFound& solution_found) const;
+    void fill_cache_with_orthogonal_lines(LineId line_id);
+    void set_orthogonal_lines_from_cache(WorkGrid& target_grid, const LineSpan& alternative) const;
 private:
     WorkGridState                                   m_state;
     SolverPolicy                                    m_solver_policy;
@@ -124,6 +127,7 @@ private:
     unsigned int                                    m_probing_depth_incr;
     std::pair<float, float>                         m_progress_bar;
     std::unique_ptr<WorkGrid<SolverPolicy>>         m_nested_work_grid;
+    LineCache                                       m_branch_line_cache;
     std::shared_ptr<BinomialCoefficients::Cache>    m_binomial;
 };
 

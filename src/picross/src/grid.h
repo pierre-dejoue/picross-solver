@@ -31,7 +31,9 @@ public:
     const std::string& name() const { return m_name; }
 
     const Container& get_container(Line::Type type) const;
+
     LineSpan get_line(Line::Type type, Line::Index index) const;
+
     Tile get(Line::Index x, Line::Index y) const;
 
     // set() will force whatever tile value is passed as argument
@@ -48,6 +50,11 @@ public:
 
     friend bool operator==(const Grid& lhs, const Grid& rhs);
     friend bool operator!=(const Grid& lhs, const Grid& rhs);
+
+protected:
+    // Use with great caution when writing, as only one of the two containers (row or column major) will be modified
+    template <typename LineSpanT>
+    LineSpanT get_line(Line::Type type, Line::Index index);
 
 private:
     const std::size_t       m_width;
