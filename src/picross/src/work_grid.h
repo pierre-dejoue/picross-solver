@@ -72,19 +72,19 @@ private:
     };
 public:
     WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Observer observer = Observer(), Solver::Abort abort_function = Solver::Abort(), float min_progress = 0.f, float max_progress = 1.f);
-    // Not copyable nor movable
-    WorkGrid(const WorkGrid&) = delete;
+    // Not movable
     WorkGrid(WorkGrid&&) noexcept = delete;
-    WorkGrid& operator=(const WorkGrid&) = delete;
     WorkGrid& operator=(WorkGrid&&) noexcept = delete;
 private:
-    // Allocate nested work grid
-    WorkGrid(const WorkGrid& parent, const SolverPolicy& solver_policy, WorkGridState initial_state, float min_progress, float max_progress);
+    WorkGrid(const WorkGrid& parent);                 // Allocate a nested search grid, in a reset state
+    WorkGrid& operator=(const WorkGrid& parent);      // Copy the grid data, some of the main data structures, and reset others
 public:
     void set_stats(GridStats* stats);
     Solver::Status line_solve(const Solver::SolutionFound& solution_found);
     Solver::Status solve(const Solver::SolutionFound& solution_found);
 private:
+    WorkGrid<SolverPolicy>& nested_work_grid();
+    void configure(const SolverPolicy& solver_policy, WorkGridState initial_state, GridStats* stats, float min_progress, float max_progress);
     Solver::Status line_solve(const Solver::SolutionFound& solution_found, bool currently_probing);
     bool all_lines_completed() const;
     bool update_line(const LineSpan& line, unsigned int nb_alt);
@@ -105,7 +105,7 @@ private:
     bool found_solution(const Solver::SolutionFound& solution_found) const;
 private:
     WorkGridState                                   m_state;
-    const SolverPolicy                              m_solver_policy;
+    SolverPolicy                                    m_solver_policy;
     std::vector<LineConstraint>                     m_constraints[2];
     std::vector<LineAlternatives>                   m_alternatives[2];
     std::vector<bool>                               m_line_completed[2];
@@ -123,6 +123,7 @@ private:
     unsigned int                                    m_branching_depth;
     unsigned int                                    m_probing_depth_incr;
     std::pair<float, float>                         m_progress_bar;
+    std::unique_ptr<WorkGrid<SolverPolicy>>         m_nested_work_grid;
     std::shared_ptr<BinomialCoefficients::Cache>    m_binomial;
 };
 

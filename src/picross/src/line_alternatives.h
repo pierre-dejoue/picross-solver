@@ -50,6 +50,8 @@ public:
     LineAlternatives(LineAlternatives&&) noexcept;
     LineAlternatives& operator=(LineAlternatives&&) noexcept;
 public:
+    void reset();
+
     // Regarding the reduction result:
     //  - If nb_alternatives == 0, the line (and therefore, the grid) is contradictory
     //  - If is_fully_reduced == true, all alternatives were computed and reduced. The value of nb_alternatives is exact

@@ -426,6 +426,8 @@ struct LineAlternatives::Impl
     Impl(const LineConstraint& constraint, const LineSpan& known_tiles, BinomialCoefficients::Cache& binomial);
     Impl(const Impl& other, const LineSpan& known_tiles);
 
+    void reset();
+
     template <bool Reversed>
     bool check_compatibility_bw(const LineSpanW& alternative, int start_idx, int end_idx) const;
 
@@ -517,6 +519,13 @@ LineAlternatives::Impl::Impl(const Impl& other, const LineSpan& known_tiles)
     , m_bidirectional_range_reverse(other.m_bidirectional_range_reverse)
 {
     assert(m_line_length == m_known_tiles.size());
+}
+
+void LineAlternatives::Impl::reset()
+{
+    m_remaining_zeros = m_line_length - compute_min_line_size(m_segments);
+    m_bidirectional_range = BidirectionalRange<false>(m_segments, m_line_length);
+    m_bidirectional_range_reverse = BidirectionalRange<true>(m_segments, m_line_length);
 }
 
 template <bool Reversed>
@@ -1153,6 +1162,11 @@ LineAlternatives::LineAlternatives(const LineAlternatives& other, const LineSpan
 LineAlternatives::~LineAlternatives() = default;
 LineAlternatives::LineAlternatives(LineAlternatives&&) noexcept = default;
 LineAlternatives& LineAlternatives::operator=(LineAlternatives&&) noexcept = default;
+
+void LineAlternatives::reset()
+{
+    p_impl->reset();
+}
 
 LineAlternatives::Reduction LineAlternatives::full_reduction()
 {
