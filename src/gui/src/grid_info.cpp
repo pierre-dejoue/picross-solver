@@ -191,10 +191,11 @@ void GridInfo::visit(bool& can_be_erased)
     }
 }
 
-void GridInfo::update_solver_status(unsigned int current_depth, float progress)
+void GridInfo::update_solver_status(unsigned int nb_found_solutions, unsigned int current_depth, float progress)
 {
     std::lock_guard<std::mutex> lock(solver_stats_mutex);
     solver_stats.m_ongoing = true;
+    solver_stats.m_nb_solutions = nb_found_solutions;
     solver_stats.m_current_depth = current_depth;
     solver_stats.m_progress = progress;
     solver_stats_flag = true;
@@ -205,6 +206,7 @@ void GridInfo::solver_completed(const picross::GridStats& stats)
     std::lock_guard<std::mutex> lock(solver_stats_mutex);
     solver_stats.m_ongoing = false;
     solver_stats.m_grid_stats = stats;
+    solver_stats.m_nb_solutions = stats.nb_solutions;
     solver_stats.m_current_depth = 0u;
     solver_stats.m_progress = 1.f;
     solver_stats_flag = true;
@@ -215,7 +217,12 @@ void GridInfo::refresh_stats_info()
     std::lock_guard<std::mutex> lock(solver_stats_mutex);
     solver_stats_info.clear();
     solver_stats_info.emplace_back("Solving", solver_stats.m_ongoing ? "ONGOING" : "DONE");
-    std::string_view difficulty = picross::str_difficulty_code(difficulty_code(solver_stats.m_grid_stats));
+    if (!solver_stats.m_ongoing)
+    {
+        std::string_view difficulty = picross::str_difficulty_code(difficulty_code(solver_stats.m_grid_stats));
+        solver_stats_info.emplace_back("Difficulty", difficulty);
+    }
+    solver_stats_info.emplace_back("Nb solutions", std::to_string(solver_stats.m_nb_solutions));
     if (solver_stats.m_ongoing)
     {
         solver_stats_info.emplace_back("Current depth", std::to_string(solver_stats.m_current_depth));
@@ -223,8 +230,6 @@ void GridInfo::refresh_stats_info()
     }
     else
     {
-        solver_stats_info.emplace_back("Difficulty", difficulty);
-        solver_stats_info.emplace_back("Nb solutions", std::to_string(solver_stats.m_grid_stats.nb_solutions));
         solver_stats_info.emplace_back("Max depth", std::to_string(solver_stats.m_grid_stats.max_branching_depth));
     }
     solver_stats_flag = false;

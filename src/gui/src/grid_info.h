@@ -18,7 +18,7 @@ public:
 
     void visit(bool& can_be_erased);
 
-    void update_solver_status(unsigned int current_depth, float progress);
+    void update_solver_status(unsigned int nb_found_solutions, unsigned int current_depth, float progress);
     void solver_completed(const picross::GridStats& stats);
 
 private:
@@ -33,6 +33,7 @@ private:
     {
         bool                    m_ongoing = false;
         picross::GridStats      m_grid_stats{};
+        unsigned int            m_nb_solutions = 0u;
         unsigned int            m_current_depth = 0u;
         float                   m_progress = 0.f;
         //picross::Solver::Status m_status = picross::Solver::Status::OK;     // Irrelevant if m_ongoing == true

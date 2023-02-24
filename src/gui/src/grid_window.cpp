@@ -259,7 +259,7 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
     {
         assert(!solver_thread_active);
         reset_solutions();
-        if (info) { info->update_solver_status(0u, 0.f); }
+        if (info) { info->update_solver_status(0u, 0u, 0.f); }
         solver_thread_completed = false;
         std::swap(solver_thread, std::thread(&GridWindow::solve_picross_grid, this));
         solver_thread_start = false;
@@ -301,7 +301,7 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
             if (info && !solver_thread_completed)
             {
                 const auto current_depth = solutions.empty() ? 0u : solutions.back().get_grid_depth();
-                info->update_solver_status(current_depth, solver_progress);
+                info->update_solver_status(valid_solutions, current_depth, solver_progress);
             }
         }
     }
@@ -338,7 +338,6 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
         info = std::make_unique<GridInfo>(grid);
         {
             std::lock_guard<std::mutex> lock(line_mutex);
-            assert(!solutions.empty());
             if (solver_thread_completed)
             {
                 info->solver_completed(solver_thread_stats);
@@ -346,7 +345,7 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
             else
             {
                 const auto current_depth = solutions.empty() ? 0u : solutions.back().get_grid_depth();
-                info->update_solver_status(current_depth, solver_progress);
+                info->update_solver_status(valid_solutions, current_depth, solver_progress);
             }
         }
     }
