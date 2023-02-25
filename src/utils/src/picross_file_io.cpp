@@ -100,7 +100,7 @@ std::vector<InputGrid> parse_picross_file(std::string_view filepath, PicrossFile
     }
     catch (const std::exception& e)
     {
-        error_handler(e.what(), 1);
+        error_handler(e.what(), 2);
     }
     return {};
 }

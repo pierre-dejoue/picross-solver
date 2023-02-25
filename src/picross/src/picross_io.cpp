@@ -26,8 +26,6 @@ namespace
 {
 
 constexpr unsigned int INPUT_BUFFER_SZ = 2048u;
-constexpr ExitCode NO_EXIT = 0;
-constexpr ExitCode EXIT_ON_INVALID_PARSER = 10;
 
 struct FileFormat
 {
@@ -168,7 +166,7 @@ private:
     {
         std::ostringstream oss;
         oss << msg << " (parsing_state = " << parsing_state_str() << ")";
-        error_handler(oss.str(), NO_EXIT);
+        error_handler(oss.str(), PARSER_ERROR);
     }
 private:
     ParsingState parsing_state;
@@ -279,7 +277,7 @@ private:
     {
         std::ostringstream oss;
         oss << msg << " (parsing_state = " << parsing_state_str() << ")";
-        error_handler(oss.str(), NO_EXIT);
+        error_handler(oss.str(), PARSER_ERROR);
     }
 private:
     ParsingState parsing_state;
@@ -371,11 +369,11 @@ public:
             {
                 if (!grid.m_rows.empty())
                 {
-                    error_handler("rows are already defined", NO_EXIT);
+                    error_handler("rows are already defined", PARSER_ERROR);
                 }
                 else if (height == 0)
                 {
-                    error_handler("height wasn't defined", NO_EXIT);
+                    error_handler("height wasn't defined", PARSER_ERROR);
                 }
                 else
                 {
@@ -386,11 +384,11 @@ public:
             {
                 if (!grid.m_cols.empty())
                 {
-                    error_handler("columns are already defined", NO_EXIT);
+                    error_handler("columns are already defined", PARSER_ERROR);
                 }
                 else if (width == 0)
                 {
-                    error_handler("width wasn't defined", NO_EXIT);
+                    error_handler("width wasn't defined", PARSER_ERROR);
                 }
                 else
                 {
@@ -413,7 +411,7 @@ public:
             }
             else
             {
-                error_handler("Invalid token " + token, NO_EXIT);
+                error_handler("Invalid token " + token, PARSER_ERROR);
             }
         }
     }

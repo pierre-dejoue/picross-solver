@@ -25,6 +25,8 @@ namespace io
 {
 
 using ExitCode = int;
+inline constexpr ExitCode PARSER_ERROR = 1;
+
 using ErrorHandler = std::function<void(std::string_view, ExitCode)>;
 
 /*
