@@ -130,7 +130,7 @@ namespace
         result.nb_alternatives = nb_alt;
         result.is_fully_reduced = full;
         return result;
-    };
+    }
 
     // A Line with extra tiles at index -1 and line_sz
     class LineExt

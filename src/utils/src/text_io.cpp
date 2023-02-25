@@ -138,7 +138,11 @@ Line build_line_from(std::string_view tiles, Line::Type type, unsigned int index
         else if (c == '?')
             tiles_vect.push_back(Tile::UNKNOWN);
         else
-            throw std::invalid_argument("Invalid tile character: " + c);
+        {
+            std::stringstream ss;
+            ss << "Invalid tile character: " << c;
+            throw std::invalid_argument(ss.str());
+        }
     }
     assert(tiles_vect.size() == tiles.size());
     return Line(type, index, std::move(tiles_vect));
