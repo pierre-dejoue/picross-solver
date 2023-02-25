@@ -634,7 +634,7 @@ void write_input_grid_native(std::ostream& out, const InputGrid& input_grid)
 
 void write_input_grid_nin_format(std::ostream& out, const InputGrid& input_grid)
 {
-    out << input_grid.width() << " " << input_grid.height();
+    out << input_grid.width() << " " << input_grid.height() << std::endl;
     write_constraints_nin_format(out, input_grid.rows());
     write_constraints_nin_format(out, input_grid.cols());
 }

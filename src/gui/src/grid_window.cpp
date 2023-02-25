@@ -557,6 +557,7 @@ void GridWindow::save_grid()
     const auto file_path = pfd::save_file(
         "Select a file", "",
         { "Picross file", "*.txt",
+          "NIN file", "*.nin",
           "NON file", "*.non",
           "Bitmap (*.pbm)", "*.pbm" },
         pfd::opt::force_overwrite).result();
@@ -572,5 +573,6 @@ void GridWindow::save_grid()
         const auto solution = (solutions.empty() || !solutions[0].is_completed()) ? std::nullopt : std::optional<picross::OutputGrid>(solutions[0]);
         const auto format = picross::io::picross_file_format_from_filepath(file_path);
         picross::io::save_picross_file(file_path, format, grid, solution, err_handler);
+        std::cout << "User saved file " << file_path << " (format: " << format << ")" << std::endl;
     }
 }

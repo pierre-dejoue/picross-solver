@@ -112,8 +112,9 @@ int main(int argc, char *argv[])
                         { "PBM file", "*.pbm", "All files", "*" }).result();
                     for (const auto path : paths)
                     {
-                        std::cout << "User selected bitmap " << path << std::endl;
-                        picross_files.emplace_back(std::make_unique<PicrossFile>(path, picross::io::PicrossFileFormat::PBM));
+                        const auto format = picross::io::PicrossFileFormat::PBM;
+                        std::cout << "User selected bitmap " << path << " (format: " << format << ")" << std::endl;
+                        picross_files.emplace_back(std::make_unique<PicrossFile>(path, format));
                     }
                 }
                 if (ImGui::MenuItem("Import solution"))
@@ -122,8 +123,9 @@ int main(int argc, char *argv[])
                         { "All files", "*" }).result();
                     for (const auto path : paths)
                     {
+                        const auto format = picross::io::PicrossFileFormat::OutputGrid;
                         std::cout << "User selected solution file " << path << std::endl;
-                        picross_files.emplace_back(std::make_unique<PicrossFile>(path, picross::io::PicrossFileFormat::OutputGrid));
+                        picross_files.emplace_back(std::make_unique<PicrossFile>(path, format));
                     }
                 }
                 if (ImGui::MenuItem("Quit", "Alt+F4"))
