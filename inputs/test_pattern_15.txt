@@ -1,0 +1,13 @@
+# A cross pattern with three solutions
+# Size: 4x4
+GRID Cross
+ROWS
+[ 1 1 ]
+[ 2 ]
+[ 2 ]
+[ 1 1 ]
+COLUMNS
+[ 1 1 ]
+[ 2 ]
+[ 2 ]
+[ 1 1 ]

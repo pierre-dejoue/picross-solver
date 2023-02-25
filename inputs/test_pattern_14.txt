@@ -1,0 +1,10 @@
+# The switch pattern, the simplest one with multiple solutions (two)
+# It has been named the elementary switching component in a paper by Batenburg and Kosters.
+# Size: 2x2
+GRID Switch
+ROWS
+[ 1 ]
+[ 1 ]
+COLUMNS
+[ 1 ]
+[ 1 ]

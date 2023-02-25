@@ -14,13 +14,16 @@ solution.
 ## Features
 
  - The solver library has no dependencies other than C++17
+ - Compilation of the library is checked against: MSVC, gcc, clang.
  - Black and white puzzles only
  - Handle puzzles with multiple solutons and check for uniqueness
- - Three file formats are supported:
+ - Three puzzle file formats are supported:
    - Steve Simpson's [NON format](doc/FILE_FORMAT_NON.md)
    - Jakub Wilk's [NIN format](doc/FILE_FORMAT_NIN.md)
    - A native format created for this library
- - Battle-tested on a wide range of puzzles: [Performance](doc/PERF.md)
+ - Fast, and battle-tested on a wide range of puzzles: [Performance](doc/PERF.md)
+ - Two applications on top of the library: CLI and GUI.
+ - Use the GUI to [make your own picross puzzles](doc/Create_a_Picross.md)!
 
 ## Library
 
@@ -33,7 +36,7 @@ With [CMake](https://cmake.org/download/). For example on Windows:
 ```
 mkdir ./build
 cd build
-cmake -G "Visual Studio 15 2017" ..
+cmake -G "Visual Studio 17 2022" ..
 cmake --build . --config Release
 ```
 
@@ -47,7 +50,7 @@ Dependencies:
 Build and run unit tests:
 
 ```
-cmake -G "Visual Studio 15 2017" -DPICROSS_BUILD_TESTS=ON ..
+cmake -G "Visual Studio 17 2022" -DPICROSS_BUILD_TESTS=ON ..
 cmake --build . --target picross_run_utests --config Debug
 ```
 
@@ -135,7 +138,7 @@ Output:
 .###..
 ......
 ```
-## Test Applications
+## Applications
 
 A CLI and a GUI applications built on top of the solver library.
 
@@ -169,7 +172,7 @@ On Windows:
 ```
 mkdir ./build
 cd build
-cmake -G "Visual Studio 15 2017" -DPICROSS_BUILD_APP=ON -DPICROSS_BUILD_CLI=ON ..
+cmake -G "Visual Studio 17 2022" -DPICROSS_BUILD_APP=ON -DPICROSS_BUILD_CLI=ON ..
 cmake --build . --config Release
 ```
 
@@ -190,8 +193,11 @@ Use the validation mode to test multiple files at once and check the uniqueness 
 ```
 ./build/bin/Release/picross_solver_cli.exe --validation inputs/PicrossDS/Normal/*
 ```
+### Make your own Puzzles with the GUI
 
-### Screenshots of the Graphical Interface
+See tutorial [here](doc/Create_a_Picross.md).
+
+### More Screenshots of the GUI
 
 The GUI shows an animation of the solving process, and finally the solution(s). Here are two examples
 from the game Picross DS:
