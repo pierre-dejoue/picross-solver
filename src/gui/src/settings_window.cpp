@@ -51,6 +51,8 @@ void SettingsWindow::visit(bool& can_be_erased)
         //ImGui::SliderFloat("Rounding ratio", &tile_settings->rounding_ratio, limits.rounding_ratio.min, limits.rounding_ratio.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         //ImGui::SliderFloat("Size ratio", &tile_settings->size_ratio, limits.size_ratio.min, limits.size_ratio.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 
+        ImGui::Checkbox("Five tile outline", &tile_settings->five_tile_border);
+
         ImGui::Checkbox("Hide for depth greater than:", &tile_settings->hide_depth_greater);
         if (tile_settings->hide_depth_greater)
         {

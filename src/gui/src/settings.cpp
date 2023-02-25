@@ -22,6 +22,8 @@ namespace
         result.size_ratio.min = 0.001f;
         result.size_ratio.max = 1.f;
 
+        result.five_tile_border = Settings::limits_false;
+
         result.hide_depth_greater = Settings::limits_false;
 
         result.hide_depth_value.default = 2;
@@ -82,6 +84,7 @@ const Settings::Tile& Settings::read_tile_settings()
         tile_settings->size_enum = read_tile_settings_limits().size_enum.default;
         tile_settings->rounding_ratio = read_tile_settings_limits().rounding_ratio.default;
         tile_settings->size_ratio = read_tile_settings_limits().size_ratio.default;
+        tile_settings->five_tile_border = read_tile_settings_limits().five_tile_border.default;
         tile_settings->hide_depth_greater = read_tile_settings_limits().hide_depth_greater.default;
         tile_settings->hide_depth_value = read_tile_settings_limits().hide_depth_value.default;
     }

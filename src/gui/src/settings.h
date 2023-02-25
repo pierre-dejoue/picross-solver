@@ -24,6 +24,7 @@ public:
         Limits<int> size_enum;
         Limits<float> rounding_ratio;
         Limits<float> size_ratio;
+        Limits<bool> five_tile_border;
         Limits<bool> hide_depth_greater;
         Limits<int> hide_depth_value;
     };
@@ -32,6 +33,7 @@ public:
         int size_enum;
         float rounding_ratio;
         float size_ratio;
+        bool five_tile_border;
         bool hide_depth_greater;
         int hide_depth_value;
     };

@@ -18,8 +18,10 @@
 
 namespace
 {
+    // Grid background
     constexpr ImU32 ColorGridBack = IM_COL32(255, 255, 255, 255);
     constexpr ImU32 ColorGridOutline = IM_COL32(224, 224, 224, 255);
+    constexpr ImU32 ColorGridOutlineFive = IM_COL32(178, 178, 178, 255);
 
     // Default tile colors (branching depth = 0)
     constexpr ImU32 ColorTileBorder = IM_COL32(20, 90, 116, 255);
@@ -35,7 +37,7 @@ namespace
     constexpr ImU32 ColorTileDepth2Filled = IM_COL32(94, 137, 91, 255);
     constexpr ImU32 ColorTileDepth2Empty = IM_COL32(216, 224, 212, 255);
 
-    // Branching colors (periodical from there)
+    // Branching colors cont. (periodical from there)
     constexpr ImU32 ColorTileDepthCyc0Border = IM_COL32(114, 52, 20, 255);
     constexpr ImU32 ColorTileDepthCyc0Filled = IM_COL32(135, 135, 90, 255);
     constexpr ImU32 ColorTileDepthCyc0Empty = IM_COL32(224, 224, 216, 255);
@@ -112,7 +114,12 @@ namespace
         return tile_size > 3 ? 1 : 0;
     }
 
-    void draw_background_grid(ImDrawList* draw_list, ImVec2 tl_corner, size_t tile_size, size_t width, size_t height, bool outline = false)
+    ImU32 outline_color(size_t idx, bool five_tile_outline = false)
+    {
+        return (five_tile_outline && idx % 5 == 0) ? ColorGridOutlineFive : ColorGridOutline;
+    }
+
+    void draw_background_grid(ImDrawList* draw_list, ImVec2 tl_corner, size_t tile_size, size_t width, size_t height, bool outline = false, bool five_tile_outline = false)
     {
         const ImVec2 br_corner = ImVec2(tl_corner.x + static_cast<float>(width * tile_size), tl_corner.y + static_cast<float>(height * tile_size));
         draw_list->AddRectFilled(tl_corner, br_corner, ColorGridBack);
@@ -121,13 +128,14 @@ namespace
             for (size_t i = 0u; i <= width; ++i)
             {
                 const float x = static_cast<float>(i * tile_size);
-                draw_list->AddLine(ImVec2(tl_corner.x + x, tl_corner.y), ImVec2(tl_corner.x + x, br_corner.y), ColorGridOutline);
+                draw_list->AddLine(ImVec2(tl_corner.x + x, tl_corner.y), ImVec2(tl_corner.x + x, br_corner.y), outline_color(i, five_tile_outline));
             }
             for (size_t j = 0u; j <= height; ++j)
             {
                 const float y = static_cast<float>(j * tile_size);
-                draw_list->AddLine(ImVec2(tl_corner.x, tl_corner.y + y), ImVec2(br_corner.x, tl_corner.y + y), ColorGridOutline);
+                draw_list->AddLine(ImVec2(tl_corner.x, tl_corner.y + y), ImVec2(br_corner.x, tl_corner.y + y), outline_color(j, five_tile_outline));
             }
+            draw_list->AddRect(tl_corner, ImVec2(br_corner.x + 1.f, br_corner.y + 1.f), outline_color(0));
         }
     }
 
@@ -390,7 +398,7 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
                 ImDrawList* draw_list = ImGui::GetWindowDrawList();
                 assert(draw_list);
                 ImVec2 grid_tl_corner = ImGui::GetCursorScreenPos();
-                draw_background_grid(draw_list, grid_tl_corner, tile_size, width, height, true);
+                draw_background_grid(draw_list, grid_tl_corner, tile_size, width, height, true, tile_settings.five_tile_border);
 
                 for (size_t i = 0u; i < width; ++i)
                     for (size_t j = 0u; j < height; ++j)
