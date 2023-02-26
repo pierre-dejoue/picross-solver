@@ -251,8 +251,8 @@ WorkGrid<SolverPolicy>& WorkGrid<SolverPolicy>::operator=(const WorkGrid& parent
     m_nb_alternatives[Line::COL] = parent.m_nb_alternatives[Line::COL];
     m_uncompleted_lines_range[Line::ROW] = parent.m_uncompleted_lines_range[Line::ROW];
     m_uncompleted_lines_range[Line::COL] = parent.m_uncompleted_lines_range[Line::COL];
-    m_all_lines = parent.m_all_lines;
-    m_uncompleted_lines_end = m_all_lines.begin() + std::distance(parent.m_all_lines.begin(), AllLines::const_iterator(parent.m_uncompleted_lines_end));
+    m_all_lines = AllLines(parent.m_all_lines.cbegin(), AllLines::const_iterator(parent.m_uncompleted_lines_end));
+    m_uncompleted_lines_end = m_all_lines.end();
     m_max_nb_alternatives = SolverPolicy::MIN_NB_ALTERNATIVES;
     m_probing_depth_incr = 0u;
     return *this;
@@ -316,10 +316,7 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
             case WorkGridState::LINEAR_REDUCTION:
                 pass_status = full_grid_pass<WorkGridState::LINEAR_REDUCTION>();
                 if (!pass_status.grid_changed)
-                {
                     m_state = WorkGridState::FULL_REDUCTION;
-                    sort_by_nb_alternatives();
-                }
                 break;
 
             case WorkGridState::FULL_REDUCTION:
@@ -585,6 +582,24 @@ void WorkGrid<SolverPolicy>::sort_by_nb_alternatives()
     });
 }
 
+
+template <typename SolverPolicy>
+bool WorkGrid<SolverPolicy>::is_sorted_by_nb_alternatives() const
+{
+    return std::is_sorted(m_all_lines.cbegin(), AllLines::const_iterator(m_uncompleted_lines_end), [this](const auto& lhs, const auto& rhs) {
+        return m_nb_alternatives[lhs.m_type][lhs.m_index] < m_nb_alternatives[rhs.m_type][rhs.m_index];
+    });
+}
+
+
+template <typename SolverPolicy>
+LineId WorkGrid<SolverPolicy>::next_line_for_search() const
+{
+    assert(is_sorted_by_nb_alternatives());
+    return m_all_lines.front();
+}
+
+
 template <typename SolverPolicy>
 typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_initial_pass(Line::Type type, unsigned int index)
 {
@@ -782,6 +797,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::full_grid_pa
             m_line_has_updates[it->m_type][it->m_index] = true;
     }
     partition_completed_lines();
+    sort_by_nb_alternatives();
     return status;
 }
 
@@ -801,7 +817,7 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe()
             candidate_lines.emplace_back(edge);
         }
     }
-    sort_by_nb_alternatives();
+    assert(is_sorted_by_nb_alternatives());
     for (auto idx = 0u; idx < m_solver_policy.m_nb_of_lines_for_probing_round && idx < m_all_lines.size(); idx++)
     {
         const LineId& line_id = m_all_lines[idx];
@@ -973,19 +989,17 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
     assert(m_solver_policy.m_branching_allowed);
     assert(m_all_lines.begin() != m_uncompleted_lines_end);
 
-    // Find the row or column not yet solved with the minimal alternative lines.
-    sort_by_nb_alternatives();
-    const LineId& found_line = m_all_lines.front();
-    assert(m_line_is_fully_reduced[found_line.m_type][found_line.m_index]);
-    const LineConstraint& line_constraint = m_constraints[found_line.m_type][found_line.m_index];
-    const LineSpan known_tiles = get_line(found_line.m_type, found_line.m_index);
-    const auto nb_alt = m_nb_alternatives[found_line.m_type][found_line.m_index];
+    const LineId search_line = next_line_for_search();
+    assert(m_line_is_fully_reduced[search_line.m_type][search_line.m_index]);
+    const LineConstraint& line_constraint = m_constraints[search_line.m_type][search_line.m_index];
+    const LineSpan known_tiles = get_line(search_line.m_type, search_line.m_index);
+    const auto nb_alt = m_nb_alternatives[search_line.m_type][search_line.m_index];
     assert(nb_alt >= 2);
 
     // Cache the full reduction of all the possible orthogonal lines
     if constexpr (SolverPolicy::LINE_CACHE_ENABLED)
     {
-        fill_cache_with_orthogonal_lines(found_line);
+        fill_cache_with_orthogonal_lines(search_line);
     }
 
     // Build all alternatives for that row or column
