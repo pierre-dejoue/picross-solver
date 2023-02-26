@@ -754,7 +754,14 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::full_grid_pa
             status += single_line_full_reduction(it->m_type, it->m_index);
         }
         if (status.contradictory)
+        {
+            if (m_observer)
+            {
+                const Line contradictory_line = line_from_line_span(get_line(*it));
+                m_observer(ObserverEvent::KNOWN_LINE, &contradictory_line, m_branching_depth, 0);
+            }
             break;
+        }
         if (m_abort_function && m_abort_function())
             throw PicrossSolverAborted();
     }
