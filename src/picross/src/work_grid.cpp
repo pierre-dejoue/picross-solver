@@ -1131,12 +1131,13 @@ void WorkGrid<SolverPolicy>::fill_cache_with_orthogonal_lines(LineId line_id)
             for (Tile key : { Tile::EMPTY, Tile::FILLED })
             {
                 orth_line[line_id.m_index] = key;
-                const auto reduction = LineAlternatives(constraint, orth_line, *m_binomial).linear_reduction();
+                const auto reduction = LineAlternatives(constraint, orth_line, *m_binomial).full_reduction();
                 m_branch_line_cache.store_line(orth_line_id, key, reduction.reduced_line, reduction.nb_alternatives);
                 if (m_grid_stats != nullptr)
                 {
-                    m_grid_stats->nb_single_line_linear_reduction++;
-                    m_grid_stats->max_nb_alternatives_linear = std::max(m_grid_stats->max_nb_alternatives_linear, reduction.nb_alternatives);
+                    m_grid_stats->nb_single_line_full_reduction++;
+                    m_grid_stats->max_nb_alternatives_full = std::max(m_grid_stats->max_nb_alternatives_full, reduction.nb_alternatives);
+                    // Ignore w_change stats here
                 }
             }
         }
@@ -1164,9 +1165,10 @@ void WorkGrid<SolverPolicy>::set_orthogonal_lines_from_cache(WorkGrid& target_gr
 
             // Since all lines of the grid are supposed to have been fully reduced before the solver will probe/branch, we are not supposed
             // to be in the situation where nb_alt = 0 (which would mean the tile on the orthogonal line could be found by a line solve).
+            // If that still happens in Release, the line is not set as fully reduced therefore the contradicton will be detected later on.
             assert(orth_line_entry.m_nb_alt != 0);
             assert(orth_line_entry.m_nb_alt != 1 || target_grid.m_line_completed[orth_type][orth_idx]);
-            target_grid.m_line_is_fully_reduced[orth_type][orth_idx] = (orth_line_entry.m_nb_alt == 1);
+            target_grid.m_line_is_fully_reduced[orth_type][orth_idx] = (orth_line_entry.m_nb_alt > 0);
         }
         orth_idx++;
     }
