@@ -37,12 +37,13 @@ GRID 1: Not a Weed
   ...........#########..........
   ...........#########..........
 
+  Difficulty: LINE
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 98280
-  Max number of alternatives after a  linear line reduction (change/all): 21168/98280
-  Number of full grid pass: 18
-  Number of single line  linear reduction (change/all): 301/562
+  Max number of alternatives after a  linear line reduction (change/all): 11232/98280
+  Number of full grid pass: 17
+  Number of single line  linear reduction (change/all): 276/534
 
 
 

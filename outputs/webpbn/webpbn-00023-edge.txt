@@ -13,17 +13,18 @@ GRID 1: Edge Pattern
   .......##.
   ......####
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 1
     > Hypothesis (probing/branching) on 2/0 lines
     > Total number of alternatives being tested (probing/branching): 12/0
     > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 28
-  Max number of alternatives after a  linear line reduction (change/all): 7/28
+  Max number of alternatives after a  linear line reduction (change/all): 4/28
   Max number of alternatives after a    full line reduction (change/all): 0/28
-  Number of full grid pass: 23
-  Number of single line  linear reduction (change/all): 68/172
-  Number of single line    full reduction (change/all): 0/49
+  Number of full grid pass: 22
+  Number of single line  linear reduction (change/all): 34/123
+  Number of single line    full reduction (change/all): 0/85
 
 
 

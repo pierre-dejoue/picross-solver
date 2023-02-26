@@ -15,12 +15,13 @@ GRID 1: Katakana
   ######.######
   #############
 
+  Difficulty: LINE
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 120
   Max number of alternatives after a  linear line reduction (change/all): 1/1
   Number of full grid pass: 2
-  Number of single line  linear reduction (change/all): 2/6
+  Number of single line  linear reduction (change/all): 5/6
 
 
 

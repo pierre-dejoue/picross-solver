@@ -37,6 +37,7 @@ GRID 1: Petroglyph
   ............################............
   ..............############..............
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 1
     > Hypothesis (probing/branching) on 1/0 lines
@@ -45,9 +46,9 @@ GRID 1: Petroglyph
   Max number of alternatives on an empty line (initial grid pass): 480700
   Max number of alternatives after a  linear line reduction (change/all): 480700/480700
   Max number of alternatives after a    full line reduction (change/all): 0/230230
-  Number of full grid pass: 86
-  Number of single line  linear reduction (change/all): 871/2574
-  Number of single line    full reduction (change/all): 0/75
+  Number of full grid pass: 57
+  Number of single line  linear reduction (change/all): 432/967
+  Number of single line    full reduction (change/all): 0/155
 
 
 

@@ -82,13 +82,14 @@ GRID 1: Lighthouse
   ..###########..###...##.....##.######...#####..###########.#
   #######################################......##############.
 
+  Difficulty: LINE
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4294967295 (overflow!)
   Max number of alternatives after a  linear line reduction (change/all): 4294967295/4294967295
   Max number of alternatives after a    full line reduction (change/all): 1036/3060
-  Number of full grid pass: 106
-  Number of single line  linear reduction (change/all): 1340/2930
+  Number of full grid pass: 104
+  Number of single line  linear reduction (change/all): 1338/2910
   Number of single line    full reduction (change/all): 10/108
 
 

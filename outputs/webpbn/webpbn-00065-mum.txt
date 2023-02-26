@@ -42,6 +42,7 @@ GRID 1: Mum
   ..........####......####..........
   ..............######..............
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 1
     > Hypothesis (probing/branching) on 7/0 lines
@@ -50,9 +51,9 @@ GRID 1: Mum
   Max number of alternatives on an empty line (initial grid pass): 13037895
   Max number of alternatives after a  linear line reduction (change/all): 13037895/13037895
   Max number of alternatives after a    full line reduction (change/all): 4460/1081575
-  Number of full grid pass: 146
-  Number of single line  linear reduction (change/all): 1074/2225
-  Number of single line    full reduction (change/all): 11/191
+  Number of full grid pass: 119
+  Number of single line  linear reduction (change/all): 870/1810
+  Number of single line    full reduction (change/all): 11/251
 
 
 

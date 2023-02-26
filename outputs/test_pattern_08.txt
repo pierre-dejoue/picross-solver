@@ -28,14 +28,14 @@ GRID 1: Dots
   ..#.#
   .#.#.
 
-  Solution nb 5: (branching depth: 3)
+  Solution nb 5: (branching depth: 2)
   #..#.
   .#..#
   #.#..
   .#.#.
   ..#.#
 
-  Solution nb 6: (branching depth: 3)
+  Solution nb 6: (branching depth: 2)
   #..#.
   ..#.#
   .#.#.
@@ -112,17 +112,18 @@ GRID 1: Dots
   .#..#
   #..#.
 
+  Difficulty: MULT
   Number of solutions found: 16
   Max branching depth: 4
-    > Hypothesis (probing/branching) on 4/15 lines
-    > Total number of alternatives being tested (probing/branching): 24/35
+    > Hypothesis (probing/branching) on 10/13 lines
+    > Total number of alternatives being tested (probing/branching): 60/31
     > Max number of alternatives by branching depth: 6 3 2 2
   Max number of alternatives on an empty line (initial grid pass): 6
   Max number of alternatives after a  linear line reduction (change/all): 3/6
   Max number of alternatives after a    full line reduction (change/all): 0/6
-  Number of full grid pass: 203
-  Number of single line  linear reduction (change/all): 262/590
-  Number of single line    full reduction (change/all): 0/228
+  Number of full grid pass: 271
+  Number of single line  linear reduction (change/all): 254/532
+  Number of single line    full reduction (change/all): 0/381
 
 
 

@@ -4,17 +4,18 @@ GRID 1: Smile
   #..#
   .##.
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 1
     > Hypothesis (probing/branching) on 1/0 lines
     > Total number of alternatives being tested (probing/branching): 2/0
     > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 3
-  Max number of alternatives after a  linear line reduction (change/all): 2/3
+  Max number of alternatives after a  linear line reduction (change/all): 1/3
   Max number of alternatives after a    full line reduction (change/all): 0/3
-  Number of full grid pass: 8
-  Number of single line  linear reduction (change/all): 9/22
-  Number of single line    full reduction (change/all): 0/6
+  Number of full grid pass: 7
+  Number of single line  linear reduction (change/all): 4/17
+  Number of single line    full reduction (change/all): 0/10
 
 
 

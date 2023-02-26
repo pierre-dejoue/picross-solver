@@ -67,13 +67,14 @@ GRID 1: Raccoon
   ...................................#.####.###...#.#.............................
   ...................................#.####.###.#####.............................
 
+  Difficulty: LINE
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4294967295 (overflow!)
   Max number of alternatives after a  linear line reduction (change/all): 4294967295/4294967295
   Max number of alternatives after a    full line reduction (change/all): 2433086526/4294967295
-  Number of full grid pass: 144
-  Number of single line  linear reduction (change/all): 1241/3035
+  Number of full grid pass: 142
+  Number of single line  linear reduction (change/all): 1222/3021
   Number of single line    full reduction (change/all): 39/516
 
 

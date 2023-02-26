@@ -1,0 +1,35 @@
+GRID 1: Cross
+  Size: 4x4
+  Solution nb 1: (branching depth: 1)
+  #.#.
+  ..##
+  ##..
+  .#.#
+
+  Solution nb 2: (branching depth: 1)
+  #..#
+  .##.
+  .##.
+  #..#
+
+  Solution nb 3: (branching depth: 1)
+  .#.#
+  ##..
+  ..##
+  #.#.
+
+  Difficulty: MULT
+  Number of solutions found: 3
+  Max branching depth: 1
+    > Hypothesis (probing/branching) on 8/1 lines
+    > Total number of alternatives being tested (probing/branching): 24/3
+    > Max number of alternatives by branching depth: 3
+  Max number of alternatives on an empty line (initial grid pass): 3
+  Max number of alternatives after a  linear line reduction (change/all): 1/3
+  Max number of alternatives after a    full line reduction (change/all): 0/3
+  Number of full grid pass: 54
+  Number of single line  linear reduction (change/all): 126/175
+  Number of single line    full reduction (change/all): 0/80
+
+
+

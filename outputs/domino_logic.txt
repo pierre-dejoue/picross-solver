@@ -9,6 +9,7 @@ GRID 1: 3-Dom
   ..#....
   ..#....
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 1
     > Hypothesis (probing/branching) on 1/0 lines
@@ -17,9 +18,9 @@ GRID 1: 3-Dom
   Max number of alternatives on an empty line (initial grid pass): 7
   Max number of alternatives after a  linear line reduction (change/all): 4/7
   Max number of alternatives after a    full line reduction (change/all): 0/7
-  Number of full grid pass: 15
-  Number of single line  linear reduction (change/all): 46/97
-  Number of single line    full reduction (change/all): 0/14
+  Number of full grid pass: 11
+  Number of single line  linear reduction (change/all): 22/50
+  Number of single line    full reduction (change/all): 0/28
 
 
 
@@ -36,17 +37,18 @@ GRID 2: 4-Dom
   ..#......
   ..#......
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 1
-    > Hypothesis (probing/branching) on 4/1 lines
-    > Total number of alternatives being tested (probing/branching): 29/2
-    > Max number of alternatives by branching depth: 2
+    > Hypothesis (probing/branching) on 5/0 lines
+    > Total number of alternatives being tested (probing/branching): 34/0
+    > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 15
   Max number of alternatives after a  linear line reduction (change/all): 12/15
   Max number of alternatives after a    full line reduction (change/all): 0/15
-  Number of full grid pass: 115
-  Number of single line  linear reduction (change/all): 270/862
-  Number of single line    full reduction (change/all): 0/175
+  Number of full grid pass: 109
+  Number of single line  linear reduction (change/all): 245/704
+  Number of single line    full reduction (change/all): 0/216
 
 
 
@@ -65,17 +67,18 @@ GRID 3: 5-Dom
   ..#........
   ..#........
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 5
-    > Hypothesis (probing/branching) on 4/26 lines
-    > Total number of alternatives being tested (probing/branching): 40/115
+    > Hypothesis (probing/branching) on 12/26 lines
+    > Total number of alternatives being tested (probing/branching): 128/115
     > Max number of alternatives by branching depth: 9 7 5 5 2
   Max number of alternatives on an empty line (initial grid pass): 28
   Max number of alternatives after a  linear line reduction (change/all): 21/28
   Max number of alternatives after a    full line reduction (change/all): 0/28
-  Number of full grid pass: 394
-  Number of single line  linear reduction (change/all): 889/3160
-  Number of single line    full reduction (change/all): 0/1055
+  Number of full grid pass: 485
+  Number of single line  linear reduction (change/all): 497/2305
+  Number of single line    full reduction (change/all): 0/1905
 
 
 
@@ -96,17 +99,18 @@ GRID 4: 6-Dom
   ..#..........
   ..#..........
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 6
-    > Hypothesis (probing/branching) on 4/162 lines
-    > Total number of alternatives being tested (probing/branching): 48/762
+    > Hypothesis (probing/branching) on 12/167 lines
+    > Total number of alternatives being tested (probing/branching): 152/776
     > Max number of alternatives by branching depth: 11 9 7 7 5 5
   Max number of alternatives on an empty line (initial grid pass): 45
   Max number of alternatives after a  linear line reduction (change/all): 36/45
-  Max number of alternatives after a    full line reduction (change/all): 6/45
-  Number of full grid pass: 1856
-  Number of single line  linear reduction (change/all): 4972/16001
-  Number of single line    full reduction (change/all): 17/3740
+  Max number of alternatives after a    full line reduction (change/all): 0/45
+  Number of full grid pass: 1618
+  Number of single line  linear reduction (change/all): 2642/9918
+  Number of single line    full reduction (change/all): 0/5970
 
 
 
@@ -129,17 +133,18 @@ GRID 5: 7-Dom
   ..#............
   ..#............
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 9
-    > Hypothesis (probing/branching) on 4/1883 lines
-    > Total number of alternatives being tested (probing/branching): 56/9191
+    > Hypothesis (probing/branching) on 12/1875 lines
+    > Total number of alternatives being tested (probing/branching): 176/9144
     > Max number of alternatives by branching depth: 13 11 9 9 8 7 7 3 2
   Max number of alternatives on an empty line (initial grid pass): 66
   Max number of alternatives after a  linear line reduction (change/all): 55/66
-  Max number of alternatives after a    full line reduction (change/all): 8/66
-  Number of full grid pass: 18796
-  Number of single line  linear reduction (change/all): 53874/162050
-  Number of single line    full reduction (change/all): 219/32134
+  Max number of alternatives after a    full line reduction (change/all): 4/66
+  Number of full grid pass: 14034
+  Number of single line  linear reduction (change/all): 25850/87865
+  Number of single line    full reduction (change/all): 4/49567
 
 
 
@@ -164,17 +169,18 @@ GRID 6: 8-Dom
   ..#..............
   ..#..............
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 10
-    > Hypothesis (probing/branching) on 4/19325 lines
-    > Total number of alternatives being tested (probing/branching): 64/99511
+    > Hypothesis (probing/branching) on 13/18866 lines
+    > Total number of alternatives being tested (probing/branching): 217/97827
     > Max number of alternatives by branching depth: 15 13 11 11 10 9 9 7 5 2
   Max number of alternatives on an empty line (initial grid pass): 91
   Max number of alternatives after a  linear line reduction (change/all): 78/91
-  Max number of alternatives after a    full line reduction (change/all): 10/91
-  Number of full grid pass: 200052
-  Number of single line  linear reduction (change/all): 603321/1896530
-  Number of single line    full reduction (change/all): 1803/349963
+  Max number of alternatives after a    full line reduction (change/all): 7/91
+  Number of full grid pass: 143736
+  Number of single line  linear reduction (change/all): 289836/963691
+  Number of single line    full reduction (change/all): 103/520734
 
 
 
@@ -201,17 +207,18 @@ GRID 7: 9-Dom
   ..#................
   ..#................
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 12
-    > Hypothesis (probing/branching) on 4/226194 lines
-    > Total number of alternatives being tested (probing/branching): 72/1142029
+    > Hypothesis (probing/branching) on 14/222905 lines
+    > Total number of alternatives being tested (probing/branching): 262/1125475
     > Max number of alternatives by branching depth: 17 15 13 13 12 11 11 10 9 8 4 2
   Max number of alternatives on an empty line (initial grid pass): 120
   Max number of alternatives after a  linear line reduction (change/all): 105/120
-  Max number of alternatives after a    full line reduction (change/all): 12/120
-  Number of full grid pass: 2364104
-  Number of single line  linear reduction (change/all): 7173214/23679138
-  Number of single line    full reduction (change/all): 26598/4415047
+  Max number of alternatives after a    full line reduction (change/all): 10/120
+  Number of full grid pass: 1706174
+  Number of single line  linear reduction (change/all): 3698073/12717224
+  Number of single line    full reduction (change/all): 1315/6420891
 
 
 

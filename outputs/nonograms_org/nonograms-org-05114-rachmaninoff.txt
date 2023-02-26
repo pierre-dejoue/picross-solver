@@ -112,13 +112,14 @@ GRID 1: Rachmaninoff
   #.#.##..............................................###..........#....
   .##..............................................................#....
 
+  Difficulty: LINE
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4294967295 (overflow!)
   Max number of alternatives after a  linear line reduction (change/all): 4294967295/4294967295
   Max number of alternatives after a    full line reduction (change/all): 4294967295/4294967295
-  Number of full grid pass: 134
-  Number of single line  linear reduction (change/all): 1977/5052
+  Number of full grid pass: 128
+  Number of single line  linear reduction (change/all): 1984/4882
   Number of single line    full reduction (change/all): 16/267
 
 

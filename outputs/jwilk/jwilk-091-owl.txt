@@ -27,17 +27,18 @@ GRID 1: Owl
   ###....................##
   ##.......................
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 1
     > Hypothesis (probing/branching) on 4/0 lines
     > Total number of alternatives being tested (probing/branching): 528/0
     > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4845
-  Max number of alternatives after a  linear line reduction (change/all): 4845/4845
+  Max number of alternatives after a  linear line reduction (change/all): 3060/4845
   Max number of alternatives after a    full line reduction (change/all): 385/4845
-  Number of full grid pass: 1562
-  Number of single line  linear reduction (change/all): 16043/38309
-  Number of single line    full reduction (change/all): 23/1429
+  Number of full grid pass: 1309
+  Number of single line  linear reduction (change/all): 13005/25843
+  Number of single line    full reduction (change/all): 23/875
 
 
 

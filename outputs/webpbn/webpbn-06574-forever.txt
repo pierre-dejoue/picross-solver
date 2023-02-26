@@ -27,17 +27,18 @@ GRID 1: Forever
   #.#..##..##..##..##..##.#
   .#.##..##..##..##..##..#.
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 1
     > Hypothesis (probing/branching) on 5/0 lines
     > Total number of alternatives being tested (probing/branching): 5325/0
     > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 3432
-  Max number of alternatives after a  linear line reduction (change/all): 3432/3432
+  Max number of alternatives after a  linear line reduction (change/all): 2002/3432
   Max number of alternatives after a    full line reduction (change/all): 33/3432
-  Number of full grid pass: 5623
-  Number of single line  linear reduction (change/all): 55568/108850
-  Number of single line    full reduction (change/all): 4/590
+  Number of full grid pass: 5446
+  Number of single line  linear reduction (change/all): 7872/29445
+  Number of single line    full reduction (change/all): 4/678
 
 
 

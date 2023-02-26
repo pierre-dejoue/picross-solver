@@ -25,17 +25,18 @@ GRID 1: Bucks
   #...#........#...#..##...##
   #####........#####....###..
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 1
     > Hypothesis (probing/branching) on 2/0 lines
     > Total number of alternatives being tested (probing/branching): 4/0
     > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 125970
-  Max number of alternatives after a  linear line reduction (change/all): 116280/125970
+  Max number of alternatives after a  linear line reduction (change/all): 8008/8008
   Max number of alternatives after a    full line reduction (change/all): 0/40
-  Number of full grid pass: 22
-  Number of single line  linear reduction (change/all): 125/238
-  Number of single line    full reduction (change/all): 0/42
+  Number of full grid pass: 21
+  Number of single line  linear reduction (change/all): 118/221
+  Number of single line    full reduction (change/all): 0/58
 
 
 

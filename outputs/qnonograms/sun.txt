@@ -62,12 +62,13 @@ GRID 1: Sun
   .###.....#.###...#.#...#.#........##.##......###..
   .##......#.##....##.....#..........#.##...........
 
+  Difficulty: LINE
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 1121099408
   Max number of alternatives after a  linear line reduction (change/all): 600805296/1121099408
-  Number of full grid pass: 30
-  Number of single line  linear reduction (change/all): 821/1551
+  Number of full grid pass: 29
+  Number of single line  linear reduction (change/all): 819/1517
 
 
 

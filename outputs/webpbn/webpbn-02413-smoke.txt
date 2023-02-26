@@ -22,6 +22,7 @@ GRID 1: Smoke
   .###...####.###..##.
   ...........####.##..
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 1
     > Hypothesis (probing/branching) on 2/0 lines
@@ -30,9 +31,9 @@ GRID 1: Smoke
   Max number of alternatives on an empty line (initial grid pass): 3003
   Max number of alternatives after a  linear line reduction (change/all): 1716/3003
   Max number of alternatives after a    full line reduction (change/all): 46/897
-  Number of full grid pass: 70
-  Number of single line  linear reduction (change/all): 337/659
-  Number of single line    full reduction (change/all): 2/84
+  Number of full grid pass: 49
+  Number of single line  linear reduction (change/all): 210/457
+  Number of single line    full reduction (change/all): 2/109
 
 
 

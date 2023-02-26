@@ -62,13 +62,14 @@ GRID 1: Barque
   .##.###......################...####..#.###....###
   #..##...###...############....##....####....####..
 
+  Difficulty: LINE
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 1852482996
   Max number of alternatives after a  linear line reduction (change/all): 1852482996/1852482996
   Max number of alternatives after a    full line reduction (change/all): 19964/54264
-  Number of full grid pass: 54
-  Number of single line  linear reduction (change/all): 800/1635
+  Number of full grid pass: 46
+  Number of single line  linear reduction (change/all): 799/1593
   Number of single line    full reduction (change/all): 3/51
 
 

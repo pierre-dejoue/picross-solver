@@ -42,12 +42,13 @@ GRID 1: Jellyfish
   .....#.....######################
   ......#...#######################
 
+  Difficulty: LINE
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 293930
   Max number of alternatives after a  linear line reduction (change/all): 293930/293930
-  Number of full grid pass: 18
-  Number of single line  linear reduction (change/all): 382/715
+  Number of full grid pass: 19
+  Number of single line  linear reduction (change/all): 379/714
 
 
 

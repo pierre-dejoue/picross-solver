@@ -17,13 +17,14 @@ GRID 1: Elephant Seals
   ##...##...#.....##.#
   .......###.......##.
 
+  Difficulty: LINE
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 1365
   Max number of alternatives after a  linear line reduction (change/all): 1287/1365
   Max number of alternatives after a    full line reduction (change/all): 61/92
-  Number of full grid pass: 27
-  Number of single line  linear reduction (change/all): 123/297
+  Number of full grid pass: 26
+  Number of single line  linear reduction (change/all): 126/299
   Number of single line    full reduction (change/all): 4/47
 
 

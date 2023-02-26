@@ -6,26 +6,27 @@ invalid_input.txt,Ill-formed,3x3,ERR,NOT_APPLICABLE,,"Height = 3 of the grid is 
 invalid_input.txt,Wrong constraint,2x2,ERR,NOT_APPLICABLE,,"Width = 2 of the grid is too small for constraint: Constraint on a ROW: [ 1 1 ]; min_line_size = 3"
 invalid_input.txt,Impossible,3x3,ZERO,NOT_APPLICABLE,,"Contradictory grid",0,0,0,0,0
 invalid_input.txt,Zero,3x3,ZERO,NOT_APPLICABLE,,"Contradictory grid",0,0,0,0,0
-example_input.txt,Fish,22x20,OK,LINE,,,465,0,0,0,0
-example_input.txt,Two Notes,10x10,MULT,MULT,,,1165,38,1,1,32
-test_pattern_01.txt,Note,6x6,OK,LINE,,,33,0,0,0,0
+example_input.txt,Fish,22x20,OK,LINE,,,470,0,0,0,0
+example_input.txt,Two Notes,10x10,MULT,MULT,,,789,186,1,1,32
+test_pattern_01.txt,Note,6x6,OK,LINE,,,35,0,0,0,0
 test_pattern_02.txt,Asterisk,9x9,OK,LINE,,,4,0,0,0,0
-test_pattern_03.txt,Asterisk,9x9,OK,LINE,,,46,0,0,0,0
-test_pattern_04.txt,Katakana,13x13,OK,LINE,,,8,0,0,0,0
-test_pattern_05.txt,Katakana,13x13,MULT,MULT,,,1544,559,7,7,73
-test_pattern_06.txt,Two Notes,10x10,MULT,MULT,,,1165,38,1,1,32
-test_pattern_07.txt,Two Cakes,20x20,MULT,MULT,,,3415,72,1,1,51
-test_pattern_08.txt,Dots,5x5,MULT,MULT,,,1115,417,4,4,72
-test_pattern_09.txt,Smile,4x2,OK,BRANCH,,,31,6,1,1,2
-test_pattern_10.txt,Snake,20x2,OK,BRANCH,,,152,22,1,1,2
-test_pattern_11.txt,Centerpiece edge,8x8,MULT,MULT,,,542,8,1,1,27
-test_pattern_12.txt,Centerpiece corner,13x13,MULT,MULT,,,1699,277,4,4,59
-test_pattern_13.txt,Flip,6x4,MULT,MULT,,,69,4,1,1,10
-cauldron.non,Cauldron,512x512,OK,LINE,,,9882,0,0,0,0
-domino_logic.txt,3-Dom,7x7,OK,BRANCH,,,143,14,1,1,5
-domino_logic.txt,4-Dom,9x9,OK,BRANCH,,,1241,175,1,1,34
-domino_logic.txt,5-Dom,11x11,OK,BRANCH,,,6071,2543,3,5,243
-domino_logic.txt,6-Dom,13x13,OK,BRANCH,,,23725,5837,4,6,914
-domino_logic.txt,7-Dom,15x15,OK,BRANCH,,,219500,35115,5,9,9367
-domino_logic.txt,8-Dom,17x17,OK,BRANCH,,,2504854,355747,6,10,99728
-domino_logic.txt,9-Dom,19x19,OK,BRANCH,,,30858330,4447113,7,12,1142291
+test_pattern_03.txt,Asterisk,9x9,OK,LINE,,,44,0,0,0,0
+test_pattern_04.txt,Katakana,13x13,OK,LINE,,,11,0,0,0,0
+test_pattern_05.txt,Katakana,13x13,MULT,MULT,,,1084,564,7,7,75
+test_pattern_06.txt,Two Notes,10x10,MULT,MULT,,,789,186,1,1,32
+test_pattern_07.txt,Two Cakes,20x20,MULT,MULT,,,2609,308,1,1,51
+test_pattern_08.txt,Dots,5x5,MULT,MULT,,,544,320,4,4,72
+test_pattern_09.txt,Smile,4x2,OK,BRANCH,,,21,10,1,1,2
+test_pattern_10.txt,Snake,20x2,OK,BRANCH,,,145,26,1,1,2
+test_pattern_11.txt,Centerpiece edge,8x8,MULT,MULT,,,310,80,1,1,27
+test_pattern_12.txt,Centerpiece corner,13x13,MULT,MULT,,,1129,361,4,4,58
+test_pattern_13.txt,Flip,6x4,MULT,MULT,,,32,24,1,1,10
+test_pattern_14.txt,Switch,2x2,MULT,MULT,,,14,24,1,1,10
+test_pattern_15.txt,Cross,4x4,MULT,MULT,,,291,80,1,1,27
+domino_logic.txt,3-Dom,7x7,OK,BRANCH,,,72,28,1,1,5
+domino_logic.txt,4-Dom,9x9,OK,BRANCH,,,949,216,1,1,34
+domino_logic.txt,5-Dom,11x11,OK,BRANCH,,,2802,1905,3,5,243
+domino_logic.txt,6-Dom,13x13,OK,BRANCH,,,12560,5970,4,6,928
+domino_logic.txt,7-Dom,15x15,OK,BRANCH,,,113715,49571,5,9,9320
+domino_logic.txt,8-Dom,17x17,OK,BRANCH,,,1253527,520837,6,10,98044
+domino_logic.txt,9-Dom,19x19,OK,BRANCH,,,16415297,6422206,7,12,1125737

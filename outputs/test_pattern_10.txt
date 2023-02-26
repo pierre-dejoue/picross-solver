@@ -4,17 +4,18 @@ GRID 1: Snake
   ##..####...###.....#
   ..##....###...#####.
 
+  Difficulty: BRANCH
   Number of solutions found: 1
   Max branching depth: 1
     > Hypothesis (probing/branching) on 1/0 lines
     > Total number of alternatives being tested (probing/branching): 2/0
     > Max number of alternatives by branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 330
-  Max number of alternatives after a  linear line reduction (change/all): 330/330
+  Max number of alternatives after a  linear line reduction (change/all): 126/330
   Max number of alternatives after a    full line reduction (change/all): 0/330
-  Number of full grid pass: 18
-  Number of single line  linear reduction (change/all): 49/103
-  Number of single line    full reduction (change/all): 0/22
+  Number of full grid pass: 16
+  Number of single line  linear reduction (change/all): 47/98
+  Number of single line    full reduction (change/all): 0/26
 
 
 

@@ -202,12 +202,13 @@ GRID 1: Gargantua
   ########################################################################################################################################################################################################
   ########################################################################################################################################################################################################
 
+  Difficulty: LINE
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4294967295 (overflow!)
   Max number of alternatives after a  linear line reduction (change/all): 4294967295/4294967295
-  Number of full grid pass: 43
-  Number of single line  linear reduction (change/all): 5300/8765
+  Number of full grid pass: 40
+  Number of single line  linear reduction (change/all): 5120/8543
 
 
 

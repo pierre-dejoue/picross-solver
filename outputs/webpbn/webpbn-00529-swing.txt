@@ -47,12 +47,13 @@ GRID 1: Swing
   .##.#.#####.....####.####.#.#####.#.###.#.##.
   ....#.....##########......#.......#.....#....
 
+  Difficulty: LINE
   Number of solutions found: 1
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 38567100
-  Max number of alternatives after a  linear line reduction (change/all): 38567100/38567100
-  Number of full grid pass: 17
-  Number of single line  linear reduction (change/all): 434/621
+  Max number of alternatives after a  linear line reduction (change/all): 20160075/38567100
+  Number of full grid pass: 15
+  Number of single line  linear reduction (change/all): 424/626
 
 
 
