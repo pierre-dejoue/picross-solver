@@ -75,6 +75,17 @@ LineCache::LineCache(std::size_t width, std::size_t height)
     : p_impl(std::make_unique<Impl>(width, height))
 {}
 
+LineCache::LineCache(LineCache&& other) noexcept
+    : p_impl(std::move(other.p_impl))
+{
+}
+
+LineCache& LineCache::operator=(LineCache&& other) noexcept
+{
+    p_impl = std::move(other.p_impl);
+    return *this;
+}
+
 LineCache::~LineCache() = default;
 
 bool LineCache::is_valid(const Entry& entry)

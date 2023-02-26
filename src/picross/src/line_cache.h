@@ -22,7 +22,11 @@ namespace picross
 class LineCache
 {
 public:
-    LineCache(std::size_t width, std::size_t height);
+    LineCache(std::size_t width = 0u, std::size_t height = 0u);
+    LineCache(const LineCache&) = delete;
+    LineCache(LineCache&&) noexcept;
+    LineCache& operator=(const LineCache&) = delete;
+    LineCache& operator=(LineCache&&) noexcept;
     ~LineCache();
 
     struct Entry

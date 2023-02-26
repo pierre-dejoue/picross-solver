@@ -151,10 +151,15 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
     , m_probing_depth_incr(0u)
     , m_progress_bar(min_progress, max_progress)
     , m_nested_work_grid()
-    , m_branch_line_cache(grid.width(), grid.height())
+    , m_branch_line_cache()
     , m_binomial(std::make_shared<BinomialCoefficients::Cache>())
 {
     assert(m_binomial);
+
+    if constexpr (SolverPolicy::LINE_CACHE_ENABLED)
+    {
+        m_branch_line_cache = LineCache(grid.width(), grid.height());
+    }
 
     m_all_lines.reserve(width() + height());
     for (Line::Index row_idx = 0; row_idx < height(); row_idx++)
@@ -212,10 +217,16 @@ WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent)
     , m_probing_depth_incr(0u)
     , m_progress_bar(parent.m_progress_bar)
     , m_nested_work_grid()
-    , m_branch_line_cache(parent.width(), parent.height())
+    , m_branch_line_cache()
     , m_binomial(parent.m_binomial)
 {
     assert(m_binomial);
+
+    if constexpr (SolverPolicy::LINE_CACHE_ENABLED)
+    {
+        m_branch_line_cache = LineCache(parent.width(), parent.height());
+    }
+
     m_constraints[Line::ROW] = parent.m_constraints[Line::ROW];
     m_constraints[Line::COL] = parent.m_constraints[Line::COL];
     m_alternatives[Line::ROW] = build_line_alternatives_from(Line::ROW, m_constraints[Line::ROW], static_cast<const Grid&>(*this), *m_binomial);
@@ -845,7 +856,10 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
     m_line_probed[line_id.m_type][line_id.m_index] = true;
 
     // Cache the full reduction of all the possible orthogonal lines
-    fill_cache_with_orthogonal_lines(line_id);
+    if constexpr (SolverPolicy::LINE_CACHE_ENABLED)
+    {
+        fill_cache_with_orthogonal_lines(line_id);
+    }
 
     // Build all alternatives for that row or column
     const auto list_of_all_alternatives = line_constraint.build_all_possible_lines(known_tiles);
@@ -889,7 +903,11 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
         assert(probing_work_grid.m_line_completed[guess_line.type()][guess_line.index()]);
 
         // Set orthogonal lines retrived from cache
-        set_orthogonal_lines_from_cache(probing_work_grid, guess_line);
+        if constexpr (SolverPolicy::LINE_CACHE_ENABLED)
+        {
+            set_orthogonal_lines_from_cache(probing_work_grid, guess_line);
+        }
+
         probing_work_grid.partition_completed_lines();
 
         // Solve the new grid!
@@ -965,7 +983,10 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
     assert(nb_alt >= 2);
 
     // Cache the full reduction of all the possible orthogonal lines
-    fill_cache_with_orthogonal_lines(found_line);
+    if constexpr (SolverPolicy::LINE_CACHE_ENABLED)
+    {
+        fill_cache_with_orthogonal_lines(found_line);
+    }
 
     // Build all alternatives for that row or column
     const auto list_of_all_alternatives = line_constraint.build_all_possible_lines(known_tiles);
@@ -1012,7 +1033,11 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
         assert(branching_work_grid.m_line_completed[guess_line.type()][guess_line.index()]);
 
         // Set orthogonal lines retrived from cache
-        set_orthogonal_lines_from_cache(branching_work_grid, guess_line);
+        if constexpr (SolverPolicy::LINE_CACHE_ENABLED)
+        {
+            set_orthogonal_lines_from_cache(branching_work_grid, guess_line);
+        }
+
         branching_work_grid.partition_completed_lines();
 
         // Solve the new grid!
@@ -1077,6 +1102,7 @@ bool WorkGrid<SolverPolicy>::found_solution(const Solver::SolutionFound& solutio
 template <typename SolverPolicy>
 void WorkGrid<SolverPolicy>::fill_cache_with_orthogonal_lines(LineId line_id)
 {
+    assert(SolverPolicy::LINE_CACHE_ENABLED);
     const LineSpan known_tiles = get_line(line_id);
     const Line::Type orth_type = line_id.m_type == Line::ROW ? Line::COL : Line::ROW;
     std::size_t orth_idx = 0u;
@@ -1107,6 +1133,7 @@ void WorkGrid<SolverPolicy>::fill_cache_with_orthogonal_lines(LineId line_id)
 template <typename SolverPolicy>
 void WorkGrid<SolverPolicy>::set_orthogonal_lines_from_cache(WorkGrid& target_grid, const LineSpan& alternative) const
 {
+    assert(SolverPolicy::LINE_CACHE_ENABLED);
     const LineId line_id(alternative.type(), alternative.index());
     const LineSpan known_tiles = get_line(line_id);
     const Line::Type orth_type = line_id.m_type == Line::ROW ? Line::COL : Line::ROW;

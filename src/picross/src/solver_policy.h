@@ -5,6 +5,7 @@ namespace picross
 
 struct SolverPolicyBase
 {
+    static constexpr bool LINE_CACHE_ENABLED = true;
     static constexpr unsigned int MIN_NB_ALTERNATIVES = 1 << 10;
     static constexpr unsigned int PARTIAL_REDUCE_NB_CONSTRAINTS = 1;
 
