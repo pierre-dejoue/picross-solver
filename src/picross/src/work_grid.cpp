@@ -736,7 +736,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::full_grid_pa
     PassStatus status;
     if (m_grid_stats != nullptr) { m_grid_stats->nb_full_grid_pass++; }
 
-    for(auto it = m_all_lines.begin(); it != m_uncompleted_lines_end; ++it)
+    for (auto it = m_all_lines.begin(); it != m_uncompleted_lines_end; ++it)
     {
         if (m_line_completed[it->m_type][it->m_index])
             continue;
@@ -767,7 +767,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::full_grid_pa
     }
     if constexpr (S == WorkGridState::INITIAL_PASS)
     {
-        for(auto it = m_all_lines.begin(); it != m_uncompleted_lines_end; ++it)
+        for (auto it = m_all_lines.begin(); it != m_uncompleted_lines_end; ++it)
             m_line_has_updates[it->m_type][it->m_index] = true;
     }
     partition_completed_lines();
@@ -917,6 +917,9 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
 
         progress++;
     }
+#ifndef NDEBUG
+    m_branch_line_cache.clear();
+#endif
 
     // Repeat start branching message
     if (m_observer)
@@ -1033,6 +1036,9 @@ Solver::Status WorkGrid<SolverPolicy>::branch(const Solver::SolutionFound& solut
         if (status == Solver::Status::ABORTED)
             return status;
     }
+#ifndef NDEBUG
+    m_branch_line_cache.clear();
+#endif
 
     // Repeat start branching message
     if (m_observer)
@@ -1071,20 +1077,22 @@ bool WorkGrid<SolverPolicy>::found_solution(const Solver::SolutionFound& solutio
 template <typename SolverPolicy>
 void WorkGrid<SolverPolicy>::fill_cache_with_orthogonal_lines(LineId line_id)
 {
-    const LineSpan known_tiles = get_line(line_id.m_type, line_id.m_index);
+    const LineSpan known_tiles = get_line(line_id);
     const Line::Type orth_type = line_id.m_type == Line::ROW ? Line::COL : Line::ROW;
     std::size_t orth_idx = 0u;
     for (Tile tile : known_tiles)
     {
         if (tile == Tile::UNKNOWN)
         {
+            const LineId orth_line_id(orth_type, orth_idx);
             const LineConstraint& constraint = m_constraints[orth_type][orth_idx];
-            Line orth_line = line_from_line_span(get_line(orth_type, static_cast<unsigned int>(orth_idx)));
+            Line orth_line = line_from_line_span(get_line(orth_line_id));
+            assert(orth_line[line_id.m_index] == Tile::UNKNOWN);
             for (Tile key : { Tile::EMPTY, Tile::FILLED })
             {
                 orth_line[line_id.m_index] = key;
                 const auto reduction = LineAlternatives(constraint, orth_line, *m_binomial).linear_reduction();
-                m_branch_line_cache.store_line(LineId(orth_type, static_cast<unsigned int>(orth_idx)), key, reduction.reduced_line, reduction.nb_alternatives);
+                m_branch_line_cache.store_line(orth_line_id, key, reduction.reduced_line, reduction.nb_alternatives);
                 if (m_grid_stats != nullptr)
                 {
                     m_grid_stats->nb_single_line_linear_reduction++;
@@ -1100,21 +1108,23 @@ template <typename SolverPolicy>
 void WorkGrid<SolverPolicy>::set_orthogonal_lines_from_cache(WorkGrid& target_grid, const LineSpan& alternative) const
 {
     const LineId line_id(alternative.type(), alternative.index());
-    const LineSpan known_tiles = get_line(line_id.m_type, line_id.m_index);
+    const LineSpan known_tiles = get_line(line_id);
     const Line::Type orth_type = line_id.m_type == Line::ROW ? Line::COL : Line::ROW;
     std::size_t orth_idx = 0u;
     for (Tile tile : known_tiles)
     {
         if (tile == Tile::UNKNOWN)
         {
+            const LineId orth_line_id(orth_type, orth_idx);
             const Tile key = alternative[static_cast<int>(orth_idx)];
             assert(key != Tile::UNKNOWN);
-            const auto orth_line_entry = m_branch_line_cache.read_line(LineId(orth_type, static_cast<unsigned int>(orth_idx)), key);
+            const auto orth_line_entry = m_branch_line_cache.read_line(orth_line_id, key);
             target_grid.update_line(orth_line_entry.m_line_span, orth_line_entry.m_nb_alt);
 
             // Since all lines of the grid are supposed to have been fully reduced before the solver will probe/branch, we are not supposed
             // to be in the situation where nb_alt = 0 (which would mean the tile on the orthogonal line could be found by a line solve).
             assert(orth_line_entry.m_nb_alt != 0);
+            assert(orth_line_entry.m_nb_alt != 1 || target_grid.m_line_completed[orth_type][orth_idx]);
             target_grid.m_line_is_fully_reduced[orth_type][orth_idx] = (orth_line_entry.m_nb_alt == 1);
         }
         orth_idx++;

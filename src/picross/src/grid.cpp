@@ -78,6 +78,11 @@ LineSpan Grid::get_line(Line::Type type, Line::Index index) const
     return const_cast<Grid&>(*this).get_line<LineSpan>(type, index);
 }
 
+LineSpan Grid::get_line(LineId line_id) const
+{
+    return const_cast<Grid&>(*this).get_line<LineSpan>(line_id.m_type, line_id.m_index);
+}
+
 template <typename LineSpanT>
 LineSpanT Grid::get_line(Line::Type type, Line::Index index)
 {

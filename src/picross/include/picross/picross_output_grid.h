@@ -15,14 +15,14 @@
 #include <string>
 #include <vector>
 
-
 namespace picross
 {
 
 /*
  * A tile is the base element to construct lines and grids: it can be empty or filled
  */
-enum class Tile : unsigned char
+using TileImpl = unsigned char;
+enum class Tile : TileImpl
 {
     UNKNOWN = 0,
     EMPTY = 1,
@@ -89,6 +89,10 @@ struct LineId
 {
     LineId(Line::Type type = Line::ROW, Line::Index index = 0u)
         : m_type(type), m_index(index)
+    {}
+
+    LineId(Line::Type type = Line::ROW, std::size_t index = 0u)
+        : m_type(type), m_index(static_cast<Line::Index>(index))
     {}
 
     LineId(const Line& line)

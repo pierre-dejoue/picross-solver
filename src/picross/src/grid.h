@@ -33,6 +33,7 @@ public:
     const Container& get_container(Line::Type type) const;
 
     LineSpan get_line(Line::Type type, Line::Index index) const;
+    LineSpan get_line(LineId line_id) const;
 
     Tile get(Line::Index x, Line::Index y) const;
 

@@ -531,14 +531,13 @@ void LineAlternatives::Impl::reset()
 template <bool Reversed>
 bool LineAlternatives::Impl::check_compatibility_bw(const LineSpanW& alternative, int start_idx, int end_idx) const
 {
-    using TileRaw = unsigned char;
-    static_assert(static_cast<TileRaw>(Tile::UNKNOWN) == 0);
-    static constexpr TileRaw INCOMPATIBLE_SUM = static_cast<TileRaw>(Tile::EMPTY) + static_cast<TileRaw>(Tile::FILLED);
+    static_assert(static_cast<TileImpl>(Tile::UNKNOWN) == 0);
+    static constexpr TileImpl INCOMPATIBLE_SUM = static_cast<TileImpl>(Tile::EMPTY) + static_cast<TileImpl>(Tile::FILLED);
     assert(start_idx <= end_idx);
     for (int idx = start_idx; idx < end_idx; ++idx)
     {
         const auto trans_idx = IndexTranslation<Reversed>()(m_line_length, idx);
-        if (static_cast<TileRaw>(m_known_tiles[trans_idx]) + static_cast<TileRaw>(alternative[trans_idx]) == INCOMPATIBLE_SUM)
+        if (static_cast<TileImpl>(m_known_tiles[trans_idx]) + static_cast<TileImpl>(alternative[trans_idx]) == INCOMPATIBLE_SUM)
             return false;
     }
     return true;

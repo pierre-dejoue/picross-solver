@@ -30,12 +30,12 @@ namespace picross
 
     void stream_input_grid_constraints(std::ostream& out, const InputGrid& input_grid)
     {
-        for (auto y = 0; y < input_grid.height(); y++)
+        for (auto y = 0u; y < input_grid.height(); y++)
         {
             out << "CONSTRAINT ";
             stream_input_grid_line_id_and_constraint(out, input_grid, LineId(Line::ROW, y));
         }
-        for (auto x = 0; x < input_grid.width(); x++)
+        for (auto x = 0u; x < input_grid.width(); x++)
         {
             out << "CONSTRAINT ";
             stream_input_grid_line_id_and_constraint(out, input_grid, LineId(Line::COL, x));

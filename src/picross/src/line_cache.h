@@ -30,8 +30,10 @@ public:
         LineSpan                m_line_span;
         LineAlternatives::NbAlt m_nb_alt;
     };
+    static bool is_valid(const Entry& entry);
     Entry read_line(LineId line_id, Tile key) const;
     void store_line(LineId line_id, Tile key, const LineSpan& line, LineAlternatives::NbAlt nb_alt);
+    void clear();
 
 private:
     struct Impl;
