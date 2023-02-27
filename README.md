@@ -178,21 +178,41 @@ cmake --build . --config Release
 
 ### Command Line Tool Usage
 
+#### Basic Usage
+
 Run the CLI on the example file:
 
 ```
 ./build/bin/Release/picross_solver_cli.exe inputs/example_input.txt
 ```
 
-Use the validation mode to test multiple files at once and check the uniqueness of the solution:
- - Output one line per puzzle
- - Status is `OK` if the puzzle is valid and has a unique solution
- - Difficulty hint: `LINE` for puzzles that are line solvable
+#### Validation Mode
+
+Use the validation mode to test multiple files at once and check the uniqueness of the solution.
+ - Output one line per puzzle, in a comma-separated format.
+ - Validation is `OK` if the puzzle is valid and has a unique solution
+ - Difficulty hint: `LINE` for puzzles that are line solvable, `BRANCH` for puzzles that have a unique solution but are not line solvable, and `MULT` for grids with multiple solutions. 
  - Performance timing
 
+For example:
 ```
-./build/bin/Release/picross_solver_cli.exe --validation inputs/PicrossDS/Normal/*
+./build/bin/Release/picross_solver_cli.exe --validation ./inputs/example_input.txt ./inputs/domino_logic.txt
 ```
+
+The output, in CSV format, will contain the following information:
+
+|File              |Grid   |Size  |Valid   |Difficulty|Solutions|Timing (ms)|
+|------------------|-------|-----|---------|----------|---------|-----------|
+|example_input.txt |Fish|22x20|OK|LINE|1|0.4495|
+|example_input.txt |Two Notes|10x10|MULT|MULT|2|0.668|
+|domino_logic.txt  |3-Dom|7x7|OK|BRANCH|1|0.0981|
+|domino_logic.txt  |4-Dom|9x9|OK|BRANCH|1|0.855|
+|domino_logic.txt  |5-Dom|11x11|OK|BRANCH|1|4.0144|
+|domino_logic.txt  |6-Dom|13x13|OK|BRANCH|1|15.402|
+|domino_logic.txt  |7-Dom|15x15|OK|BRANCH|1|159.027|
+|domino_logic.txt  |8-Dom|17x17|OK|BRANCH|1|1628|
+|domino_logic.txt  |9-Dom|19x19|OK|BRANCH|1|21867.5|
+
 ### Make your own Puzzles with the GUI
 
 See tutorial [here](doc/Create_a_Picross.md).
