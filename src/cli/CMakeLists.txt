@@ -30,3 +30,7 @@ install(TARGETS picross_solver_cli)
 add_custom_target(picross_cli_version
     $<TARGET_FILE:picross_solver_cli> --version
 )
+
+add_custom_target(picross_cli_generate_validation_csv
+    cd ${PROJECT_SOURCE_DIR} && sh ./scripts/validation.sh $<TARGET_FILE:picross_solver_cli> ./outputs/validation.csv
+)
