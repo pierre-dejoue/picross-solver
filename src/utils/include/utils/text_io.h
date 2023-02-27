@@ -12,8 +12,9 @@ namespace picross
 // Utility functions to build an OutputGrid from a vector of tiles, or a string, arranged in row-major order:
 
 // The input is a vector<int>:
+//  <0: the tile is unknown
 //   0: the tile is empty
-//   1: the tile is filled
+//  >0: the tile is filled
 OutputGrid build_output_grid_from(std::size_t width, std::size_t height, const std::vector<int>& tiles, std::string_view name = "Test");
 
 // The input is a string:

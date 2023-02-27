@@ -28,11 +28,11 @@ void PicrossFile::visit_windows(bool& can_be_erased, Settings& settings)
             this->get_err_window().print(msg);
         };
         std::optional<picross::OutputGrid> goal;
-        std::vector<picross::InputGrid> grids_to_solve = picross::io::parse_picross_file(file_path, file_format, goal, err_handler);
+        std::vector<picross::IOGrid> grids_to_solve = picross::io::parse_picross_file(file_path, file_format, err_handler);
         windows.reserve(grids_to_solve.size());
-        for (auto& grid : grids_to_solve)
+        for (auto& io_grid : grids_to_solve)
         {
-            windows.push_back(std::make_unique<GridWindow>(std::move(grid), stdutils::string::filename(file_path)));
+            windows.push_back(std::make_unique<GridWindow>(std::move(io_grid), stdutils::string::filename(file_path)));
         }
     }
     else

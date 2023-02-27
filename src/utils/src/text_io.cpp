@@ -15,7 +15,7 @@ namespace picross
 OutputGrid build_output_grid_from(std::size_t width, std::size_t height, const std::vector<int>& tiles, std::string_view name)
 {
     assert(tiles.size() == width * height);
-    OutputGrid result(width, height, std::string{name});
+    OutputGrid result(width, height, Tile::UNKNOWN, std::string{name});
 
     auto it = tiles.begin();
     for (std::size_t y = 0u; y < height; y++)
@@ -23,11 +23,11 @@ OutputGrid build_output_grid_from(std::size_t width, std::size_t height, const s
         for (std::size_t x = 0u; x < width; x++)
         {
             assert(it != tiles.end());
-            if (*it >= 0)
-                result.set_tile(x, y, *it ? Tile::FILLED : Tile::EMPTY);
-            ++it;
+            const auto t = *it++;
+            if (t >= 0) { result.set_tile(x, y, t == 0 ? Tile::EMPTY : Tile::FILLED); }
         }
     }
+    assert(it == tiles.end());
     return result;
 }
 
@@ -121,7 +121,7 @@ OutputGrid io::parse_output_grid_from_file(std::string_view filepath, const io::
         oss << "Unhandled exception during file parsing: " << e.what();
         error_handler(oss.str(), 3);
     }
-    return OutputGrid(0, 0, "Invalid");
+    return OutputGrid(0, 0, Tile::UNKNOWN, "Invalid");
 }
 
 

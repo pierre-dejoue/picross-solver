@@ -181,10 +181,11 @@ struct GridWindow::TextBufferImpl
     ImGuiTextBuffer buffer;
 };
 
-GridWindow::GridWindow(picross::InputGrid&& grid, std::string_view source, bool start_thread)
-    : GridObserver(grid)
-    , grid(std::move(grid))
+GridWindow::GridWindow(picross::IOGrid&& io_grid, std::string_view source, bool start_thread)
+    : GridObserver(io_grid.m_input_grid)
+    , grid(std::move(io_grid.m_input_grid))
     , title()
+    , goal(std::move(io_grid.m_goal))
     , info()
     , solver_thread()
     , solver_thread_start(start_thread)
@@ -580,7 +581,7 @@ void GridWindow::save_grid()
 
         const auto solution = (solutions.empty() || !solutions[0].is_completed()) ? std::nullopt : std::optional<picross::OutputGrid>(solutions[0]);
         const auto format = picross::io::picross_file_format_from_filepath(file_path);
-        picross::io::save_picross_file(file_path, format, grid, solution, err_handler);
+        picross::io::save_picross_file(file_path, format, picross::IOGrid(grid, solution), err_handler);
         std::cout << "User saved file " << file_path << " (format: " << format << ")" << std::endl;
     }
 }

@@ -38,16 +38,13 @@ namespace Tiles
 } // namespace
 
 
-Grid::Grid(std::size_t width, std::size_t height, std::string_view name)
+Grid::Grid(std::size_t width, std::size_t height, Tile init_tile, std::string_view name)
     : m_width(width)
     , m_height(height)
     , m_name(name)
-    , m_row_major()
-    , m_col_major()
-{
-    m_row_major.resize(width * height, Tile::UNKNOWN);
-    m_col_major.resize(width * height, Tile::UNKNOWN);
-}
+    , m_row_major(width * height, init_tile)
+    , m_col_major(width * height, init_tile)
+{}
 
 Grid& Grid::operator=(const Grid& other)
 {

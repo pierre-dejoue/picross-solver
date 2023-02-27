@@ -130,7 +130,7 @@ std::ostream& operator<<(std::ostream& out, WorkGridState state)
 
 template <typename SolverPolicy>
 WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Observer observer, Solver::Abort abort_function, float min_progress, float max_progress)
-    : Grid(grid.width(), grid.height(), grid.name())
+    : Grid(grid.width(), grid.height(), Tile::UNKNOWN, grid.name())
     , m_state(WorkGridState::INITIAL_PASS)
     , m_solver_policy(solver_policy)
     , m_constraints()
@@ -196,7 +196,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
 // Allocator for the nested work grid
 template <typename SolverPolicy>
 WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent)
-    : Grid(parent.width(), parent.height(), parent.name())
+    : Grid(parent.width(), parent.height(), Tile::UNKNOWN, parent.name())
     , m_state(WorkGridState::INITIAL_PASS)
     , m_solver_policy(parent.m_solver_policy)
     , m_constraints()

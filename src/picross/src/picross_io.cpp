@@ -20,8 +20,20 @@
 
 namespace picross
 {
+
+IOGrid::IOGrid(const InputGrid& input_grid, const std::optional<OutputGrid>& goal)
+    : m_input_grid(input_grid)
+    , m_goal(goal)
+{}
+
+IOGrid::IOGrid(InputGrid&& input_grid, std::optional<OutputGrid>&& goal) noexcept
+    : m_input_grid(std::move(input_grid))
+    , m_goal(std::move(goal))
+{}
+
 namespace io
 {
+
 namespace
 {
 
@@ -34,12 +46,13 @@ struct FileFormat
     struct Non {};
 };
 
-struct IOInputGrid
+struct GridComponents
 {
     InputGrid::Constraints      m_rows;
     InputGrid::Constraints      m_cols;
     std::string                 m_name;
     InputGrid::Metadata         m_metadata;
+    std::optional<OutputGrid>   m_goal;
 };
 
 template <typename F>
@@ -65,7 +78,7 @@ public:
     {
     }
 
-    void parse_line(const std::string& line_to_parse, std::vector<IOInputGrid>& grids, const ErrorHandler& error_handler)
+    void parse_line(const std::string& line_to_parse, std::vector<GridComponents>& grids, const ErrorHandler& error_handler)
     {
         std::istringstream iss(line_to_parse);
         std::string token;
@@ -196,7 +209,7 @@ public:
     {
     }
 
-    void parse_line(const std::string& line_to_parse, std::vector<IOInputGrid>& grids, const ErrorHandler& error_handler)
+    void parse_line(const std::string& line_to_parse, std::vector<GridComponents>& grids, const ErrorHandler& error_handler)
     {
         UNUSED(error_handler);
 
@@ -251,7 +264,7 @@ public:
     }
 
 private:
-    const char* parsing_state_str()
+    std::string_view parsing_state_str()
     {
         switch (parsing_state)
         {
@@ -309,7 +322,7 @@ public:
 
     }
 
-    void parse_line(const std::string& line_to_parse, std::vector<IOInputGrid>& grids, const ErrorHandler& error_handler)
+    void parse_line(const std::string& line_to_parse, std::vector<GridComponents>& grids, const ErrorHandler& error_handler)
     {
         std::istringstream iss(line_to_parse);
         std::string token;
@@ -329,8 +342,8 @@ public:
             }
             else
             {
-                grid.m_rows.emplace_back();
-                parse_constraint_line(iss, grid.m_rows.back());
+                const bool status = parse_constraint_line(iss, grid.m_rows.emplace_back());
+                if (!status) { error_decorator(error_handler, "Invalid constraint"); }
             }
 
         }
@@ -342,8 +355,8 @@ public:
             }
             else
             {
-                grid.m_cols.emplace_back();
-                parse_constraint_line(iss, grid.m_cols.back());
+                const bool status = parse_constraint_line(iss, grid.m_cols.emplace_back());
+                if (!status) { error_decorator(error_handler, "Invalid constraint"); }
             }
         }
         if (parsing_state == ParsingState::Default)
@@ -351,7 +364,11 @@ public:
             // Copy the first word in 'token'
             iss >> token;
 
-            if (token == "title")
+            if (token.empty())
+            {
+                // An empty line outside of the rows or columns sections can just be ignored
+            }
+            else if (token == "title")
             {
                 std::stringbuf remaining;
                 iss >> &remaining;
@@ -369,11 +386,11 @@ public:
             {
                 if (!grid.m_rows.empty())
                 {
-                    error_handler("rows are already defined", PARSER_ERROR);
+                    error_decorator(error_handler, "rows are already defined", token);
                 }
                 else if (height == 0)
                 {
-                    error_handler("height wasn't defined", PARSER_ERROR);
+                    error_decorator(error_handler, "height wasn't defined", token);
                 }
                 else
                 {
@@ -384,20 +401,37 @@ public:
             {
                 if (!grid.m_cols.empty())
                 {
-                    error_handler("columns are already defined", PARSER_ERROR);
+                    error_decorator(error_handler, "columns are already defined", token);
                 }
                 else if (width == 0)
                 {
-                    error_handler("width wasn't defined", PARSER_ERROR);
+                    error_decorator(error_handler, "width wasn't defined", token);
                 }
                 else
                 {
                     parsing_state = ParsingState::Columns;
                 }
             }
-            else if (token.empty())
+            else if (token == "goal")
             {
-                // An empty line outside of the rows or columns sections can just be ignored
+                if (width == 0 || height == 0)
+                {
+                    error_decorator(error_handler, "grid size wasn't defined", token);
+                }
+                else
+                {
+                    std::stringbuf remaining;
+                    iss >> &remaining;
+                    const std::string output_grid_str = extract_text_in_quotes_or_ltrim(remaining.str());
+                    if (output_grid_str.size() != width * height)
+                    {
+                        error_decorator(error_handler, "goal size does not match the grid size", token);
+                    }
+                    else
+                    {
+                        grid.m_goal = std::make_optional<OutputGrid>(build_output_grid(output_grid_str, grid.m_name));
+                    }
+                }
             }
             else if (is_metadata_token(token))
             {
@@ -411,19 +445,26 @@ public:
             }
             else
             {
-                error_handler("Invalid token " + token, PARSER_ERROR);
+                error_decorator(error_handler, "Invalid token", token);
             }
         }
     }
 
 private:
-    void parse_constraint_line(std::istringstream& iss, InputGrid::Constraint& constraint)
+    // A blank line is described by either an empty line or a line with only a zero
+    bool parse_constraint_line(std::istringstream& iss, InputGrid::Constraint& constraint)
     {
+        assert(constraint.empty());
         unsigned int n;
         unsigned char c;
         while (iss >> n)
         {
-            if (n != 0)
+            if (n == 0)
+            {
+                // blank line
+                return constraint.empty();
+            }
+            else
             {
                 constraint.push_back(n);
             }
@@ -433,19 +474,20 @@ private:
                     break;
             }
         }
+        return true;
     }
 
     static bool is_ignored_token(const std::string& token)
     {
         // Valid tokens for this file format, but ignored by the parser
-        static std::vector<std::string> ignored_tokens = { "color", "goal" };
+        static const std::vector<std::string> ignored_tokens = { "color" };
         return std::find(ignored_tokens.cbegin(), ignored_tokens.cend(), token) != ignored_tokens.cend();
     }
 
     static bool is_metadata_token(const std::string& token)
     {
         // Valid tokens for this file format, but ignored by the parser
-        static std::vector<std::string> metadata_tokens = { "catalogue", "by", "license", "copyright" };
+        static const std::vector<std::string> metadata_tokens = { "catalogue", "by", "license", "copyright" };
         return std::find(metadata_tokens.cbegin(), metadata_tokens.cend(), token) != metadata_tokens.cend();
     }
 
@@ -465,6 +507,51 @@ private:
             return std::string(std::find_if(str.cbegin(), str.cend(), [](unsigned char c) { return !std::isspace(c); }), str.cend());
         }
     }
+
+    OutputGrid build_output_grid(std::string_view tiles, std::string_view name)
+    {
+        assert(tiles.size() == width * height);
+        OutputGrid result(width, height, Tile::UNKNOWN, std::string{name});
+        auto it = tiles.begin();
+        // Row-major
+        for (Line::Index y = 0; y < static_cast<Line::Index>(height); y++)
+            for (Line::Index x = 0; x < static_cast<Line::Index>(width); x++)
+            {
+                assert(it != tiles.end());
+                result.set_tile(x, y, *it++ == '0' ? Tile::EMPTY : Tile::FILLED);
+            }
+        assert(it == tiles.end());
+        return result;
+    }
+
+    std::string_view parsing_state_str()
+    {
+        switch (parsing_state)
+        {
+        case ParsingState::Default:
+            return "Default";
+            break;
+        case ParsingState::Rows:
+            return "Rows";
+            break;
+        case ParsingState::Columns:
+            return "Columns";
+            break;
+        default:
+            assert(0);
+        }
+        return "UNKNOWN";
+    }
+
+    void error_decorator(const ErrorHandler& error_handler, std::string_view msg, std::string_view token = "")
+    {
+        std::ostringstream oss;
+        oss << msg << " (parsing_state = " << parsing_state_str();
+        if (!token.empty())
+            oss << "; token = " << token;
+        oss << ")";
+        error_handler(oss.str(), PARSER_ERROR);
+    }
 private:
     ParsingState parsing_state;
     std::size_t width;
@@ -472,14 +559,17 @@ private:
 };
 
 
+/******************************************************************************
+ * Generic file parser
+ ******************************************************************************/
 template <typename F>
-std::vector<InputGrid> parse_input_file_generic(std::string_view filepath, const ErrorHandler& error_handler) noexcept
+std::vector<IOGrid> parse_input_file_generic(std::string_view filepath, const ErrorHandler& error_handler) noexcept
 {
-    std::vector<InputGrid> result;
+    std::vector<IOGrid> result;
 
     try
     {
-        std::vector<IOInputGrid> grids;
+        std::vector<GridComponents> grids;
         std::ifstream inputstream(filepath.data());
         if (inputstream.is_open())
         {
@@ -499,11 +589,13 @@ std::vector<InputGrid> parse_input_file_generic(std::string_view filepath, const
                         error_handler(oss.str(), code);
                     });
             }
-            std::for_each(grids.begin(), grids.end(), [&result](IOInputGrid& io_grid) {
-                result.emplace_back(std::move(io_grid.m_rows), std::move(io_grid.m_cols), io_grid.m_name);
-                for (const auto& [key, data] : io_grid.m_metadata)
+            std::for_each(grids.begin(), grids.end(), [&result](GridComponents& grid_comps) {
+                auto& new_grid = result.emplace_back(
+                    InputGrid(std::move(grid_comps.m_rows), std::move(grid_comps.m_cols), grid_comps.m_name),
+                    std::move(grid_comps.m_goal));
+                for (const auto& [key, data] : grid_comps.m_metadata)
                 {
-                    result.back().set_metadata(key, data);
+                    new_grid.m_input_grid.set_metadata(key, data);
                 }
             });
         }
@@ -524,6 +616,9 @@ std::vector<InputGrid> parse_input_file_generic(std::string_view filepath, const
     return result;
 }
 
+/******************************************************************************
+ * Writers
+ ******************************************************************************/
 void write_constraints_native_format(std::ostream& out, const std::vector<InputGrid::Constraint>& constraints)
 {
     for (const auto& constraint: constraints)
@@ -602,65 +697,67 @@ void write_goal_non_format(std::ostream& out, const OutputGrid& goal)
 
 } // Anonymous namespace
 
-std::vector<InputGrid> parse_input_file_native(std::string_view filepath, const ErrorHandler& error_handler) noexcept
+
+std::vector<IOGrid> parse_input_file_native(std::string_view filepath, const ErrorHandler& error_handler) noexcept
 {
     return parse_input_file_generic<FileFormat::Native>(filepath, error_handler);
 }
 
-std::vector<InputGrid> parse_input_file_nin_format(std::string_view filepath, const ErrorHandler& error_handler) noexcept
+std::vector<IOGrid> parse_input_file_nin_format(std::string_view filepath, const ErrorHandler& error_handler) noexcept
 {
     return parse_input_file_generic<FileFormat::Nin>(filepath, error_handler);
 }
 
-std::vector<InputGrid> parse_input_file_non_format(std::string_view filepath, const ErrorHandler& error_handler) noexcept
+std::vector<IOGrid> parse_input_file_non_format(std::string_view filepath, const ErrorHandler& error_handler) noexcept
 {
     return parse_input_file_generic<FileFormat::Non>(filepath, error_handler);
 }
 
-void write_input_grid_native(std::ostream& out, const InputGrid& input_grid)
+
+void write_input_grid_native(std::ostream& out, const IOGrid& grid)
 {
-    for (const auto& [key, data] : input_grid.metadata())
+    for (const auto& [key, data] : grid.m_input_grid.metadata())
         if (!data.empty())
             out << "# " << stdutils::string::capitalize(key) << ": " << data << std::endl;
-    out << "# Size: " << str_input_grid_size(input_grid) << std::endl;
-    out << "GRID " << input_grid.name() << std::endl;
+    out << "# Size: " << str_input_grid_size(grid.m_input_grid) << std::endl;
+    out << "GRID " << grid.m_input_grid.name() << std::endl;
     out << "ROWS" << std::endl;
-    write_constraints_native_format(out, input_grid.rows());
+    write_constraints_native_format(out, grid.m_input_grid.rows());
     out << "COLUMNS" << std::endl;
-    write_constraints_native_format(out, input_grid.cols());
+    write_constraints_native_format(out, grid.m_input_grid.cols());
 }
 
-void write_input_grid_nin_format(std::ostream& out, const InputGrid& input_grid)
+void write_input_grid_nin_format(std::ostream& out, const IOGrid& grid)
 {
-    out << input_grid.width() << " " << input_grid.height() << std::endl;
-    write_constraints_nin_format(out, input_grid.rows());
-    write_constraints_nin_format(out, input_grid.cols());
+    out << grid.m_input_grid.width() << " " << grid.m_input_grid.height() << std::endl;
+    write_constraints_nin_format(out, grid.m_input_grid.rows());
+    write_constraints_nin_format(out, grid.m_input_grid.cols());
 }
 
-void write_input_grid_non_format(std::ostream& out, const InputGrid& input_grid, std::optional<OutputGrid> goal)
+void write_input_grid_non_format(std::ostream& out, const IOGrid& grid)
 {
     constexpr bool NON_QUOTED = false;
-    write_metadata_non_format(out, input_grid.metadata(), "catalogue");
-    out << "title \"" << input_grid.name() << '\"' << std::endl;
-    write_metadata_non_format(out, input_grid.metadata(), "by");
-    write_metadata_non_format(out, input_grid.metadata(), "copyright");
-    write_metadata_non_format(out, input_grid.metadata(), "license", NON_QUOTED);
+    write_metadata_non_format(out, grid.m_input_grid.metadata(), "catalogue");
+    out << "title \"" << grid.m_input_grid.name() << '\"' << std::endl;
+    write_metadata_non_format(out, grid.m_input_grid.metadata(), "by");
+    write_metadata_non_format(out, grid.m_input_grid.metadata(), "copyright");
+    write_metadata_non_format(out, grid.m_input_grid.metadata(), "license", NON_QUOTED);
 
-    out << "width " << input_grid.width() << std::endl;
-    out << "height " << input_grid.height() << std::endl;
+    out << "width " << grid.m_input_grid.width() << std::endl;
+    out << "height " << grid.m_input_grid.height() << std::endl;
 
     out << std::endl;
     out << "rows" << std::endl;
-    write_constraints_non_format(out, input_grid.rows());
+    write_constraints_non_format(out, grid.m_input_grid.rows());
 
     out << std::endl;
     out << "columns" << std::endl;
-    write_constraints_non_format(out, input_grid.cols());
+    write_constraints_non_format(out, grid.m_input_grid.cols());
 
-    if (goal.has_value())
+    if (grid.m_goal.has_value())
     {
         out << std::endl;
-        write_goal_non_format(out, goal.value());
+        write_goal_non_format(out, grid.m_goal.value());
     }
 }
 

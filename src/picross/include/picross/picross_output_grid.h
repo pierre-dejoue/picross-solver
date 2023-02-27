@@ -115,7 +115,7 @@ class Grid;         // Fwd declaration
 class OutputGrid
 {
 public:
-    OutputGrid(std::size_t width, std::size_t height, const std::string& name = std::string{});
+    OutputGrid(std::size_t width, std::size_t height, Tile init_tile = Tile::UNKNOWN, const std::string& name = std::string{});
     OutputGrid(const Grid&);
     OutputGrid(Grid&&);
     ~OutputGrid();

@@ -18,7 +18,7 @@ class Grid
 public:
     using Container = std::vector<Tile>;
 public:
-    Grid(std::size_t width, std::size_t height, std::string_view name = "");
+    Grid(std::size_t width, std::size_t height, Tile init_tile = Tile::UNKNOWN, std::string_view name = "");
 
     Grid(const Grid&) = default;
     Grid(Grid&&) noexcept = default;

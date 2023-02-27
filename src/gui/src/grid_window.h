@@ -30,7 +30,7 @@ public:
         ObserverGrid                    m_grid;
     };
 public:
-    GridWindow(picross::InputGrid&& grid, std::string_view source, bool start_thread = true);
+    GridWindow(picross::IOGrid&& io_grid, std::string_view source, bool start_thread = true);
     ~GridWindow();
     GridWindow(const GridWindow&) = delete;
     GridWindow& operator=(const GridWindow&) = delete;
@@ -49,6 +49,7 @@ private:
 private:
     picross::InputGrid grid;
     std::string title;
+    std::optional<picross::OutputGrid> goal;
     std::unique_ptr<GridInfo> info;
     std::thread solver_thread;
     bool solver_thread_start;

@@ -234,16 +234,17 @@ int main(int argc, char *argv[])
                 return picross::io::picross_file_format_from_filepath(filepath);
         }();
 
-        std::optional<picross::OutputGrid> goal;
-        const auto grids_to_solve = picross::io::parse_picross_file(filepath, format, goal, (validation_mode ? err_handler_validation : err_handler_classic));;
+        const auto grids_to_solve = picross::io::parse_picross_file(filepath, format, (validation_mode ? err_handler_validation : err_handler_classic));;
 
         if (validation_mode && !file_data.misc.empty()) { std::cout << file_data << std::endl; }
 
         /***************************************************************************
          * III - Solve Picross puzzles
          **************************************************************************/
-        for (const auto& input_grid : grids_to_solve)
+        for (const auto& io_grid : grids_to_solve)
         {
+            const picross::InputGrid& input_grid = io_grid.m_input_grid;
+            const auto& goal = io_grid.m_goal;
             ValidationModeData grid_data = file_data;
             grid_data.gridname = input_grid.name();
             grid_data.size = picross::str_input_grid_size(input_grid);

@@ -28,7 +28,7 @@ class CacheGrid final : public Grid
 {
 public:
     CacheGrid(std::size_t width, std::size_t height)
-        : Grid(width, height)
+        : Grid(width, height, Tile::UNKNOWN)
     {
         clear();
     }

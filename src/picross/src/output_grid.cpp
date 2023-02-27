@@ -14,8 +14,8 @@
 namespace picross
 {
 
-OutputGrid::OutputGrid(std::size_t width, std::size_t height, const std::string& name)
-    : p_grid(std::make_unique<Grid>(width, height, name))
+OutputGrid::OutputGrid(std::size_t width, std::size_t height, Tile init_tile, const std::string& name)
+    : p_grid(std::make_unique<Grid>(width, height, init_tile, name))
 {
     assert(p_grid);
 }

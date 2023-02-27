@@ -21,9 +21,29 @@
 
 namespace picross
 {
+
+/*
+ * IOGrid class
+ *
+ * A puzzle grid for IO purposes. It comprises of:
+ *  - An InputGrid: The definition of the puzzle
+ *  - An optional OutputGrid: The goal (solution) of the puzzle, it is known
+ */
+struct IOGrid
+{
+    IOGrid(const InputGrid& input_grid, const std::optional<OutputGrid>& goal = std::nullopt);
+    IOGrid(InputGrid&& input_grid, std::optional<OutputGrid>&& goal = std::nullopt) noexcept;
+
+    InputGrid                 m_input_grid;
+    std::optional<OutputGrid> m_goal;
+};
+
 namespace io
 {
 
+/*
+ * IO error handling
+ */
 using ExitCode = int;
 inline constexpr ExitCode PARSER_ERROR = 1;
 
@@ -47,7 +67,7 @@ using ErrorHandler = std::function<void(std::string_view, ExitCode)>;
  * - Empty lines are skipped
  *
  */
-std::vector<InputGrid> parse_input_file_native(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
+std::vector<IOGrid> parse_input_file_native(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
 
 /*
  * File parser, NIN file format used by Jakub Wilk's nonogram solver program
@@ -58,7 +78,7 @@ std::vector<InputGrid> parse_input_file_native(std::string_view filepath, const 
  *
  * Example of puzzles with this format: https://github.com/jwilk-archive/nonogram/tree/master/data
  */
-std::vector<InputGrid> parse_input_file_nin_format(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
+std::vector<IOGrid> parse_input_file_nin_format(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
 
 /*
  * File parser, NON file format (originally by Steve Simpson)
@@ -66,22 +86,22 @@ std::vector<InputGrid> parse_input_file_nin_format(std::string_view filepath, co
  *   https://github.com/mikix/nonogram-db/blob/master/FORMAT.md
  *
  */
-std::vector<InputGrid> parse_input_file_non_format(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
+std::vector<IOGrid> parse_input_file_non_format(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
 
 /*
  * Stream writer, native file format
  */
-void write_input_grid_native(std::ostream& out, const InputGrid& input_grid);
+void write_input_grid_native(std::ostream& out, const IOGrid& grid);
 
 /*
  * Stream writer, NIN file format
  */
-void write_input_grid_nin_format(std::ostream& out, const InputGrid& input_grid);
+void write_input_grid_nin_format(std::ostream& out, const IOGrid& grid);
 
 /*
  * Stream writer, NON file format
  */
-void write_input_grid_non_format(std::ostream& out, const InputGrid& input_grid, std::optional<OutputGrid> goal = std::nullopt);
+void write_input_grid_non_format(std::ostream& out, const IOGrid& grid);
 
 } // namespace io
 } // namespace picross
