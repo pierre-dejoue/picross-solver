@@ -9,7 +9,9 @@ add_subdirectory(imgui)
 include(pfd)
 
 set(GUI_SOURCES
+    src/draw_grid.cpp
     src/err_window.cpp
+    src/goal_window.cpp
     src/grid_info.cpp
     src/grid_window.cpp
     src/main.cpp

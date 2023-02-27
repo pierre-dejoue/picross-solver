@@ -1,5 +1,6 @@
 #pragma once
 
+#include "goal_window.h"
 #include "grid_info.h"
 
 #include <picross/picross.h>
@@ -50,6 +51,7 @@ private:
     picross::InputGrid grid;
     std::string title;
     std::optional<picross::OutputGrid> goal;
+    std::unique_ptr<GoalWindow> goal_win;
     std::unique_ptr<GridInfo> info;
     std::thread solver_thread;
     bool solver_thread_start;

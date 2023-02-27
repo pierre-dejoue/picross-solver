@@ -10,7 +10,8 @@ class ObserverGrid : public picross::OutputGrid
 {
     friend class GridObserver;
 public:
-    ObserverGrid(std::size_t width, std::size_t height, unsigned depth, const std::string& name = "");
+    ObserverGrid(std::size_t width, std::size_t height, unsigned int depth = 0u, const std::string& name = "");
+    ObserverGrid(const OutputGrid& output_grid, unsigned int depth = 0u);
     ObserverGrid(const ObserverGrid& other) = default;
     ObserverGrid(ObserverGrid&& other) noexcept = default;
     ObserverGrid& operator=(const ObserverGrid& other);

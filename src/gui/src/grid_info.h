@@ -39,7 +39,6 @@ private:
         //picross::Solver::Status m_status = picross::Solver::Status::OK;     // Irrelevant if m_ongoing == true
     };
 
-
 private:
     const picross::InputGrid& grid;
     std::string title;

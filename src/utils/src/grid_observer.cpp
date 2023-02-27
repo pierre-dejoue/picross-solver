@@ -11,6 +11,12 @@ ObserverGrid::ObserverGrid(size_t width, size_t height, unsigned int depth, cons
     , m_depth_grid(height * width, 0u)
 {}
 
+ObserverGrid::ObserverGrid(const OutputGrid& output_grid, unsigned int depth)
+    : OutputGrid(output_grid)
+    , m_depth(depth)
+    , m_depth_grid(height() * width(), 0u)
+{}
+
 ObserverGrid& ObserverGrid::operator=(const ObserverGrid& other)
 {
     assert(other.m_depth <= m_depth);
