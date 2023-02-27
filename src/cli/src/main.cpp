@@ -60,11 +60,11 @@ namespace
     void stream_out_validation_mode_header(std::ostream& out, bool verbose)
     {
         static const std::vector<std::string> fields =
-            { "File", "Grid", "Size", "Valid", "Difficulty", "Timing (ms)", "Misc",
+            { "File", "Grid", "Size", "Valid", "Difficulty", "Solutions", "Timing (ms)", "Misc",
               "Linear reductions", "Full reductions", "Min depth", "Max depth", "Searched line alternatives" };
 
         out << fields.at(0);
-        const std::size_t last_idx = verbose ? fields.size() : 7;
+        const std::size_t last_idx = verbose ? fields.size() : 8;
         for (std::size_t idx = 1; idx < last_idx; idx++)
             out << ',' << fields.at(idx);
         out << std::endl;
@@ -72,11 +72,14 @@ namespace
 
     std::ostream& operator<<(std::ostream& out, const ValidationModeData& data)
     {
+        const auto found_solutions = static_cast<unsigned int>(std::max(0, data.validation_result.validation_code));
+        assert(!data.grid_stats || data.grid_stats->nb_solutions == found_solutions);
         out << data.filename << ',';
         out << data.gridname << ',';
         out << data.size << ',';
         out << picross::str_validation_code(data.validation_result.validation_code) << ',';
         out << picross::str_difficulty_code(data.validation_result.difficulty_code) << ',';
+        out << found_solutions << ',';
         if (data.timing_ms >= 0.f)
             out << data.timing_ms;
         out << ',';
@@ -130,7 +133,7 @@ int main(int argc, char *argv[])
         "Print branching progress in percent", 0 },
       {
         "max-nb-solutions", { "--max-nb-solutions" },
-        "Limit the number of solutions returned per grid", 1 },
+        "Limit the number of solutions returned per grid. Zero means no limit.", 1 },
       {
         "validation-mode", { "--validation" },
         "Validation mode: Check for unique solution, output one line per grid", 0 },
@@ -180,10 +183,14 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    const auto max_nb_solutions = std::max(1u, args["max-nb-solutions"].as<unsigned int>(std::numeric_limits<unsigned int>::max()));
     const bool validation_mode = args["validation-mode"];
     const bool verbose_mode = args["verbose"];
     const std::chrono::seconds timeout_duration(args["timeout"].as<unsigned int>(0u));
+
+    // Depending on context, the default value for max_nb_solutions is different:
+    //  - In validation mode, the default is 2
+    //  - Otherwise is is zero, meaning no limit on the number of solutions.
+    const unsigned int max_nb_solutions = args["max-nb-solutions"].as<unsigned int>(validation_mode ? 2 : 0);
 
     // Positional arguments
     if (args.pos.empty())
@@ -300,7 +307,7 @@ int main(int argc, char *argv[])
                         /* Validate the grid */
                         {
                             stdutils::chrono::DurationMeas<float, std::milli> meas_ms(time_ms);
-                            grid_data.validation_result = picross::validate_input_grid(*solver, input_grid);
+                            grid_data.validation_result = picross::validate_input_grid(*solver, input_grid, max_nb_solutions);
                         }
                         if (!args["no-timing"])
                             grid_data.timing_ms = time_ms.count();
@@ -314,8 +321,8 @@ int main(int argc, char *argv[])
                         solver->set_stats(stats);
 
                         /* Solution display */
-                        unsigned int nb = 0;
-                        picross::Solver::SolutionFound solution_found = [&nb, max_nb_solutions](picross::Solver::Solution&& solution)
+                        unsigned int nb_solutions = 0;
+                        picross::Solver::SolutionFound solution_found = [&nb_solutions, max_nb_solutions](picross::Solver::Solution&& solution)
                         {
                             if (solution.partial)
                             {
@@ -325,11 +332,11 @@ int main(int argc, char *argv[])
                             else
                             {
                                 assert(solution.grid.is_completed());
-                                std::cout << "  Solution nb " << ++nb << ": (branching depth: " << solution.branching_depth << ")" << std::endl;
+                                std::cout << "  Solution nb " << ++nb_solutions << ": (branching depth: " << solution.branching_depth << ")" << std::endl;
                             }
                             output_solution_grid(std::cout, solution.grid, 2);
                             std::cout << std::endl;
-                            return nb < max_nb_solutions;
+                            return max_nb_solutions == 0 || nb_solutions < max_nb_solutions;
                         };
 
                         /* Solve the grid */
@@ -344,7 +351,7 @@ int main(int argc, char *argv[])
                         case picross::Solver::Status::OK:
                             break;
                         case picross::Solver::Status::ABORTED:
-                            if (nb == max_nb_solutions)
+                            if (max_nb_solutions != 0 && nb_solutions == max_nb_solutions)
                                 std::cout << "  Reached max number of solutions" << std::endl;
                             else
                                 std::cout << "  Solver aborted" << std::endl;

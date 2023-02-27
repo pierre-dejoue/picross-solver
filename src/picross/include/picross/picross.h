@@ -134,7 +134,10 @@ std::unique_ptr<Solver> get_line_solver();
 
 
 /*
- * Validation code:
+ * Validation code
+ *
+ * If greater or equal to zero, this is the number of solutions found.
+ * It can be interpreted as follows:
  *
  *  -1  ERR     The input grid is invalid
  *   0  ZERO    No solution found
@@ -146,7 +149,7 @@ std::string_view str_validation_code(ValidationCode code);
 
 
 /*
- * Difficulty code:
+ * Difficulty code
  *
  *   0  NOT_APPLICABLE   Either the grid is invalid, or the solver did not return a solution
  *   1  LINE             Unique solution, and the grid is line-solvable
@@ -158,7 +161,12 @@ std::string_view str_difficulty_code(ValidationCode code);
 
 
 /*
- * Validation method: check that the input grid is valid and has a unique solution.
+ * Validation method: Check that the input grid is valid and has a unique solution.
+ *
+ * By default the validation will look for at most 2 solutions: This is enough to test for uniqueness.
+ * The optional argument max_nb_solutions can be used to look for more (but not less) solutions.
+ * As with the solver, max_nb_solutions = 0 means no limit is placed on the number of solutions.
+ * max_nb_solutions = 1 shall not be used and will throw an exception.
  *
  * Returns: The validation code (ERR, ZERO, OK, MULT) ; the difficulty code (N/A, LINE, BRANCH, MULT) ;
  * the minmal branching depths of the found solutions ; and an optional message regarding the grid validation process.
@@ -174,7 +182,7 @@ struct ValidationResult
     unsigned int branching_depth   = 0;
     std::string msg{};
 };
-ValidationResult validate_input_grid(const Solver& solver, const InputGrid& input_grid);
+ValidationResult validate_input_grid(const Solver& solver, const InputGrid& input_grid, unsigned int max_nb_solutions = 2u);
 
 /*
  * Utility function to compute the difficulty code based on:

@@ -153,10 +153,17 @@ std::string str_solver_internal_state(unsigned int internal_state)
     return ss.str();
 }
 
-ValidationResult validate_input_grid(const Solver& solver, const InputGrid& input_grid)
+ValidationResult validate_input_grid(const Solver& solver, const InputGrid& input_grid, unsigned int max_nb_solutions)
 {
+    // If max_nb_solutions == 0: No limit is placed on the number of solutions
+    if (max_nb_solutions == 1)
+    {
+        throw std::invalid_argument("Invalid max_nb_solutions: Need to look for at least 2 solutions to test for uniqueness.");
+    }
+
     ValidationResult result;
-    result.difficulty_code = 0;
+    result.validation_code = -1;        // ERR
+    result.difficulty_code = 0;         // NOT_APPLICABLE
     result.branching_depth = 0u;
     result.msg = "";
 
@@ -170,8 +177,7 @@ ValidationResult validate_input_grid(const Solver& solver, const InputGrid& inpu
     }
 
     // Solve puzzle
-    constexpr unsigned int MAX_NB_SOLUTIONS = 2;
-    const auto solver_results = solver.solve(input_grid, MAX_NB_SOLUTIONS);
+    const auto solver_results = solver.solve(input_grid, max_nb_solutions);
 
     // Set the validation code
     switch (solver_results.status)
@@ -186,8 +192,7 @@ ValidationResult validate_input_grid(const Solver& solver, const InputGrid& inpu
         assert(solver_results.solutions[0].partial == true);
         assert(solver_results.solutions[0].grid.is_completed() == false);
         assert(solver_results.solutions[0].branching_depth == 0u);
-        result.validation_code = 0;
-        result.difficulty_code = 2;                 // The difficulty is at least 2 (BRANCH), assuming a solution exists
+        result.validation_code = 0;                 // No solution
         result.msg = "Not line solvable";
         return result;
 
