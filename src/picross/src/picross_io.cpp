@@ -37,7 +37,7 @@ namespace io
 namespace
 {
 
-constexpr unsigned int INPUT_BUFFER_SZ = 2048u;
+constexpr unsigned int BUF_SZ = 2048u;
 
 struct FileFormat
 {
@@ -574,20 +574,31 @@ std::vector<IOGrid> parse_input_file_generic(std::string_view filepath, const Er
         if (inputstream.is_open())
         {
             FileParser<F> parser;
-            // Line buffer
-            char line[INPUT_BUFFER_SZ];
+            // Line buffer and stream
+            char line_buf[BUF_SZ];
+            std::stringstream line_ss;
             unsigned int line_nb = 0;
             // Start parsing
             while (inputstream.good())
             {
-                line_nb++;
-                inputstream.getline(line, INPUT_BUFFER_SZ - 1);
-                parser.parse_line(std::string(line), grids, [line_nb, &line, &error_handler](std::string_view msg, ExitCode code)
-                    {
-                        std::ostringstream oss;
-                        oss << "Parsing error [" << msg << "] on line " << line_nb << ": " << line;
-                        error_handler(oss.str(), code);
-                    });
+                const bool fail = inputstream.getline(line_buf, BUF_SZ).fail();
+                line_ss << line_buf;
+                if (!fail)
+                {
+                    line_nb++;
+                    std::string line = line_ss.str();
+                    parser.parse_line(line, grids, [line_nb, &line, &error_handler](std::string_view msg, ExitCode code)
+                        {
+                            std::ostringstream oss;
+                            oss << "Parsing error [" << msg << "] on line " << line_nb << ": " << line;
+                            error_handler(oss.str(), code);
+                        });
+                    line_ss.str("");
+                }
+                else if (!inputstream.eof())
+                {
+                    inputstream.clear();        // Line is longer than BUF_SZ
+                }
             }
             std::for_each(grids.begin(), grids.end(), [&result](GridComponents& grid_comps) {
                 auto& new_grid = result.emplace_back(
