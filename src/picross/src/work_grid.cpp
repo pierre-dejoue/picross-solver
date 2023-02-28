@@ -89,6 +89,15 @@ std::pair<float, float> nested_progress_bar(const std::pair<float, float>& progr
     return std::make_pair(progress_bar.first + (progress_bar.second - progress_bar.first) * ratio_min_f, progress_bar.first + (progress_bar.second - progress_bar.first) * ratio_max_f);
 }
 
+unsigned int compute_max_nb_of_segments(const InputGrid& input_grid)
+{
+    const auto max_k = [](const InputGrid::Constraints& constraints) -> std::size_t {
+        return std::max_element(constraints.cbegin(), constraints.cend(), [](const InputGrid::Constraint& lhs, const InputGrid::Constraint& rhs) {
+            return lhs.size() < rhs.size(); })->size();
+        };
+    return static_cast<unsigned int>(std::max(max_k(input_grid.rows()), max_k(input_grid.cols())));
+}
+
 }  // namespace
 
 
@@ -133,6 +142,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
     : Grid(grid.width(), grid.height(), Tile::UNKNOWN, grid.name())
     , m_state(WorkGridState::INITIAL_PASS)
     , m_solver_policy(solver_policy)
+    , m_max_k(compute_max_nb_of_segments(grid))
     , m_constraints()
     , m_alternatives()
     , m_line_completed()
@@ -199,6 +209,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent)
     : Grid(parent.width(), parent.height(), Tile::UNKNOWN, parent.name())
     , m_state(WorkGridState::INITIAL_PASS)
     , m_solver_policy(parent.m_solver_policy)
+    , m_max_k(parent.m_max_k)
     , m_constraints()
     , m_alternatives()
     , m_line_completed()
@@ -281,7 +292,10 @@ void WorkGrid<SolverPolicy>::set_stats(GridStats* stats)
 {
     this->m_grid_stats = stats;
     if (stats)
+    {
+        stats->max_k = m_max_k;
         stats->max_branching_depth = m_branching_depth;
+    }
 }
 
 template <typename SolverPolicy>

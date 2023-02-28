@@ -111,6 +111,7 @@ private:
 private:
     WorkGridState                                   m_state;
     SolverPolicy                                    m_solver_policy;
+    unsigned int                                    m_max_k;             // Maximum nb of segments on a line constraint
     std::vector<LineConstraint>                     m_constraints[2];
     std::vector<LineAlternatives>                   m_alternatives[2];
     std::vector<bool>                               m_line_completed[2];

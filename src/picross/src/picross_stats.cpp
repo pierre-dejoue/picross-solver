@@ -55,6 +55,7 @@ std::ostream& operator<<(std::ostream& out, const GridStats& stats)
 {
     out << "  Difficulty: " << str_difficulty_code(difficulty_code(stats)) << std::endl;
     out << "  Number of solutions found: " << stats.nb_solutions << std::endl;
+    out << "  Max K: " << stats.max_k << std::endl;
     out << "  Max branching depth: " << stats.max_branching_depth << std::endl;
 
     if (stats.max_branching_depth > 0u)

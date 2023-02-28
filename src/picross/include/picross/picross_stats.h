@@ -24,6 +24,7 @@ namespace picross
 struct GridStats
 {
     unsigned int nb_solutions = 0u;
+    unsigned int max_k;                                                 // max nb of segments in a constraint (grid property)
     unsigned int max_branching_depth = 0u;                              // max branching depth of the solver (not of the solutions)
     unsigned int nb_branching_calls = 0u;
     unsigned int total_nb_branching_alternatives = 0u;
