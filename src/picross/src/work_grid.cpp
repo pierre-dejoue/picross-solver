@@ -162,6 +162,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
     , m_progress_bar(min_progress, max_progress)
     , m_nested_work_grid()
     , m_branch_line_cache()
+    , m_full_reduction_buffers()
     , m_binomial(std::make_shared<BinomialCoefficients::Cache>())
 {
     assert(m_binomial);
@@ -199,6 +200,9 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
     m_uncompleted_lines_range[Line::ROW] = { 0u, static_cast<Line::Index>(height()) };
     m_uncompleted_lines_range[Line::COL] = { 0u, static_cast<Line::Index>(width()) };
 
+    const auto max_line_length = static_cast<unsigned int>( std::max(width(), height()));
+    m_full_reduction_buffers = std::make_shared<FullReductionBuffers>(m_max_k, max_line_length);
+
     assert(m_constraints[Line::ROW].size() == height());
     assert(m_constraints[Line::COL].size() == width());
 }
@@ -229,6 +233,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent)
     , m_progress_bar(parent.m_progress_bar)
     , m_nested_work_grid()
     , m_branch_line_cache()
+    , m_full_reduction_buffers(parent.m_full_reduction_buffers)
     , m_binomial(parent.m_binomial)
 {
     assert(m_binomial);
@@ -741,7 +746,8 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_
 
     // Reduce all possible lines that match the data already present in the grid and the line constraint
     if (m_grid_stats != nullptr) { m_grid_stats->nb_single_line_full_reduction++; }
-    const auto full_reduction = m_alternatives[type][index].full_reduction();
+    assert(m_full_reduction_buffers);
+    const auto full_reduction = m_alternatives[type][index].full_reduction(m_full_reduction_buffers.get());
 
     // If the list of alternative lines is empty, it means the grid data is contradictory
     if (full_reduction.nb_alternatives == 0)
@@ -1145,7 +1151,8 @@ void WorkGrid<SolverPolicy>::fill_cache_with_orthogonal_lines(LineId line_id)
             for (Tile key : { Tile::EMPTY, Tile::FILLED })
             {
                 orth_line[line_id.m_index] = key;
-                const auto reduction = LineAlternatives(constraint, orth_line, *m_binomial).full_reduction();
+                assert(m_full_reduction_buffers);
+                const auto reduction = LineAlternatives(constraint, orth_line, *m_binomial).full_reduction(m_full_reduction_buffers.get());
                 m_branch_line_cache.store_line(orth_line_id, key, reduction.reduced_line, reduction.nb_alternatives);
                 if (m_grid_stats != nullptr)
                 {

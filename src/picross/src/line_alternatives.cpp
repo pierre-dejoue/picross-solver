@@ -5,6 +5,8 @@
 #include "line_constraint.h"
 #include "line_span.h"
 
+#include <stdutils/span.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -352,27 +354,37 @@ namespace
     class TailReduceArray
     {
     public:
-        TailReduceArray(Line::Type type, Line::Index index, unsigned int nb_constraints, unsigned int line_length)
-            : m_all_reduce_lines(type, index, nb_constraints * arithmetic_sum_up_to(line_length), Tile::EMPTY)
-            , m_nb_alternatives(nb_constraints * line_length, LineAlternatives::NbAlt{0})
-            , m_recorded(nb_constraints * line_length, 0)
-            , m_line_length(line_length)
-        {}
+        // Size required by the line buffer used for the full reduction (it is in O(k.n^2))
+        static std::size_t reduced_lines_buffer_size(unsigned int max_k, unsigned int max_line_length)
+        {
+            return max_k * arithmetic_sum_up_to(max_line_length);
+        }
+    public:
+        TailReduceArray(Line::Type type, Line::Index index, unsigned int max_k, unsigned int max_line_length, FullReductionBuffers& buffers)
+            : m_all_reduced_lines(type, index, reduced_lines_buffer_size(max_k, max_line_length), buffers.m_line_buffer.begin())
+            , m_nb_alternatives(buffers.m_alts_buffer.data(), max_k * max_line_length)
+            , m_recorded(buffers.m_bool_buffer.data(), max_k * max_line_length)
+            , m_max_line_length(max_line_length)
+        {
+            assert(buffers.m_line_buffer.size() >= reduced_lines_buffer_size(max_k, max_line_length));
+            for (auto& alt : m_nb_alternatives) { alt = LineAlternatives::NbAlt{0}; }
+            for (auto& r : m_recorded) { r = 0; }
+        }
 
         TailReduce tail_reduce(unsigned int k, int n)
         {
-            assert(0 <= n && n < static_cast<int>(m_line_length));
+            assert(0 <= n && n < static_cast<int>(m_max_line_length));
             const auto uns_n = static_cast<unsigned int>(n);
-            unsigned int offset = k * arithmetic_sum_up_to(m_line_length) + uns_n * m_line_length + uns_n - arithmetic_sum_up_to(uns_n);
-            assert(offset < m_all_reduce_lines.size());
+            unsigned int offset = k * arithmetic_sum_up_to(m_max_line_length) + uns_n * m_max_line_length + uns_n - arithmetic_sum_up_to(uns_n);
+            assert(offset < m_all_reduced_lines.size());
             return TailReduce(
-                        LineSpanW(m_all_reduce_lines.type(), m_all_reduce_lines.index(), m_line_length - uns_n, m_all_reduce_lines.begin() + offset),
+                        LineSpanW(m_all_reduced_lines.type(), m_all_reduced_lines.index(), m_max_line_length - uns_n, m_all_reduced_lines.begin() + offset),
                         nb_alternatives(k, uns_n));
         }
 
         void record_reduction(unsigned int k, int n, LineAlternatives::NbAlt nb_alt)
         {
-            assert(0 <= n && n < static_cast<int>(m_line_length));
+            assert(0 <= n && n < static_cast<int>(m_max_line_length));
             const auto uns_n = static_cast<unsigned int>(n);
             nb_alternatives(k, uns_n) = nb_alt;
             recorded(k, uns_n) = 1;
@@ -380,7 +392,7 @@ namespace
 
         bool is_recorded(unsigned int k, int n) const
         {
-            assert(0 <= n && n < static_cast<int>(m_line_length));
+            assert(0 <= n && n < static_cast<int>(m_max_line_length));
             const auto uns_n = static_cast<unsigned int>(n);
             return const_cast<TailReduceArray*>(this)->recorded(k, uns_n) != 0;
         }
@@ -388,23 +400,23 @@ namespace
     private:
         LineAlternatives::NbAlt& nb_alternatives(unsigned int k, unsigned int n)
         {
-            assert(n < m_line_length);
-            assert((k * m_line_length + n) < m_nb_alternatives.size());
-            return m_nb_alternatives[k * m_line_length + n];
+            assert(n < m_max_line_length);
+            assert((k * m_max_line_length + n) < m_nb_alternatives.size());
+            return m_nb_alternatives[k * m_max_line_length + n];
         }
 
         char& recorded(unsigned int k, unsigned int n)
         {
-            assert(n < m_line_length);
-            assert((k * m_line_length + n) < m_recorded.size());
-            return m_recorded[k * m_line_length + n];
+            assert(n < m_max_line_length);
+            assert((k * m_max_line_length + n) < m_recorded.size());
+            return m_recorded[k * m_max_line_length + n];
         }
 
     private:
-        Line                                    m_all_reduce_lines;
-        std::vector<LineAlternatives::NbAlt>    m_nb_alternatives;
-        std::vector<char>                       m_recorded;
-        unsigned int                            m_line_length;
+        LineSpanW                               m_all_reduced_lines;
+        stdutils::span<LineAlternatives::NbAlt> m_nb_alternatives;
+        stdutils::span<char>                    m_recorded;
+        unsigned int                            m_max_line_length;
     };
 
     bool check_ref_line_compatibility_bw_segment(const LineSpanW& ref_line, int segment_begin_index, unsigned int segment_length)
@@ -472,14 +484,14 @@ struct LineAlternatives::Impl
 
     TailReduce reduce_all_alternatives_recursive(
         LineSpanW& alternative,
-        TailReduceArray* tail_reduce_array,
+        TailReduceArray& tail_reduce_array,
         const int remaining_zeros,
         const Segments::const_iterator constraint_it,
         const Segments::const_iterator constraint_end,
         const int line_begin,
         const int line_end);
 
-    Reduction reduce_all_alternatives();
+    Reduction reduce_all_alternatives(FullReductionBuffers* buffers = nullptr);
     Reduction reduce_alternatives(unsigned int nb_constraints);
 
     const Segments&                     m_segments;
@@ -975,7 +987,7 @@ LineAlternatives::NbAlt LineAlternatives::Impl::reduce_alternatives_recursive(
 
 TailReduce LineAlternatives::Impl::reduce_all_alternatives_recursive(
     LineSpanW& alternative,
-    TailReduceArray* tail_reduce_array,
+    TailReduceArray& tail_reduce_array,
     const int remaining_zeros,
     const Segments::const_iterator constraint_it,
     const Segments::const_iterator constraint_end,
@@ -983,21 +995,20 @@ TailReduce LineAlternatives::Impl::reduce_all_alternatives_recursive(
     const int line_end)
 {
     static_assert(std::is_same_v<NbAlt, BinomialCoefficients::Rep>);
-    assert(tail_reduce_array);
     assert(constraint_it != constraint_end);
     const auto k = static_cast<unsigned int>(std::distance(constraint_it, constraint_end)) - 1;
 
     if (line_begin == line_end)
     {
         // Always query with n = 0 to avoid the case n = line_length
-        TailReduce invalid_result = tail_reduce_array->tail_reduce(k, 0);
+        TailReduce invalid_result = tail_reduce_array.tail_reduce(k, 0);
         invalid_result.m_nb_alt = 0;
         return invalid_result;
     }
     assert(line_begin < line_end);
 
-    TailReduce result = tail_reduce_array->tail_reduce(k, line_begin);
-    if (tail_reduce_array->is_recorded(k, line_begin))
+    TailReduce result = tail_reduce_array.tail_reduce(k, line_begin);
+    if (tail_reduce_array.is_recorded(k, line_begin))
     {
         // The intermediate reduction was previously memoized
         return result;
@@ -1067,7 +1078,7 @@ TailReduce LineAlternatives::Impl::reduce_all_alternatives_recursive(
     }
 
     // Memoization of this intermediate reduction
-    tail_reduce_array->record_reduction(k, line_begin, result.m_nb_alt);
+    tail_reduce_array.record_reduction(k, line_begin, result.m_nb_alt);
 
     return result;
 }
@@ -1079,7 +1090,7 @@ TailReduce LineAlternatives::Impl::reduce_all_alternatives_recursive(
 //  n = length of the line
 // Time complexity :   O(k.n^3)   (can surely be brought down to O(k.n^2))
 // Memory complexity : O(k.n^2)   (the quadratic size memory buffer is freed at the end of the full_reduction)
-LineAlternatives::Reduction LineAlternatives::Impl::reduce_all_alternatives()
+LineAlternatives::Reduction LineAlternatives::Impl::reduce_all_alternatives(FullReductionBuffers* buffers)
 {
     const auto& range_l = m_bidirectional_range;
     Line reduced_line_raw = line_from_line_span(m_known_tiles);
@@ -1098,8 +1109,15 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_all_alternatives()
         assert(range_l.m_line_begin < range_l.m_line_end);
         LineExt alternative_buffer(m_known_tiles);
         const auto k = static_cast<unsigned int>(std::distance(range_l.m_constraint_begin, range_l.m_constraint_end));
-        auto tail_reduce_array = std::make_unique<TailReduceArray>(m_known_tiles.type(), m_known_tiles.index(), k, static_cast<unsigned int>(m_line_length));
-        const auto reduction = reduce_all_alternatives_recursive(alternative_buffer.line_span(), tail_reduce_array.get(), static_cast<int>(m_remaining_zeros), range_l.m_constraint_begin, range_l.m_constraint_end, range_l.m_line_begin, range_l.m_line_end);
+        std::unique_ptr<FullReductionBuffers> reduction_buffers;
+        if (!buffers)
+        {
+            reduction_buffers = std::make_unique<FullReductionBuffers>(k, m_line_length);
+            buffers = reduction_buffers.get();
+        }
+        assert(buffers);
+        TailReduceArray tail_reduce_array(m_known_tiles.type(), m_known_tiles.index(), k, m_line_length, *buffers);
+        const auto reduction = reduce_all_alternatives_recursive(alternative_buffer.line_span(), tail_reduce_array, static_cast<int>(m_remaining_zeros), range_l.m_constraint_begin, range_l.m_constraint_end, range_l.m_line_begin, range_l.m_line_end);
         for (int idx = range_l.m_line_begin; idx < range_l.m_line_end; idx++)
         {
             reduced_line[idx] = reduction.m_reduced_tail[idx - range_l.m_line_begin];
@@ -1167,14 +1185,14 @@ void LineAlternatives::reset()
     p_impl->reset();
 }
 
-LineAlternatives::Reduction LineAlternatives::full_reduction()
+LineAlternatives::Reduction LineAlternatives::full_reduction(FullReductionBuffers* buffers)
 {
     // Update extended copy of known tiles and bidirectional ranges
     bool valid = p_impl->update();
     if (!valid)
         return from_line(p_impl->m_known_tiles, 0, false);
 
-    return p_impl->reduce_all_alternatives();
+    return p_impl->reduce_all_alternatives(buffers);
 }
 
 LineAlternatives::Reduction LineAlternatives::partial_reduction(unsigned int nb_constraints)
@@ -1220,5 +1238,11 @@ std::pair<bool, std::vector<SegmentRange>> LineAlternatives::find_segments_range
     BidirectionalRange<false> range(p_impl->m_segments, p_impl->m_line_length);
     return local_find_segments_range(p_impl->m_known_tiles, range);
 }
+
+FullReductionBuffers::FullReductionBuffers(unsigned int max_k, unsigned int max_line_length)
+    : m_line_buffer(Line::ROW, 0, TailReduceArray::reduced_lines_buffer_size(max_k, max_line_length), Tile::UNKNOWN)
+    , m_alts_buffer(max_k * max_line_length, LineAlternatives::NbAlt{0})
+    , m_bool_buffer(max_k * max_line_length, 0)
+{}
 
 } // namespace picross

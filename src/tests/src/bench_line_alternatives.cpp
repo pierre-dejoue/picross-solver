@@ -20,9 +20,9 @@ namespace
         return binomial;
     }
 
-    LineAlternatives::Reduction full_reduction(const LineConstraint& constraint, const Line& known_tiles)
+    LineAlternatives::Reduction full_reduction(const LineConstraint& constraint, const Line& known_tiles, FullReductionBuffers* buffers = nullptr)
     {
-        return LineAlternatives(constraint, known_tiles, get_binomial()).full_reduction();
+        return LineAlternatives(constraint, known_tiles, get_binomial()).full_reduction(buffers);
     }
 
     LineAlternatives::Reduction partial_reduction(const LineConstraint& constraint, const Line& known_tiles, unsigned int nb_constraints)
@@ -153,7 +153,9 @@ TEST_CASE("Bench linear vs full reduction", "[line_alternatives]")
     const LineConstraint constraint(Line::ROW, { 3, 3, 3 });
     const auto min_line_length = constraint.min_line_size();
     CHECK(min_line_length == 11);
-    for (unsigned int extra_zeros = 2; extra_zeros <= 14; extra_zeros += 2)
+    constexpr unsigned int max_extra_zeros = 16;
+    FullReductionBuffers buffers(constraint.nb_segments(), min_line_length + max_extra_zeros);
+    for (unsigned int extra_zeros = 2; extra_zeros <= max_extra_zeros; extra_zeros += 2)
     {
         const unsigned int nb_alt = ((extra_zeros + 1) * (extra_zeros + 2) * (extra_zeros + 3)) / 6;
         const auto known_tiles    = build_line_from('?', min_line_length + extra_zeros, Line::ROW, 0);
@@ -177,6 +179,20 @@ TEST_CASE("Bench linear vs full reduction", "[line_alternatives]")
             std::string bench_name = "Threes " + std::to_string(nb_alt) + " full";
             BENCHMARK(std::move(bench_name)) {
                 reduction = full_reduction(constraint, known_tiles);
+                return bench_run = true;
+            };
+            if (bench_run)
+            {
+                CHECK(reduction.nb_alternatives == nb_alt);
+                CHECK(reduction.is_fully_reduced);
+            }
+        }
+        {
+            LineAlternatives::Reduction reduction;
+            bool bench_run = false;
+            std::string bench_name = "Threes " + std::to_string(nb_alt) + " full buf";
+            BENCHMARK(std::move(bench_name)) {
+                reduction = full_reduction(constraint, known_tiles, &buffers);
                 return bench_run = true;
             };
             if (bench_run)

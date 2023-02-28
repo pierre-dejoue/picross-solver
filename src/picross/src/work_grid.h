@@ -131,6 +131,7 @@ private:
     std::pair<float, float>                         m_progress_bar;
     std::unique_ptr<WorkGrid<SolverPolicy>>         m_nested_work_grid;
     LineCache                                       m_branch_line_cache;
+    std::shared_ptr<FullReductionBuffers>           m_full_reduction_buffers;
     std::shared_ptr<BinomialCoefficients::Cache>    m_binomial;
 };
 

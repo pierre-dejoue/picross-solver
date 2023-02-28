@@ -36,6 +36,7 @@ struct SegmentRange
 inline bool operator==(const SegmentRange& lhs, const SegmentRange& rhs) { return lhs.m_leftmost_index == rhs.m_leftmost_index && lhs.m_rightmost_index == rhs.m_rightmost_index; }
 std::ostream& operator<<(std::ostream& out, const SegmentRange& segment_range);
 
+struct FullReductionBuffers;
 
 // Given a constraint, recursively build the possible alternatives of a Line and reduce them.
 class LineAlternatives
@@ -62,7 +63,7 @@ public:
         NbAlt nb_alternatives = 0;
         bool is_fully_reduced = false;
     };
-    Reduction full_reduction();
+    Reduction full_reduction(FullReductionBuffers* buffers = nullptr);
     Reduction partial_reduction(unsigned int nb_constraints);
     Reduction linear_reduction();
 
@@ -72,6 +73,16 @@ public:
 private:
     struct Impl;
     std::unique_ptr<Impl> p_impl;
+};
+
+struct FullReductionBuffers
+{
+    // K: max nb of segments of ones on a line
+    FullReductionBuffers(unsigned int max_k, unsigned int max_line_length);
+
+    Line                                    m_line_buffer;
+    std::vector<LineAlternatives::NbAlt>    m_alts_buffer;
+    std::vector<char>                       m_bool_buffer;
 };
 
 } // namespace picross
