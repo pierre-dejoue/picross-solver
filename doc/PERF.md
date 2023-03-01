@@ -6,7 +6,7 @@ Performance
 A great survey of nonograms solvers was done by Jan Wolter several years ago, accessible here: [webpbn.com/survey](https://webpbn.com/survey/).
 
 It provides a selection of puzzles of all difficulties (from very easy to almost impossible) that I used for my own testing. I added
-a few files to that list, taken from [nonograms.org](https://www.nonograms.org/).
+a few files to that list.
 
 ## Test configuration
 
@@ -15,13 +15,97 @@ identify if a puzzle has a unique solution, therefore the number of solutions re
 
 A typical command-line for a single file (but one can also pass multiple files at once to the CLI) would be:
 
-`picross_solver_cli.exe --validation webpbn-00529.non`
+`picross_solver_cli.exe --validation webpbn-00065.non`
 
 Equivalently, the same setup can be obtained with:
 
 `picross_solver_cli.exe --max-nb-solutions 2 webpbn-00529.non`
 
 And will produce a more detailled output than the validation mode.
+
+## Version 0.3.0, 2023/03/01
+
+### New Test Files
+
+The archive of test files used for the benchmark is shared as part of the release files for `0.3.0`. All those files have been converted to [NON format](./FILE_FORMAT_NON.md) that has the advantage of properly documenting the puzzle source and copyright info. I would highly recommend keeping the same format when sharing those files.
+
+A few files were added compared to the previous set:
+- [Gargantua](../inputs/nonograms_org/nonograms-org-51237-gargantua.non) and [Cauldron](../inputs/cauldron.non) are example of very large puzzles (200x200 and 512x512). They are line solvable.
+- [Owl](../inputs/jwilk/jwilk-091-owl.non) is the most difficult puzzle in the collection from [Jakub Wilk's nonogram project](https://github.com/jwilk-archive/nonogram/tree/master/data).
+- [Raccoon](../inputs/nonograms_org/nonograms-org-12771-lighthouse.non) is among the hardest black-white puzzles on nonograms.org (but still line solvable as are all the puzzles on that platform), according to a [survey done by Izaron](https://izaron.github.io/posts/japanese-crosswords/).
+- [Kaa](https://webpbn.com/play.cgi?id=3379) and [Mozaic](https://webpbn.com/play.cgi?id=29723) are among the most difficult puzzles from the webpbn collection that still have a unique solution. Kaa is at the moment the longest puzzle to solve for the Picross Solver, under one hour. But the result image is really quite nice and worth the wait!
+
+### Results
+
+Test Hardware: My laptop
+
+```
+Processor   Intel(R) Core(TM) i7-8750H CPU @ 2.20GHz
+RAM         16 GB
+OS          Windows 10
+Compiler    MSVC 19.34.31942.0
+```
+
+|File|Grid|Size|Difficulty|Timing|
+|----|----|----|----------|------|
+|webpbn-00001.non|Dance|5x10|LINE|0.064 ms|
+|webpbn-00021.non|Skid|14x25|LINE|0.2 ms|
+|webpbn-00023.non|Edge Pattern|10x11|BRANCH|0.2 ms|
+|webpbn-00006.non|Cat|20x20|LINE|0.33 ms|
+|webpbn-00027.non|Bucks|27x23|BRANCH|0.46 ms|
+|webpbn-00016.non|Knot|34x34|LINE|0.51 ms|
+|webpbn-02413.non|Smoke|20x20|BRANCH|1.0 ms|
+|webpbn-00529.non|Swing|45x45|LINE|1.2 ms|
+|nonograms-org-04010.non|Jellyfish|33x40|LINE|1.3 ms|
+|nonograms-org-42735.non|Wolverine|40x40|LINE|2.6 ms|
+|qnonograms-sun.non|Sun|50x60|LINE|3.23 ms|
+|pattern-5-dom.non|5-Dom|11x11|BRANCH|3.8 ms|
+|nonograms-org-03016.non|Barque|50x60|LINE|4.4 ms|
+|qnonograms-tiger.non|Tiger|75x50|LINE|4.5 ms|
+|webpbn-35105.non|Wild Tattoo|60x45|BRANCH|5.1 ms|
+|webpbn-00436.non|Petroglyph|40x35|BRANCH|5.1 ms|
+|webpbn-34824.non|Wishbone|39x47|BRANCH|5.54 ms|
+|webpbn-01611.non|Merka|55x60|BRANCH|6.17 ms|
+|webpbn-00065.non|Mum|34x40|BRANCH|6.5 ms|
+|webpbn-02556.non|Flag|65x45|MULT|10 ms|
+|webpbn-07604.non|No DiCaprio|55x55|LINE|13 ms|
+|jwilk-091.non|Owl|25x25|BRANCH|40.6 ms|
+|nonograms-org-51237.non|Gargantua|200x200|LINE|45.8 ms|
+|nonograms-org-17403.non|Raccoon|80x65|LINE|51.1 ms|
+|webpbn-10810.non|Centerpiece|60x60|MULT|53.2 ms|
+|cauldron.non|Cauldron|512x512|LINE|53.4 ms|
+|webpbn-01694.non|Tragic|45x50|BRANCH|57.4 ms|
+|webpbn-06574.non|Forever|25x25|BRANCH|60.3 ms|
+|pattern-7-dom.non|7-Dom|15x15|BRANCH|156.3 ms|
+|webpbn-04645.non|Marilyn|50x70|BRANCH|160.5 ms|
+|webpbn-03541.non|Sign|60x50|BRANCH|183.3 ms|
+|webpbn-00803.non|Lighthouse|50x45|BRANCH|508 ms|
+|webpbn-02712.non|Lion|47x47|MULT|2.06 s|
+|webpbn-02040.non|Hot|55x60|BRANCH|4.41 s|
+|pattern-9-dom.non|9-Dom|19x19|BRANCH|22 s|
+|webpbn-29723.non|Mozaic|40x20|BRANCH|450 s|
+|webpbn-06739.non|Karate|40x40|MULT|11 min|
+|webpbn-03379.non|Kaa|40x40|BRANCH|24.5 min|
+|webpbn-09892.non|Nature|50x40||+|
+|webpbn-10088.non|Marley|52x63||+|
+|webpbn-12548.non|Sierpinsky|47x40||+|
+|webpbn-18297.non|Thing|36x42||+|
+|webpbn-22336.non|Gettysburg|99x59||+|
+
+- **Difficulty:**
+  - `LINE` if the grid is line solvable.
+  - `BRANCH` if the grid is not line-solvable but still has a unique solution
+  - `MULT` if there are multiple solutions
+- **Timing:** `+` indicates the solver was voluntarily interrupted because it had been running for more than 1 hour.
+
+### Conclusion
+
+- There is a very significant gain in performance, for the most part due to the improvement of the complexity of the "full" reduction algorithm, thanks to the use of a memoization technique to greatly speed up the previous implementation.  A "full" line reduction identifies all tiles that can be logically solved on an individual line, given a constraint and the set of already known tiles. Its time complexity is now O(k.n^3), where k is the number of segments of the constraint on the line, and n is line length. This could probably be pulled down to O(k.n^2). That comes at the price of a higher memory consumption, with a memory complexity of O(k.n^2).
+- The "partial" reduction was replaced by the "linear" reduction, which is able to find more tiles (although not all logically deducible ones, contrary to the "full" reduction) using a simple heuristic, and is very fast with a time complexity of O(k.n). The idea of our solver is to make very fast progress on the grid using the "linear" line reduction, then to use the more costly but more accurate "full" line reduction on the toughest line solves. It is remarkable that on some puzzles (nine in the benchmark set), the solve can be done using only "linear" reductions.
+- The solver now always precisely identify line-solvable picross puzzles, due to the removal of the complexity limit on the full reduction. (There was before a notion of max number of alternatives above which the full reduction was not even attempted.) Thanks to that there is no more ambiguity on some puzzles like `Tiger`.
+- The "probing" technique is used in more cases than in version `0.2.0`, although we now limit it to the initial search depth (depth = 0). Indeed, if the algortihm is already on a search path (i.e. an hypothesis has been made on at least one line), the cost of probing for all the hypothesis cases, most of which lead to no solution, did not seem worth it. Benchmarking both alternatives tends to confirm that impression, except in one case: Puzzle `Karate`. It is indeed the only one for which the performance has not improved since `0.2.0`.
+- With this major gain in performance, and the ability of the solver to handle many of the most difficult puzzles, the Picross Solver is now on par with the best solvers in the [webpbn survey](https://webpbn.com/survey/).
+- Memory consumption remains low in this version. For instance, the O(k.n^2) memory cost of the full line reduction is mitigated by using a single memory buffer common to all lines. There is a localized line cache used by the search and probing algorithms, however its size is known, equal to the size of two full grids (O(n*n)) per search level.
 
 ## Version 0.2.0, 2023/01/28
 
@@ -30,7 +114,7 @@ And will produce a more detailled output than the validation mode.
 The set of test files is part of the release files for `0.2.0`. A few files were added compared to the previous set:
 
 - 5-Dom and 7-Dom test patterns. The previous set only had 9-Dom.
-- [Wild Tattoo](https://webpbn.com/play.cgi?id=35105), created by yours truly with the help of the Picross Solver GUI.
+- [Wild Tattoo](../inputs/webpbn/webpbn-35105-wild.non), created by yours truly with the help of the Picross Solver GUI.
 - [Tiger](../inputs/qnonograms/tiger.non) is a difficult puzzle that is line-solvable, but requires very long reductions to do so. Depending on the settings of the solver, it may be reported as non-line-solvable (that is the case in the result table below). The CLI has a `--line-solver` option to fully reduce all lines no matter their difficulty.
 
 ### Results

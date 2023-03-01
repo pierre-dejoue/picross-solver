@@ -146,7 +146,7 @@ The applications are able to read puzzle files in the formats listed above for t
 
 * Bitmap: [PBM files](https://fr.wikipedia.org/wiki/Portable_pixmap)
 * Raw text with the '.' and '#' characters: [Example](./inputs/raw/note.txt)
-* Raw text with the '0' and '1' characters: [Example](./inputs/raw/rand11)
+* Raw text with the '0' and '1' characters: [Example](./inputs/raw/rand11.txt)
 
 ### Dependencies
 
