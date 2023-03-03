@@ -45,7 +45,8 @@ endif()
 
 # Tests
 if(PICROSS_BUILD_TESTS)
-    add_subdirectory(src/tests)
+    add_subdirectory(src/tests/stdutils)
+    add_subdirectory(src/tests/picross)
 endif()
 
 # Examples
