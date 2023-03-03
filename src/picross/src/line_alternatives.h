@@ -64,7 +64,6 @@ public:
         bool is_fully_reduced = false;
     };
     Reduction full_reduction(FullReductionBuffers* buffers = nullptr);
-    Reduction partial_reduction(unsigned int nb_constraints);
     Reduction linear_reduction();
 
     // For test purpose only

@@ -653,46 +653,6 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_
 
 
 template <typename SolverPolicy>
-typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_partial_reduction(Line::Type type, unsigned int index)
-{
-    PassStatus status;
-
-    if (m_line_is_fully_reduced[type][index])
-    {
-        return status;
-    }
-
-    // Reduce all possible lines that match the data already present in the grid and the line constraint
-    if (m_grid_stats != nullptr) { m_grid_stats->nb_single_line_partial_reduction++; }
-    const auto partial_reduction = m_alternatives[type][index].partial_reduction(SolverPolicy::PARTIAL_REDUCE_NB_CONSTRAINTS);
-
-    // If the list of alternative lines is empty, it means the grid data is contradictory
-    if (partial_reduction.nb_alternatives == 0)
-    {
-        status.contradictory = true;
-        return status;
-    }
-    if (m_grid_stats != nullptr) { m_grid_stats->max_nb_alternatives_partial = std::max(m_grid_stats->max_nb_alternatives_partial, partial_reduction.nb_alternatives); }
-
-    // In any case, update the grid data with the reduced line resulting from the list of alternatives
-    const auto nb_alternatives = std::min(partial_reduction.nb_alternatives, m_nb_alternatives[type][index]);
-    const bool line_changed = status.grid_changed = update_line(partial_reduction.reduced_line, nb_alternatives);
-    if (line_changed)
-        m_line_is_fully_reduced[type][index] = false;
-    if (partial_reduction.is_fully_reduced)
-        m_line_is_fully_reduced[type][index] = true;
-
-    if (m_grid_stats != nullptr && line_changed)
-    {
-        m_grid_stats->nb_single_line_partial_reduction_w_change++;
-        m_grid_stats->max_nb_alternatives_partial_w_change = std::max(m_grid_stats->max_nb_alternatives_partial_w_change, partial_reduction.nb_alternatives);
-    }
-
-    return status;
-}
-
-
-template <typename SolverPolicy>
 typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_linear_reduction(Line::Type type, unsigned int index)
 {
     PassStatus status;

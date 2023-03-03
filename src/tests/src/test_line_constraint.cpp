@@ -71,7 +71,7 @@ TEST_CASE("full_line", "[line_constraint]")
     }
 }
 
-TEST_CASE("partial_reduction", "[line_constraint]")
+TEST_CASE("trivial_reduction", "[line_constraint]")
 {
     BinomialCoefficients::Cache binomial;
     LineConstraint constraint(Line::ROW, { 6, 1 });

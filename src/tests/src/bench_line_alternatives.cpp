@@ -25,11 +25,6 @@ namespace
         return LineAlternatives(constraint, known_tiles, get_binomial()).full_reduction(buffers);
     }
 
-    LineAlternatives::Reduction partial_reduction(const LineConstraint& constraint, const Line& known_tiles, unsigned int nb_constraints)
-    {
-        return LineAlternatives(constraint, known_tiles, get_binomial()).partial_reduction(nb_constraints);
-    }
-
     LineAlternatives::Reduction linear_reduction(const LineConstraint& constraint, const Line& known_tiles)
     {
         return LineAlternatives(constraint, known_tiles, get_binomial()).linear_reduction();

@@ -96,7 +96,6 @@ private:
     bool is_sorted_by_nb_alternatives() const;
     LineId next_line_for_search() const;
     PassStatus single_line_initial_pass(Line::Type type, unsigned int index);
-    PassStatus single_line_partial_reduction(Line::Type type, unsigned int index);
     PassStatus single_line_linear_reduction(Line::Type type, unsigned int index);
     PassStatus single_line_full_reduction(Line::Type type, unsigned int index);
     template <WorkGridState S>
