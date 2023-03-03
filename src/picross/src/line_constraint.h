@@ -8,6 +8,7 @@
 #pragma once
 
 #include "binomial.h"
+#include "line_span.h"
 
 #include <picross/picross.h>
 
@@ -21,8 +22,6 @@
 
 namespace picross
 {
-class LineSpan;
-
 using Segments = std::vector<unsigned int>;
 
 template <typename SegmentIt>

@@ -639,7 +639,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_
 
     // If the reduced line is not compatible with the information already present in the grid
     // then the row and column constraints are contradictory.
-    if (!get_line(type, index).compatible(reduced_line))
+    if (!are_compatible(get_line(type, index), reduced_line))
     {
         status.contradictory = true;
         return status;

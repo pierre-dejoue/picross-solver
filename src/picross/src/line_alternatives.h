@@ -1,5 +1,7 @@
 #pragma once
 
+#include "line_span.h"
+
 #include <picross/picross.h>
 
 #include <cstddef>
@@ -11,7 +13,6 @@ namespace picross
 {
 namespace BinomialCoefficients { class Cache; }
 class LineConstraint;
-class LineSpan;
 
 struct LineHole
 {

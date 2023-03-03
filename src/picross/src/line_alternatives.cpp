@@ -86,7 +86,7 @@ namespace
     {
     }
 
-    void reduce_alternative(LineSpanW& reduced_line, const LineSpanW& alternative)
+    void reduce_alternative(LineSpanW& reduced_line, const LineSpan& alternative)
     {
         assert(reduced_line.size() == alternative.size());
         const int line_sz = static_cast<int>(reduced_line.size());
@@ -122,7 +122,7 @@ namespace
 
     private:
         LineSpanW m_line;
-        bool      m_reset;
+        bool           m_reset;
     };
 
     LineAlternatives::Reduction from_line(const LineSpan& line, LineAlternatives::NbAlt nb_alt, bool full)
@@ -152,11 +152,11 @@ namespace
             copy_line_span(m_line_span, line_span);
         }
 
-        const LineSpanW& line_span() const { return m_line_span; }
+        LineSpan const_line_span() const { return LineSpan(m_line_span); }
         LineSpanW& line_span() { return m_line_span; }
     private:
         Line::Container m_tiles;
-        LineSpanW       m_line_span;
+        LineSpanW  m_line_span;
     };
 
     // An array of LineExt
@@ -175,11 +175,11 @@ namespace
                 m_line_spans.emplace_back(line_span.type(), line_span.index(), line_span.size(), m_tiles.data() + c * (line_span.size() + 1u) + 1u);
         }
 
-        const LineSpanW& line_span(int idx) const { assert(idx >=0); return m_line_spans[static_cast<unsigned int>(idx)]; }
-        LineSpanW& line_span(int idx) {  assert(idx >=0); return m_line_spans[static_cast<unsigned int>(idx)]; }
+        LineSpan const_line_span(int idx) const { assert(idx >=0); return LineSpan(m_line_spans[static_cast<unsigned int>(idx)]); }
+        LineSpanW& line_span(int idx)      { assert(idx >=0); return m_line_spans[static_cast<unsigned int>(idx)]; }
     private:
-        Line::Container         m_tiles;
-        std::vector<LineSpanW>  m_line_spans;
+        Line::Container             m_tiles;
+        std::vector<LineSpanW> m_line_spans;
     };
 } // namespace
 
@@ -328,7 +328,7 @@ namespace
             , m_nb_alt(nb_alt)
         {}
 
-        LineSpanW               m_reduced_tail;
+        LineSpanW          m_reduced_tail;
         LineAlternatives::NbAlt m_nb_alt;
     };
 
@@ -399,13 +399,14 @@ namespace
         }
 
     private:
-        LineSpanW                               m_all_reduced_lines;
+        LineSpanW                          m_all_reduced_lines;
         stdutils::span<LineAlternatives::NbAlt> m_nb_alternatives;
         stdutils::span<char>                    m_recorded;
         unsigned int                            m_max_line_length;
     };
 
-    bool check_ref_line_compatibility_bw_segment(const LineSpanW& ref_line, int segment_begin_index, unsigned int segment_length)
+    template <typename TileT>
+    bool check_ref_line_compatibility_bw_segment(const LineSpanImpl<TileT>& ref_line, int segment_begin_index, unsigned int segment_length)
     {
         const int segment_end_index = segment_begin_index + static_cast<int>(segment_length);
         if (ref_line[segment_begin_index - 1] == Tile::FILLED || ref_line[segment_end_index] == Tile::FILLED)
@@ -426,8 +427,8 @@ struct LineAlternatives::Impl
 
     void reset();
 
-    template <bool Reversed>
-    bool check_compatibility_bw(const LineSpanW& alternative, int start_idx, int end_idx) const;
+    template <bool Reversed, typename TileT>
+    bool check_compatibility_bw(const LineSpanImpl<TileT>& alternative, int start_idx, int end_idx) const;
 
     bool check_compatibility_bw_segment(int segment_begin_index, unsigned int segment_length) const;
 
@@ -462,7 +463,7 @@ struct LineAlternatives::Impl
     const Segments&                     m_segments;
     const LineSpan                      m_known_tiles;
     LineExt                             m_known_tiles_extended_copy;
-    const LineSpanW                     m_known_tiles_ext;
+    const LineSpan                      m_known_tiles_ext;
     BinomialCoefficients::Cache&        m_binomial;
     const unsigned int                  m_line_length;
     unsigned int                        m_remaining_zeros;
@@ -505,8 +506,8 @@ void LineAlternatives::Impl::reset()
     m_bidirectional_range_reverse = BidirectionalRange<true>(m_segments, m_line_length);
 }
 
-template <bool Reversed>
-bool LineAlternatives::Impl::check_compatibility_bw(const LineSpanW& alternative, int start_idx, int end_idx) const
+template <bool Reversed, typename TileT>
+bool LineAlternatives::Impl::check_compatibility_bw(const LineSpanImpl<TileT>& alternative, int start_idx, int end_idx) const
 {
     static_assert(static_cast<TileImpl>(Tile::UNKNOWN) == 0);
     static constexpr TileImpl INCOMPATIBLE_SUM = static_cast<TileImpl>(Tile::EMPTY) + static_cast<TileImpl>(Tile::FILLED);

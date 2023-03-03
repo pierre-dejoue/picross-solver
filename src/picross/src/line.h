@@ -43,8 +43,8 @@ bool is_line_uniform(const LineSpan& line, Tile color);
 Line line_from_line_span(const LineSpan& line_span);
 InputGrid::Constraint get_constraint_from(const LineSpan& line_span);
 
-template <typename LineSpanT>
-void copy_line_span(LineSpanW& target, const LineSpanT& source)
+template <typename TileT>
+void copy_line_span(LineSpanW& target, const LineSpanImpl<TileT>& source)
 {
     assert(target.type() == source.type());
     assert(target.index() == source.index());
@@ -54,11 +54,11 @@ void copy_line_span(LineSpanW& target, const LineSpanT& source)
         target[idx] = source[idx];
 }
 
-template <typename LineSpanT>
-void copy_line_span(Line& target, const LineSpanT& source)
+template <typename TileT>
+void copy_line_span(Line& target, const LineSpanImpl<TileT>& source)
 {
-    LineSpanW target_w(target);
-    copy_line_span(target_w, source);
+    LineSpanW target_span(target);
+    copy_line_span(target_span, source);
 }
 
 } // namespace picross

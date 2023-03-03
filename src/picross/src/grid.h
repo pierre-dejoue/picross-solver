@@ -1,5 +1,7 @@
 #pragma once
 
+#include "line_span.h"
+
 #include <picross/picross.h>
 
 #include <cstddef>
@@ -11,8 +13,6 @@
 
 namespace picross
 {
-class LineSpan;
-
 class Grid
 {
 public:
@@ -54,8 +54,8 @@ public:
 
 protected:
     // Use with great caution when writing, as only one of the two containers (row or column major) will be modified
-    template <typename LineSpanT>
-    LineSpanT get_line(Line::Type type, Line::Index index);
+    template <typename TileT>
+    LineSpanImpl<TileT> get_line_low_level(Line::Type type, Line::Index index);
 
 private:
     const std::size_t       m_width;

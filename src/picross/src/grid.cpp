@@ -72,21 +72,21 @@ const Grid::Container& Grid::get_container(Line::Type type) const
 
 LineSpan Grid::get_line(Line::Type type, Line::Index index) const
 {
-    return const_cast<Grid&>(*this).get_line<LineSpan>(type, index);
+    return const_cast<Grid&>(*this).get_line_low_level<const Tile>(type, index);
 }
 
 LineSpan Grid::get_line(LineId line_id) const
 {
-    return const_cast<Grid&>(*this).get_line<LineSpan>(line_id.m_type, line_id.m_index);
+    return const_cast<Grid&>(*this).get_line_low_level<const Tile>(line_id.m_type, line_id.m_index);
 }
 
-template <typename LineSpanT>
-LineSpanT Grid::get_line(Line::Type type, Line::Index index)
+template <typename TileT>
+LineSpanImpl<TileT> Grid::get_line_low_level(Line::Type type, Line::Index index)
 {
     assert((type == Line::ROW && index < m_height) || (type == Line::COL && index < m_width));
     auto& tiles = type == Line::ROW ? m_row_major : m_col_major;
     const auto line_length = type == Line::ROW ? m_width : m_height;
-    return LineSpanT(type, index, line_length, &tiles[index * line_length]);
+    return LineSpanImpl<TileT>(type, index, line_length, &tiles[index * line_length]);
 }
 
 Tile Grid::get(Line::Index x, Line::Index y) const
@@ -241,8 +241,8 @@ void GridSnapshot<T>::reduce(const Grid& grid)
 }
 
 // Explicit template instantiation
-template LineSpan  Grid::get_line<LineSpan>(Line::Type, Line::Index);
-template LineSpanW Grid::get_line<LineSpanW>(Line::Type, Line::Index);
+template LineSpanImpl<const Tile> Grid::get_line_low_level<const Tile>(Line::Type, Line::Index);
+template LineSpanImpl<Tile>       Grid::get_line_low_level<Tile>(Line::Type, Line::Index);
 
 template class GridSnapshot<Line::ROW>;
 

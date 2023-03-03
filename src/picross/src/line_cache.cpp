@@ -33,18 +33,18 @@ public:
         clear();
     }
 
-    template <typename LineSpanT>
-    LineSpanT get_line(LineId line_id)
+    template <typename TileT>
+    LineSpanImpl<TileT> get_line(LineId line_id)
     {
-        return Grid::get_line<LineSpanT>(line_id.m_type, line_id.m_index);
+        return Grid::get_line_low_level<TileT>(line_id.m_type, line_id.m_index);
     }
 
     void clear()
     {
         for (Line::Index x = 0u; x < width(); x++)
-            reinterpret_cast<TileImpl&>(Grid::get_line<LineSpanW>(Line::COL, x)[0]) = TILE_INVALID_CACHE_ENTRY;
+            reinterpret_cast<TileImpl&>(Grid::get_line_low_level<Tile>(Line::COL, x)[0]) = TILE_INVALID_CACHE_ENTRY;
         for (Line::Index y = 0u; y < height(); y++)
-            reinterpret_cast<TileImpl&>(Grid::get_line<LineSpanW>(Line::ROW, y)[0]) = TILE_INVALID_CACHE_ENTRY;
+            reinterpret_cast<TileImpl&>(Grid::get_line_low_level<Tile>(Line::ROW, y)[0]) = TILE_INVALID_CACHE_ENTRY;
     }
 };
 
@@ -97,7 +97,7 @@ LineCache::Entry LineCache::read_line(LineId line_id, Tile key) const
 {
     assert(key != Tile::UNKNOWN);
     CacheGrid& cache = (key == Tile::EMPTY ? p_impl->m_cache_0 : p_impl->m_cache_1);
-    auto result = Entry{ cache.get_line<LineSpan>(line_id), p_impl->nb_alts(line_id, key) };
+    auto result = Entry{ cache.get_line<Tile>(line_id), p_impl->nb_alts(line_id, key) };
     assert(is_valid(result));
     return result;
 }
@@ -106,7 +106,7 @@ void LineCache::store_line(LineId line_id, Tile key, const LineSpan& line, LineA
 {
     assert(key != Tile::UNKNOWN);
     CacheGrid& cache = (key == Tile::EMPTY ? p_impl->m_cache_0 : p_impl->m_cache_1);
-    LineSpanW cache_line = cache.get_line<LineSpanW>(line_id);
+    LineSpanW cache_line = cache.get_line<Tile>(line_id);
     copy_line_span(cache_line, line);
     p_impl->nb_alts(line_id, key) = nb_alt;
 }
