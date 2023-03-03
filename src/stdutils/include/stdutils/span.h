@@ -6,12 +6,20 @@
 namespace stdutils
 {
 
-// =~ std::span in C++20
+// Imitation of std::span in C++20
 template <typename T>
 class span
 {
 public:
-    span(T* ptr, std::size_t size) : m_ptr(ptr), m_size(size) { assert(m_ptr); }
+    span(T* ptr, std::size_t size) noexcept : m_ptr(ptr), m_size(size) { assert(m_ptr); }
+    span(const span<T>&) noexcept = default;
+    span(span<T>&&) noexcept = default;
+    span<T>& operator=(const span<T>&) noexcept = default;
+    span<T>& operator=(span<T>&&) noexcept = default;
+
+    // For qualification conversions (e.g. non-const T to const T)
+    template <typename R>
+    span(const span<R>& other) noexcept : m_ptr(other.begin()), m_size(other.size()) { assert(m_ptr); }
 
     std::size_t size() const { return m_size; }
 
