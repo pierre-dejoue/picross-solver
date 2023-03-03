@@ -25,6 +25,8 @@ solution.
  - Two applications on top of the library: CLI and GUI.
  - Use the GUI to [make your own picross puzzles](doc/Create_a_Picross.md)!
 
+There's a demo video: [Here](https://www.youtube.com/watch?v=svnpxgFXfuE)!
+
 ## Library
 
 The Picross solver provided as a library
@@ -217,7 +219,7 @@ The output, in CSV format, will contain the following information:
 
 See tutorial [here](doc/Create_a_Picross.md).
 
-### More Screenshots of the GUI
+### Screenshots of the GUI
 
 The GUI shows an animation of the solving process, and finally the solution(s). Here are two examples
 from the game Picross DS:
