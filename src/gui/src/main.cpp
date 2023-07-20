@@ -32,6 +32,25 @@ void glfw_error_callback(int error, const char* description)
     std::cerr << "Glfw Error " << error << ": " << description << std::endl;
 }
 
+const ImColor WindowBackgroundColor_Classic(29, 75, 99, 255);
+const ImColor WindowBackgroundColor_Dark(4, 8, 25, 255);
+const ImColor WindowMainBackgroundColor_Classic(35, 92, 121, 255);
+const ImColor WindowMainBackgroundColor_Dark(10, 25, 50, 255);
+
+void imgui_set_style(bool dark_mode)
+{
+    if (dark_mode)
+    {
+        ImGui::StyleColorsDark();
+        ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = WindowBackgroundColor_Dark;
+    }
+    else
+    {
+        ImGui::StyleColorsClassic();
+        ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = WindowBackgroundColor_Classic;
+    }
+}
+
 } // Anonymous namespace
 
 
@@ -59,16 +78,13 @@ int main(int argc, char *argv[])
     ImGuiIO& io = ImGui::GetIO();
     (void)io;   // Unused
 
-    //ImGui::StyleColorsDark();
-    ImGui::StyleColorsClassic();
-
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL2_Init();
 
     // Style
-    ImGui::StyleColorsClassic();
-    ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = ImColor(29, 75, 99, 255);
+    bool imgui_dark_mode = false;
+    imgui_set_style(imgui_dark_mode);
 
     // Open settings window
     Settings settings;
@@ -128,6 +144,16 @@ int main(int argc, char *argv[])
                         picross_files.emplace_back(std::make_unique<PicrossFile>(path, format));
                     }
                 }
+                ImGui::Separator();
+                if (ImGui::BeginMenu("Options"))
+                {
+                    if (ImGui::MenuItem("Dark Mode", "", &imgui_dark_mode))
+                    {
+                        imgui_set_style(imgui_dark_mode);
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::Separator();
                 if (ImGui::MenuItem("Quit", "Alt+F4"))
                 {
                     glfwSetWindowShouldClose(window, 1);
@@ -145,7 +171,7 @@ int main(int argc, char *argv[])
             it = can_be_erased ? picross_files.erase(it) : std::next(it);
         }
 
-        // Settings window
+        // Settings window (always ON)
         {
             bool can_be_erased = false;
             settings.visit_window(can_be_erased);
@@ -161,7 +187,7 @@ int main(int argc, char *argv[])
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        const auto clear_color = static_cast<ImVec4>(ImColor(35, 92, 121, 255));
+        const auto clear_color = static_cast<ImVec4>(imgui_dark_mode ? WindowMainBackgroundColor_Dark : WindowMainBackgroundColor_Classic);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
