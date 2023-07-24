@@ -5,16 +5,17 @@
  *
  * Copyright (c) 2021 Pierre DEJOUE
  ******************************************************************************/
+
 #include "picross_file.h"
 #include "settings.h"
 
 #include <picross/picross.h>
 
+#include <portable-file-dialogs.h>      // Include before glfw3.h
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl2.h>
-#include <portable-file-dialogs.h>
 
 #include <cassert>
 #include <iostream>
