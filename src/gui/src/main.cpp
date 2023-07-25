@@ -10,6 +10,7 @@
 #include "settings.h"
 
 #include <picross/picross.h>
+#include <stdutils/macros.h>
 
 #include <portable-file-dialogs.h>      // Include before glfw3.h
 #include <GLFW/glfw3.h>
@@ -57,6 +58,9 @@ void imgui_set_style(bool dark_mode)
 
 int main(int argc, char *argv[])
 {
+    UNUSED(argc);
+    UNUSED(argv);
+
     // Versions
     std::stringstream picross_title;
     picross_title << "Picross Solver " << picross::get_version_string();

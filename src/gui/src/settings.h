@@ -1,5 +1,6 @@
 #pragma once
 
+#include "parameter.h"
 #include "settings_window.h"
 
 #include <algorithm>
@@ -8,25 +9,14 @@
 class Settings
 {
 public:
-    template<typename T>
-    struct Limits
-    {
-        T default;
-        T min;
-        T max;
-
-        void clamp(T& v) const { v = std::max(min, std::min(v, max)); }
-    };
-    static constexpr Limits<bool> limits_true{ true, false, true };
-    static constexpr Limits<bool> limits_false{ false, false, true };
     struct TileLimits
     {
-        Limits<int> size_enum;
-        Limits<float> rounding_ratio;
-        Limits<float> size_ratio;
-        Limits<bool> five_tile_border;
-        Limits<bool> hide_depth_greater;
-        Limits<int> hide_depth_value;
+        Parameter::Limits<int> size_enum;
+        Parameter::Limits<float> rounding_ratio;
+        Parameter::Limits<float> size_ratio;
+        Parameter::Limits<bool> five_tile_border;
+        Parameter::Limits<bool> hide_depth_greater;
+        Parameter::Limits<int> hide_depth_value;
     };
     struct Tile
     {
@@ -39,8 +29,8 @@ public:
     };
     struct SolverLimits
     {
-        Limits<bool> limit_solutions;
-        Limits<int> max_nb_solutions;
+        Parameter::Limits<bool> limit_solutions;
+        Parameter::Limits<int> max_nb_solutions;
     };
     struct Solver
     {
@@ -49,9 +39,9 @@ public:
     };
     struct AnimationLimits
     {
-        Limits<bool> show_branching;
-        Limits<bool> ftl;
-        Limits<int> speed;
+        Parameter::Limits<bool> show_branching;
+        Parameter::Limits<bool> ftl;
+        Parameter::Limits<int> speed;
     };
     struct Animation
     {

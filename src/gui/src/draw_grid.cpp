@@ -164,9 +164,9 @@ void draw_grid(ImDrawList* draw_list, ImVec2 tl_corner, size_t tile_size, const 
     assert(draw_list);
     const size_t width = grid.width();
     const size_t height = grid.height();
-    for (size_t i = 0u; i < width; ++i)
+    for (picross::Line::Index i = 0u; i < width; ++i)
     {
-        for (size_t j = 0u; j < height; ++j)
+        for (picross::Line::Index j = 0u; j < height; ++j)
         {
             const auto tile = grid.get_tile(i, j);
             if (tile == picross::Tile::UNKNOWN)
@@ -174,7 +174,7 @@ void draw_grid(ImDrawList* draw_list, ImVec2 tl_corner, size_t tile_size, const 
             const auto depth = grid.get_depth(i, j);
             const auto color_depth = color_by_depth ? depth : 0;
             const bool filled = (tile == picross::Tile::FILLED);
-            const bool hidden = tile_settings.hide_depth_greater ? (depth >= tile_settings.hide_depth_value) : false;
+            const bool hidden = tile_settings.hide_depth_greater ? (static_cast<int>(depth) >= tile_settings.hide_depth_value) : false;
             draw_tile(draw_list, tl_corner, tile_size, i, j, filled, hidden, color_depth, tile_settings.size_ratio, tile_settings.rounding_ratio);
         }
     }

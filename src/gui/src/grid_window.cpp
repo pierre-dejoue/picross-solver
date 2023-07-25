@@ -121,7 +121,8 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
         reset_solutions();
         if (info) { info->update_solver_status(0u, 0u, 0.f); }
         solver_thread_completed = false;
-        std::swap(solver_thread, std::thread(&GridWindow::solve_picross_grid, this));
+        std::thread new_thread(&GridWindow::solve_picross_grid, this);
+        std::swap(solver_thread, new_thread);
         solver_thread_start = false;
     }
     // If solver thread is active
@@ -131,7 +132,8 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
         {
             // The solver thread being over does not mean that all observer events have been processed
             solver_thread.join();
-            std::swap(solver_thread, std::thread());
+            std::thread null_thread;
+            std::swap(solver_thread, null_thread);
             assert(!solver_thread.joinable());
             std::cerr << "End of solver thread for grid " << grid.name() << std::endl;
             if (info) { info->solver_completed(solver_thread_stats); }
@@ -213,9 +215,9 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
     // Visit info window
     if (info)
     {
-        bool can_be_erased = false;
-        info->visit(can_be_erased);
-        if (can_be_erased)
+        bool info_can_be_erased = false;
+        info->visit(info_can_be_erased);
+        if (info_can_be_erased)
             info.reset();
     }
 
@@ -232,9 +234,9 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
     // Visit goal window
     if (goal_win)
     {
-        bool can_be_erased = false;
-        goal_win->visit(can_be_erased, settings);
-        if (can_be_erased)
+        bool goal_can_be_erased = false;
+        goal_win->visit(goal_can_be_erased, settings);
+        if (goal_can_be_erased)
             goal_win.reset();
     }
 
@@ -304,13 +306,11 @@ void GridWindow::reset_solutions()
     solver_progress = 0.f;
 
     // Clear text buffer and print out the grid size
-    const size_t width = grid.width();
-    const size_t height = grid.height();
     text_buffer->buffer.clear();
     text_buffer->buffer.appendf("Grid %s\n", picross::str_input_grid_size(grid).c_str());
 }
 
-void GridWindow::observer_callback(picross::ObserverEvent event, const picross::Line* line, unsigned int, unsigned int misc, const ObserverGrid& grid)
+void GridWindow::observer_callback(picross::ObserverEvent event, const picross::Line* line, unsigned int, unsigned int misc, const ObserverGrid& l_grid)
 {
     // Filter out events useless to the GUI
     if (event != picross::ObserverEvent::DELTA_LINE && event != picross::ObserverEvent::SOLVED_GRID && event != picross::ObserverEvent::PROGRESS)
@@ -329,7 +329,7 @@ void GridWindow::observer_callback(picross::ObserverEvent event, const picross::
                 ||  this->abort_solver_thread();
         });
     }
-    line_events.emplace_back(event, line, misc, grid);
+    line_events.emplace_back(event, line, misc, l_grid);
 }
 
 unsigned int GridWindow::process_line_events(std::vector<LineEvent>& events)
@@ -383,7 +383,6 @@ void GridWindow::solve_picross_grid()
     solver_thread_stats = picross::GridStats();
 
     const auto solver = picross::get_ref_solver();
-    unsigned count_grids = 0u;
 
     // Sanity check of the input data
     const auto [check, check_msg] = picross::check_input_grid(grid);

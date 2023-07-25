@@ -31,6 +31,8 @@ if (PICROSS_GUI_IMGUI_DEMO)
     )
 endif()
 
+set_target_warnings(picross_solver ON)
+
 target_link_libraries(picross_solver
     PRIVATE
     stdutils
