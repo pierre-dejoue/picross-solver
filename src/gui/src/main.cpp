@@ -16,7 +16,7 @@
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl2.h>
+#include <imgui_impl_opengl3.h>
 
 #include <cassert>
 #include <iostream>
@@ -71,8 +71,14 @@ int main(int argc, char *argv[])
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
-    GLFWwindow* window = glfwCreateWindow(1280, 720, picross_title.str().c_str(), NULL, NULL);
-    if (window == NULL)
+
+    // GL 3.0 + GLSL 130
+    const char* glsl_version = "#version 130";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+
+    GLFWwindow* window = glfwCreateWindow(1280, 720, picross_title.str().c_str(), nullptr, nullptr);
+    if (window == nullptr)
         return 1;
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
@@ -81,11 +87,11 @@ int main(int argc, char *argv[])
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    (void)io;   // Unused
+    UNUSED(io);
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL2_Init();
+    ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Style
     bool imgui_dark_mode = false;
@@ -107,7 +113,7 @@ int main(int argc, char *argv[])
         glfwPollEvents();
 
         // Start the Dear ImGui frame
-        ImGui_ImplOpenGL2_NewFrame();
+        ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
@@ -195,14 +201,13 @@ int main(int argc, char *argv[])
         const auto clear_color = static_cast<ImVec4>(imgui_dark_mode ? WindowMainBackgroundColor_Dark : WindowMainBackgroundColor_Classic);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-        glfwMakeContextCurrent(window);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
     } // while (!glfwWindowShouldClose(window))
 
     // Cleanup
     picross_files.clear();
-    ImGui_ImplOpenGL2_Shutdown();
+    ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
     glfwDestroyWindow(window);
