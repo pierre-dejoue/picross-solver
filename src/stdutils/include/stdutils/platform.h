@@ -19,7 +19,7 @@ enum class Compiler
 };
 
 Compiler compiler();
-std::ostream& operator<<(std::ostream& out, Compiler compiter);
+std::ostream& operator<<(std::ostream& out, Compiler compiler);
 std::string compiler_version();
 
 void print_cpp_standard(std::ostream& out);
