@@ -53,7 +53,7 @@ Build and run unit tests:
 
 ```
 cmake -G "Visual Studio 17 2022" -DPICROSS_BUILD_TESTS=ON ..
-cmake --build . --target picross_run_utests --config Debug
+cmake --build . --target run_utests_picross --config Debug
 ```
 
 ### Install
@@ -193,7 +193,7 @@ Run the CLI on the example file:
 Use the validation mode to test multiple files at once and check the uniqueness of the solution.
  - Output one line per puzzle, in a comma-separated format.
  - Validation is `OK` if the puzzle is valid and has a unique solution
- - Difficulty hint: `LINE` for puzzles that are line solvable, `BRANCH` for puzzles that have a unique solution but are not line solvable, and `MULT` for grids with multiple solutions. 
+ - Difficulty hint: `LINE` for puzzles that are line solvable, `BRANCH` for puzzles that have a unique solution but are not line solvable, and `MULT` for grids with multiple solutions.
  - Performance timing
 
 For example:

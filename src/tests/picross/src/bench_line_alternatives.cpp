@@ -149,7 +149,7 @@ TEST_CASE("Bench linear vs full reduction", "[line_alternatives]")
     const auto min_line_length = constraint.min_line_size();
     CHECK(min_line_length == 11);
     constexpr unsigned int max_extra_zeros = 16;
-    FullReductionBuffers buffers(constraint.nb_segments(), min_line_length + max_extra_zeros);
+    FullReductionBuffers buffers(static_cast<unsigned int>(constraint.nb_segments()), min_line_length + max_extra_zeros);
     for (unsigned int extra_zeros = 2; extra_zeros <= max_extra_zeros; extra_zeros += 2)
     {
         const unsigned int nb_alt = ((extra_zeros + 1) * (extra_zeros + 2) * (extra_zeros + 3)) / 6;

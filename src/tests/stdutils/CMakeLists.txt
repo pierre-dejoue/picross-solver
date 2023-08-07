@@ -9,17 +9,19 @@ set(UTESTS_SOURCES
 
 file(GLOB UTESTS_HEADERS src/*.h)
 
-add_executable(stdutils_utests ${UTESTS_SOURCES} ${UTESTS_HEADERS})
+add_executable(utests_stdutils ${UTESTS_SOURCES} ${UTESTS_HEADERS})
 
-target_link_libraries(stdutils_utests
+set_target_warnings(utests_stdutils ON)
+
+target_link_libraries(utests_stdutils
     PRIVATE
     Catch2::Catch2WithMain
     stdutils
 )
 
-set_property(TARGET stdutils_utests PROPERTY FOLDER "tests")
+set_property(TARGET utests_stdutils PROPERTY FOLDER "tests")
 
-add_custom_target(stdutils_run_utests
-    $<TARGET_FILE:stdutils_utests> --skip-benchmarks
+add_custom_target(run_utests_stdutils
+    $<TARGET_FILE:utests_stdutils> --skip-benchmarks
     COMMENT "Run stdutils library UTests:"
 )

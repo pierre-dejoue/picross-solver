@@ -246,8 +246,6 @@ TEST_CASE("full_reduction_of_a_trivially_solvable_line", "[line_alternatives]")
 // Test based on the puzzle webpbn-10810.non "Centerpiece"
 TEST_CASE("centerpiece-webpbn-10810-row-8", "[line_alternatives]")
 {
-    constexpr auto MAX = BinomialCoefficients::overflowValue();
-
     const LineConstraint constraint(Line::ROW, { 2,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,2 });
     const auto min_line_size = constraint.min_line_size();
     CHECK(min_line_size == 51);
@@ -263,8 +261,6 @@ TEST_CASE("centerpiece-webpbn-10810-row-8", "[line_alternatives]")
 // Test based on the puzzle webpbn-10810.non "Centerpiece"
 TEST_CASE("centerpiece-webpbn-10810-row-9", "[line_alternatives]")
 {
-    constexpr auto MAX = BinomialCoefficients::overflowValue();
-
     const LineConstraint constraint(Line::ROW, { 1,1,1,2,2,2,2,2,2,2,2,2,1,1,1 });
     const auto min_line_size = constraint.min_line_size();
     CHECK(min_line_size == 38);

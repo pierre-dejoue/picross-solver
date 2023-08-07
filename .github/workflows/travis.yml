@@ -39,8 +39,8 @@ jobs:
 
     - name: Test stdutils
       working-directory: ${{github.workspace}}/build
-      run: cmake --build . --target stdutils_run_utests --config ${{env.BUILD_TYPE}}
+      run: cmake --build . --target run_utests_stdutils --config ${{env.BUILD_TYPE}}
 
     - name: Test picross
       working-directory: ${{github.workspace}}/build
-      run: cmake --build . --target picross_run_utests --config ${{env.BUILD_TYPE}}
+      run: cmake --build . --target run_utests_picross --config ${{env.BUILD_TYPE}}

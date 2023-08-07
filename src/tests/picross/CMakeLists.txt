@@ -15,23 +15,25 @@ set(UTESTS_SOURCES
 
 file(GLOB UTESTS_HEADERS src/*.h)
 
-add_executable(picross_utests ${UTESTS_SOURCES} ${UTESTS_HEADERS})
+add_executable(utests_picross ${UTESTS_SOURCES} ${UTESTS_HEADERS})
 
-target_include_directories(picross_utests
+set_target_warnings(utests_picross ON)
+
+target_include_directories(utests_picross
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../picross/src
 )
 
-target_link_libraries(picross_utests
+target_link_libraries(utests_picross
     PRIVATE
     Catch2::Catch2WithMain
     picross::picross
     picross::utils
 )
 
-set_property(TARGET picross_utests PROPERTY FOLDER "tests")
+set_property(TARGET utests_picross PROPERTY FOLDER "tests")
 
-add_custom_target(picross_run_utests
-    $<TARGET_FILE:picross_utests> --skip-benchmarks
+add_custom_target(run_utests_picross
+    $<TARGET_FILE:utests_picross> --skip-benchmarks
     COMMENT "Run Picross library UTests:"
 )
