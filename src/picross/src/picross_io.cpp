@@ -34,6 +34,31 @@ IOGrid::IOGrid(InputGrid&& input_grid, std::optional<OutputGrid>&& goal) noexcep
 namespace io
 {
 
+std::string str_error_code(ErrorCodeT code)
+{
+    switch (code)
+    {
+        case ErrorCode::PARSING_ERROR:
+            return "PARSING_ERROR";
+
+        case ErrorCode::FILE_ERROR:
+            return "FILE_ERROR";
+
+        case ErrorCode::EXCEPTION:
+            return "EXCEPTION";
+
+        case ErrorCode::WARNING:
+            return "WARNING";
+
+        default:
+        {
+            std::ostringstream oss;
+            oss << "ERROR_CODE(" << code << ")";
+            return oss.str();
+        }
+    }
+}
+
 namespace
 {
 
@@ -54,6 +79,8 @@ struct GridComponents
     InputGrid::Metadata         m_metadata;
     std::optional<OutputGrid>   m_goal;
 };
+
+using ParserErrorHandler = std::function<void(std::string_view)>;
 
 template <typename F>
 class FileParser;
@@ -78,7 +105,7 @@ public:
     {
     }
 
-    void parse_line(const std::string& line_to_parse, std::vector<GridComponents>& grids, const ErrorHandler& error_handler)
+    void parse_line(const std::string& line_to_parse, std::vector<GridComponents>& grids, const ParserErrorHandler& error_handler)
     {
         std::istringstream iss(line_to_parse);
         std::string token;
@@ -175,11 +202,11 @@ private:
         return "UNKNOWN";
     }
 
-    void error_decorator(const ErrorHandler& error_handler, const std::string_view& msg)
+    void error_decorator(const ParserErrorHandler& error_handler, const std::string_view& msg)
     {
         std::ostringstream oss;
         oss << msg << " (parsing_state = " << parsing_state_str() << ")";
-        error_handler(oss.str(), PARSER_ERROR);
+        error_handler(oss.str());
     }
 private:
     ParsingState parsing_state;
@@ -209,7 +236,7 @@ public:
     {
     }
 
-    void parse_line(const std::string& line_to_parse, std::vector<GridComponents>& grids, const ErrorHandler& error_handler)
+    void parse_line(const std::string& line_to_parse, std::vector<GridComponents>& grids, const ParserErrorHandler& error_handler)
     {
         UNUSED(error_handler);
 
@@ -286,11 +313,11 @@ private:
         return "UNKNOWN";
     }
 
-    void error_decorator(const ErrorHandler& error_handler, const std::string_view& msg)
+    void error_decorator(const ParserErrorHandler& error_handler, const std::string_view& msg)
     {
         std::ostringstream oss;
         oss << msg << " (parsing_state = " << parsing_state_str() << ")";
-        error_handler(oss.str(), PARSER_ERROR);
+        error_handler(oss.str());
     }
 private:
     ParsingState parsing_state;
@@ -322,7 +349,7 @@ public:
 
     }
 
-    void parse_line(const std::string& line_to_parse, std::vector<GridComponents>& grids, const ErrorHandler& error_handler)
+    void parse_line(const std::string& line_to_parse, std::vector<GridComponents>& grids, const ParserErrorHandler& error_handler)
     {
         std::istringstream iss(line_to_parse);
         std::string token;
@@ -543,14 +570,14 @@ private:
         return "UNKNOWN";
     }
 
-    void error_decorator(const ErrorHandler& error_handler, std::string_view msg, std::string_view token = "")
+    void error_decorator(const ParserErrorHandler& error_handler, std::string_view msg, std::string_view token = "")
     {
         std::ostringstream oss;
         oss << msg << " (parsing_state = " << parsing_state_str();
         if (!token.empty())
             oss << "; token = " << token;
         oss << ")";
-        error_handler(oss.str(), PARSER_ERROR);
+        error_handler(oss.str());
     }
 private:
     ParsingState parsing_state;
@@ -587,11 +614,11 @@ std::vector<IOGrid> parse_input_file_generic(std::string_view filepath, const Er
                 {
                     line_nb++;
                     std::string line = line_ss.str();
-                    parser.parse_line(line, grids, [line_nb, &line, &error_handler](std::string_view msg, ExitCode code)
+                    parser.parse_line(line, grids, [line_nb, &line, &error_handler](std::string_view msg)
                         {
                             std::ostringstream oss;
-                            oss << "Parsing error [" << msg << "] on line " << line_nb << ": " << line;
-                            error_handler(oss.str(), code);
+                            oss << "[" << msg << "] on line " << line_nb << ": " << line;
+                            error_handler(ErrorCode::PARSING_ERROR, oss.str());
                         });
                     line_ss.str("");
                 }
@@ -614,14 +641,14 @@ std::vector<IOGrid> parse_input_file_generic(std::string_view filepath, const Er
         {
             std::ostringstream oss;
             oss << "Cannot open file " << filepath;
-            error_handler(oss.str(), 1);
+            error_handler(ErrorCode::FILE_ERROR, oss.str());
         }
     }
     catch (std::exception& e)
     {
         std::ostringstream oss;
         oss << "Unhandled exception during file parsing: " << e.what();
-        error_handler(oss.str(), 2);
+        error_handler(ErrorCode::EXCEPTION, oss.str());
     }
 
     return result;

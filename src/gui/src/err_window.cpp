@@ -48,3 +48,9 @@ void ErrWindow::print(std::string_view msg)
     std::lock_guard<std::mutex> lock(pImpl->text_buffer_lock);
     pImpl->text_buffer.appendf("%s\n", msg.data());
 }
+
+void ErrWindow::print(std::string_view hdr, std::string_view msg)
+{
+    std::lock_guard<std::mutex> lock(pImpl->text_buffer_lock);
+    pImpl->text_buffer.appendf("%s %s\n", hdr.data(), msg.data());
+}

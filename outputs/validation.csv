@@ -1,5 +1,5 @@
 File,Grid,Size,Valid,Difficulty,Solutions,Timing (ms),Misc,Linear reductions,Full reductions,Min depth,Max depth,Searched line alternatives
-invalid_input.txt,,,ZERO,NOT_APPLICABLE,0,,"Parsing error [Invalid token GRILL (parsing_state = COLUMN_SECTION)] on line 105: GRILL Beaf"
+invalid_input.txt,,,ZERO,NOT_APPLICABLE,0,,"PARSING_ERROR [Invalid token GRILL (parsing_state = COLUMN_SECTION)] on line 105: GRILL Beaf"
 invalid_input.txt,Fishy,22x20,ERR,NOT_APPLICABLE,0,,"Number of filled tiles on rows (153) and columns (154) do not match"
 invalid_input.txt,False note,10x0,ERR,NOT_APPLICABLE,0,,"Invalid height = 0"
 invalid_input.txt,Ill-formed,3x3,ERR,NOT_APPLICABLE,0,,"Height = 3 of the grid is too small for constraint: Constraint on a COL: [ 4 ]; min_line_size = 4"

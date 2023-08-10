@@ -13,6 +13,7 @@ public:
 
     void visit(bool& can_be_erased);
     void print(std::string_view msg);
+    void print(std::string_view hdr, std::string_view msg);
 
 private:
     struct Impl;

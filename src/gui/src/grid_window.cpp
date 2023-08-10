@@ -433,10 +433,10 @@ void GridWindow::save_grid()
 
     if (!file_path.empty())
     {
-        const auto err_handler = [this](std::string_view msg, picross::io::ExitCode)
+        const auto err_handler = [this](picross::io::ErrorCodeT code, std::string_view msg)
         {
             std::lock_guard<std::mutex> lock(this->text_buffer->mutex);
-            this->text_buffer->buffer.appendf("%s\n", msg);
+            this->text_buffer->buffer.appendf("%s %s\n", picross::io::str_error_code(code).c_str(), msg);
         };
 
         const auto solution = (solutions.empty() || !solutions[0].is_completed()) ? std::nullopt : std::optional<picross::OutputGrid>(solutions[0]);

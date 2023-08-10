@@ -44,10 +44,19 @@ namespace io
 /*
  * IO error handling
  */
-using ExitCode = int;
-inline constexpr ExitCode PARSER_ERROR = 1;
+using ErrorCodeT = int;
+struct ErrorCode
+{
+    // All codes != 0
+    static constexpr ErrorCodeT PARSING_ERROR = 1;
+    static constexpr ErrorCodeT FILE_ERROR = 2;
+    static constexpr ErrorCodeT EXCEPTION = 3;
+    static constexpr ErrorCodeT WARNING = 4;
+};
 
-using ErrorHandler = std::function<void(std::string_view, ExitCode)>;
+std::string str_error_code(ErrorCodeT code);
+
+using ErrorHandler = std::function<void(ErrorCodeT, std::string_view)>;
 
 /*
  * File parser, native file format

@@ -30,7 +30,7 @@ picross::OutputGrid import_bitmap_pbm(const std::string& filepath, const picross
     }
     catch(const std::exception& e)
     {
-        error_handler(e.what(), 0);
+        error_handler(picross::io::ErrorCode::EXCEPTION, e.what());
     }
     return picross::OutputGrid(0, 0, picross::Tile::UNKNOWN, "Invalid");
 }
@@ -49,6 +49,6 @@ void export_bitmap_pbm(const std::string& filepath, const picross::OutputGrid& g
     }
     catch (const std::exception& e)
     {
-        error_handler(e.what(), 0);
+        error_handler(picross::io::ErrorCode::EXCEPTION, e.what());
     }
 }

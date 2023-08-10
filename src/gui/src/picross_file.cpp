@@ -23,9 +23,9 @@ void PicrossFile::visit_windows(bool& can_be_erased, Settings& settings)
     if (!is_file_open)
     {
         is_file_open = true;
-        const auto err_handler = [this](std::string_view msg, picross::io::ExitCode)
+        const auto err_handler = [this](picross::io::ErrorCodeT code, std::string_view msg)
         {
-            this->get_err_window().print(msg);
+            this->get_err_window().print(picross::io::str_error_code(code), msg);
         };
         std::optional<picross::OutputGrid> goal;
         std::vector<picross::IOGrid> grids_to_solve = picross::io::parse_picross_file(file_path, file_format, err_handler);

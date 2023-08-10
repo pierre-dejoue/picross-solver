@@ -216,15 +216,16 @@ int main(int argc, char *argv[])
         ValidationModeData file_data;
         file_data.filename = stdutils::string::filename(filepath);
 
-        const picross::io::ErrorHandler err_handler_classic = [&return_status, &file_data](std::string_view msg, picross::io::ExitCode code)
+        const picross::io::ErrorHandler err_handler_classic = [&return_status, &file_data](picross::io::ErrorCodeT code, std::string_view msg)
         {
-            std::cout << (code == 0 ? "WARNING" : "ERROR" ) << " [" << file_data.filename << "]: " << msg << std::endl;
-            if (code != 0)
-                return_status = code;
+            std::cout << picross::io::str_error_code(code) << " [" << file_data.filename << "]: " << msg << std::endl;
+            return_status = code;
         };
-        const picross::io::ErrorHandler err_handler_validation = [&file_data](std::string_view msg, picross::io::ExitCode code)
+        const picross::io::ErrorHandler err_handler_validation = [&file_data](picross::io::ErrorCodeT code, std::string_view msg)
         {
-            file_data.misc = msg.empty() ? std::to_string(code) : msg;
+            std::ostringstream oss;
+            oss << picross::io::str_error_code(code) << " " << msg;
+            file_data.misc = oss.str();
         };
 
         const auto format = [&args, &filepath]() -> picross::io::PicrossFileFormat {
@@ -391,11 +392,11 @@ int main(int argc, char *argv[])
                 if (validation_mode)
                 {
                     grid_data.validation_result.validation_code = -1;   // ERR
-                    grid_data.misc = "EXCPT " + std::string(e.what());
+                    grid_data.misc = "EXCEPTION";
                 }
                 else
                 {
-                    std::cout << "EXCPT [" << file_data.filename << "][" << input_grid.name() << "]: " << e.what() << std::endl;
+                    std::cout << "EXCEPTION [" << file_data.filename << "][" << input_grid.name() << "]: " << e.what() << std::endl;
                     return_status = 5;
                 }
             }

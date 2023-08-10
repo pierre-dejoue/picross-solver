@@ -106,20 +106,18 @@ OutputGrid io::parse_output_grid_from_file(std::string_view filepath, const io::
         {
             std::ostringstream oss;
             oss << "Cannot open file " << filepath;
-            error_handler(oss.str(), 1);
+            error_handler(ErrorCode::FILE_ERROR, oss.str());
         }
     }
     catch (std::logic_error& l)
     {
-        std::ostringstream oss;
-        oss << "Parsing error: " << l.what();
-        error_handler(oss.str(), 2);
+        error_handler(ErrorCode::PARSING_ERROR, l.what());
     }
     catch (std::exception& e)
     {
         std::ostringstream oss;
         oss << "Unhandled exception during file parsing: " << e.what();
-        error_handler(oss.str(), 3);
+        error_handler(ErrorCode::EXCEPTION, oss.str());
     }
     return OutputGrid(0, 0, Tile::UNKNOWN, "Invalid");
 }

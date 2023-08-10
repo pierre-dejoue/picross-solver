@@ -1,4 +1,4 @@
-ERROR [invalid_input.txt]: Parsing error [Invalid token GRILL (parsing_state = COLUMN_SECTION)] on line 105: GRILL Beaf
+PARSING_ERROR [invalid_input.txt]: [Invalid token GRILL (parsing_state = COLUMN_SECTION)] on line 105: GRILL Beaf
 GRID 1: Fishy
   Size: 22x20
   Invalid grid. Error message: Number of filled tiles on rows (153) and columns (154) do not match
