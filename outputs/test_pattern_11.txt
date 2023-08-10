@@ -32,6 +32,7 @@ GRID 1: Centerpiece edge
 
   Difficulty: MULT
   Number of solutions found: 3
+  Max K: 4
   Max branching depth: 1
     > Hypothesis (probing/branching) on 8/1 lines
     > Total number of alternatives being tested (probing/branching): 24/3

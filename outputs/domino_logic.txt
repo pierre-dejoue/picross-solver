@@ -11,6 +11,7 @@ GRID 1: 3-Dom
 
   Difficulty: BRANCH
   Number of solutions found: 1
+  Max K: 2
   Max branching depth: 1
     > Hypothesis (probing/branching) on 1/0 lines
     > Total number of alternatives being tested (probing/branching): 5/0
@@ -39,6 +40,7 @@ GRID 2: 4-Dom
 
   Difficulty: BRANCH
   Number of solutions found: 1
+  Max K: 2
   Max branching depth: 1
     > Hypothesis (probing/branching) on 5/0 lines
     > Total number of alternatives being tested (probing/branching): 34/0
@@ -69,6 +71,7 @@ GRID 3: 5-Dom
 
   Difficulty: BRANCH
   Number of solutions found: 1
+  Max K: 2
   Max branching depth: 5
     > Hypothesis (probing/branching) on 12/26 lines
     > Total number of alternatives being tested (probing/branching): 128/115
@@ -101,6 +104,7 @@ GRID 4: 6-Dom
 
   Difficulty: BRANCH
   Number of solutions found: 1
+  Max K: 2
   Max branching depth: 6
     > Hypothesis (probing/branching) on 12/167 lines
     > Total number of alternatives being tested (probing/branching): 152/776
@@ -135,6 +139,7 @@ GRID 5: 7-Dom
 
   Difficulty: BRANCH
   Number of solutions found: 1
+  Max K: 2
   Max branching depth: 9
     > Hypothesis (probing/branching) on 12/1875 lines
     > Total number of alternatives being tested (probing/branching): 176/9144
@@ -171,6 +176,7 @@ GRID 6: 8-Dom
 
   Difficulty: BRANCH
   Number of solutions found: 1
+  Max K: 2
   Max branching depth: 10
     > Hypothesis (probing/branching) on 13/18866 lines
     > Total number of alternatives being tested (probing/branching): 217/97827
@@ -209,6 +215,7 @@ GRID 7: 9-Dom
 
   Difficulty: BRANCH
   Number of solutions found: 1
+  Max K: 2
   Max branching depth: 12
     > Hypothesis (probing/branching) on 14/222905 lines
     > Total number of alternatives being tested (probing/branching): 262/1125475

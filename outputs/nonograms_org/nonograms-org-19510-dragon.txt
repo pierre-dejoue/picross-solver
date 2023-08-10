@@ -84,6 +84,7 @@ GRID 1: Dragon
 
   Difficulty: LINE
   Number of solutions found: 1
+  Max K: 20
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4294967295 (overflow!)
   Max number of alternatives after a  linear line reduction (change/all): 4294967295/4294967295

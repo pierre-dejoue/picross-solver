@@ -64,6 +64,7 @@ GRID 1: Moss
 
   Difficulty: LINE
   Number of solutions found: 1
+  Max K: 8
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 32224114
   Max number of alternatives after a  linear line reduction (change/all): 13884156/13884156

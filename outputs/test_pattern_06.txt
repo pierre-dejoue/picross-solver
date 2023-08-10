@@ -26,6 +26,7 @@ GRID 1: Two Notes
 
   Difficulty: MULT
   Number of solutions found: 2
+  Max K: 2
   Max branching depth: 1
     > Hypothesis (probing/branching) on 12/1 lines
     > Total number of alternatives being tested (probing/branching): 30/2

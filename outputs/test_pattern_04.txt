@@ -17,6 +17,7 @@ GRID 1: Katakana
 
   Difficulty: LINE
   Number of solutions found: 1
+  Max K: 4
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 120
   Max number of alternatives after a  linear line reduction (change/all): 1/1

@@ -25,6 +25,7 @@ GRID 5: Impossible
 
   Difficulty: NOT_APPLICABLE
   Number of solutions found: 0
+  Max K: 2
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 1
   Number of full grid pass: 1
@@ -37,6 +38,7 @@ GRID 6: Zero
 
   Difficulty: NOT_APPLICABLE
   Number of solutions found: 0
+  Max K: 2
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 3
   Number of full grid pass: 1

@@ -39,6 +39,7 @@ GRID 1: Petroglyph
 
   Difficulty: BRANCH
   Number of solutions found: 1
+  Max K: 9
   Max branching depth: 1
     > Hypothesis (probing/branching) on 1/0 lines
     > Total number of alternatives being tested (probing/branching): 29/0

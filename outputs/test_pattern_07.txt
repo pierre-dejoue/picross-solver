@@ -46,6 +46,7 @@ GRID 1: Two Cakes
 
   Difficulty: MULT
   Number of solutions found: 2
+  Max K: 3
   Max branching depth: 1
     > Hypothesis (probing/branching) on 13/1 lines
     > Total number of alternatives being tested (probing/branching): 49/2

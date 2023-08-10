@@ -15,6 +15,7 @@ GRID 1: Edge Pattern
 
   Difficulty: BRANCH
   Number of solutions found: 1
+  Max K: 2
   Max branching depth: 1
     > Hypothesis (probing/branching) on 2/0 lines
     > Total number of alternatives being tested (probing/branching): 12/0

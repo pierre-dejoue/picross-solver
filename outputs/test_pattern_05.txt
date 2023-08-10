@@ -1637,6 +1637,7 @@ GRID 1: Katakana
 
   Difficulty: MULT
   Number of solutions found: 109
+  Max K: 3
   Max branching depth: 8
     > Hypothesis (probing/branching) on 13/93 lines
     > Total number of alternatives being tested (probing/branching): 61/201

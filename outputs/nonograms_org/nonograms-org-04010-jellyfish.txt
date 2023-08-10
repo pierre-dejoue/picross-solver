@@ -44,6 +44,7 @@ GRID 1: Jellyfish
 
   Difficulty: LINE
   Number of solutions found: 1
+  Max K: 10
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 293930
   Max number of alternatives after a  linear line reduction (change/all): 293930/293930

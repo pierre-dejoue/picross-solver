@@ -24,6 +24,7 @@ GRID 1: The Ugly Duckling
 
   Difficulty: LINE
   Number of solutions found: 1
+  Max K: 6
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 8008
   Max number of alternatives after a  linear line reduction (change/all): 8008/8008

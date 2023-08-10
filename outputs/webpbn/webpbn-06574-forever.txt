@@ -29,6 +29,7 @@ GRID 1: Forever
 
   Difficulty: BRANCH
   Number of solutions found: 1
+  Max K: 8
   Max branching depth: 1
     > Hypothesis (probing/branching) on 5/0 lines
     > Total number of alternatives being tested (probing/branching): 5325/0

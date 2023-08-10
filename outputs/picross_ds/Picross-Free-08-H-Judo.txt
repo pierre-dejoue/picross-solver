@@ -24,6 +24,7 @@ GRID 1: Judo
 
   Difficulty: LINE
   Number of solutions found: 1
+  Max K: 5
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 4368
   Max number of alternatives after a  linear line reduction (change/all): 4368/4368

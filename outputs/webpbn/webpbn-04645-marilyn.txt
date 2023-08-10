@@ -74,6 +74,7 @@ GRID 1: Marilyn
 
   Difficulty: BRANCH
   Number of solutions found: 1
+  Max K: 7
   Max branching depth: 1
     > Hypothesis (probing/branching) on 3/0 lines
     > Total number of alternatives being tested (probing/branching): 1312/0

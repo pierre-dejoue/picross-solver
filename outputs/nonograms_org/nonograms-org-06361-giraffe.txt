@@ -44,6 +44,7 @@ GRID 1: Giraffe
 
   Difficulty: LINE
   Number of solutions found: 1
+  Max K: 8
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 2035800
   Max number of alternatives after a  linear line reduction (change/all): 593775/593775

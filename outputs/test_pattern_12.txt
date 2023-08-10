@@ -497,6 +497,7 @@ GRID 1: Centerpiece corner
 
   Difficulty: MULT
   Number of solutions found: 33
+  Max K: 6
   Max branching depth: 4
     > Hypothesis (probing/branching) on 12/20 lines
     > Total number of alternatives being tested (probing/branching): 48/54

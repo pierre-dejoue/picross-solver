@@ -10,6 +10,7 @@ GRID 1: Switch
 
   Difficulty: MULT
   Number of solutions found: 2
+  Max K: 1
   Max branching depth: 1
     > Hypothesis (probing/branching) on 4/1 lines
     > Total number of alternatives being tested (probing/branching): 8/2

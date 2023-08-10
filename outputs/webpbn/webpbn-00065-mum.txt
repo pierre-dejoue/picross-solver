@@ -44,6 +44,7 @@ GRID 1: Mum
 
   Difficulty: BRANCH
   Number of solutions found: 1
+  Max K: 12
   Max branching depth: 1
     > Hypothesis (probing/branching) on 7/0 lines
     > Total number of alternatives being tested (probing/branching): 32/0

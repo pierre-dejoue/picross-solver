@@ -64,6 +64,7 @@ GRID 1: Barque
 
   Difficulty: LINE
   Number of solutions found: 1
+  Max K: 16
   Max branching depth: 0
   Max number of alternatives on an empty line (initial grid pass): 1852482996
   Max number of alternatives after a  linear line reduction (change/all): 1852482996/1852482996
