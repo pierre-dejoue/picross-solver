@@ -4,6 +4,7 @@
 include(catch2)
 
 set(UTESTS_SOURCES
+    src/test_io.cpp
     src/test_span.cpp
 )
 

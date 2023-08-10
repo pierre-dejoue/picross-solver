@@ -7,6 +7,7 @@
  ******************************************************************************/
 #include <picross/picross_io.h>
 
+#include <stdutils/io.h>
 #include <stdutils/macros.h>
 #include <stdutils/string.h>
 
@@ -62,8 +63,6 @@ std::string str_error_code(ErrorCodeT code)
 namespace
 {
 
-constexpr unsigned int BUF_SZ = 2048u;
-
 struct FileFormat
 {
     struct Native {};
@@ -110,7 +109,7 @@ public:
         std::istringstream iss(line_to_parse);
         std::string token;
 
-        // Copy the first word in 'token'
+        // Copy the first word in 'token' (trailing whitespaces are skipped)
         iss >> token;
 
         if (token == "GRID")
@@ -167,14 +166,11 @@ public:
         }
         else if (token == "#")
         {
-            // Comment line are ignored
-        }
-        else if (token.empty())
-        {
-            // Empty lines are ignored
+            // Comment lines are ignored
         }
         else
         {
+            assert(!token.empty());        // Blank lines are already filtered out
             error_decorator(error_handler, "Invalid token " + token);
         }
     }
@@ -240,9 +236,7 @@ public:
     {
         UNUSED(error_handler);
 
-        // Ignore whiteline
-        if (line_to_parse.empty() || std::all_of(line_to_parse.cbegin(), line_to_parse.cend(), [](char c) { return c == '\t' || c == ' ';  } ))
-            return;
+        // Blank lines are already filtered out
 
         // Ignore comments
         if (line_to_parse[0] == '#')
@@ -390,12 +384,9 @@ public:
         {
             // Copy the first word in 'token'
             iss >> token;
+            assert(!token.empty());         // Blank lines are already filtered out
 
-            if (token.empty())
-            {
-                // An empty line outside of the rows or columns sections can just be ignored
-            }
-            else if (token == "title")
+            if (token == "title")
             {
                 std::stringbuf remaining;
                 iss >> &remaining;
@@ -525,8 +516,7 @@ private:
         if (pos0 != std::string::npos && pos1 != std::string::npos)
         {
             // Extract text in quotes
-            assert(pos1 > pos0);
-            return str.substr(pos0 + 1, pos1 - pos0 - 1);
+            return (pos0 + 1 < pos1) ? str.substr(pos0 + 1, pos1 - pos0 - 1) : "";
         }
         else
         {
@@ -600,32 +590,19 @@ std::vector<IOGrid> parse_input_file_generic(std::string_view filepath, const Er
         std::ifstream inputstream(filepath.data());
         if (inputstream.is_open())
         {
+            // Start line by line parsing
             FileParser<F> parser;
-            // Line buffer and stream
-            char line_buf[BUF_SZ];
-            std::stringstream line_ss;
-            unsigned int line_nb = 0;
-            // Start parsing
-            while (inputstream.good())
+            auto line_stream = stdutils::io::SkipLineStream(inputstream).skip_blank_lines();
+            std::string line;
+            while (line_stream.getline(line))
             {
-                const bool fail = inputstream.getline(line_buf, BUF_SZ).fail();
-                line_ss << line_buf;
-                if (!fail)
-                {
-                    line_nb++;
-                    std::string line = line_ss.str();
-                    parser.parse_line(line, grids, [line_nb, &line, &error_handler](std::string_view msg)
-                        {
-                            std::ostringstream oss;
-                            oss << "[" << msg << "] on line " << line_nb << ": " << line;
-                            error_handler(ErrorCode::PARSING_ERROR, oss.str());
-                        });
-                    line_ss.str("");
-                }
-                else if (!inputstream.eof())
-                {
-                    inputstream.clear();        // Line is longer than BUF_SZ
-                }
+                const auto line_nb = line_stream.line_nb();
+                parser.parse_line(line, grids, [line_nb, &line, &error_handler](std::string_view msg)
+                    {
+                        std::ostringstream oss;
+                        oss << "[" << msg << "] on line " << line_nb << ": " << line;
+                        error_handler(ErrorCode::PARSING_ERROR, oss.str());
+                    });
             }
             std::for_each(grids.begin(), grids.end(), [&result](GridComponents& grid_comps) {
                 auto& new_grid = result.emplace_back(
@@ -704,11 +681,11 @@ void write_metadata_non_format(std::ostream& out, const std::map<std::string, st
     const std::string quote = quoted ? "\"" : "";
     if (meta.count(key) && !meta.at(key).empty())
     {
-        out << key << ' ' << quote << meta.at(key) << quote << std::endl;
+        out << key << " " << quote << meta.at(key) << quote << std::endl;
     }
     else if (!quote.empty())
     {
-        out << key << ' ' << quote << quote << std::endl;
+        out << key << " " << quote << quote << std::endl;
     }
     else
     {

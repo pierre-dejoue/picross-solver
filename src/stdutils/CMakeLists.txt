@@ -5,6 +5,7 @@
 include(compiler_options)
 
 set(LIB_SOURCES
+    src/io.cpp
     src/platform.cpp
     src/string.cpp
 )
