@@ -5,7 +5,6 @@
 option(PICROSS_GUI_IMGUI_DEMO "Show ImGUI demo window" OFF)
 
 # Dependencies
-add_subdirectory(imgui)
 include(pfd)
 
 set(GUI_SOURCES
@@ -24,10 +23,10 @@ file(GLOB GUI_HEADERS src/*.h)
 
 add_executable(picross_solver ${GUI_SOURCES} ${GUI_HEADERS})
 
-if (PICROSS_GUI_IMGUI_DEMO)
+if(PICROSS_GUI_IMGUI_DEMO)
     target_compile_definitions(picross_solver
         PUBLIC
-        PICROSS_GUI_IMGUI_DEMO
+        PICROSS_GUI_IMGUI_DEMO_FLAG
     )
 endif()
 

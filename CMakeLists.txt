@@ -35,6 +35,7 @@ endif()
 
 # Picross graphical app
 if(PICROSS_BUILD_APP)
+    add_subdirectory(src/gui/imgui)
     add_subdirectory(src/gui)
 endif()
 

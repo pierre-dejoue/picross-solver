@@ -1,23 +1,31 @@
 # Dependencies
 find_package(OpenGL REQUIRED)
-find_package(glfw3 3.3 REQUIRED)
+include(glfw)
 include(imgui)
 
-add_library(imgui
+set(IMGUI_SRC
+    ${imgui_SOURCE_DIR}/imgui.cpp
+    ${imgui_SOURCE_DIR}/imgui_draw.cpp
+    ${imgui_SOURCE_DIR}/imgui_tables.cpp
+    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+)
+
+if(PICROSS_GUI_IMGUI_DEMO)
+    list(APPEND IMGUI_SRC ${imgui_SOURCE_DIR}/imgui_demo.cpp)
+endif()
+
+set(IMGUI_HDR
     src/imgui_config.h
     ${imgui_SOURCE_DIR}/imconfig.h
     ${imgui_SOURCE_DIR}/imgui.h
-    ${imgui_SOURCE_DIR}/imgui.cpp
-    ${imgui_SOURCE_DIR}/imgui_demo.cpp
-    ${imgui_SOURCE_DIR}/imgui_draw.cpp
     ${imgui_SOURCE_DIR}/imgui_internal.h
-    ${imgui_SOURCE_DIR}/imgui_tables.cpp
-    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.h
-    ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.h
-    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 )
+
+add_library(imgui ${IMGUI_SRC} ${IMGUI_HDR})
 
 target_include_directories(imgui
     PUBLIC

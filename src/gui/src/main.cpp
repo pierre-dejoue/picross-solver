@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
             settings.visit_window(can_be_erased);
         }
 
-#if PICROSS_GUI_IMGUI_DEMO
+#if PICROSS_GUI_IMGUI_DEMO_FLAG
         // Dear Imgui Demo
         ImGui::ShowDemoWindow();
 #endif
