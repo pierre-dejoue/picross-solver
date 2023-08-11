@@ -8,7 +8,7 @@ include(FetchContent)
 FetchContent_Declare(
     pfd
     GIT_REPOSITORY https://github.com/samhocevar/portable-file-dialogs.git
-    GIT_TAG b8ed26a24b2a2de189d379f907ddc93e071cebbc
+    GIT_TAG 7f852d88a480020d7f91957cbcefe514fc95000c
 )
 FetchContent_MakeAvailable(pfd)
 
