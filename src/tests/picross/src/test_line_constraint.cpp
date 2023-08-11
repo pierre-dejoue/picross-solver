@@ -1,4 +1,4 @@
-#include <catch2/catch_test_macros.hpp>
+#include <catch_amalgamated.hpp>
 #include <picross/picross.h>
 #include <utils/text_io.h>
 

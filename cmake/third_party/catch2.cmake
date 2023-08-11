@@ -8,7 +8,19 @@ Include(FetchContent)
 FetchContent_Declare(
     catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG        v3.2.0
+    GIT_TAG        v3.4.0
 )
 
-FetchContent_MakeAvailable(catch2)
+FetchContent_Populate(catch2)
+
+add_library(Catch2WithMain STATIC
+    ${catch2_SOURCE_DIR}/extras/catch_amalgamated.cpp
+    ${catch2_SOURCE_DIR}/extras/catch_amalgamated.hpp
+)
+
+target_include_directories(Catch2WithMain
+    PUBLIC
+    ${catch2_SOURCE_DIR}/extras
+)
+
+add_library(Catch2::Catch2WithMain ALIAS Catch2WithMain)
