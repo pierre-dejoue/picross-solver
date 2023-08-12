@@ -78,6 +78,10 @@ Line OutputGrid::get_line(Line::Index index) const
     return line_from_line_span(p_grid->get_line(Type, index));
 }
 
+// Explicit template instantiation
+template Line OutputGrid::get_line<Line::ROW>(Line::Index index) const;
+template Line OutputGrid::get_line<Line::COL>(Line::Index index) const;
+
 Line OutputGrid::get_line(Line::Type type, Line::Index index) const
 {
     return type == Line::ROW ? get_line<Line::ROW>(index) : get_line<Line::COL>(index);
