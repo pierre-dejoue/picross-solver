@@ -1,0 +1,41 @@
+name: build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ ubuntu, macos, windows ]
+
+    runs-on: ${{ matrix.os }}-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure CMake
+      run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DPICROSS_BUILD_CLI=ON -DPICROSS_BUILD_TESTS=ON
+
+    - name: Build
+      working-directory: ${{ github.workspace }}/build
+      run: cmake --build . --config ${{ env.BUILD_TYPE }}
+
+    - name: Version
+      working-directory: ${{ github.workspace }}/build
+      run: cmake --build . --target picross_cli_version --config ${{ env.BUILD_TYPE }}
+
+    - name: Test stdutils
+      working-directory: ${{ github.workspace }}/build
+      run: cmake --build . --target run_utests_stdutils --config ${{ env.BUILD_TYPE }}
+
+    - name: Test picross
+      working-directory: ${{ github.workspace }}/build
+      run: cmake --build . --target run_utests_picross --config ${{ env.BUILD_TYPE }}
