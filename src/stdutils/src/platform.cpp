@@ -9,7 +9,7 @@ namespace stdutils
 namespace platform
 {
 
-Compiler compiler()
+constexpr Compiler compiler()
 {
     // NB: Test __GNUC__ last, because that macro is sometimes defined by other compilers than the "true" GCC
     #if   defined(_MSC_VER)
@@ -98,6 +98,48 @@ std::string compiler_version()
     return out.str();
 }
 
+constexpr Arch architecture()
+{
+    // Source: https://abseil.io/docs/cpp/platforms/macros
+    #if   defined(__aarch64__)
+        return Arch::arm64;
+    #elif defined(__x86_64__) || defined(_M_X64)
+        return Arch::x86_64;
+    #elif defined(__i386__) || defined(_M_IX32)
+        return Arch::x86;
+    #else
+        return Arch::UNKNOWN;
+    #endif
+}
+
+std::ostream& operator<<(std::ostream& out, Arch arch)
+{
+    switch (arch)
+    {
+        case Arch::UNKNOWN:
+            out << "Unknown";
+            break;
+
+        case Arch::x86:
+            out << "x86";
+            break;
+
+        case Arch::x86_64:
+            out << "x86_64";
+            break;
+
+        case Arch::arm64:
+            out << "arm64";
+            break;
+
+        default:
+            assert(0);
+            out << "Unknown Id";
+            break;
+    }
+    return out;
+}
+
 void print_cpp_standard(std::ostream& out)
 {
     out << "C++ Standard: " << __cplusplus << std::endl;
@@ -105,11 +147,17 @@ void print_cpp_standard(std::ostream& out)
 
 void print_compiler_info(std::ostream& out)
 {
-    const auto compiler_id = compiler();
+    constexpr auto compiler_id = compiler();
     out << "Compiler: " << compiler_id;
-    if (compiler_id != Compiler::UNKNOWN)
+    if constexpr (compiler_id != Compiler::UNKNOWN)
         out << " " << compiler_version();
     out << std::endl;
+}
+
+void print_architecture_info(std::ostream& out)
+{
+    constexpr auto arch_id = architecture();
+    out<< "Arch: " << arch_id << std::endl;
 }
 
 void print_compilation_date(std::ostream& out)
@@ -121,9 +169,9 @@ void print_compiler_all_info(std::ostream& out)
 {
     print_cpp_standard(out);
     print_compiler_info(out);
+    print_architecture_info(out);
     print_compilation_date(out);
 }
-
 
 } // namespace platform
 } // namespace stdutils
