@@ -11,7 +11,7 @@ ConsoleProgressObserver::ConsoleProgressObserver(std::ostream& ostream)
 {
 }
 
-void ConsoleProgressObserver::operator()(picross::ObserverEvent event, const picross::Line*, unsigned int depth, unsigned int misc)
+void ConsoleProgressObserver::operator()(picross::ObserverEvent event, const picross::Line*, const picross::ObserverData& data)
 {
     switch (event)
     {
@@ -25,14 +25,13 @@ void ConsoleProgressObserver::operator()(picross::ObserverEvent event, const pic
 
     case picross::ObserverEvent::PROGRESS:
     {
-        const auto progress_i = std::make_unique<std::uint32_t>(static_cast<std::uint32_t>(misc));
-        const float progress_f = *reinterpret_cast<const float*>(progress_i.get());
-        if ((progress_f - m_previous_progress) > 0.001f)
+        const float& progress = data.m_misc_f;
+        if ((progress - m_previous_progress) > 0.001f)
         {
-            m_ostream << "Progress: " << progress_f
-                      << " (depth: " << depth << ")"
+            m_ostream << "Progress: " << progress
+                      << " (depth: " << data.m_depth << ")"
                       << std::endl;
-            m_previous_progress = progress_f;
+            m_previous_progress = progress;
         }
         break;
     }

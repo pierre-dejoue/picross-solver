@@ -35,13 +35,13 @@ public:
     explicit GridObserver(const picross::InputGrid& grid);
     virtual ~GridObserver() = default;
 
-    void operator()(picross::ObserverEvent event, const picross::Line* line, unsigned int depth, unsigned int misc);
+    void operator()(picross::ObserverEvent event, const picross::Line* line, const picross::ObserverData& data);
 
 protected:
     void observer_clear();
 
 private:
-    virtual void observer_callback(picross::ObserverEvent event, const picross::Line* line, unsigned int depth, unsigned int misc, const ObserverGrid& grid) = 0;
+    virtual void observer_callback(picross::ObserverEvent event, const picross::Line* line, const picross::ObserverData& data, const ObserverGrid& grid) = 0;
 
 private:
     std::vector<ObserverGrid> m_grids;

@@ -17,10 +17,10 @@
 #include <utility>
 
 
-GridWindow::LineEvent::LineEvent(picross::ObserverEvent event, const picross::Line* line, unsigned int misc, const ObserverGrid& grid)
+GridWindow::LineEvent::LineEvent(picross::ObserverEvent event, const picross::Line* line, const picross::ObserverData& data, const ObserverGrid& grid)
     : m_event(event)
     , m_line_id()
-    , m_misc(misc)
+    , m_data(data)
     , m_grid(grid)
 {
     if (line) { m_line_id = std::make_optional<picross::LineId>(*line); }
@@ -310,7 +310,7 @@ void GridWindow::reset_solutions()
     text_buffer->buffer.appendf("Grid %s\n", picross::str_input_grid_size(grid).c_str());
 }
 
-void GridWindow::observer_callback(picross::ObserverEvent event, const picross::Line* line, unsigned int, unsigned int misc, const ObserverGrid& l_grid)
+void GridWindow::observer_callback(picross::ObserverEvent event, const picross::Line* line, const picross::ObserverData& data, const ObserverGrid& l_grid)
 {
     // Filter out events useless to the GUI
     if (event != picross::ObserverEvent::DELTA_LINE && event != picross::ObserverEvent::SOLVED_GRID && event != picross::ObserverEvent::PROGRESS)
@@ -329,7 +329,7 @@ void GridWindow::observer_callback(picross::ObserverEvent event, const picross::
                 ||  this->abort_solver_thread();
         });
     }
-    line_events.emplace_back(event, line, misc, l_grid);
+    line_events.emplace_back(event, line, data, l_grid);
 }
 
 unsigned int GridWindow::process_line_events(std::vector<LineEvent>& events)
@@ -343,7 +343,7 @@ unsigned int GridWindow::process_line_events(std::vector<LineEvent>& events)
         if (event.m_event == picross::ObserverEvent::PROGRESS)
         {
             // Only indicative
-            solver_progress = reinterpret_cast<const float&>(static_cast<const std::uint32_t&>(event.m_misc));
+            solver_progress = event.m_data.m_misc_f;
             continue;
         }
         assert(event.m_event == picross::ObserverEvent::DELTA_LINE || event.m_event == picross::ObserverEvent::SOLVED_GRID);

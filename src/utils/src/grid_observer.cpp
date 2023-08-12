@@ -53,7 +53,7 @@ GridObserver::GridObserver(const picross::InputGrid& grid)
 {
 }
 
-void GridObserver::operator()(picross::ObserverEvent event, const picross::Line* line, unsigned int depth, unsigned int misc)
+void GridObserver::operator()(picross::ObserverEvent event, const picross::Line* line, const picross::ObserverData& data)
 {
     const auto width = m_grids[0].width();
     const auto height = m_grids[0].height();
@@ -64,20 +64,20 @@ void GridObserver::operator()(picross::ObserverEvent event, const picross::Line*
         if (!line)
         {
             // BRANCHING EDGE event
-            assert(depth > 0u);
-            if (depth > m_current_depth)
+            assert(data.m_depth > 0u);
+            if (data.m_depth > m_current_depth)
             {
-                assert(depth == m_current_depth + 1u);
+                assert(data.m_depth == m_current_depth + 1u);
                 const unsigned int start_fill_depth = static_cast<unsigned int>(m_grids.size());
-                for (unsigned int d = start_fill_depth; d <= depth; d++)
+                for (unsigned int d = start_fill_depth; d <= data.m_depth; d++)
                 {
                     m_grids.emplace_back(width, height, d);
                 }
             }
-            assert(depth < m_grids.size());
-            m_grids[depth] = m_grids[depth - 1];
+            assert(data.m_depth < m_grids.size());
+            m_grids[data.m_depth] = m_grids[data.m_depth - 1];
         }
-        m_current_depth = depth;
+        m_current_depth = data.m_depth;
         break;
 
     case picross::ObserverEvent::KNOWN_LINE:
@@ -85,7 +85,7 @@ void GridObserver::operator()(picross::ObserverEvent event, const picross::Line*
 
     case picross::ObserverEvent::DELTA_LINE:
     {
-        assert(depth == m_current_depth);
+        assert(data.m_depth == m_current_depth);
         const size_t index = line->index();
         ObserverGrid& grid = m_grids.at(m_current_depth);
         if (line->type() == picross::Line::ROW)
@@ -122,7 +122,7 @@ void GridObserver::operator()(picross::ObserverEvent event, const picross::Line*
     }
 
     assert(m_current_depth < m_grids.size());
-    observer_callback(event, line, depth, misc, m_grids.at(m_current_depth));
+    observer_callback(event, line, data, m_grids.at(m_current_depth));
 }
 
 void GridObserver::observer_clear()

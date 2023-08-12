@@ -146,7 +146,7 @@ std::ostream& operator<<(std::ostream& out, ObserverEvent event)
     return out;
 }
 
-std::string str_solver_internal_state(unsigned int internal_state)
+std::string str_solver_internal_state(std::uint32_t internal_state)
 {
     std::stringstream ss;
     ss << static_cast<WorkGridState>(internal_state);

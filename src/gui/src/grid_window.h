@@ -23,11 +23,11 @@ class GridWindow : public GridObserver
 public:
     struct LineEvent
     {
-        LineEvent(picross::ObserverEvent event, const picross::Line* line, unsigned int misc, const ObserverGrid& grid);
+        LineEvent(picross::ObserverEvent event, const picross::Line* line, const picross::ObserverData& data, const ObserverGrid& grid);
 
         picross::ObserverEvent          m_event;
         std::optional<picross::LineId>  m_line_id;
-        unsigned int                    m_misc;
+        picross::ObserverData           m_data;
         ObserverGrid                    m_grid;
     };
 public:
@@ -42,7 +42,7 @@ public:
 
 private:
     void reset_solutions();
-    void observer_callback(picross::ObserverEvent event, const picross::Line* line, unsigned int, unsigned int, const ObserverGrid& grid) override;
+    void observer_callback(picross::ObserverEvent event, const picross::Line* line, const picross::ObserverData& data, const ObserverGrid& grid) override;
     unsigned int process_line_events(std::vector<LineEvent>& events);
     void solve_picross_grid();
     void save_grid();

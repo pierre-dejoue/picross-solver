@@ -19,7 +19,7 @@ void ConsoleObserver::verify_against_goal(const picross::OutputGrid& goal)
     m_goal = goal;
 }
 
-void ConsoleObserver::observer_callback(picross::ObserverEvent event, const picross::Line* line, unsigned int depth, unsigned int misc, const ObserverGrid& grid)
+void ConsoleObserver::observer_callback(picross::ObserverEvent event, const picross::Line* line, const picross::ObserverData& data, const ObserverGrid& grid)
 {
     m_ostream << event;
     switch (event)
@@ -29,28 +29,28 @@ void ConsoleObserver::observer_callback(picross::ObserverEvent event, const picr
         {
             m_ostream << " NODE";
             m_ostream << " known: " << picross::str_line_full(*line);
-            m_ostream << " depth: " << depth;
-            m_ostream << " nb_alt: " << misc;
+            m_ostream << " depth: " << data.m_depth;
+            m_ostream << " nb_alt: " << data.m_misc_i;
         }
         else
         {
             m_ostream << " EDGE";
-            m_ostream << " depth: " << depth;
+            m_ostream << " depth: " << data.m_depth;
         }
         break;
 
     case picross::ObserverEvent::KNOWN_LINE:
         assert(line);
         m_ostream << " known: " << picross::str_line_full(*line)
-                  << " depth: " << depth
-                  << " nb_alt: " << misc;
+                  << " depth: " << data.m_depth
+                  << " nb_alt: " << data.m_misc_i;
         break;
 
     case picross::ObserverEvent::DELTA_LINE:
         assert(line);
         m_ostream << " delta: " << picross::str_line_full(*line)
-                  << " depth: " << depth
-                  << " nb_alt: " << misc;
+                  << " depth: " << data.m_depth
+                  << " nb_alt: " << data.m_misc_i;
         break;
 
     case picross::ObserverEvent::SOLVED_GRID:
@@ -59,16 +59,15 @@ void ConsoleObserver::observer_callback(picross::ObserverEvent event, const picr
         break;
 
     case picross::ObserverEvent::INTERNAL_STATE:
-        m_ostream << " state: " << picross::str_solver_internal_state(misc)
-                  << " depth: " << depth;
+        m_ostream << " state: " << picross::str_solver_internal_state(data.m_misc_i)
+                  << " depth: " << data.m_depth;
         break;
 
     case picross::ObserverEvent::PROGRESS:
     {
-        const auto progress_i = std::make_unique<std::uint32_t>(static_cast<std::uint32_t>(misc));
-        const float progress_f = *reinterpret_cast<const float*>(progress_i.get());
-        m_ostream << " progress: " << progress_f
-                  << " depth: " << depth;
+        const float& progress = data.m_misc_f;
+        m_ostream << " progress: " << progress
+                  << " depth: " << data.m_depth;
         break;
     }
 
@@ -78,7 +77,7 @@ void ConsoleObserver::observer_callback(picross::ObserverEvent event, const picr
     m_ostream << std::endl;
 
     // Detect discrepancy with set goal
-    if (m_goal.has_value() && depth == 0 && event == picross::ObserverEvent::DELTA_LINE)
+    if (m_goal.has_value() && data.m_depth == 0 && event == picross::ObserverEvent::DELTA_LINE)
     {
         assert(line);
         picross::LineId line_id(*line);
