@@ -30,6 +30,14 @@ if(PICROSS_GUI_IMGUI_DEMO)
     )
 endif()
 
+if(APPLE)
+    # OpenGL API is deprecated since macOS 10.14
+    target_compile_definitions(picross_solver
+        PUBLIC
+        GL_SILENCE_DEPRECATION
+    )
+endif()
+
 target_include_directories(picross_solver
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
