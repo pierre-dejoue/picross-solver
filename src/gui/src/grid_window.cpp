@@ -8,8 +8,8 @@
 #include <picross/picross.h>
 #include <utils/picross_file_io.h>
 
-#include <imgui.h>
-#include <portable-file-dialogs.h>
+#include <imgui_wrap.h>
+#include <pfd_wrap.h>
 
 #include <iostream>
 #include <optional>
@@ -145,7 +145,7 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
             std::lock_guard<std::mutex> lock(line_mutex);
             if (!line_events.empty())
             {
-                local_events.reserve(speed);
+                local_events.reserve(static_cast<std::size_t>(speed));
                 std::swap(local_events, line_events);
             }
         }
@@ -321,11 +321,11 @@ void GridWindow::observer_callback(picross::ObserverEvent event, const picross::
         return;
 
     std::unique_lock<std::mutex> lock(line_mutex);
-    if (line_events.size() >= speed)
+    if (line_events.size() >= static_cast<std::size_t>(speed))
     {
         // Wait until the previous line events have been consumed
         line_cv.wait(lock, [this]() -> bool {
-            return (this->speed > 0u && this->line_events.empty())
+            return (this->speed > 0 && this->line_events.empty())
                 ||  this->abort_solver_thread();
         });
     }
@@ -436,7 +436,7 @@ void GridWindow::save_grid()
         const auto err_handler = [this](picross::io::ErrorCodeT code, std::string_view msg)
         {
             std::lock_guard<std::mutex> lock(this->text_buffer->mutex);
-            this->text_buffer->buffer.appendf("%s %s\n", picross::io::str_error_code(code).c_str(), msg);
+            this->text_buffer->buffer.appendf("%s %s\n", picross::io::str_error_code(code).c_str(), msg.data());
         };
 
         const auto solution = (solutions.empty() || !solutions[0].is_completed()) ? std::nullopt : std::optional<picross::OutputGrid>(solutions[0]);

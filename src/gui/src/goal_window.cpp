@@ -3,7 +3,7 @@
 #include "draw_grid.h"
 #include "settings.h"
 
-#include <imgui.h>
+#include <imgui_wrap.h>
 
 
 GoalWindow::GoalWindow(const picross::OutputGrid& goal, std::string_view name)

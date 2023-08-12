@@ -5,7 +5,7 @@
 #include <picross/picross.h>
 #include <utils/grid_observer.h>
 
-#include <imgui.h>
+#include <imgui_wrap.h>
 
 #include <cstddef>
 

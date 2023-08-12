@@ -12,9 +12,9 @@
 #include <picross/picross.h>
 #include <stdutils/macros.h>
 
-#include <portable-file-dialogs.h>      // Include before glfw3.h
+#include <pfd_wrap.h>           // Include before glfw3.h
 #include <GLFW/glfw3.h>
-#include <imgui.h>
+#include <imgui_wrap.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
                 {
                     const auto paths = pfd::open_file("Select a Picross file", "",
                         { "Picross file", "*.txt *.nin *.non", "All files", "*" }).result();
-                    for (const auto path : paths)
+                    for (const auto& path : paths)
                     {
                         const auto format = picross::io::picross_file_format_from_filepath(path);
                         std::cout << "User selected file " << path << " (format: " << format << ")" << std::endl;
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
                 {
                     const auto paths = pfd::open_file("Select a bitmap file", "",
                         { "PBM file", "*.pbm", "All files", "*" }).result();
-                    for (const auto path : paths)
+                    for (const auto& path : paths)
                     {
                         const auto format = picross::io::PicrossFileFormat::PBM;
                         std::cout << "User selected bitmap " << path << " (format: " << format << ")" << std::endl;
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
                 {
                     const auto paths = pfd::open_file("Select a solution file", "",
                         { "All files", "*" }).result();
-                    for (const auto path : paths)
+                    for (const auto& path : paths)
                     {
                         const auto format = picross::io::PicrossFileFormat::OutputGrid;
                         std::cout << "User selected solution file " << path << std::endl;

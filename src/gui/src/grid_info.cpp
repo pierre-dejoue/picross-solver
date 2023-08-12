@@ -4,9 +4,10 @@
 #include <stdutils/string.h>
 #include <utils/input_grid_utils.h>
 
-#include <imgui.h>
+#include <imgui_wrap.h>
 
 #include <iomanip>
+#include <ios>
 #include <iostream>
 #include <optional>
 #include <sstream>
@@ -70,7 +71,7 @@ void GridInfo::visit(bool& can_be_erased)
 
     unsigned int active_sections = 0;
     const ImVec2 cell_padding(7, 4);
-    constexpr ImGuiTableFlags table_flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable;
+    constexpr ImGuiTableFlags TABLE_FLAGS = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable;
 
     // Copy button
     const bool copy_to_clipboard = ImGui::Button("Copy");
@@ -82,7 +83,7 @@ void GridInfo::visit(bool& can_be_erased)
         active_sections |= static_cast<unsigned int>(GridInfoSection::Basic);
 
         ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, cell_padding);
-        if (ImGui::BeginTable("table_info", 2, table_flags))
+        if (ImGui::BeginTable("table_info", 2, TABLE_FLAGS))
         {
             ImGui::TableSetupColumn("key", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize);
             ImGui::TableSetupColumn("data", ImGuiTableColumnFlags_WidthStretch);
@@ -109,7 +110,7 @@ void GridInfo::visit(bool& can_be_erased)
         active_sections |= static_cast<unsigned int>(GridInfoSection::Stats);
 
         ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, cell_padding);
-        if (ImGui::BeginTable("table_stats", 2, table_flags))
+        if (ImGui::BeginTable("table_stats", 2, TABLE_FLAGS))
         {
             ImGui::TableSetupColumn("key", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize);
             ImGui::TableSetupColumn("data", ImGuiTableColumnFlags_WidthStretch);
@@ -134,10 +135,10 @@ void GridInfo::visit(bool& can_be_erased)
     {
         active_sections |= static_cast<unsigned int>(GridInfoSection::Constraints);
 
-        const auto build_table_of_constraints = [&cell_padding, &table_flags, this](picross::Line::Type type, std::size_t size, const char* table_id)
+        const auto build_table_of_constraints = [&cell_padding, this](picross::Line::Type type, std::size_t size, const char* table_id)
         {
             ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, cell_padding);
-            if (ImGui::BeginTable(table_id, 3, table_flags))
+            if (ImGui::BeginTable(table_id, 3, TABLE_FLAGS))
             {
                 ImGui::TableSetupColumn("Line",       ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize);
                 ImGui::TableSetupColumn("",           ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize);
@@ -256,7 +257,7 @@ std::string GridInfo::info_as_string(unsigned int active_sections) const
     if (active_sections & static_cast<unsigned int>(GridInfoSection::Basic))
     {
         out << std::endl;
-        const auto key_w = key_col_width(grid_metadata);
+        const int key_w = static_cast<int>(key_col_width(grid_metadata));
         for (const auto&[key, data]: grid_metadata)
             out << "  " << std::setw(key_w) << std::left << key << data << std::endl;
     }
@@ -267,7 +268,7 @@ std::string GridInfo::info_as_string(unsigned int active_sections) const
     if (active_sections & static_cast<unsigned int>(GridInfoSection::Stats))
     {
         out << std::endl;
-        const auto key_w = key_col_width(solver_stats_info);
+        const int key_w = static_cast<int>(key_col_width(solver_stats_info));
         for (const auto&[key, data]: solver_stats_info)
             out << "  " << std::setw(key_w) << std::left << key << data << std::endl;
     }

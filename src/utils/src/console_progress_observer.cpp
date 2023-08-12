@@ -25,13 +25,14 @@ void ConsoleProgressObserver::operator()(picross::ObserverEvent event, const pic
 
     case picross::ObserverEvent::PROGRESS:
     {
-        const float current_progress = reinterpret_cast<const float&>(static_cast<const std::uint32_t&>(misc));
-        if ((current_progress - m_previous_progress) > 0.001f)
+        const auto progress_i = std::make_unique<std::uint32_t>(static_cast<std::uint32_t>(misc));
+        const float progress_f = *reinterpret_cast<const float*>(progress_i.get());
+        if ((progress_f - m_previous_progress) > 0.001f)
         {
-            m_ostream << "Progress: " << current_progress
+            m_ostream << "Progress: " << progress_f
                       << " (depth: " << depth << ")"
                       << std::endl;
-            m_previous_progress = current_progress;
+            m_previous_progress = progress_f;
         }
         break;
     }

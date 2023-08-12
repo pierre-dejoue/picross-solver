@@ -2,7 +2,7 @@
 
 #include "settings.h"
 
-#include <imgui.h>
+#include <imgui_wrap.h>
 
 #include <cassert>
 

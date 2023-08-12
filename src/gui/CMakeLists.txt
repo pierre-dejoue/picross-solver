@@ -30,6 +30,11 @@ if(PICROSS_GUI_IMGUI_DEMO)
     )
 endif()
 
+target_include_directories(picross_solver
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
 set_target_warnings(picross_solver ON)
 
 target_link_libraries(picross_solver

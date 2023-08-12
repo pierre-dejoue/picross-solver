@@ -43,7 +43,8 @@ function(
     -Wpedantic # warn if non-standard C++ is used
     -Wconversion # warn on type conversions that may lose data
     -Wsign-conversion # warn on sign conversions
-    -Wnull-dereference # warn if a null dereference is detected
+  # Commented out due to a false positive in line_alternatives.cpp with GNU GCC/G++ 11.4.0
+  # -Wnull-dereference # warn if a null dereference is detected
     -Wdouble-promotion # warn if float is implicit promoted to double
     -Wformat=2 # warn on security issues around functions that format output (ie printf)
     -Wimplicit-fallthrough # warn on statements that fallthrough without an explicit annotation

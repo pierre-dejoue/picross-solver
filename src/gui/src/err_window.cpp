@@ -1,6 +1,6 @@
 #include "err_window.h"
 
-#include <imgui.h>
+#include <imgui_wrap.h>
 
 #include <mutex>
 #include <string>

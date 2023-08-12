@@ -74,8 +74,9 @@ RET_UINT progress_bar(const std::pair<float, float>& progress_bar, LineAlternati
     assert(progress <= nb_alternatives);
     const float ratio_f = static_cast<float>(progress) / static_cast<float>(nb_alternatives);
     assert(0.f <= ratio_f && ratio_f <= 1.f);
-    const float progress_f = progress_bar.first + (progress_bar.second - progress_bar.first) * ratio_f;
-    const std::uint32_t ratio = reinterpret_cast<const std::uint32_t&>(progress_f);
+    const auto progress_f = std::make_unique<float>(progress_bar.first + (progress_bar.second - progress_bar.first) * ratio_f);
+    // reinterpret as integer to go through the observer interface
+    const std::uint32_t ratio = *reinterpret_cast<const std::uint32_t*>(progress_f.get());
     return static_cast<RET_UINT>(ratio);
 }
 

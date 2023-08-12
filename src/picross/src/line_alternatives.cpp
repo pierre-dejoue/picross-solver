@@ -122,7 +122,7 @@ namespace
 
     private:
         LineSpanW m_line;
-        bool           m_reset;
+        bool      m_reset;
     };
 
     LineAlternatives::Reduction from_line(const LineSpan& line, LineAlternatives::NbAlt nb_alt, bool full)
@@ -139,11 +139,11 @@ namespace
     {
     public:
         LineExt(const LineSpan& line_span, Tile init_tile)
-            : m_tiles(line_span.size() + 2, init_tile)
+            : m_tiles(line_span.size() + 2u, init_tile)
             , m_line_span(line_span.type(), line_span.index(), line_span.size(), m_tiles.data() + 1u)
         {
             m_tiles.front() = Tile::EMPTY;
-            m_tiles.back()  = Tile::EMPTY;
+            m_tiles.back() = Tile::EMPTY;
         }
 
         LineExt(const LineSpan& line_span)
@@ -156,7 +156,7 @@ namespace
         LineSpanW& line_span() { return m_line_span; }
     private:
         Line::Container m_tiles;
-        LineSpanW  m_line_span;
+        LineSpanW m_line_span;
     };
 
     // An array of LineExt
@@ -249,10 +249,9 @@ namespace
             const auto hole_end = l_holes.end();
             assert(hole_it == hole_end || hole_it->m_index >= range.m_line_begin);
             auto result_seg_it = result.begin();
-            const auto result_seg_end = result.end();
             while (constraint_it != constraint_end && hole_it != hole_end)
             {
-                assert(result_seg_it != result_seg_end);
+                assert(result_seg_it != result.end());
                 const auto seg_len = *constraint_it;
                 if (seg_len <= hole_it->m_length)
                 {
@@ -287,10 +286,9 @@ namespace
             const auto hole_end = std::make_reverse_iterator(r_holes.begin());
             assert(hole_it == hole_end || (hole_it->m_index + static_cast<int>(hole_it->m_length)) <= range.m_line_end);
             auto result_seg_it = std::make_reverse_iterator(result.end());
-            const auto result_seg_end = std::make_reverse_iterator(result.begin());
             while (constraint_it != constraint_end && hole_it != hole_end)
             {
-                assert(result_seg_it != result_seg_end);
+                assert(result_seg_it != std::make_reverse_iterator(result.begin()));
                 const auto seg_len = *constraint_it;
                 if (seg_len <= hole_it->m_length)
                 {
@@ -688,9 +686,9 @@ bool LineAlternatives::Impl::narrow_down_segments_range(std::vector<SegmentRange
     }
 
     // Right to left pass to refine the leftmost index of each segment
-    if (nb_segments > 0)
+    if (nb_segments > 0 && constraint_it != constraint_end)
     {
-        assert(constraint_it != constraint_end && std::next(constraint_it) == constraint_end);
+        assert(std::next(constraint_it) == constraint_end);
         prev_segment_min_index(ranges[nb_segments - 1].m_leftmost_index, *constraint_it, m_bidirectional_range.m_line_end);
         for (std::size_t k = nb_segments - 1; k > 0; k--)
         {
@@ -723,10 +721,9 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
 
     const auto nb_segments = ranges.size();
     auto constraint_it = m_bidirectional_range.m_constraint_begin;
-    const auto constraint_end = m_bidirectional_range.m_constraint_end;
     const auto line_begin =  m_bidirectional_range.m_line_begin;
     const auto line_end = m_bidirectional_range.m_line_end;
-    assert(nb_segments == static_cast<std::size_t>(std::distance(constraint_it, constraint_end)));
+    assert(nb_segments == static_cast<std::size_t>(std::distance(constraint_it, m_bidirectional_range.m_constraint_end)));
 
     LineExtArray tiles_masks(m_known_tiles, 1u, Tile::UNKNOWN);
 
@@ -747,7 +744,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
         NbAlt nb_alt = 0u;
         int min_index = static_cast<int>(m_known_tiles.size() + 1u);
         int max_index = -1;
-        assert(constraint_it != constraint_end);
+        assert(constraint_it != m_bidirectional_range.m_constraint_end);
         const unsigned int seg_length = *constraint_it;
         for (int seg_index = ranges[k].m_leftmost_index; seg_index <= ranges[k].m_rightmost_index; seg_index++)
         {

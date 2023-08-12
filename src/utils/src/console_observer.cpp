@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdint>
 #include <exception>
+#include <memory>
 
 
 ConsoleObserver::ConsoleObserver(size_t width, size_t height, std::ostream& ostream)
@@ -63,9 +64,13 @@ void ConsoleObserver::observer_callback(picross::ObserverEvent event, const picr
         break;
 
     case picross::ObserverEvent::PROGRESS:
-        m_ostream << " progress: " << reinterpret_cast<const float&>(static_cast<const std::uint32_t&>(misc))
+    {
+        const auto progress_i = std::make_unique<std::uint32_t>(static_cast<std::uint32_t>(misc));
+        const float progress_f = *reinterpret_cast<const float*>(progress_i.get());
+        m_ostream << " progress: " << progress_f
                   << " depth: " << depth;
         break;
+    }
 
     default:
         assert(0);  // Unknown ObserverEvent
