@@ -32,4 +32,4 @@ endif()
 
 set_property(TARGET stdutils PROPERTY FOLDER "libraries")
 
-install(TARGETS stdutils EXPORT picross_project)
+install(TARGETS stdutils EXPORT picross_project PUBLIC_HEADER EXCLUDE_FROM_ALL)
