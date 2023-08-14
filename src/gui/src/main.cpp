@@ -12,11 +12,15 @@
 #include <picross/picross.h>
 #include <stdutils/macros.h>
 
-#include <pfd_wrap.h>           // Include before glfw3.h
-#include <GLFW/glfw3.h>
+// Order matters in this section
 #include <imgui_wrap.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <pfd_wrap.h>
+#include <GLFW/glfw3.h>
+// NB: No OpenGL loader here: this project only relies on the drawing features provided by Dear ImGui.
+// Dear ImGui embeds its own minimal loader for the OpenGL 3.x functions it needs.
+// See: https://github.com/ocornut/imgui/issues/4445 "OpenGL backend now embeds its own GL loader"
 
 #include <cassert>
 #include <iostream>
@@ -65,18 +69,14 @@ int main(int argc, char *argv[])
     std::stringstream picross_title;
     picross_title << "Picross Solver " << picross::get_version_string();
     std::cout << picross_title.str() << std::endl;
-    std::cout << "Dear ImGui " << IMGUI_VERSION << std::endl;
 
     // Setup main window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
-
-    // GL 3.0 + GLSL 130
     const char* glsl_version = "#version 130";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-
     GLFWwindow* window = glfwCreateWindow(1280, 720, picross_title.str().c_str(), nullptr, nullptr);
     if (window == nullptr)
         return 1;
@@ -92,6 +92,12 @@ int main(int argc, char *argv[])
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
+
+    // Print out version information
+    std::cout << "Dear ImGui " << IMGUI_VERSION << std::endl;
+    std::cout << "GLFW " << GLFW_VERSION_MAJOR << "." << GLFW_VERSION_MINOR << "." << GLFW_VERSION_REVISION << std::endl;
+    std::cout << "OpenGL Version " << glGetString(GL_VERSION) << std::endl;
+    std::cout << "OpenGL Renderer " << glGetString(GL_RENDERER) << std::endl;
 
     // Style
     bool imgui_dark_mode = false;
