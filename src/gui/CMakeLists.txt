@@ -51,7 +51,7 @@ target_link_libraries(picross_solver
     picross::picross
     picross::utils
     imgui
-    portable_file_dialogs
+    pfd
 )
 
 install(TARGETS picross_solver)

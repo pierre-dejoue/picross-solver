@@ -10,11 +10,16 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/samhocevar/portable-file-dialogs.git
     GIT_TAG 7f852d88a480020d7f91957cbcefe514fc95000c
 )
-FetchContent_MakeAvailable(pfd)
+FetchContent_Populate(pfd)
 
-# To make it visible in the IDE
-add_custom_target(pfd SOURCES
+add_library(pfd
+    INTERFACE
     ${pfd_SOURCE_DIR}/portable-file-dialogs.h
+)
+
+target_include_directories(pfd
+    INTERFACE
+    ${pfd_SOURCE_DIR}
 )
 
 set_property(TARGET pfd PROPERTY FOLDER "third_parties")
