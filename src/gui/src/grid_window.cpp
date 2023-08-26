@@ -100,7 +100,9 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
     const float min_win_height = 100.f + static_cast<float>(height * tile_size);
     ImGui::SetNextWindowSizeConstraints(ImVec2(min_win_width, min_win_height), ImVec2(FLT_MAX, FLT_MAX));
 
-    constexpr ImGuiWindowFlags win_flags = ImGuiWindowFlags_AlwaysAutoResize;
+    constexpr ImGuiWindowFlags win_flags = ImGuiWindowFlags_AlwaysAutoResize
+                                         | ImGuiWindowFlags_NoSavedSettings;
+
     bool is_window_open = true;
     if (!ImGui::Begin(title.c_str(), &is_window_open, win_flags))
     {

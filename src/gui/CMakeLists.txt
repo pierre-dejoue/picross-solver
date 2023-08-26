@@ -10,6 +10,8 @@ include(pfd)
 set(GUI_SOURCES
     src/draw_grid.cpp
     src/err_window.cpp
+    src/glfw_context.cpp
+    src/imgui_helpers.cpp
     src/goal_window.cpp
     src/grid_info.cpp
     src/grid_window.cpp
@@ -17,6 +19,7 @@ set(GUI_SOURCES
     src/picross_file.cpp
     src/settings.cpp
     src/settings_window.cpp
+    src/style.cpp
 )
 
 file(GLOB GUI_HEADERS src/*.h)

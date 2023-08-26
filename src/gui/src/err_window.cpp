@@ -25,7 +25,9 @@ void ErrWindow::visit(bool& can_be_erased)
 {
     ImGui::SetNextWindowSizeConstraints(ImVec2(0, 300), ImVec2(FLT_MAX, 600));
 
-    constexpr ImGuiWindowFlags win_flags = ImGuiWindowFlags_AlwaysAutoResize;
+    constexpr ImGuiWindowFlags win_flags = ImGuiWindowFlags_AlwaysAutoResize
+                                         | ImGuiWindowFlags_NoSavedSettings;
+
     bool is_window_open = true;
     if (!ImGui::Begin(pImpl->title.c_str(), &is_window_open, win_flags))
     {
