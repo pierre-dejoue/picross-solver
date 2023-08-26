@@ -55,6 +55,10 @@ struct AppWindows
 {
     std::unique_ptr<SettingsWindow> settings;
     std::vector<std::unique_ptr<PicrossFile>> picross;
+    struct
+    {
+        WindowLayout settings;
+    } layout;
 };
 
 void main_menu_bar(AppWindows& windows, bool& application_should_close, bool& gui_dark_mode)
@@ -185,7 +189,7 @@ int main(int argc, char *argv[])
         if (windows.settings)
         {
             bool can_be_erased = false;
-            windows.settings->visit(can_be_erased);
+            windows.settings->visit(can_be_erased, windows.layout.settings);
             assert(can_be_erased == false);     // Always ON
         }
 
@@ -195,7 +199,7 @@ int main(int argc, char *argv[])
 #endif
 
         // We delay the Settings window opening until after the first ImGui rendering pass so that the actual work space
-        // is known on first visit. This may be important for ImGui::Set* functions with ImGuiCond_Once.
+        // is known on first visit(). This is important for ImGui::Set* functions with flag ImGuiCond_Once.
         if (!windows.settings) { windows.settings = std::make_unique<SettingsWindow>(settings); }
 
         // Rendering

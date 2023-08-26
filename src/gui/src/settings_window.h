@@ -1,5 +1,7 @@
 #pragma once
 
+#include "window_layout.h"
+
 #include <string>
 
 class Settings;
@@ -11,7 +13,7 @@ public:
     SettingsWindow(const SettingsWindow&) = delete;
     SettingsWindow& operator=(const SettingsWindow&) = delete;
 
-    void visit(bool& can_be_erased);
+    void visit(bool& can_be_erased, const WindowLayout& win_pos_sz);
 
 private:
     struct Animation

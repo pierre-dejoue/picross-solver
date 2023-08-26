@@ -3,6 +3,7 @@
 #include "settings.h"
 
 #include <imgui_wrap.h>
+#include "imgui_helpers.h"
 
 #include <cassert>
 
@@ -13,12 +14,13 @@ SettingsWindow::SettingsWindow(Settings& settings)
 {
 }
 
-void SettingsWindow::visit(bool& can_be_erased)
+void SettingsWindow::visit(bool& can_be_erased, const WindowLayout& win_pos_sz)
 {
     can_be_erased = false;        // Cannot close
 
     ImGui::SetNextWindowSizeConstraints(ImVec2(0, 300), ImVec2(FLT_MAX, 600));
 
+    ImGui::SetNextWindowPosAndSize(win_pos_sz, ImGuiCond_Once);
     constexpr ImGuiWindowFlags win_flags = ImGuiWindowFlags_AlwaysAutoResize
                                          | ImGuiWindowFlags_NoSavedSettings;
 
