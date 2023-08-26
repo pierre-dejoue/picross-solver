@@ -18,7 +18,7 @@
 #include <utils/input_grid_utils.h>
 #include <utils/picross_file_io.h>
 
-#include <argagg/argagg.hpp>
+#include "argagg_wrap.h"
 
 #include <cassert>
 #include <chrono>

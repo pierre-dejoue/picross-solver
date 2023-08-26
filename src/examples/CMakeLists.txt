@@ -15,4 +15,4 @@ target_link_libraries(example_1
     picross::picross
 )
 
-set_target_warnings(example_1 OFF)
+set_target_warnings(example_1 ON)

@@ -30,6 +30,10 @@ function(
     /permissive- # standards conformance mode for MSVC compiler.
   )
 
+  set(MSVC_ANALYZER
+    $<$<CONFIG:DEBUG>:/analyze>   # Visual Studio static analyzer
+  )
+
   set(CLANG_WARNINGS
     -Wall
     -Wextra # reasonable and standard
@@ -61,13 +65,13 @@ function(
 
   if(WARNINGS_AS_ERRORS)
     message(TRACE "Warnings are treated as errors")
+    list(APPEND MSVC_WARNINGS /WX)
     list(APPEND CLANG_WARNINGS -Werror)
     list(APPEND GCC_WARNINGS -Werror)
-    list(APPEND MSVC_WARNINGS /WX)
   endif()
 
   if(MSVC)
-    set(_WARNINGS_CXX ${MSVC_WARNINGS})
+    set(_WARNINGS_CXX ${MSVC_WARNINGS} ${MSVC_ANALYZER})
   elseif(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     set(_WARNINGS_CXX ${CLANG_WARNINGS})
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

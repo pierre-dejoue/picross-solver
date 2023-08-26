@@ -41,7 +41,8 @@ TEST_CASE("Bench full reduction", "[line_alternatives]")
         bool bench_run = false;
         BENCHMARK("N_100_K_1") {
             reduction = full_reduction(constraint, known_tiles);
-            return bench_run = true;
+            bench_run = true;
+            return reduction;
         };
         if (bench_run)
         {
@@ -59,7 +60,8 @@ TEST_CASE("Bench full reduction", "[line_alternatives]")
         bool bench_run = false;
         BENCHMARK("N_100_K_2") {
             reduction = full_reduction(constraint, known_tiles);
-            return bench_run = true;
+            bench_run = true;
+            return  true;
         };
         if (bench_run)
         {
@@ -77,7 +79,8 @@ TEST_CASE("Bench full reduction", "[line_alternatives]")
         bool bench_run = false;
         BENCHMARK("COL 17") {
             reduction = full_reduction(constraint, known_tiles);
-            return bench_run = true;
+            bench_run = true;
+            return reduction;
         };
         if (bench_run)
         {
@@ -95,7 +98,8 @@ TEST_CASE("Bench full reduction", "[line_alternatives]")
         bool bench_run = false;
         BENCHMARK("ROW 45") {
             reduction = full_reduction(constraint, known_tiles);
-            return bench_run = true;
+            bench_run = true;
+            return reduction;
         };
         if (bench_run)
         {
@@ -113,7 +117,8 @@ TEST_CASE("Bench full reduction", "[line_alternatives]")
         bool bench_run = false;
         BENCHMARK("ROW 46") {
             reduction = full_reduction(constraint, known_tiles);
-            return bench_run = true;
+            bench_run = true;
+            return reduction;
         };
         if (bench_run)
         {
@@ -131,7 +136,8 @@ TEST_CASE("Bench full reduction", "[line_alternatives]")
         bool bench_run = false;
         BENCHMARK("ROW 48") {
             reduction = full_reduction(constraint, known_tiles);
-            return bench_run = true;
+            bench_run = true;
+            return reduction;
         };
         if (bench_run)
         {
@@ -159,7 +165,8 @@ TEST_CASE("Bench linear vs full reduction", "[line_alternatives]")
             std::string bench_name = "Threes " + std::to_string(nb_alt) + " linear";
             BENCHMARK(std::move(bench_name)) {
                 reduction = linear_reduction(constraint, known_tiles);
-                return bench_run = true;
+                bench_run = true;
+                return reduction;
             };
             if (bench_run)
             {
@@ -173,7 +180,8 @@ TEST_CASE("Bench linear vs full reduction", "[line_alternatives]")
             std::string bench_name = "Threes " + std::to_string(nb_alt) + " full";
             BENCHMARK(std::move(bench_name)) {
                 reduction = full_reduction(constraint, known_tiles);
-                return bench_run = true;
+                bench_run = true;
+                return reduction;
             };
             if (bench_run)
             {
@@ -187,7 +195,8 @@ TEST_CASE("Bench linear vs full reduction", "[line_alternatives]")
             std::string bench_name = "Threes " + std::to_string(nb_alt) + " full buf";
             BENCHMARK(std::move(bench_name)) {
                 reduction = full_reduction(constraint, known_tiles, &buffers);
-                return bench_run = true;
+                bench_run = true;
+                return reduction;
             };
             if (bench_run)
             {
