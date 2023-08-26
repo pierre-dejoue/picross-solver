@@ -19,9 +19,10 @@ void SettingsWindow::visit(bool& can_be_erased)
 
     ImGui::SetNextWindowSizeConstraints(ImVec2(0, 300), ImVec2(FLT_MAX, 600));
 
-    constexpr ImGuiWindowFlags win_flags = ImGuiWindowFlags_AlwaysAutoResize;
-    bool is_window_open = true;
-    if (!ImGui::Begin(title.c_str(), &is_window_open, win_flags))
+    constexpr ImGuiWindowFlags win_flags = ImGuiWindowFlags_AlwaysAutoResize
+                                         | ImGuiWindowFlags_NoSavedSettings;
+
+    if (!ImGui::Begin(title.c_str(), nullptr, win_flags))
     {
         // Collapsed
         ImGui::End();

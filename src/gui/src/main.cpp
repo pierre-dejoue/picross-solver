@@ -8,6 +8,7 @@
 
 #include "picross_file.h"
 #include "settings.h"
+#include "settings_window.h"
 
 #include <picross/picross.h>
 #include <stdutils/macros.h>
@@ -57,6 +58,13 @@ void imgui_set_style(bool dark_mode)
     }
 }
 
+// Application windows
+struct AppWindows
+{
+    std::unique_ptr<SettingsWindow> settings;
+    std::vector<std::unique_ptr<PicrossFile>> picross;
+};
+
 } // Anonymous namespace
 
 
@@ -86,8 +94,6 @@ int main(int argc, char *argv[])
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    UNUSED(io);
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -103,12 +109,13 @@ int main(int argc, char *argv[])
     bool imgui_dark_mode = false;
     imgui_set_style(imgui_dark_mode);
 
-    // Open settings window
+    // Application Settings
     Settings settings;
-    settings.open_window();
+
+    // Application Windows
+    AppWindows windows;
 
     // Main loop
-    std::vector<std::unique_ptr<PicrossFile>> picross_files;
     while (!glfwWindowShouldClose(window))
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -136,7 +143,7 @@ int main(int argc, char *argv[])
                     {
                         const auto format = picross::io::picross_file_format_from_filepath(path);
                         std::cout << "User selected file " << path << " (format: " << format << ")" << std::endl;
-                        picross_files.emplace_back(std::make_unique<PicrossFile>(path, format));
+                        windows.picross.emplace_back(std::make_unique<PicrossFile>(path, format));
                     }
                 }
                 if (ImGui::MenuItem("Import bitmap", "Ctrl+I"))
@@ -147,7 +154,7 @@ int main(int argc, char *argv[])
                     {
                         const auto format = picross::io::PicrossFileFormat::PBM;
                         std::cout << "User selected bitmap " << path << " (format: " << format << ")" << std::endl;
-                        picross_files.emplace_back(std::make_unique<PicrossFile>(path, format));
+                        windows.picross.emplace_back(std::make_unique<PicrossFile>(path, format));
                     }
                 }
                 if (ImGui::MenuItem("Import solution"))
@@ -158,7 +165,7 @@ int main(int argc, char *argv[])
                     {
                         const auto format = picross::io::PicrossFileFormat::OutputGrid;
                         std::cout << "User selected solution file " << path << std::endl;
-                        picross_files.emplace_back(std::make_unique<PicrossFile>(path, format));
+                        windows.picross.emplace_back(std::make_unique<PicrossFile>(path, format));
                     }
                 }
                 ImGui::Separator();
@@ -181,23 +188,29 @@ int main(int argc, char *argv[])
         }
 
         // Picross files windows (one window per grid, so possibly multiple windows per file)
-        for (auto it = std::begin(picross_files); it != std::end(picross_files);)
+        for (auto it = std::begin(windows.picross); it != std::end(windows.picross);)
         {
             bool can_be_erased = false;
             (*it)->visit_windows(can_be_erased, settings);
-            it = can_be_erased ? picross_files.erase(it) : std::next(it);
+            it = can_be_erased ? windows.picross.erase(it) : std::next(it);
         }
 
-        // Settings window (always ON)
+        // Settings window
+        if (windows.settings)
         {
             bool can_be_erased = false;
-            settings.visit_window(can_be_erased);
+            windows.settings->visit(can_be_erased);
+            assert(can_be_erased == false);     // Always ON
         }
 
 #if PICROSS_GUI_IMGUI_DEMO_FLAG
         // Dear Imgui Demo
         ImGui::ShowDemoWindow();
 #endif
+
+        // We delay the Settings window opening until after the first ImGui rendering pass so that the actual work space
+        // is known on first visit. This may be important for ImGui::Set* functions with ImGuiCond_Once.
+        if (!windows.settings) { windows.settings = std::make_unique<SettingsWindow>(settings); }
 
         // Rendering
         ImGui::Render();
@@ -212,7 +225,7 @@ int main(int argc, char *argv[])
     } // while (!glfwWindowShouldClose(window))
 
     // Cleanup
-    picross_files.clear();
+    windows.picross.clear();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

@@ -64,10 +64,10 @@ namespace
 }  // Anonymous namespace
 
 Settings::Settings()
-    : tile_settings()
-    , solver_settings()
-    , animation_settings()
 {
+    read_tile_settings();
+    read_solver_settings();
+    read_animation_settings();
 }
 
 Settings::Tile* Settings::get_tile_settings()
@@ -145,36 +145,4 @@ const Settings::AnimationLimits& Settings::read_animation_settings_limits()
 {
     static Settings::AnimationLimits result = animation_settings_limits();
     return result;
-}
-
-void Settings::open_window()
-{
-    get_settings_window();
-
-    read_tile_settings();
-    read_solver_settings();
-    read_animation_settings();
-}
-
-void Settings::visit_window(bool& can_be_erased)
-{
-    can_be_erased = false;
-    if (tile_settings || solver_settings || animation_settings || settings_window)
-    {
-        auto& settings_window_ref = get_settings_window();
-        bool window_can_be_erased = false;
-        settings_window_ref.visit(window_can_be_erased);
-        assert(!window_can_be_erased); // Do not erase settings window once open
-        can_be_erased &= window_can_be_erased;
-    }
-}
-
-SettingsWindow& Settings::get_settings_window()
-{
-    if (!settings_window)
-    {
-        settings_window = std::make_unique<SettingsWindow>(*this);
-    }
-    assert(settings_window);
-    return *settings_window;
 }

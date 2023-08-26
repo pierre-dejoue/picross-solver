@@ -1,10 +1,9 @@
 #pragma once
 
 #include "parameter.h"
-#include "settings_window.h"
 
-#include <algorithm>
 #include <memory>
+
 
 class Settings
 {
@@ -68,15 +67,8 @@ public:
     const Animation& read_animation_settings();
     static const AnimationLimits& read_animation_settings_limits();
 
-    void open_window();
-    void visit_window(bool& can_be_erased);
-
-private:
-    SettingsWindow& get_settings_window();
-
 private:
     std::unique_ptr<Tile> tile_settings;
     std::unique_ptr<Solver> solver_settings;
     std::unique_ptr<Animation> animation_settings;
-    std::unique_ptr<SettingsWindow> settings_window;
 };
