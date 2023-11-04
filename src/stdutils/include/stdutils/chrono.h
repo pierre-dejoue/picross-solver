@@ -1,3 +1,5 @@
+// Copyright (c) 2021 Pierre DEJOUE
+// This code is distributed under the terms of the MIT License
 #pragma once
 
 #include <chrono>

@@ -1,4 +1,5 @@
-
+// Copyright (c) 2023 Pierre DEJOUE
+// This code is distributed under the terms of the MIT License
 #include <stdutils/io.h>
 
 #include <cassert>

@@ -1,3 +1,8 @@
+/*******************************************************************************
+ * PICROSS SOLVER
+ *
+ * Copyright (c) 2010-2023 Pierre DEJOUE
+ ******************************************************************************/
 #include <picross/picross_input_grid.h>
 
 #include "line_constraint.h"
