@@ -11,6 +11,17 @@ namespace stdutils
 namespace platform
 {
 
+enum class OS
+{
+    UNKNOWN = 0,
+    LINUX,
+    MACOS,
+    WINDOWS
+};
+
+constexpr OS os();
+std::ostream& operator<<(std::ostream& out, OS os);
+
 enum class Compiler
 {
     UNKNOWN = 0,
@@ -35,10 +46,12 @@ enum class Arch
 constexpr Arch architecture();
 std::ostream& operator<<(std::ostream& out, Arch arch);
 
+void print_os(std::ostream& out);
 void print_cpp_standard(std::ostream& out);
 void print_compiler_info(std::ostream& out);
 void print_compilation_date(std::ostream& out);
 
+void print_platform_info(std::ostream& out);
 void print_compiler_all_info(std::ostream& out);
 
 }

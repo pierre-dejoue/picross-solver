@@ -11,6 +11,48 @@ namespace stdutils
 namespace platform
 {
 
+constexpr OS os()
+{
+    // See: https://github.com/cpredef/predef/blob/master/OperatingSystems.md
+    #if   defined(__linux__)
+        return OS::LINUX;
+    #elif defined(__APPLE__)
+        return OS::MACOS;
+    #elif defined(_WIN32)
+        return OS::WINDOWS;
+    #else
+        return OS::UNKNOWN;
+    #endif
+}
+
+std::ostream& operator<<(std::ostream& out, OS os)
+{
+    switch(os)
+    {
+        case OS::UNKNOWN:
+            out << "Unknown";
+            break;
+
+        case OS::LINUX:
+            out << "linux";
+            break;
+
+        case OS::MACOS:
+            out << "macos";
+            break;
+
+        case OS::WINDOWS:
+            out << "windows";
+            break;
+
+        default:
+            assert(0);
+            out << "Unknown enum";
+            break;
+    }
+    return out;
+}
+
 constexpr Compiler compiler()
 {
     // NB: Test __GNUC__ last, because that macro is sometimes defined by other compilers than the "true" GCC
@@ -53,7 +95,7 @@ std::ostream& operator<<(std::ostream& out, Compiler compiler)
 
         default:
             assert(0);
-            out << "Unknown Id";
+            out << "Unknown enum";
             break;
     }
     return out;
@@ -94,7 +136,7 @@ std::string compiler_version()
 
         default:
             assert(0);
-            out << "Unknown Id";
+            out << "Unknown enum";
             break;
     }
     return out.str();
@@ -136,10 +178,16 @@ std::ostream& operator<<(std::ostream& out, Arch arch)
 
         default:
             assert(0);
-            out << "Unknown Id";
+            out << "Unknown enum";
             break;
     }
     return out;
+}
+
+void print_os(std::ostream& out)
+{
+    constexpr auto os_id = os();
+    out << "OS: " << os_id << std::endl;
 }
 
 void print_cpp_standard(std::ostream& out)
@@ -167,11 +215,19 @@ void print_compilation_date(std::ostream& out)
     out << "Compilation date: " << __DATE__ << " " << __TIME__ << std::endl;
 }
 
+void print_platform_info(std::ostream& out)
+{
+    print_os(out);
+    print_architecture_info(out);
+    print_compiler_info(out);
+}
+
 void print_compiler_all_info(std::ostream& out)
 {
-    print_cpp_standard(out);
-    print_compiler_info(out);
+    print_os(out);
     print_architecture_info(out);
+    print_compiler_info(out);
+    print_cpp_standard(out);
     print_compilation_date(out);
 }
 

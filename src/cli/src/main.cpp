@@ -123,6 +123,9 @@ int main(int argc, char *argv[])
         "version", { "--version" },
         "Print version and exit", 0 },
       {
+        "platform", { "--platform" },
+        "Print platform information and exit", 0 },
+      {
         "no-timing", { "--no-timing" },
         "Do not print out timing measurements", 0 },
       {
@@ -180,6 +183,12 @@ int main(int argc, char *argv[])
         std::cerr << "Picross Solver " << picross::get_version_string() << std::endl;
         std::cerr << std::endl;
         stdutils::platform::print_compiler_all_info(std::cerr);
+        exit(0);
+    }
+
+    if (args["platform"])
+    {
+        stdutils::platform::print_platform_info(std::cout);
         exit(0);
     }
 
