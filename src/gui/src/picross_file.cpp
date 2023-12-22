@@ -1,9 +1,9 @@
 #include "picross_file.h"
 
 #include <picross/picross.h>
-#include <stdutils/string.h>
 
 #include <cassert>
+#include <filesystem>
 #include <iostream>
 #include <iterator>
 
@@ -30,9 +30,10 @@ void PicrossFile::visit_windows(bool& can_be_erased, Settings& settings)
         std::optional<picross::OutputGrid> goal;
         std::vector<picross::IOGrid> grids_to_solve = picross::io::parse_picross_file(file_path, file_format, err_handler);
         windows.reserve(grids_to_solve.size());
+        const auto source_file = std::filesystem::path(file_path).filename().string();
         for (auto& io_grid : grids_to_solve)
         {
-            windows.push_back(std::make_unique<GridWindow>(std::move(io_grid), stdutils::string::filename(file_path)));
+            windows.push_back(std::make_unique<GridWindow>(std::move(io_grid), source_file));
         }
     }
     else

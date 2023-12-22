@@ -23,6 +23,7 @@
 #include <cassert>
 #include <chrono>
 #include <exception>
+#include <filesystem>
 #include <functional>
 #include <iostream>
 #include <limits>
@@ -223,7 +224,7 @@ int main(int argc, char *argv[])
     for (const char* filepath : args.pos)
     {
         ValidationModeData file_data;
-        file_data.filename = stdutils::string::filename(filepath);
+        file_data.filename = std::filesystem::path(filepath).filename().string();
 
         const picross::io::ErrorHandler err_handler_classic = [&return_status, &file_data](picross::io::ErrorCodeT code, std::string_view msg)
         {

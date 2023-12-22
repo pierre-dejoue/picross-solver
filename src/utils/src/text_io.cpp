@@ -1,10 +1,9 @@
 #include <utils/text_io.h>
 
-#include <stdutils/string.h>
-
 #include <algorithm>
 #include <cassert>
 #include <exception>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 
@@ -100,7 +99,8 @@ OutputGrid io::parse_output_grid_from_file(std::string_view filepath, const io::
                     file_content.push_back(c);
             }
             file_content.push_back('\0');
-            return build_output_grid_from(std::string_view(file_content.data()), stdutils::string::filename(filepath));
+            const auto filename = std::filesystem::path(filepath).filename().string();
+            return build_output_grid_from(std::string_view(file_content.data()), filename);
         }
         else
         {

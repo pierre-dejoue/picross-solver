@@ -1,12 +1,11 @@
 #include <utils/bitmap_io.h>
 
-#include <stdutils/string.h>
-
 #include <pnm.hpp>
 
 #include <cassert>
 #include <cstddef>
 #include <exception>
+#include <filesystem>
 
 
 picross::OutputGrid import_bitmap_pbm(const std::string& filepath, const picross::io::ErrorHandler& error_handler) noexcept
@@ -14,7 +13,7 @@ picross::OutputGrid import_bitmap_pbm(const std::string& filepath, const picross
     try
     {
         const pnm::pbm_image bitmap = pnm::read_pbm(filepath);
-        const auto grid_name = stdutils::string::filename_wo_extension(filepath);
+        const auto grid_name = std::filesystem::path(filepath).stem().string();
         picross::OutputGrid output_grid(bitmap.width(), bitmap.height(), picross::Tile::UNKNOWN, grid_name);
         std::size_t y = 0u;
         for (const auto& line : bitmap.lines())

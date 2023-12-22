@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <exception>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 
@@ -44,17 +45,18 @@ std::ostream& operator<<(std::ostream& out, PicrossFileFormat format)
 
 PicrossFileFormat picross_file_format_from_filepath(std::string_view filepath)
 {
-    std::string ext = stdutils::string::file_extension(filepath);
-    ext = stdutils::string::tolower(ext);
-    if (ext == "nin")
+    std::string ext = stdutils::string::tolower(
+        std::filesystem::path(filepath).extension().string()
+    );
+    if (ext == ".nin")
     {
         return PicrossFileFormat::NIN;
     }
-    else if (ext == "non")
+    else if (ext == ".non")
     {
         return PicrossFileFormat::NON;
     }
-    else if (ext == "pbm")
+    else if (ext == ".pbm")
     {
         return PicrossFileFormat::PBM;
     }
