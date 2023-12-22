@@ -6,6 +6,7 @@ include(catch2)
 set(UTESTS_SOURCES
     src/test_io.cpp
     src/test_span.cpp
+    src/test_string.cpp
 )
 
 file(GLOB UTESTS_HEADERS src/*.h)
