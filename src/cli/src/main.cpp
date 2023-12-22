@@ -98,11 +98,25 @@ namespace
         return out;
     }
 
-    void output_solution_grid(std::ostream& out, const picross::OutputGrid& grid, unsigned int indent = 0)
+    const stdutils::string::Indent CLI_INDENT(2);
+
+    void output_solution_grid(std::ostream& out, const picross::OutputGrid& grid, unsigned int indentation_level = 0)
     {
-        const std::string ind(indent, ' ');
         for (unsigned int y = 0u; y < grid.height(); y++)
-            out << ind << grid.get_line<picross::Line::ROW>(y) << std::endl;
+        {
+            out << CLI_INDENT(indentation_level) << grid.get_line<picross::Line::ROW>(y) << std::endl;
+        }
+    }
+
+    void output_solution_stats(std::ostream& out, const picross::GridStats& stats, unsigned int indentation_level = 0)
+    {
+        std::stringstream buf;
+        buf << stats;
+        buf.seekg(0);
+        for (std::string line; std::getline(buf, line);)
+        {
+            out << CLI_INDENT(line.empty() ? 0 : indentation_level) << line << std::endl;
+        }
     }
 } // namespace
 
@@ -265,7 +279,7 @@ int main(int argc, char *argv[])
                 if (!validation_mode)
                 {
                     std::cout << "GRID " << ++count_grids << ": " << input_grid.name() << std::endl;
-                    std::cout << "  Size: " << grid_data.size << std::endl;
+                    std::cout << CLI_INDENT << "Size: " << grid_data.size << std::endl;
                 }
 
                 /* Sanity check of the input data */
@@ -339,14 +353,14 @@ int main(int argc, char *argv[])
                             if (solution.partial)
                             {
                                 assert(!solution.grid.is_completed());
-                                std::cout << "  Partial solution:" << std::endl;
+                                std::cout << CLI_INDENT << "Partial solution:" << std::endl;
                             }
                             else
                             {
                                 assert(solution.grid.is_completed());
-                                std::cout << "  Solution nb " << ++nb_solutions << ": (branching depth: " << solution.branching_depth << ")" << std::endl;
+                                std::cout << CLI_INDENT << "Solution nb " << ++nb_solutions << ": (branching depth: " << solution.branching_depth << ")" << std::endl;
                             }
-                            output_solution_grid(std::cout, solution.grid, 2);
+                            output_solution_grid(std::cout, solution.grid, 1);
                             std::cout << std::endl;
                             return max_nb_solutions == 0 || nb_solutions < max_nb_solutions;
                         };
@@ -364,17 +378,17 @@ int main(int argc, char *argv[])
                             break;
                         case picross::Solver::Status::ABORTED:
                             if (max_nb_solutions != 0 && nb_solutions == max_nb_solutions)
-                                std::cout << "  Reached max number of solutions" << std::endl;
+                                std::cout << CLI_INDENT << "Reached max number of solutions" << std::endl;
                             else
-                                std::cout << "  Solver aborted" << std::endl;
+                                std::cout << CLI_INDENT << "Solver aborted" << std::endl;
                             std::cout << std::endl;
                             break;
                         case picross::Solver::Status::CONTRADICTORY_GRID:
-                            std::cout << "  Not solvable" <<  std::endl;
+                            std::cout << CLI_INDENT << "Not solvable" <<  std::endl;
                             std::cout << std::endl;
                             break;
                         case picross::Solver::Status::NOT_LINE_SOLVABLE:
-                            std::cout << "  Not line solvable" << std::endl;
+                            std::cout << CLI_INDENT << "Not line solvable" << std::endl;
                             std::cout << std::endl;
                             break;
                         default:
@@ -383,18 +397,19 @@ int main(int argc, char *argv[])
                         }
 
                         /* Display stats */
-                        std::cout << stats << std::endl;
+                        output_solution_stats(std::cout, stats, 1);
+                        std::cout << std::endl;
 
                         /* Display timings */
                         if (!args["no-timing"])
                         {
-                            std::cout << "  Wall time: " << time_ms.count() << "ms" << std::endl;
+                            std::cout << CLI_INDENT << "Wall time: " << time_ms.count() << "ms" << std::endl;
                         }
                     }
                 }
                 else if (!validation_mode)
                 {
-                    std::cout << "  Invalid grid. Error message: " << grid_data.misc << std::endl;
+                    std::cout << CLI_INDENT << "Invalid grid. Error message: " << grid_data.misc << std::endl;
                 }
             }
             catch (std::exception& e)
