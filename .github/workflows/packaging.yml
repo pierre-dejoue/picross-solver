@@ -25,7 +25,7 @@ jobs:
       CMAKE_CONFIG_EXTRA: ${{ matrix.os == 'macos' && format('-DCMAKE_OSX_ARCHITECTURES={0}', matrix.arch) || '' }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - if: matrix.os == 'ubuntu'
       name: Install Dependencies
@@ -50,7 +50,7 @@ jobs:
       run: cmake --install . --config ${{ matrix.build_type }} --prefix install
 
     - name: Upload
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: package-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.build_type }}
         path: ${{ github.workspace }}/build/install
