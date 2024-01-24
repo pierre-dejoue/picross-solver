@@ -22,8 +22,7 @@ inline ImVec2 to_imgui_vec2(ScreenPos pos)
     return ImVec2(pos.x, pos.y);
 }
 
-namespace ImGui
-{
+namespace ImGui {
 void HelpMarker(const char* desc);          // Function taken from imgui_demo.cpp
 void SetNextWindowPosAndSize(const WindowLayout& window_layout, ImGuiCond cond = 0);
 }

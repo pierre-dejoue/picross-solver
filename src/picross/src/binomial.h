@@ -12,10 +12,9 @@
 #include <limits>
 #include <vector>
 
-namespace picross
-{
-namespace BinomialCoefficients
-{
+namespace picross {
+namespace binomial {
+
 using Rep = std::uint32_t;
 
 /*
@@ -82,5 +81,5 @@ private:
     std::vector<Rep> binomial_numbers;
 };
 
-} // namespace BinomialCoefficients
+} // namespace binomial
 } // namespace picross

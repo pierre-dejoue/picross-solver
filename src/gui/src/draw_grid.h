@@ -9,8 +9,7 @@
 
 #include <cstddef>
 
-namespace picross_grid
-{
+namespace picross_grid {
 
 size_t get_tile_size(int size_enum);
 void draw_background_grid(ImDrawList* draw_list, ImVec2 tl_corner, size_t tile_size, size_t width, size_t height, bool outline = false, bool five_tile_outline = false);

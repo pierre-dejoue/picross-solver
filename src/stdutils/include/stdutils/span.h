@@ -7,9 +7,7 @@
 #include <limits>
 #include <type_traits>
 
-
-namespace stdutils
-{
+namespace stdutils {
 
 inline constexpr std::size_t dyn_extent = std::numeric_limits<std::size_t>::max();  // -1
 
@@ -79,6 +77,5 @@ public:
 private:
     T* m_ptr;
 };
-
 
 } // namespace stdutils

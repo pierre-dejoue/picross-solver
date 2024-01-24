@@ -7,10 +7,8 @@
 
 #include <cstddef>
 
-namespace picross
-{
-namespace BinomialCoefficients
-{
+namespace picross {
+namespace binomial {
 
 Rep Cache::partition_n_elts_into_k_buckets(unsigned int nb_elts, unsigned int nb_buckets)
 {
@@ -55,5 +53,5 @@ Rep Cache::partition_n_elts_into_k_buckets(unsigned int nb_elts, unsigned int nb
     return binomial_number;
 }
 
-} // namespace BinomialCoefficients
+} // namespace binomial
 } // namespace picross

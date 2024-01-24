@@ -22,8 +22,7 @@
 #include <ostream>
 #include <vector>
 
-namespace picross
-{
+namespace picross {
 
 /*
  * State of the grid solver
@@ -131,7 +130,7 @@ private:
     std::unique_ptr<WorkGrid<SolverPolicy>>         m_nested_work_grid;
     LineCache                                       m_branch_line_cache;
     std::shared_ptr<FullReductionBuffers>           m_full_reduction_buffers;
-    std::shared_ptr<BinomialCoefficients::Cache>    m_binomial;
+    std::shared_ptr<binomial::Cache>                m_binomial;
 };
 
 } // namespace picross

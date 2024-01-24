@@ -11,9 +11,7 @@
 #include <algorithm>
 #include <cassert>
 
-
-namespace picross
-{
+namespace picross {
 
 unsigned int compute_min_line_size(const Segments& segments)
 {
@@ -47,7 +45,7 @@ unsigned int LineConstraint::max_segment_size() const
 }
 
 // Given an uninitialized line compute the theoritical number of alternatives
-unsigned int LineConstraint::line_trivial_nb_alternatives(unsigned int line_size, BinomialCoefficients::Cache& binomial_cache) const
+unsigned int LineConstraint::line_trivial_nb_alternatives(unsigned int line_size, binomial::Cache& binomial_cache) const
 {
     if (line_size < m_min_line_size)
     {

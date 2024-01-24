@@ -5,7 +5,6 @@
 #include <exception>
 #include <memory>
 
-
 ConsoleObserver::ConsoleObserver(size_t width, size_t height, std::ostream& ostream)
     : GridObserver(width, height)
     , m_ostream(ostream)

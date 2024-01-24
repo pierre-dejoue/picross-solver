@@ -7,9 +7,7 @@
 #include <fstream>
 #include <sstream>
 
-
-namespace picross
-{
+namespace picross {
 
 OutputGrid build_output_grid_from(std::size_t width, std::size_t height, const std::vector<int>& tiles, std::string_view name)
 {

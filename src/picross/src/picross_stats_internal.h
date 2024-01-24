@@ -9,9 +9,7 @@
 
 #include <cassert>
 
-
-namespace picross
-{
+namespace picross {
 
 void merge_branching_grid_stats(GridStats& stats, const GridStats& branching_stats);
 

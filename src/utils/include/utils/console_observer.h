@@ -8,7 +8,6 @@
 
 #include <optional>
 
-
 class ConsoleObserver final : public GridObserver
 {
 public:

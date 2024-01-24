@@ -15,9 +15,8 @@
 #include <string_view>
 #include <vector>
 
+namespace picross {
 
-namespace picross
-{
 class Grid
 {
 public:
@@ -98,6 +97,5 @@ private:
     const std::size_t       m_height;
     Grid::Container         m_tiles;
 };
-
 
 } // namespace picross

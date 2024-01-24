@@ -10,11 +10,8 @@
 #include <fstream>
 #include <sstream>
 
-
-namespace picross
-{
-namespace io
-{
+namespace picross {
+namespace io {
 
 std::ostream& operator<<(std::ostream& out, PicrossFileFormat format)
 {
@@ -108,8 +105,7 @@ std::vector<IOGrid> parse_picross_file(std::string_view filepath, PicrossFileFor
     return {};
 }
 
-namespace
-{
+namespace {
     std::string goal_non_set_error_msg(std::string_view filepath, PicrossFileFormat format)
     {
         std::stringstream msg;

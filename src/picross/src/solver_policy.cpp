@@ -11,8 +11,7 @@
 #include <cassert>
 #include <limits>
 
-namespace picross
-{
+namespace picross {
 
 unsigned int SolverPolicy_RampUpMaxNbAlternatives::get_max_nb_alternatives(unsigned int previous_max_nb_alternatives, bool grid_changed, unsigned int skipped_lines) const
 {

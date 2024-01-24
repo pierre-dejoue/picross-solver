@@ -6,11 +6,8 @@
 #include <string>
 #include <string_view>
 
-
-namespace stdutils
-{
-namespace string
-{
+namespace stdutils {
+namespace string {
 
 std::string tolower(const std::string& in);
 

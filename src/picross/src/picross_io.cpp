@@ -18,9 +18,7 @@
 #include <iterator>
 #include <sstream>
 
-
-namespace picross
-{
+namespace picross {
 
 IOGrid::IOGrid(const InputGrid& input_grid, const std::optional<OutputGrid>& goal)
     : m_input_grid(input_grid)
@@ -32,8 +30,7 @@ IOGrid::IOGrid(InputGrid&& input_grid, std::optional<OutputGrid>&& goal) noexcep
     , m_goal(std::move(goal))
 {}
 
-namespace io
-{
+namespace io {
 
 std::string str_error_code(ErrorCodeT code)
 {
@@ -60,8 +57,7 @@ std::string str_error_code(ErrorCodeT code)
     }
 }
 
-namespace
-{
+namespace {
 
 struct FileFormat
 {
@@ -710,7 +706,7 @@ void write_goal_non_format(std::ostream& out, const OutputGrid& goal)
     out << quote << std::endl;
 }
 
-} // Anonymous namespace
+} // namespace
 
 
 std::vector<IOGrid> parse_input_file_native(std::string_view filepath, const ErrorHandler& error_handler) noexcept

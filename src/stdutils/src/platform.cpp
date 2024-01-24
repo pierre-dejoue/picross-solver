@@ -5,11 +5,8 @@
 #include <cassert>
 #include <sstream>
 
-
-namespace stdutils
-{
-namespace platform
-{
+namespace stdutils {
+namespace platform {
 
 constexpr OS os()
 {

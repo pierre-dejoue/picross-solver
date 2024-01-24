@@ -4,11 +4,8 @@
 
 #include <chrono>
 
-
-namespace stdutils
-{
-namespace chrono
-{
+namespace stdutils {
+namespace chrono {
 
 template<typename Rep, typename Period>
 class DurationMeas

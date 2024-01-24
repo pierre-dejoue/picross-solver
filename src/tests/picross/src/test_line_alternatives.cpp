@@ -13,15 +13,13 @@
 #include <utility>
 
 
-namespace picross
-{
-namespace
-{
+namespace picross {
+namespace {
     inline constexpr unsigned int LINE_INDEX = 0;
 
-    BinomialCoefficients::Cache& get_binomial()
+    binomial::Cache& get_binomial()
     {
-        static BinomialCoefficients::Cache binomial;
+        static binomial::Cache binomial;
         return binomial;
     }
 
@@ -479,7 +477,7 @@ TEST_CASE("linear_reduction_non_regression_a", "[line_alternatives]")
 
 TEST_CASE("linear_vs_full_reduction", "[line_alternatives]")
 {
-    constexpr auto MAX = BinomialCoefficients::overflowValue();
+    constexpr auto MAX = binomial::overflowValue();
     {
         const LineConstraint constraint(Line::COL, { 7, 6, 9, 3, 3, 4, 4 });   // Example from tiger.non
         const auto known_tiles      = build_line_from("..????###?#???##???????######?###?#??????##???##??", Line::COL, 34);

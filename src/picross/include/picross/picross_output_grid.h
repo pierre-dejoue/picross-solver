@@ -15,8 +15,7 @@
 #include <string>
 #include <vector>
 
-namespace picross
-{
+namespace picross {
 
 /*
  * A tile is the base element to construct lines and grids: it can be empty or filled

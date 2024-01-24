@@ -18,9 +18,7 @@
 #include <string_view>
 #include <vector>
 
-
-namespace picross
-{
+namespace picross {
 
 /*
  * IOGrid class
@@ -38,8 +36,7 @@ struct IOGrid
     std::optional<OutputGrid> m_goal;
 };
 
-namespace io
-{
+namespace io {
 
 /*
  * IO error handling

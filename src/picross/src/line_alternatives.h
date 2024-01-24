@@ -14,9 +14,10 @@
 #include <ostream>
 #include <vector>
 
-namespace picross
-{
-namespace BinomialCoefficients { class Cache; }
+namespace picross {
+
+namespace binomial { class Cache; }
+
 class LineConstraint;
 
 struct LineHole
@@ -50,7 +51,7 @@ class LineAlternatives
 public:
     using NbAlt = std::uint32_t;
 public:
-    LineAlternatives(const LineConstraint& constraint, const LineSpan& known_tiles, BinomialCoefficients::Cache& binomial);
+    LineAlternatives(const LineConstraint& constraint, const LineSpan& known_tiles, binomial::Cache& binomial);
     LineAlternatives(const LineAlternatives& other, const LineSpan& known_tiles);
     ~LineAlternatives();
     // Movable

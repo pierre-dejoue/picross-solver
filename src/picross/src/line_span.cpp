@@ -9,13 +9,10 @@
 #include <cassert>
 #include <sstream>
 
-namespace picross
-{
+namespace picross {
 
-namespace
-{
-namespace Tiles
-{
+namespace {
+namespace Tiles {
     char str(Tile t)
     {
         if (t == Tile::UNKNOWN) { return '?'; }

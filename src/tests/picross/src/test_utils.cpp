@@ -2,8 +2,7 @@
 #include <picross/picross.h>
 #include <utils/text_io.h>
 
-namespace picross
-{
+namespace picross {
 
 TEST_CASE("build_output_grid_from", "[text_io]")
 {

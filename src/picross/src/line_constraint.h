@@ -19,9 +19,8 @@
 #include <utility>
 #include <vector>
 
+namespace picross {
 
-namespace picross
-{
 using Segments = std::vector<unsigned int>;
 
 template <typename SegmentIt>
@@ -33,13 +32,13 @@ unsigned int compute_min_line_size(SegmentIt begin, SegmentIt end)
 
 unsigned int compute_min_line_size(const Segments& segments);
 
-inline BinomialCoefficients::Rep compute_max_nb_of_alternatives(unsigned int nb_extra_zeros, unsigned int nb_segments, BinomialCoefficients::Cache& binomial)
+inline binomial::Rep compute_max_nb_of_alternatives(unsigned int nb_extra_zeros, unsigned int nb_segments, binomial::Cache& binomial)
 {
     return nb_extra_zeros > 0 ? binomial.partition_n_elts_into_k_buckets(nb_extra_zeros, nb_segments + 1) : 1u;
 }
 
 template <typename SegmentIt>
-BinomialCoefficients::Rep compute_max_nb_of_alternatives(unsigned int extra_zeros, SegmentIt begin, SegmentIt end, BinomialCoefficients::Cache& binomial)
+binomial::Rep compute_max_nb_of_alternatives(unsigned int extra_zeros, SegmentIt begin, SegmentIt end, binomial::Cache& binomial)
 {
     const unsigned int nb_segments = static_cast<unsigned int>(std::distance(begin, end));
     return compute_max_nb_of_alternatives(extra_zeros, nb_segments, binomial);
@@ -54,7 +53,7 @@ public:
     std::size_t nb_segments() const { return m_segments.size(); }
     const Segments& segments() const { return m_segments; }
     unsigned int min_line_size() const { return m_min_line_size; }
-    unsigned int line_trivial_nb_alternatives(unsigned int line_size, BinomialCoefficients::Cache& binomial) const;
+    unsigned int line_trivial_nb_alternatives(unsigned int line_size, binomial::Cache& binomial) const;
     Line line_trivial_reduction(unsigned int line_size, unsigned int index) const;
     std::vector<Line> build_all_possible_lines(const LineSpan& known_tiles) const;
     bool compatible(const LineSpan& line) const;

@@ -13,9 +13,7 @@
 
 #include <cassert>
 
-
-namespace picross
-{
+namespace picross {
 
 /*
  * Line range

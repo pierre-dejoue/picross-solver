@@ -22,10 +22,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace picross
-{
-namespace
-{
+namespace picross {
+namespace {
     template <bool Reversed>
     struct IndexTranslation
     {
@@ -235,8 +233,7 @@ std::vector<LineHole> line_holes(const LineSpan& known_tiles, int line_begin, in
 }
 
 
-namespace
-{
+namespace {
     std::pair<bool, std::vector<SegmentRange>> local_find_segments_range(const LineSpan& known_tiles, const BidirectionalRange<false>& range)
     {
         const auto nb_segments = static_cast<std::size_t>(std::distance(range.m_constraint_begin, range.m_constraint_end));
@@ -425,7 +422,7 @@ namespace
 
 struct LineAlternatives::Impl
 {
-    Impl(const LineConstraint& constraint, const LineSpan& known_tiles, BinomialCoefficients::Cache& binomial);
+    Impl(const LineConstraint& constraint, const LineSpan& known_tiles, binomial::Cache& binomial);
     Impl(const Impl& other, const LineSpan& known_tiles);
 
     void reset();
@@ -467,14 +464,14 @@ struct LineAlternatives::Impl
     const LineSpan                      m_known_tiles;
     LineExt                             m_known_tiles_extended_copy;
     const LineSpan                      m_known_tiles_ext;
-    BinomialCoefficients::Cache&        m_binomial;
+    binomial::Cache&                    m_binomial;
     const unsigned int                  m_line_length;
     unsigned int                        m_remaining_zeros;
     BidirectionalRange<false>           m_bidirectional_range;
     BidirectionalRange<true>            m_bidirectional_range_reverse;
 };
 
-LineAlternatives::Impl::Impl(const LineConstraint& constraints, const LineSpan& known_tiles, BinomialCoefficients::Cache& binomial)
+LineAlternatives::Impl::Impl(const LineConstraint& constraints, const LineSpan& known_tiles, binomial::Cache& binomial)
     : m_segments(constraints.segments())
     , m_known_tiles(known_tiles)
     , m_known_tiles_extended_copy(known_tiles)
@@ -777,7 +774,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::linear_reduction(const std::
             for (int idx = max_index; idx < min_index + static_cast<int>(seg_length); idx++)
                 reduction_mask[idx] = Tile::FILLED;
         }
-        BinomialCoefficients::mult(result.nb_alternatives, nb_alt);
+        binomial::mult(result.nb_alternatives, nb_alt);
         if (result.nb_alternatives == 0)
             break;
         constraint_it++;
@@ -833,7 +830,7 @@ TailReduce LineAlternatives::Impl::reduce_all_alternatives_recursive(
     const int line_begin,
     const int line_end)
 {
-    static_assert(std::is_same_v<NbAlt, BinomialCoefficients::Rep>);
+    static_assert(std::is_same_v<NbAlt, binomial::Rep>);
     assert(constraint_it != constraint_end);
     const auto k = static_cast<unsigned int>(std::distance(constraint_it, constraint_end)) - 1;
 
@@ -886,7 +883,7 @@ TailReduce LineAlternatives::Impl::reduce_all_alternatives_recursive(
                 nb_alt++;
             }
         }
-        BinomialCoefficients::add(result.m_nb_alt, nb_alt);
+        binomial::add(result.m_nb_alt, nb_alt);
     }
     else
     {
@@ -910,7 +907,7 @@ TailReduce LineAlternatives::Impl::reduce_all_alternatives_recursive(
                         alternative_tail[next_line_idx + idx] = recurse_tail_reduce.m_reduced_tail[idx];
                     }
                     reduced_line_tail.reduce(alternative_tail);
-                    BinomialCoefficients::add(result.m_nb_alt, recurse_tail_reduce.m_nb_alt);
+                    binomial::add(result.m_nb_alt, recurse_tail_reduce.m_nb_alt);
                 }
             }
         }
@@ -966,7 +963,7 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_all_alternatives(Full
 }
 
 
-LineAlternatives::LineAlternatives(const LineConstraint& constraint, const LineSpan& known_tiles, BinomialCoefficients::Cache& binomial)
+LineAlternatives::LineAlternatives(const LineConstraint& constraint, const LineSpan& known_tiles, binomial::Cache& binomial)
     : p_impl(std::make_unique<Impl>(constraint, known_tiles, binomial))
 {
 }

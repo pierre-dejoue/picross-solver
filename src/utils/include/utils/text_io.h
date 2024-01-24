@@ -6,8 +6,7 @@
 #include <string_view>
 #include <vector>
 
-namespace picross
-{
+namespace picross {
 
 // Utility functions to build an OutputGrid from a vector of tiles, or a string, arranged in row-major order:
 
@@ -25,8 +24,7 @@ OutputGrid build_output_grid_from(std::size_t width, std::size_t height, const s
 // Unless the grid width and height are given as arguments, they are deduced from the presence of EOL characters
 OutputGrid build_output_grid_from(std::size_t width, std::size_t height, std::string_view tiles, std::string_view name = "Test");
 OutputGrid build_output_grid_from(std::string_view tiles, std::string_view name = "Test");
-namespace io
-{
+namespace io {
 OutputGrid parse_output_grid_from_file(std::string_view filepath, const io::ErrorHandler& error_handler) noexcept;
 }
 

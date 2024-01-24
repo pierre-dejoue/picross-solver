@@ -3,8 +3,7 @@
 #include <utils/text_io.h>
 
 
-namespace picross
-{
+namespace picross {
 
 TEST_CASE("Benchmark", "[solver]")
 {

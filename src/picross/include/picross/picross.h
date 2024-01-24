@@ -23,9 +23,7 @@
 #include <string_view>
 #include <vector>
 
-
-namespace picross
-{
+namespace picross {
 
 /*
  * Get the version of the library

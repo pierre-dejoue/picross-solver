@@ -9,9 +9,7 @@
 
 #include <picross/picross.h>
 
-
-namespace picross
-{
+namespace picross {
 
 /*
  * Grid Solver: an implementation

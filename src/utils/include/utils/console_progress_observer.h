@@ -7,7 +7,6 @@
 
 #include <optional>
 
-
 class ConsoleProgressObserver final
 {
 public:

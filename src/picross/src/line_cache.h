@@ -16,8 +16,7 @@
 #include <cstddef>
 #include <memory>
 
-namespace picross
-{
+namespace picross {
 
 class LineCache
 {

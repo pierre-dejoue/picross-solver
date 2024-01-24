@@ -24,16 +24,13 @@
 #include <optional>
 #include <type_traits>
 
-
-namespace picross
-{
+namespace picross {
 
 // Exception returned by WorkGrid::solve() if the processing was aborted from the outside
 class PicrossSolverAborted : public std::exception
 {};
 
-namespace
-{
+namespace {
 constexpr bool PARTIAL_SOLUTION = true;
 constexpr bool FULL_SOLUTION = false;
 
@@ -46,7 +43,7 @@ std::vector<LineConstraint> build_constraints_from(Line::Type type, const InputG
     return output;
 }
 
-std::vector<LineAlternatives> build_line_alternatives_from(Line::Type type, const std::vector<LineConstraint>& constraints, const Grid& grid, BinomialCoefficients::Cache& binomial)
+std::vector<LineAlternatives> build_line_alternatives_from(Line::Type type, const std::vector<LineConstraint>& constraints, const Grid& grid, binomial::Cache& binomial)
 {
     std::vector<LineAlternatives> output;
     output.reserve(constraints.size());
@@ -159,7 +156,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
     , m_nested_work_grid()
     , m_branch_line_cache()
     , m_full_reduction_buffers()
-    , m_binomial(std::make_shared<BinomialCoefficients::Cache>())
+    , m_binomial(std::make_shared<binomial::Cache>())
 {
     assert(m_binomial);
 

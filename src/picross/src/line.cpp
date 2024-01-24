@@ -16,9 +16,7 @@
 #include <string>
 #include <vector>
 
-
-namespace picross
-{
+namespace picross {
 
 Line::Line(Line::Type type, Line::Index index, size_t size, Tile init_tile) :
     m_type(type),

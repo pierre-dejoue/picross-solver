@@ -4,10 +4,8 @@
 #include <vector>
 
 
-namespace picross_grid
-{
-namespace
-{
+namespace picross_grid {
+namespace {
     // Grid background
     constexpr ImU32 ColorGridBack = IM_COL32(255, 255, 255, 255);
     constexpr ImU32 ColorGridOutline = IM_COL32(224, 224, 224, 255);
@@ -128,7 +126,7 @@ namespace
         }
     }
 
-} // Anonymous namespace
+} // namespace
 
 
 size_t get_tile_size(int size_enum)

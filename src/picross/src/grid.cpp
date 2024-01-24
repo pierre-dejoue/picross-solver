@@ -14,13 +14,10 @@
 #include <utility>
 
 
-namespace picross
-{
+namespace picross {
 
-namespace
-{
-namespace Tiles
-{
+namespace {
+namespace Tiles {
     inline bool set(Tile& t, Tile val)
     {
         const bool changed = (val != t);

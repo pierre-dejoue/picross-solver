@@ -7,9 +7,7 @@
 
 #include "picross_solver_version.h"
 
-
-namespace picross
-{
+namespace picross {
 
 std::string_view get_version_string()
 {

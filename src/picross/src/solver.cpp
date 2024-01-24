@@ -19,9 +19,7 @@
 #include <string>
 #include <utility>
 
-
-namespace picross
-{
+namespace picross {
 
 template <bool BranchingAllowed>
 Solver::Result RefSolver<BranchingAllowed>::solve(const InputGrid& input_grid, unsigned int max_nb_solutions) const

@@ -12,11 +12,8 @@
 #include <string_view>
 #include <vector>
 
-
-namespace stdutils
-{
-namespace io
-{
+namespace stdutils {
+namespace io {
 
 /**
  * IO error handling

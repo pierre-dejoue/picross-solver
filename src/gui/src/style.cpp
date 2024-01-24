@@ -3,8 +3,7 @@
 #include <imgui_wrap.h>
 
 
-namespace
-{
+namespace {
     constexpr ImColor WindowBackgroundColor_Classic(29, 75, 99, 217);
     constexpr ImColor WindowBackgroundColor_Dark(4, 8, 25, 240);
     constexpr ImColor WindowMainBackgroundColor_Classic(35, 92, 121, 255);

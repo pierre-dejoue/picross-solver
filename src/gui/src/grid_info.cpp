@@ -15,8 +15,7 @@
 #include <utility>
 
 
-namespace
-{
+namespace {
     constexpr std::string_view GRID_INFO = "Grid Info";
     constexpr std::string_view SOLVER_STATS = "Solver Stats";
     constexpr std::string_view GRID_CONSTRAINTS = "Grid Constraints";
@@ -236,8 +235,7 @@ void GridInfo::refresh_stats_info()
     solver_stats_flag = false;
 }
 
-namespace
-{
+namespace {
     std::size_t key_col_width(const GridInfo::InfoMap& map)
     {
         std::size_t result = 0;

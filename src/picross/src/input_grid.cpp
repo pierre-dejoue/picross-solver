@@ -9,9 +9,7 @@
 
 #include <sstream>
 
-
-namespace picross
-{
+namespace picross {
 
 InputGrid::InputGrid(const Constraints& rows, const Constraints& cols, const std::string_view name)
     : m_rows(rows)

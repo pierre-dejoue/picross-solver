@@ -5,8 +5,7 @@
 #include <cstddef>
 #include <unordered_set>
 
-namespace picross
-{
+namespace picross {
 
 // Hasher for OutputGrid
 struct OutputGridHasher

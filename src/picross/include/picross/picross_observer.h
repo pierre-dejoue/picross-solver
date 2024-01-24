@@ -14,9 +14,7 @@
 #include <ostream>
 #include <string>
 
-
-namespace picross
-{
+namespace picross {
 
 //
 // The observer is a function object with the following signature:

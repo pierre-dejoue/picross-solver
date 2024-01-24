@@ -4,8 +4,7 @@
 #include <utils/text_io.h>
 
 
-namespace picross
-{
+namespace picross {
 
 TEST_CASE("Constraints can use zero to declare an empty row or column", "[solver]")
 {

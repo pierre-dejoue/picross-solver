@@ -12,9 +12,7 @@
 #include <ostream>
 #include <vector>
 
-
-namespace picross
-{
+namespace picross {
 
 /*
  * GridStats

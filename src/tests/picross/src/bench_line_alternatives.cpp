@@ -9,13 +9,11 @@
 #include "line_constraint.h"
 #include "line_span.h"
 
-namespace picross
-{
-namespace
-{
-    BinomialCoefficients::Cache& get_binomial()
+namespace picross {
+namespace {
+    binomial::Cache& get_binomial()
     {
-        static BinomialCoefficients::Cache binomial;
+        static binomial::Cache binomial;
         return binomial;
     }
 

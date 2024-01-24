@@ -4,7 +4,6 @@
 #include <exception>
 #include <iostream>
 
-
 ObserverGrid::ObserverGrid(size_t width, size_t height, unsigned int depth, const std::string& name)
     : OutputGrid(width, height, picross::Tile::UNKNOWN, name)
     , m_depth(depth)

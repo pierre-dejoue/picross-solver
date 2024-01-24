@@ -16,9 +16,7 @@
 #include <utility>
 #include <vector>
 
-
-namespace picross
-{
+namespace picross {
 
 /*
  * InputGrid class

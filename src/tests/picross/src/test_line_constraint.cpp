@@ -5,10 +5,8 @@
 #include "line_constraint.h"
 
 
-namespace picross
-{
-namespace
-{
+namespace picross {
+namespace {
 inline constexpr unsigned int LINE_INDEX = 0;
 }
 
@@ -23,7 +21,7 @@ TEST_CASE("compute_min_line_size", "[line_constraint]")
 
 TEST_CASE("line_trivial_nb_alternatives", "[line_constraint]")
 {
-    BinomialCoefficients::Cache binomial;
+    binomial::Cache binomial;
     LineConstraint constraint(Line::ROW, { 1, 1 });
     CHECK_THROWS(constraint.line_trivial_nb_alternatives(0, binomial));
     CHECK_THROWS(constraint.line_trivial_nb_alternatives(1, binomial));
@@ -46,7 +44,7 @@ TEST_CASE("line_trivial_reduction", "[line_constraint]")
 
 TEST_CASE("empty_line", "[line_constraint]")
 {
-    BinomialCoefficients::Cache binomial;
+    binomial::Cache binomial;
     for (const auto& constraint: { LineConstraint(Line::ROW, { }), LineConstraint(Line::ROW, { 0 }) })
     {
         CHECK(constraint.line_trivial_nb_alternatives(0, binomial) == 1);
@@ -62,7 +60,7 @@ TEST_CASE("empty_line", "[line_constraint]")
 
 TEST_CASE("full_line", "[line_constraint]")
 {
-    BinomialCoefficients::Cache binomial;
+    binomial::Cache binomial;
     for (unsigned int line_sz = 0; line_sz < 10; line_sz++)
     {
         LineConstraint constraint(Line::ROW, { line_sz });
@@ -73,7 +71,7 @@ TEST_CASE("full_line", "[line_constraint]")
 
 TEST_CASE("trivial_reduction", "[line_constraint]")
 {
-    BinomialCoefficients::Cache binomial;
+    binomial::Cache binomial;
     LineConstraint constraint(Line::ROW, { 6, 1 });
 
     CHECK_THROWS(constraint.line_trivial_nb_alternatives(7, binomial));

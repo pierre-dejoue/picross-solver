@@ -34,8 +34,7 @@
 #include <vector>
 
 
-namespace
-{
+namespace {
 
     struct ValidationModeData
     {

@@ -5,11 +5,8 @@
 #include <algorithm>
 #include <cctype>
 
-
-namespace stdutils
-{
-namespace string
-{
+namespace stdutils {
+namespace string {
 
 std::string tolower(const std::string& in)
 {

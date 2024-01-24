@@ -4,8 +4,7 @@
 #include <GLFW/glfw3.h>
 
 
-namespace
-{
+namespace {
 
 constexpr int TARGET_OPENGL_MAJOR = 3;
 constexpr int TARGET_OPENGL_MINOR = 0;
@@ -23,7 +22,7 @@ void glfw_error_callback(int error, const char* description)
     s_glfw_err_handler(stdutils::io::Severity::ERR, out.str());
 }
 
-} // Anonymous namespace
+} // namespace
 
 GLFWWindowContext::GLFWWindowContext(int width, int height, const std::string_view& title, const stdutils::io::ErrorHandler* err_handler)
     : m_window_ptr(nullptr)

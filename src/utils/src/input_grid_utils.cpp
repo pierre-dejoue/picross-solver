@@ -3,9 +3,8 @@
 #include <algorithm>
 #include <cassert>
 
+namespace picross {
 
-namespace picross
-{
     void stream_input_grid_constraint(std::ostream& out, const InputGrid& input_grid, const LineId& line_id)
     {
         const auto& constraint = get_constraint(input_grid, line_id);

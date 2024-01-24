@@ -14,8 +14,7 @@
 #include <exception>
 #include <sstream>
 
-namespace picross
-{
+namespace picross {
 
 std::string str_output_grid_size(const OutputGrid& grid)
 {
@@ -24,8 +23,7 @@ std::string str_output_grid_size(const OutputGrid& grid)
     return oss.str();
 }
 
-namespace
-{
+namespace {
     template <typename NonMatching>
     void match_output_grid_against_input_grid(const InputGrid& input_grid, const OutputGrid& output_grid, const NonMatching& non_matching)
     {

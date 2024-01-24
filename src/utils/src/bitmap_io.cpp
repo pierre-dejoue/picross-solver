@@ -7,7 +7,6 @@
 #include <exception>
 #include <filesystem>
 
-
 picross::OutputGrid import_bitmap_pbm(const std::string& filepath, const picross::io::ErrorHandler& error_handler) noexcept
 {
     try

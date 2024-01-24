@@ -5,8 +5,7 @@
  ******************************************************************************/
 #pragma once
 
-namespace picross
-{
+namespace picross {
 
 struct SolverPolicyBase
 {

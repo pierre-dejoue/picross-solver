@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <exception>
 
-
 ConsoleProgressObserver::ConsoleProgressObserver(std::ostream& ostream)
     : m_ostream(ostream)
     , m_previous_progress(0.f)

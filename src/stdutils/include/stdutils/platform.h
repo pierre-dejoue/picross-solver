@@ -5,11 +5,8 @@
 #include <ostream>
 #include <string>
 
-
-namespace stdutils
-{
-namespace platform
-{
+namespace stdutils {
+namespace platform {
 
 enum class OS
 {
@@ -54,5 +51,5 @@ void print_compilation_date(std::ostream& out);
 void print_platform_info(std::ostream& out);
 void print_compiler_all_info(std::ostream& out);
 
-}
-}
+} // namespace platform
+} // namespace stdutils

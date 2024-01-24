@@ -12,9 +12,7 @@
 #include <cassert>
 #include <cstddef>
 
-
-namespace picross
-{
+namespace picross {
 
 DifficultyCode difficulty_code(const GridStats& grid_stats)
 {
@@ -77,7 +75,7 @@ std::ostream& operator<<(std::ostream& out, const GridStats& stats)
     }
 
     out << "Max number of alternatives on an empty line (initial grid pass): " << stats.max_initial_nb_alternatives;
-    if (stats.max_initial_nb_alternatives == BinomialCoefficients::overflowValue()) { out << " (overflow!)"; }
+    if (stats.max_initial_nb_alternatives == binomial::overflowValue()) { out << " (overflow!)"; }
     out << std::endl;
 
     if (stats.max_nb_alternatives_partial_w_change > 0 || stats.max_nb_alternatives_partial)

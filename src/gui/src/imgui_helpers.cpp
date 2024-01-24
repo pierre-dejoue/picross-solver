@@ -7,8 +7,7 @@
 #include "glfw_context.h"
 
 
-namespace ImGui
-{
+namespace ImGui {
 
 void HelpMarker(const char* desc)
 {

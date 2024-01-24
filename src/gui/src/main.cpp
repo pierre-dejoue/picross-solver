@@ -35,8 +35,7 @@
 #include <vector>
 
 
-namespace
-{
+namespace {
 
 void err_callback(stdutils::io::SeverityCode sev, std::string_view msg)
 {
@@ -121,7 +120,7 @@ void main_menu_bar(AppWindows& windows, bool& application_should_close, bool& gu
     }
 }
 
-} // Anonymous namespace
+} // namespace
 
 
 int main(int argc, char *argv[])

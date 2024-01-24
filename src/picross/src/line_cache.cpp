@@ -14,9 +14,8 @@
 #include <type_traits>
 #include <vector>
 
+namespace picross {
 
-namespace picross
-{
 constexpr TileImpl TILE_INVALID_CACHE_ENTRY { 0xFF };
 
 static_assert(

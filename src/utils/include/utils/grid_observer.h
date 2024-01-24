@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <vector>
 
-
 class ObserverGrid : public picross::OutputGrid
 {
     friend class GridObserver;

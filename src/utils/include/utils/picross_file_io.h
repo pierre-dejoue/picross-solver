@@ -6,10 +6,8 @@
 #include <ostream>
 #include <string_view>
 
-namespace picross
-{
-namespace io
-{
+namespace picross {
+namespace io {
 
 enum class PicrossFileFormat
 {
@@ -28,5 +26,5 @@ std::vector<IOGrid> parse_picross_file(std::string_view filepath, PicrossFileFor
 
 void save_picross_file(std::string_view filepath, PicrossFileFormat format, const IOGrid& io_grid, const ErrorHandler& error_handler) noexcept;
 
-}
-}
+} // namespace io
+} // namespace picross

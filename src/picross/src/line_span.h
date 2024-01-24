@@ -12,9 +12,7 @@
 #include <cstddef>
 #include <type_traits>
 
-
-namespace picross
-{
+namespace picross {
 
 template <typename TileT>
 class LineSpanImpl
