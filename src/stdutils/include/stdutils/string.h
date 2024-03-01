@@ -26,19 +26,22 @@ std::string capitalize(const std::string& in);
  *      out << indent(2);           // Output 2 indentations
  */
 template <typename CharT>
-class BasicIndent : private std::basic_string<CharT>
+class BasicIndent
 {
 public:
     class Multi;
 
-    BasicIndent(std::size_t count, CharT ch = ' ') : std::basic_string<CharT>(count, ch) {}
+    BasicIndent(std::size_t count, CharT ch = ' ') : m_str(count, ch) {}
 
     Multi operator()(std::size_t factor) const { return Multi(*this, factor); }
 
     friend std::basic_ostream<CharT>& operator<<(std::basic_ostream<CharT>& out, const BasicIndent<CharT>& indent)
     {
-        return out << static_cast<const std::basic_string<CharT>&>(indent);
+        return out << indent.m_str;
     }
+
+private:
+    std::basic_string<CharT> m_str;
 };
 
 template <typename CharT>

@@ -399,9 +399,9 @@ namespace {
         }
 
     private:
-        LineSpanW                          m_all_reduced_lines;
-        stdutils::span<LineAlternatives::NbAlt> m_nb_alternatives;
-        stdutils::span<char>                    m_recorded;
+        LineSpanW                               m_all_reduced_lines;
+        stdutils::Span<LineAlternatives::NbAlt> m_nb_alternatives;
+        stdutils::Span<char>                    m_recorded;
         unsigned int                            m_max_line_length;
     };
 
