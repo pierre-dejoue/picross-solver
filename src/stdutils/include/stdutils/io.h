@@ -31,6 +31,7 @@ struct Severity
     static constexpr SeverityCode EXCPT = -1;
     static constexpr SeverityCode ERR   = 1;
     static constexpr SeverityCode WARN  = 2;
+    static constexpr SeverityCode INFO  = 3;
 };
 
 std::string_view str_severity_code(SeverityCode code);
@@ -47,6 +48,15 @@ using StreamParser = std::function<Ret(std::basic_istream<CharT, std::char_trait
 
 template <typename Ret, typename CharT>
 Ret open_and_parse_file(const std::filesystem::path& filepath, const StreamParser<Ret, CharT>& stream_parser, const stdutils::io::ErrorHandler& err_handler) noexcept;
+
+/**
+ * Save a file with a writer to std::basic_ostream
+ */
+template <typename Obj, typename CharT>
+using StreamWriter = std::function<void(std::basic_ostream<CharT, std::char_traits<CharT>>&, const Obj&, const stdutils::io::ErrorHandler&)>;
+
+template <typename Obj, typename CharT>
+void save_file(const std::filesystem::path& filepath, const StreamWriter<Obj, CharT>& stream_writer, const Obj& obj, const stdutils::io::ErrorHandler& err_handler) noexcept;
 
 /**
  * LineStream: A wrapper around std::getline to count line nb
@@ -114,11 +124,13 @@ using SkipLineStream = Basic_SkipLineStream<char>;
 template <typename CharT>
 std::size_t countlines(std::basic_istream<CharT, std::char_traits<CharT>>& istream);
 
+
 //
 //
-// IMPLEMENTATION
+// Implementation
 //
 //
+
 
 template <typename Ret, typename CharT>
 Ret open_and_parse_file(const std::filesystem::path& filepath, const StreamParser<Ret, CharT>& stream_parser, const stdutils::io::ErrorHandler& err_handler) noexcept
@@ -141,10 +153,35 @@ Ret open_and_parse_file(const std::filesystem::path& filepath, const StreamParse
     catch(const std::exception& e)
     {
         std::stringstream oss;
-        oss << "Exception: " << e.what();
+        oss << "stdutils::io::open_and_parse_file(): " << e.what();
         err_handler(stdutils::io::Severity::EXCPT, oss.str());
     }
     return Ret();
+}
+
+template <typename Obj, typename CharT>
+void save_file(const std::filesystem::path& filepath, const StreamWriter<Obj, CharT>& stream_writer, const Obj& obj, const stdutils::io::ErrorHandler& err_handler) noexcept
+{
+    try
+    {
+        std::basic_ofstream<CharT> outputstream(filepath);
+        if (outputstream.is_open())
+        {
+            stream_writer(outputstream, obj, err_handler);
+        }
+        else
+        {
+            std::stringstream oss;
+            oss << "Cannot open file " << filepath;
+            err_handler(stdutils::io::Severity::FATAL, oss.str());
+        }
+    }
+    catch(const std::exception& e)
+    {
+        std::stringstream oss;
+        oss << "stdutils::io::save_file(): " << e.what();
+        err_handler(stdutils::io::Severity::EXCPT, oss.str());
+    }
 }
 
 template <typename CharT>

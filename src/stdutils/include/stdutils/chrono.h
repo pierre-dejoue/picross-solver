@@ -7,6 +7,15 @@
 namespace stdutils {
 namespace chrono {
 
+// For example to measure a duration in milliseconds:
+//
+//  std::chrono::duration<float, std::milli> duration;
+//  {
+//      stdutils::chrono::DurationMeas meas(duration);
+//      // Do something
+//  }
+//  float duration_ms = time.count();
+//
 template<typename Rep, typename Period>
 class DurationMeas
 {

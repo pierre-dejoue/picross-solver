@@ -20,6 +20,12 @@ template <typename T>
 class span<T, dyn_extent, void>
 {
 public:
+    using element_type = T;
+    using value_type = std::remove_cv_t<T>;
+    using pointer = T*;
+    using const_pointer = const T*;
+
+public:
     span(T* ptr, std::size_t size) noexcept : m_ptr(ptr), m_size(size) { assert(m_ptr); }
     span(const span<T>&) noexcept = default;
     span(span<T>&&) noexcept = default;
@@ -51,6 +57,13 @@ template <typename T, std::size_t Sz>
 class span<T, Sz, std::enable_if_t<Sz != dyn_extent>>
 {
     using this_type = span<T, Sz, std::enable_if_t<Sz != dyn_extent>>;
+
+public:
+    using element_type = T;
+    using value_type = std::remove_cv_t<T>;
+    using pointer = T*;
+    using const_pointer = const T*;
+
 public:
     explicit span(T* ptr) noexcept : m_ptr(ptr) { assert(m_ptr); }
     span(const this_type&) noexcept = default;
