@@ -42,11 +42,21 @@ void err_callback(stdutils::io::SeverityCode sev, std::string_view msg)
     std::cerr << stdutils::io::str_severity_code(sev) << ": " << msg << std::endl;
 }
 
-std::string project_title()
+namespace details {
+
+    std::string s_project_title()
+    {
+        std::stringstream title;
+        title << "Picross Solver " << picross::get_version_string();
+        return title.str();
+    }
+
+} // namespace details
+
+std::string_view project_title()
 {
-    std::stringstream title;
-    title << "Picross Solver " << picross::get_version_string();
-    return title.str();
+    static std::string project_title = details::s_project_title();
+    return project_title;
 }
 
 // Application windows
@@ -126,12 +136,18 @@ void main_menu_bar(AppWindows& windows, bool& application_should_close, bool& gu
 int main(int argc, char *argv[])
 {
     UNUSED(argc); UNUSED(argv);
+    stdutils::io::ErrorHandler err_handler(err_callback);
 
     // Setup main window
-    constexpr int WINDOW_WIDTH = 1280;
-    constexpr int WINDOW_HEIGHT = 720;
-    stdutils::io::ErrorHandler err_handler(err_callback);
-    GLFWWindowContext glfw_context(WINDOW_WIDTH, WINDOW_HEIGHT, project_title().data(), &err_handler);
+    GLFWWindowContext glfw_context = [&err_handler]() {
+        constexpr int WINDOW_WIDTH = 1280;
+        constexpr int WINDOW_HEIGHT = 720;
+        GLFWOptions options;
+        options.title = project_title();
+        options.maximize_window = true;
+        GLFWWindowContext context(WINDOW_WIDTH, WINDOW_HEIGHT, options, &err_handler);
+        return context;
+    }();
     if (glfw_context.window() == nullptr)
         return EXIT_FAILURE;
 
@@ -202,8 +218,7 @@ int main(int argc, char *argv[])
         if (!windows.settings) { windows.settings = std::make_unique<SettingsWindow>(settings); }
 
         // Rendering
-        int display_w, display_h;
-        glfwGetFramebufferSize(glfw_context.window(), &display_w, &display_h);
+        const auto [display_w, display_h] = glfw_context.framebuffer_size();
         glViewport(0, 0, display_w, display_h);
         const auto clear_color = get_background_color(gui_dark_mode);
         glClearColor(clear_color[0], clear_color[1], clear_color[2], clear_color[3]);
@@ -214,4 +229,3 @@ int main(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
-
