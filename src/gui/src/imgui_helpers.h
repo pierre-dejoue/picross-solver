@@ -23,9 +23,22 @@ inline ImVec2 to_imgui_vec2(ScreenPos pos)
 }
 
 namespace ImGui {
+
+struct KeyShortcut
+{
+    KeyShortcut(ImGuiKeyChord kc, const char* lbl = nullptr)
+        : key_chord(kc)
+        , label(lbl)
+    { }
+
+    ImGuiKeyChord key_chord;
+    const char* label;
+};
+
 void HelpMarker(const char* desc);          // Function taken from imgui_demo.cpp
 void SetNextWindowPosAndSize(const WindowLayout& window_layout, ImGuiCond cond = 0);
-}
+
+} // namespace ImGui
 
 // Do not call this class ImGuiContext because this is an internal class of Dear ImGui
 struct GLFWwindow;

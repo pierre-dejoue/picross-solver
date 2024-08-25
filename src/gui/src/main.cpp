@@ -70,45 +70,87 @@ struct AppWindows
     } layout;
 };
 
-void main_menu_bar(AppWindows& windows, bool& application_should_close, bool& gui_dark_mode)
+namespace shortcut {
+
+const ImGui::KeyShortcut& open()
+{
+    constexpr ImGuiKeyChord key_chord = ImGuiMod_Ctrl | ImGuiKey_O;
+#if defined(__APPLE__)
+    static ImGui::KeyShortcut shortcut(key_chord, "Cmd+O");
+#else
+    static ImGui::KeyShortcut shortcut(key_chord, "Ctrl+O");
+#endif
+    return shortcut;
+}
+
+const ImGui::KeyShortcut& quit()
+{
+#if defined(__APPLE__)
+    static ImGui::KeyShortcut shortcut(ImGuiMod_Ctrl | ImGuiKey_Q, "Cmd+Q");
+#else
+    static ImGui::KeyShortcut shortcut(ImGuiMod_Alt | ImGuiKey_F4, "Alt+F4");
+#endif
+    return shortcut;
+}
+
+} // namespace shortcut
+
+namespace menu_bar {
+
+void action_open_picross_file(AppWindows& windows)
+{
+    const auto paths = pfd::open_file("Select a Picross file", "",
+        { "Picross file", "*.txt *.nin *.non", "All files", "*" }).result();
+    for (const auto& path : paths)
+    {
+        const auto format = picross::io::picross_file_format_from_filepath(path);
+        std::cout << "User selected file " << path << " (format: " << format << ")" << std::endl;
+        windows.picross.emplace_back(std::make_unique<PicrossFile>(path, format));
+    }
+}
+
+void action_open_bitmap(AppWindows& windows)
+{
+    const auto paths = pfd::open_file("Select a bitmap file", "",
+        { "PBM file", "*.pbm", "All files", "*" }).result();
+    for (const auto& path : paths)
+    {
+        const auto format = picross::io::PicrossFileFormat::PBM;
+        std::cout << "User selected bitmap " << path << " (format: " << format << ")" << std::endl;
+        windows.picross.emplace_back(std::make_unique<PicrossFile>(path, format));
+    }
+}
+
+void action_import_solution(AppWindows& windows)
+{
+    const auto paths = pfd::open_file("Select a solution file", "",
+        { "All files", "*" }).result();
+    for (const auto& path : paths)
+    {
+        const auto format = picross::io::PicrossFileFormat::OutputGrid;
+        std::cout << "User selected solution file " << path << std::endl;
+        windows.picross.emplace_back(std::make_unique<PicrossFile>(path, format));
+    }
+}
+
+void display(AppWindows& windows, bool& application_should_close, bool& gui_dark_mode)
 {
     application_should_close = false;
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Open", "Ctrl+O"))
+            if (ImGui::MenuItem("Open", shortcut::open().label))
             {
-                const auto paths = pfd::open_file("Select a Picross file", "",
-                    { "Picross file", "*.txt *.nin *.non", "All files", "*" }).result();
-                for (const auto& path : paths)
-                {
-                    const auto format = picross::io::picross_file_format_from_filepath(path);
-                    std::cout << "User selected file " << path << " (format: " << format << ")" << std::endl;
-                    windows.picross.emplace_back(std::make_unique<PicrossFile>(path, format));
-                }
+                action_open_picross_file(windows);
             }
-            if (ImGui::MenuItem("Import bitmap", "Ctrl+I"))
+            if (ImGui::MenuItem("Import bitmap"))
             {
-                const auto paths = pfd::open_file("Select a bitmap file", "",
-                    { "PBM file", "*.pbm", "All files", "*" }).result();
-                for (const auto& path : paths)
-                {
-                    const auto format = picross::io::PicrossFileFormat::PBM;
-                    std::cout << "User selected bitmap " << path << " (format: " << format << ")" << std::endl;
-                    windows.picross.emplace_back(std::make_unique<PicrossFile>(path, format));
-                }
+                action_open_bitmap(windows);
             }
             if (ImGui::MenuItem("Import solution"))
             {
-                const auto paths = pfd::open_file("Select a solution file", "",
-                    { "All files", "*" }).result();
-                for (const auto& path : paths)
-                {
-                    const auto format = picross::io::PicrossFileFormat::OutputGrid;
-                    std::cout << "User selected solution file " << path << std::endl;
-                    windows.picross.emplace_back(std::make_unique<PicrossFile>(path, format));
-                }
+                action_import_solution(windows);
             }
             ImGui::Separator();
             if (ImGui::BeginMenu("Options"))
@@ -120,7 +162,7 @@ void main_menu_bar(AppWindows& windows, bool& application_should_close, bool& gu
                 ImGui::EndMenu();
             }
             ImGui::Separator();
-            if (ImGui::MenuItem("Quit", "Alt+F4"))
+            if (ImGui::MenuItem("Quit", shortcut::quit().label))
             {
                 application_should_close = true;
             }
@@ -130,8 +172,9 @@ void main_menu_bar(AppWindows& windows, bool& application_should_close, bool& gu
     }
 }
 
-} // namespace
+} // namespace menu_bar
 
+} // namespace
 
 int main(int argc, char *argv[])
 {
@@ -187,9 +230,15 @@ int main(int argc, char *argv[])
         // Main menu
         {
             bool app_should_close = false;
-            main_menu_bar(windows, app_should_close, gui_dark_mode);
+            menu_bar::display(windows, app_should_close, gui_dark_mode);
             if (app_should_close)
                 glfwSetWindowShouldClose(glfw_context.window(), 1);
+        }
+
+        // Key Shorcuts
+        if (ImGui::IsKeyChordPressed(shortcut::open().key_chord))
+        {
+            menu_bar::action_open_picross_file(windows);
         }
 
         // Picross files windows (one window per grid, so possibly multiple windows per file)
