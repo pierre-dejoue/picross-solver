@@ -22,7 +22,7 @@
 #include <pfd_wrap.h>
 #include <GLFW/glfw3.h>
 #include "glfw_context.h"
-// NB: No OpenGL loader here: This project only relies on the drawing features provided by Dear ImGui.
+// NB: No OpenGL loader here: This project mainly relies on the drawing features provided by Dear ImGui.
 // Dear ImGui embeds its own minimal loader for the OpenGL 3.x functions it needs.
 // See: https://github.com/ocornut/imgui/issues/4445 "OpenGL backend now embeds its own GL loader"
 

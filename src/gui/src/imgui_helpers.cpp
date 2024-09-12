@@ -75,11 +75,21 @@ void DearImGuiContext::render() const
 
 void DearImGuiContext::backend_info(std::ostream& out) const
 {
+    // Dear ImGui
     const ImGuiIO& io = ImGui::GetIO();
     out << "Dear ImGui " << IMGUI_VERSION
         << " (Backend platform: " << (io.BackendPlatformName ? io.BackendPlatformName : "NULL")
         << ", renderer: " << (io.BackendRendererName ? io.BackendRendererName : "NULL") << ")" << std::endl;
+
+    // GLFW
     out << "GLFW " << GLFW_VERSION_MAJOR << "." << GLFW_VERSION_MINOR << "." << GLFW_VERSION_REVISION << std::endl;
-    out << "OpenGL Version " << glGetString(GL_VERSION) << std::endl;
-    out << "OpenGL Renderer " << glGetString(GL_RENDERER) << std::endl;
+
+    // OpenGL
+    const auto* open_gl_version_str = glGetString(GL_VERSION);      // Will return NULL if there is no current OpenGL context!
+    if (open_gl_version_str)
+        out << "OpenGL Version: " << open_gl_version_str << std::endl;
+    const auto* open_gl_vendor_str = glGetString(GL_VENDOR);
+    const auto* open_gl_renderer_str = glGetString(GL_RENDERER);
+    if (open_gl_vendor_str && open_gl_renderer_str)
+        out << "OpenGL Vendor: " << open_gl_vendor_str << "; Renderer: " << open_gl_renderer_str << std::endl;
 }

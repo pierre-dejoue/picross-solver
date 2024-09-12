@@ -5,6 +5,7 @@
 option(PICROSS_GUI_IMGUI_DEMO "Show ImGUI demo window" OFF)
 
 # Dependencies
+find_package(OpenGL REQUIRED)       # Necessary because we do not use a loader (such as gl3w or glad)
 include(pfd)
 
 set(GUI_SOURCES
@@ -53,7 +54,9 @@ target_link_libraries(picross_solver
     stdutils
     picross::picross
     picross::utils
+    glfw
     imgui
+    OpenGL::GL
     pfd
 )
 

@@ -163,7 +163,7 @@ Command line interface:
 Graphical UI:
 
 * OpenGL
-* [GLFW3](http://glfw.sf.net)
+* [GLFW](https://www.glfw.org/)
 * [Dear ImGui](https://github.com/ocornut/imgui)
 * [Portable File Dialogs](https://github.com/samhocevar/portable-file-dialogs)
 
