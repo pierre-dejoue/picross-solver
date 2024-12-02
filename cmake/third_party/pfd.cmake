@@ -5,12 +5,12 @@ endif()
 message(STATUS "Third-party: pfd")
 
 include(FetchContent)
-FetchContent_Declare(
+FetchContent_Populate(
     pfd
+    QUIET
     GIT_REPOSITORY https://github.com/samhocevar/portable-file-dialogs.git
     GIT_TAG 7f852d88a480020d7f91957cbcefe514fc95000c
 )
-FetchContent_Populate(pfd)
 
 add_library(pfd
     INTERFACE

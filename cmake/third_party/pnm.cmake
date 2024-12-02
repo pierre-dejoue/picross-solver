@@ -5,12 +5,12 @@ endif()
 message(STATUS "Third-party: pnm")
 
 include(FetchContent)
-FetchContent_Declare(
+FetchContent_Populate(
     pnm
+    QUIET
     GIT_REPOSITORY https://github.com/ToruNiina/pnm.git
     GIT_TAG v1.0.1
 )
-FetchContent_Populate(pnm)
 
 add_library(pnm++ INTERFACE)
 

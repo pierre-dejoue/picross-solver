@@ -5,12 +5,12 @@ endif()
 message(STATUS "Third-party: argagg")
 
 include(FetchContent)
-FetchContent_Declare(
+FetchContent_Populate(
     argagg
+    QUIET
     GIT_REPOSITORY https://github.com/vietjtnguyen/argagg.git
     GIT_TAG 6cd4a64ae09795c178d9ccba6d763c5fc9dcb72a
 )
-FetchContent_Populate(argagg)
 
 add_library(argagg-lib INTERFACE)
 

@@ -5,13 +5,12 @@ endif()
 message(STATUS "Third-party: catch2")
 
 Include(FetchContent)
-FetchContent_Declare(
+FetchContent_Populate(
     catch2
+    QUIET
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
     GIT_TAG        v3.4.0
 )
-
-FetchContent_Populate(catch2)
 
 add_library(Catch2WithMain STATIC
     ${catch2_SOURCE_DIR}/extras/catch_amalgamated.cpp
