@@ -20,12 +20,22 @@
 
 namespace picross {
 
-IOGrid::IOGrid(const InputGrid& input_grid, const std::optional<OutputGrid>& goal)
+IOGrid::IOGrid(const InputGrid& input_grid)
+    : m_input_grid(input_grid)
+    , m_goal()
+{}
+
+IOGrid::IOGrid(InputGrid&& input_grid) noexcept
+    : m_input_grid(std::move(input_grid))
+    , m_goal()
+{}
+
+IOGrid::IOGrid(const InputGrid& input_grid, const OutputGrid& goal)
     : m_input_grid(input_grid)
     , m_goal(goal)
 {}
 
-IOGrid::IOGrid(InputGrid&& input_grid, std::optional<OutputGrid>&& goal) noexcept
+IOGrid::IOGrid(InputGrid&& input_grid, OutputGrid&& goal) noexcept
     : m_input_grid(std::move(input_grid))
     , m_goal(std::move(goal))
 {}
@@ -602,8 +612,9 @@ std::vector<IOGrid> parse_input_file_generic(std::string_view filepath, const Er
             }
             std::for_each(grids.begin(), grids.end(), [&result](GridComponents& grid_comps) {
                 auto& new_grid = result.emplace_back(
-                    InputGrid(std::move(grid_comps.m_rows), std::move(grid_comps.m_cols), grid_comps.m_name),
-                    std::move(grid_comps.m_goal));
+                    InputGrid(std::move(grid_comps.m_rows), std::move(grid_comps.m_cols), grid_comps.m_name)
+                );
+                new_grid.m_goal = std::move(grid_comps.m_goal);
                 for (const auto& [key, data] : grid_comps.m_metadata)
                 {
                     new_grid.m_input_grid.set_metadata(key, data);

@@ -29,8 +29,10 @@ namespace picross {
  */
 struct IOGrid
 {
-    IOGrid(const InputGrid& input_grid, const std::optional<OutputGrid>& goal = std::nullopt);
-    IOGrid(InputGrid&& input_grid, std::optional<OutputGrid>&& goal = std::nullopt) noexcept;
+    explicit IOGrid(const InputGrid& input_grid);
+    explicit IOGrid(InputGrid&& input_grid) noexcept;
+    IOGrid(const InputGrid& input_grid, const OutputGrid& goal);
+    IOGrid(InputGrid&& input_grid, OutputGrid&& goal) noexcept;
 
     InputGrid                 m_input_grid;
     std::optional<OutputGrid> m_goal;

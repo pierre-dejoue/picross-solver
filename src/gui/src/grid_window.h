@@ -63,6 +63,7 @@ private:
     std::unique_ptr<TextBufferImpl> text_buffer;
     std::vector<ObserverGrid> solutions;
     unsigned int valid_solutions;
+    int current_solution_tab;
     bool allocate_new_solution;
     std::vector<std::string> tabs;
     std::vector<LineEvent> line_events;

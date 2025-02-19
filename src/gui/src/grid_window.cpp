@@ -47,6 +47,7 @@ GridWindow::GridWindow(picross::IOGrid&& io_grid, std::string_view source, bool 
     , text_buffer(std::make_unique<TextBufferImpl>())
     , solutions()
     , valid_solutions(0)
+    , current_solution_tab(-1)
     , allocate_new_solution(false)
     , tabs()
     , line_events()
@@ -253,6 +254,7 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
         if (solutions.empty())
         {
             // No solutions, or not yet computed
+            current_solution_tab = -1;
             ImGui::End();
             return;
         }
@@ -263,10 +265,11 @@ void GridWindow::visit(bool& can_be_erased, Settings& settings)
     {
         for (unsigned int idx = 0u; idx < solutions.size(); ++idx)
         {
-            const auto last_idx = idx == solutions.size() - 1;
-            const ImGuiTabItemFlags tab_flags = (tab_auto_select_last_solution && last_idx) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
+            const auto is_last_idx = idx == (solutions.size() - 1);
+            const ImGuiTabItemFlags tab_flags = (tab_auto_select_last_solution && is_last_idx) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
             if (ImGui::BeginTabItem(tabs.at(idx).c_str(), nullptr, tab_flags))
             {
+                current_solution_tab = static_cast<int>(idx);
                 const auto& solution = solutions.at(idx);
                 assert(idx + 1 == solutions.size() || solution.is_completed());
 
@@ -301,6 +304,7 @@ void GridWindow::reset_solutions()
     solver_thread_abort = false;
     allocate_new_solution = false;
     valid_solutions = 0;
+    current_solution_tab = -1;
     solutions.clear();
     tabs.clear();
     observer_clear();
@@ -440,10 +444,17 @@ void GridWindow::save_grid()
             std::lock_guard<std::mutex> lock(this->text_buffer->mutex);
             this->text_buffer->buffer.appendf("%s %s\n", picross::io::str_error_code(code).c_str(), msg.data());
         };
-
-        const auto solution = (solutions.empty() || !solutions[0].is_completed()) ? std::nullopt : std::optional<picross::OutputGrid>(solutions[0]);
         const auto format = picross::io::picross_file_format_from_file_extension(file_path);
-        if (picross::io::save_picross_file(file_path, format, picross::IOGrid(grid, solution), err_handler))
+        picross::IOGrid io_grid(grid);
+        if (0 <= current_solution_tab)
+        {
+            const auto solution_idx = static_cast<std::size_t>(current_solution_tab);
+            if (solution_idx < solutions.size() && solutions[solution_idx].is_completed())
+            {
+                io_grid.m_goal = solutions[solution_idx];
+            }
+        }
+        if (picross::io::save_picross_file(file_path, format, io_grid, err_handler))
         {
             std::cout << "User saved file " << file_path << " (format: " << format << ")" << std::endl;
         }

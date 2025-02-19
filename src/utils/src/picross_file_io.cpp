@@ -83,14 +83,14 @@ std::vector<IOGrid> parse_picross_file(std::string_view filepath, PicrossFileFor
         {
             auto goal = import_bitmap_pbm(std::string(filepath), error_handler);
             auto input_grid = get_input_grid_from(goal);
-            return { IOGrid(std::move(input_grid), std::make_optional<OutputGrid>(std::move(goal))) };
+            return { IOGrid(std::move(input_grid), std::move(goal)) };
         }
 
         case PicrossFileFormat::OutputGrid:
         {
             auto goal = parse_output_grid_from_file(filepath, error_handler);
             auto input_grid = get_input_grid_from(goal);
-            return { IOGrid(std::move(input_grid), std::make_optional<OutputGrid>(std::move(goal))) };
+            return { IOGrid(std::move(input_grid), std::move(goal)) };
         }
 
         default:
