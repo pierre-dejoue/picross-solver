@@ -185,9 +185,8 @@ void GridInfo::visit(bool& can_be_erased)
     // If requested, copy raw text to clipobard
     if (copy_to_clipboard)
     {
-        ImGuiIO io;
         const std::string cc = info_as_string(active_sections);
-        io.SetClipboardTextFn(io.ClipboardUserData, cc.c_str());
+        ImGui::SetClipboardText(cc.c_str());
     }
 }
 
