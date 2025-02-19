@@ -7,6 +7,53 @@
 #include <string>
 #include <sstream>
 
+// str_severity_code() is robust to any input integer
+TEST_CASE("Severity codes as strings", "[stdutils::io]")
+{
+    std::vector<std::string> test_result;
+    for (stdutils::io::SeverityCode sev = -10; sev < 10; sev++)
+    {
+        test_result.emplace_back(stdutils::io::str_severity_code(sev));
+    }
+    CHECK(test_result == std::vector<std::string> {
+        "UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN",
+        "UNKNOWN", "UNKNOWN", "UNKNOWN", "FATAL",   "EXCPT",
+        "ZERO",    "ERROR",   "WARNING", "INFO",    "TRACE",
+        "UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN"
+    });
+}
+
+struct TestErrorCode
+{
+    static constexpr stdutils::io::ErrorCode MyTestError = 42;
+};
+
+TEST_CASE("What error ?")
+{
+    // Default constructed error is no error
+    stdutils::io::WhatError what;
+    REQUIRE(!what);
+    CHECK(what.code() == stdutils::io::Error::None);
+    CHECK(what.msg().empty());
+
+    // An unspecified error
+    what = stdutils::io::WhatError("Some unspecified error");
+    REQUIRE(what);
+    CHECK(what.code() == stdutils::io::Error::Unspecified);
+    CHECK(!what.msg().empty());
+
+    // Clear the error
+    what.clear();
+    REQUIRE(!what);
+    CHECK(what.code() == stdutils::io::Error::None);
+    CHECK(what.msg().empty());
+
+    // User defined error codes
+    what = stdutils::io::WhatError("My test error", TestErrorCode::MyTestError);
+    REQUIRE(what);
+    CHECK(what.code() == 42);
+    CHECK(!what.msg().empty());
+}
 
 // Not really a test, just going step by step while the user is reading from a stream with std::getline
 TEST_CASE("Basics of std::basic_istream", "[stdutils::io]")
@@ -64,23 +111,30 @@ TEST_CASE("LineStream on a one-liner", "[stdutils::io]")
     REQUIRE(line_stream.stream().good() == true);
 
     std::string line;
-    bool no_failure = line_stream.getline(line);
+    std::size_t line_nb{0u};
+    bool no_failure = line_stream.getline(line, line_nb);
     REQUIRE(no_failure == true);
     CHECK(line.empty() == false);
     CHECK(line_stream.line_nb() == 1);
+    CHECK(line_nb == 1);
     CHECK(line_stream.stream().good() == false);
     CHECK(line_stream.stream().eof() == true);
     CHECK(line_stream.stream().fail() == false);
 
-    no_failure = line_stream.getline(line);        // read past EOF
+    no_failure = line_stream.getline(line, line_nb);            // read past EOF
     REQUIRE(no_failure == false);
-    // Once getline returns false, the content of the line string and the line_nb are irrelevant
+    CHECK(line.empty() == true);
+    CHECK(line_stream.line_nb() == 1);
+    CHECK(line_nb == 1);
     CHECK(line_stream.stream().good() == false);
     CHECK(line_stream.stream().eof() == true);
     CHECK(line_stream.stream().fail() == true);
 
-    no_failure = line_stream.getline(line);        // still past EOF
+    no_failure = line_stream.getline(line, line_nb);            // still past EOF
     REQUIRE(no_failure == false);
+    CHECK(line.empty() == true);
+    CHECK(line_stream.line_nb() == 1);
+    CHECK(line_nb == 1);
     CHECK(line_stream.stream().good() == false);
     CHECK(line_stream.stream().eof() == true);
     CHECK(line_stream.stream().fail() == true);
@@ -103,23 +157,32 @@ Time to die.)";
 
     // Parse all lines (including the empty ones)
     std::string line;
+    std::size_t line_nb{0u};
     std::size_t count_parsed_lines = 0;
-    while(line_stream.getline(line))
+    while(line_stream.getline(line, line_nb))
     {
         count_parsed_lines++;
         CHECK(line.empty() == (count_parsed_lines == 1));
         CHECK(line_stream.line_nb() == count_parsed_lines);
+        CHECK(line_stream.line_nb() == line_nb);
         CHECK(line_stream.stream().fail() == false);        // But, good() might be false and eof() might be true
     }
+    CHECK(line.empty() == true);
     CHECK(count_parsed_lines == 7);
+    CHECK(line_stream.line_nb() == 7);
+    CHECK(line_nb == 7);
     CHECK(line_stream.stream().good() == false);
     CHECK(line_stream.stream().eof() == true);
     CHECK(line_stream.stream().fail() == true);
     CHECK(line_stream.stream().bad() == false);
 
     // Read past failure
-    const bool no_failure = line_stream.getline(line);
+    const bool no_failure = line_stream.getline(line, line_nb);
     REQUIRE(no_failure == false);
+    CHECK(line.empty() == true);
+    CHECK(count_parsed_lines == 7);
+    CHECK(line_stream.line_nb() == 7);
+    CHECK(line_nb == 7);
     CHECK(line_stream.stream().good() == false);
     CHECK(line_stream.stream().eof() == true);
     CHECK(line_stream.stream().fail() == true);
@@ -164,6 +227,7 @@ world
 TEST_CASE("SkipLineStream to skip empty lines", "[stdutils::io]")
 {
     // 6 non-empty lines
+    // 12 total lines
     static const char* example_txt = R"(
 I've seen things you people wouldn't believe.
 Attack ships on fire off the shoulder of Orion.
@@ -184,22 +248,26 @@ Time to die.
 
     // Read all lines, skipping the empty ones
     std::string line;
+    std::size_t line_nb{0u};
     std::size_t count_non_empty_lines = 0;
-    while(line_stream.getline(line))
+    while(line_stream.getline(line, line_nb))
     {
         count_non_empty_lines++;
         CHECK(line.empty() == false);
+        CHECK(line_stream.line_nb() == line_nb);
         CHECK(line_stream.line_nb() >= count_non_empty_lines);
     }
     CHECK(count_non_empty_lines == 6);
+    CHECK(line_nb == 12);
     CHECK(line_stream.stream().good() == false);
     CHECK(line_stream.stream().eof() == true);
     CHECK(line_stream.stream().fail() == true);
     CHECK(line_stream.stream().bad() == false);
 
     // Read past failure
-    const bool no_failure = line_stream.getline(line);
+    const bool no_failure = line_stream.getline(line, line_nb);
     REQUIRE(no_failure == false);
+    CHECK(line_nb == 12);
     CHECK(line_stream.stream().good() == false);
     CHECK(line_stream.stream().eof() == true);
     CHECK(line_stream.stream().fail() == true);
@@ -214,19 +282,21 @@ TEST_CASE("SkipLineStream to skip blank lines", "[stdutils::io]")
     auto line_stream = stdutils::io::SkipLineStream(sstream).skip_blank_lines();
 
     std::string line;
-    bool no_failure = line_stream.getline(line);
+    std::size_t line_nb{0u};
+    bool no_failure = line_stream.getline(line, line_nb);
     REQUIRE(no_failure == true);
     CHECK(line == "a");
     CHECK(line_stream.line_nb() == 1);
 
-    no_failure = line_stream.getline(line);         // Last non-blank line
+    no_failure = line_stream.getline(line, line_nb);            // Last non-blank line
     REQUIRE(no_failure == true);
     CHECK(line == "b");
     CHECK(line_stream.line_nb() == 5);
+    CHECK(line_nb == 5);
 
-    no_failure = line_stream.getline(line);         // Past the last line
+    no_failure = line_stream.getline(line, line_nb);            // Past the last line
     CHECK(no_failure == false);
-    // Once getline returns false, the content of the line string and the line_nb are irrelevant
+    CHECK(line.empty());
 }
 
 TEST_CASE("SkipLineStream to skip empty lines and comments", "[stdutils::io]")
@@ -266,47 +336,54 @@ def main():
 if __name__ == "__main__":
     main()
 )";
-    const std::size_t expected_lines_of_code = 10;
-    const std::size_t expected_empty_lines = 5;
+    constexpr std::size_t TOTAL_NB_OF_LINES = 32;
+    constexpr std::size_t expected_lines_of_code = 10;
+    constexpr std::size_t expected_empty_lines = 5;
 
     std::size_t count_lines_of_code = 0;
     std::size_t count_lines_non_empty = 0;
     std::size_t count_lines_of_code_or_empty = 0;
     std::size_t count_lines_total = 0;
     std::string line;
+    std::size_t line_nb{0u};
 
     {
         std::istringstream sstream(python_txt);
         auto line_stream = stdutils::io::SkipLineStream(sstream).skip_empty_lines().skip_comment_lines("#");
-        while(line_stream.getline(line))
+        while(line_stream.getline(line, line_nb))
         {
             count_lines_of_code++;
         }
         CHECK(count_lines_of_code == expected_lines_of_code);
+        CHECK(line_nb == TOTAL_NB_OF_LINES);
     }
     {
         std::istringstream sstream(python_txt);
         auto line_stream = stdutils::io::SkipLineStream(sstream).skip_empty_lines();
-        while(line_stream.getline(line))
+        while(line_stream.getline(line, line_nb))
         {
             count_lines_non_empty++;
         }
         CHECK(count_lines_non_empty > expected_lines_of_code);
+        CHECK(line_nb == TOTAL_NB_OF_LINES);
     }
     {
         std::istringstream sstream(python_txt);
         auto line_stream = stdutils::io::SkipLineStream(sstream).skip_comment_lines("#");
-        while(line_stream.getline(line))
+        while(line_stream.getline(line, line_nb))
         {
             count_lines_of_code_or_empty++;
         }
         CHECK(count_lines_of_code_or_empty == expected_lines_of_code + expected_empty_lines);
+        CHECK(line_nb == TOTAL_NB_OF_LINES);
     }
     {
         std::istringstream sstream(python_txt);
         count_lines_total = stdutils::io::countlines(sstream);
+        CHECK(count_lines_total == TOTAL_NB_OF_LINES);
     }
     CHECK(count_lines_non_empty + expected_empty_lines == count_lines_total);
+    CHECK(line_nb == count_lines_total);
 }
 
 TEST_CASE("SkipLineStream to skip comments", "[stdutils::io]")
@@ -326,49 +403,57 @@ e
   //
   /)";
 
+    constexpr std::size_t TOTAL_NB_OF_LINES = 12;
+
     std::string line;
+    std::size_t line_nb{0u};
     {
         std::istringstream sstream(commented_txt);
         auto line_stream = stdutils::io::SkipLineStream(sstream).skip_comment_lines("/");
         std::size_t count_lines_without_comment = 0;
-        while(line_stream.getline(line))
+        while(line_stream.getline(line, line_nb))
         {
             count_lines_without_comment++;
         }
         CHECK(count_lines_without_comment == 2);
+        CHECK(line_nb == TOTAL_NB_OF_LINES);
     }
     {
         std::istringstream sstream(commented_txt);
         auto line_stream = stdutils::io::SkipLineStream(sstream).skip_comment_lines("//");
         std::size_t count_lines_without_comment = 0;
-        while(line_stream.getline(line))
+        while(line_stream.getline(line, line_nb))
         {
             count_lines_without_comment++;
         }
         CHECK(count_lines_without_comment == 6);
+        CHECK(line_nb == TOTAL_NB_OF_LINES);
     }
     {
         std::istringstream sstream(commented_txt);
         auto line_stream = stdutils::io::SkipLineStream(sstream).skip_comment_lines("///");
         std::size_t count_lines_without_comment = 0;
-        while(line_stream.getline(line))
+        while(line_stream.getline(line, line_nb))
         {
             count_lines_without_comment++;
         }
         CHECK(count_lines_without_comment == 10);
+        CHECK(line_nb == TOTAL_NB_OF_LINES);
     }
     {
         std::istringstream sstream(commented_txt);
         auto line_stream = stdutils::io::SkipLineStream(sstream).skip_comment_lines("////");
         std::size_t count_lines_without_comment = 0;
-        while(line_stream.getline(line))
+        while(line_stream.getline(line, line_nb))
         {
             count_lines_without_comment++;
         }
         CHECK(count_lines_without_comment == 12);
+        CHECK(line_nb == TOTAL_NB_OF_LINES);
     }
     {
+        // Total number of lines
         std::istringstream sstream(commented_txt);
-        CHECK(stdutils::io::countlines(sstream) == 12);
+        CHECK(stdutils::io::countlines(sstream) == TOTAL_NB_OF_LINES);
     }
 }

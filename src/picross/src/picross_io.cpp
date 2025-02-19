@@ -590,10 +590,10 @@ std::vector<IOGrid> parse_input_file_generic(std::string_view filepath, const Er
             FileParser<F> parser;
             auto line_stream = stdutils::io::SkipLineStream(inputstream).skip_blank_lines();
             std::string line;
-            while (line_stream.getline(line))
+            std::size_t line_nb{0u};
+            while (line_stream.getline(line, line_nb))
             {
-                const auto line_nb = line_stream.line_nb();
-                parser.parse_line(line, grids, [line_nb, &line, &error_handler](std::string_view msg)
+                parser.parse_line(line, grids, [&line_nb, &line, &error_handler](std::string_view msg)
                     {
                         std::ostringstream oss;
                         oss << "[" << msg << "] on line " << line_nb << ": " << line;
