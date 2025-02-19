@@ -103,7 +103,7 @@ void action_open_picross_file(AppWindows& windows)
         { "Picross file", "*.txt *.nin *.non", "All files", "*" }).result();
     for (const auto& path : paths)
     {
-        const auto format = picross::io::picross_file_format_from_filepath(path);
+        const auto format = picross::io::picross_file_format_from_file_extension(path);
         std::cout << "User selected file " << path << " (format: " << format << ")" << std::endl;
         windows.picross.emplace_back(std::make_unique<PicrossFile>(path, format));
     }

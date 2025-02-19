@@ -40,7 +40,7 @@ std::ostream& operator<<(std::ostream& out, PicrossFileFormat format)
     return out;
 }
 
-PicrossFileFormat picross_file_format_from_filepath(std::string_view filepath)
+PicrossFileFormat picross_file_format_from_file_extension(std::string_view filepath)
 {
     std::string ext = stdutils::string::tolower(
         std::filesystem::path(filepath).extension().string()
@@ -106,65 +106,77 @@ std::vector<IOGrid> parse_picross_file(std::string_view filepath, PicrossFileFor
 }
 
 namespace {
+
     std::string goal_non_set_error_msg(std::string_view filepath, PicrossFileFormat format)
     {
         std::stringstream msg;
         msg << "Writing file " << filepath << " with format " << format << " requires a goal output grid.";
         return msg.str();
     }
-}
 
-void save_picross_file(std::string_view filepath, PicrossFileFormat format, const IOGrid& io_grid, const picross::io::ErrorHandler& error_handler) noexcept
+    template <typename F>
+    bool generic_save_file(std::string_view filepath, const picross::io::ErrorHandler& error_handler, F f)
+    {
+        bool success{false};
+        std::ofstream out(filepath.data());
+        if (out.good())
+        {
+            success = f(out);
+        }
+        else
+        {
+            error_handler(ErrorCode::FILE_ERROR, "Error writing file " + std::string(filepath));
+        }
+        return success;
+    }
+
+} // namespace
+
+bool save_picross_file(std::string_view filepath, PicrossFileFormat format, const IOGrid& io_grid, const picross::io::ErrorHandler& error_handler) noexcept
 {
+    bool success{false};
     try
     {
+        if ((format == PicrossFileFormat::PBM || format == PicrossFileFormat::OutputGrid) && !io_grid.m_goal.has_value())
+        {
+            error_handler(ErrorCode::WARNING, goal_non_set_error_msg(filepath, format));
+            return success;
+        }
         switch(format)
         {
         case PicrossFileFormat::Native:
-        {
-            std::ofstream out(filepath.data());
-            if (!out.good())
-                error_handler(ErrorCode::FILE_ERROR, "Error writing file " + std::string(filepath));
-            picross::io::write_input_grid_native(out, io_grid);
+            success = generic_save_file(filepath, error_handler, [&io_grid](std::ofstream& out) -> bool {
+                picross::io::write_input_grid_native(out, io_grid);
+                return true;
+            });
             break;
-        }
 
         case PicrossFileFormat::NIN:
-        {
-            std::ofstream out(filepath.data());
-            if (!out.good())
-                error_handler(ErrorCode::FILE_ERROR, "Error writing file " + std::string(filepath));
-            picross::io::write_input_grid_nin_format(out, io_grid);
+            success = generic_save_file(filepath, error_handler, [&io_grid](std::ofstream& out) -> bool {
+                picross::io::write_input_grid_nin_format(out, io_grid);
+                return true;
+            });
             break;
-        }
 
         case PicrossFileFormat::NON:
-        {
-            std::ofstream out(filepath.data());
-            if (!out.good())
-                error_handler(ErrorCode::FILE_ERROR, "Error writing file " + std::string(filepath));
-            picross::io::write_input_grid_non_format(out, io_grid);
+            success = generic_save_file(filepath, error_handler, [&io_grid](std::ofstream& out) -> bool {
+                picross::io::write_input_grid_non_format(out, io_grid);
+                return true;
+            });
             break;
-        }
 
         case PicrossFileFormat::PBM:
-        {
-            if (!io_grid.m_goal)
-                error_handler(ErrorCode::WARNING, goal_non_set_error_msg(filepath, format));
-            export_bitmap_pbm(std::string(filepath), *io_grid.m_goal, error_handler);
+            assert(io_grid.m_goal);
+            success = export_bitmap_pbm(std::string(filepath), *io_grid.m_goal, error_handler);
             break;
-        }
 
         case PicrossFileFormat::OutputGrid:
-        {
-            if (!io_grid.m_goal)
-                error_handler(ErrorCode::WARNING, goal_non_set_error_msg(filepath, format));
-            std::ofstream out(filepath.data());
-            if (!out.good())
-                error_handler(ErrorCode::FILE_ERROR, "Error writing file " + std::string(filepath));
-            out << *io_grid.m_goal;
+            success = generic_save_file(filepath, error_handler, [&io_grid](std::ofstream& out) -> bool {
+                assert(io_grid.m_goal);
+                out << *io_grid.m_goal;
+                return true;
+            });
             break;
-        }
 
         default:
             assert(0);
@@ -175,6 +187,7 @@ void save_picross_file(std::string_view filepath, PicrossFileFormat format, cons
     {
         error_handler(ErrorCode::EXCEPTION, e.what());
     }
+    return success;
 }
 
 } // namespace io

@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
             if (args["from_output"])
                 return picross::io::PicrossFileFormat::OutputGrid;
             else
-                return picross::io::picross_file_format_from_filepath(filepath);
+                return picross::io::picross_file_format_from_file_extension(filepath);
         }();
 
         const auto grids_to_solve = picross::io::parse_picross_file(filepath, format, (validation_mode ? err_handler_validation : err_handler_classic));;

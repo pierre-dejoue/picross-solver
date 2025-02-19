@@ -442,8 +442,10 @@ void GridWindow::save_grid()
         };
 
         const auto solution = (solutions.empty() || !solutions[0].is_completed()) ? std::nullopt : std::optional<picross::OutputGrid>(solutions[0]);
-        const auto format = picross::io::picross_file_format_from_filepath(file_path);
-        picross::io::save_picross_file(file_path, format, picross::IOGrid(grid, solution), err_handler);
-        std::cout << "User saved file " << file_path << " (format: " << format << ")" << std::endl;
+        const auto format = picross::io::picross_file_format_from_file_extension(file_path);
+        if (picross::io::save_picross_file(file_path, format, picross::IOGrid(grid, solution), err_handler))
+        {
+            std::cout << "User saved file " << file_path << " (format: " << format << ")" << std::endl;
+        }
     }
 }

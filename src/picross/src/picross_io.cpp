@@ -727,6 +727,7 @@ std::vector<IOGrid> parse_input_file_non_format(std::string_view filepath, const
 
 void write_input_grid_native(std::ostream& out, const IOGrid& grid)
 {
+    assert(out.good());
     for (const auto& [key, data] : grid.m_input_grid.metadata())
         if (!data.empty())
             out << "# " << stdutils::string::capitalize(key) << ": " << data << std::endl;
@@ -740,6 +741,7 @@ void write_input_grid_native(std::ostream& out, const IOGrid& grid)
 
 void write_input_grid_nin_format(std::ostream& out, const IOGrid& grid)
 {
+    assert(out.good());
     out << grid.m_input_grid.width() << " " << grid.m_input_grid.height() << std::endl;
     write_constraints_nin_format(out, grid.m_input_grid.rows());
     write_constraints_nin_format(out, grid.m_input_grid.cols());
@@ -747,6 +749,7 @@ void write_input_grid_nin_format(std::ostream& out, const IOGrid& grid)
 
 void write_input_grid_non_format(std::ostream& out, const IOGrid& grid)
 {
+    assert(out.good());
     constexpr bool NON_QUOTED = false;
     write_metadata_non_format(out, grid.m_input_grid.metadata(), "catalogue");
     out << "title \"" << grid.m_input_grid.name() << '\"' << std::endl;
