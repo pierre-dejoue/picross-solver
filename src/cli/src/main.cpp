@@ -162,7 +162,10 @@ int main(int argc, char *argv[])
         "Timeout on grid solve, in seconds", 1 },
       {
         "from_output", { "--from-output" },
-        "The input is a text file with an output grid", 0 }
+        "The input is a text file with an output grid", 0 },
+      {
+        "output", { "--output" },
+        "Output a grid file which format is deduced from the file extension", 1 }
     } };
 
     std::ostringstream usage_note;
@@ -170,6 +173,9 @@ int main(int argc, char *argv[])
     usage_note << std::endl;
     usage_note << "Usage:" << std::endl;
     usage_note << "    picross_solver_cli [options] FILES" << std::endl;
+    usage_note << std::endl;
+    usage_note << "    Input FILES are grid definitions in one of the following formats: NON, NIN, PBM or native." << std::endl;
+    usage_note << "    The file format is deduced from the file extension." << std::endl;
     usage_note << std::endl;
     usage_note << argparser;
 
@@ -222,6 +228,10 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    // Output file (if set)
+    const auto output_filepath = args["output"].as<std::string>("");
+    const auto output_file_format = picross::io::picross_file_format_from_file_extension(output_filepath);
+
     int return_status = 0;
     unsigned int count_grids = 0u;
 
@@ -268,7 +278,6 @@ int main(int argc, char *argv[])
         for (const auto& io_grid : grids_to_solve)
         {
             const picross::InputGrid& input_grid = io_grid.m_input_grid;
-            const auto& goal = io_grid.m_goal;
             ValidationModeData grid_data = file_data;
             grid_data.gridname = input_grid.name();
             grid_data.size = picross::str_input_grid_size(input_grid);
@@ -297,6 +306,7 @@ int main(int argc, char *argv[])
                     const auto width = input_grid.width();
                     const auto height = input_grid.height();
                     ConsoleObserver obs(width, height, std::cout);
+                    const auto& goal = io_grid.m_goal;
                     if (goal.has_value())
                     {
                         obs.verify_against_goal(*goal);
@@ -345,9 +355,12 @@ int main(int argc, char *argv[])
                         picross::GridStats stats;
                         solver->set_stats(stats);
 
+                        /* Output grid with a solution (in case the --output option is set) */
+                        auto output_grid = io_grid;
+
                         /* Solution display */
                         unsigned int nb_solutions = 0;
-                        picross::Solver::SolutionFound solution_found = [&nb_solutions, max_nb_solutions](picross::Solver::Solution&& solution)
+                        picross::Solver::SolutionFound solution_found = [&nb_solutions, max_nb_solutions, &output_grid](picross::Solver::Solution&& solution)
                         {
                             if (solution.partial)
                             {
@@ -357,6 +370,10 @@ int main(int argc, char *argv[])
                             else
                             {
                                 assert(solution.grid.is_completed());
+                                if (!output_grid.m_goal.has_value())
+                                {
+                                    output_grid.m_goal = std::make_optional<picross::OutputGrid>(solution.grid);
+                                }
                                 std::cout << CLI_INDENT << "Solution nb " << ++nb_solutions << ": (branching depth: " << solution.branching_depth << ")" << std::endl;
                             }
                             output_solution_grid(std::cout, solution.grid, 1);
@@ -374,21 +391,23 @@ int main(int argc, char *argv[])
                         switch (solver_status)
                         {
                         case picross::Solver::Status::OK:
+                            if (!output_filepath.empty())
+                            {
+                                if (picross::io::save_picross_file(output_filepath, output_file_format, output_grid, err_handler_classic))
+                                    std::cout << CLI_INDENT << "Saved file " << output_filepath << " (format: " << output_file_format << ")" << std::endl << std::endl;
+                            }
                             break;
                         case picross::Solver::Status::ABORTED:
                             if (max_nb_solutions != 0 && nb_solutions == max_nb_solutions)
-                                std::cout << CLI_INDENT << "Reached max number of solutions" << std::endl;
+                                std::cout << CLI_INDENT << "Reached max number of solutions" << std::endl << std::endl;
                             else
-                                std::cout << CLI_INDENT << "Solver aborted" << std::endl;
-                            std::cout << std::endl;
+                                std::cout << CLI_INDENT << "Solver aborted" << std::endl << std::endl;
                             break;
                         case picross::Solver::Status::CONTRADICTORY_GRID:
-                            std::cout << CLI_INDENT << "Not solvable" <<  std::endl;
-                            std::cout << std::endl;
+                            std::cout << CLI_INDENT << "Not solvable" << std::endl <<  std::endl;
                             break;
                         case picross::Solver::Status::NOT_LINE_SOLVABLE:
-                            std::cout << CLI_INDENT << "Not line solvable" << std::endl;
-                            std::cout << std::endl;
+                            std::cout << CLI_INDENT << "Not line solvable" << std::endl << std::endl;
                             break;
                         default:
                             assert(0);
