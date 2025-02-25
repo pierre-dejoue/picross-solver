@@ -188,6 +188,20 @@ Run the CLI on the example file:
 ./build/bin/Release/picross_solver_cli.exe inputs/example_input.txt
 ```
 
+To see all the CLI options do:
+
+```
+./build/bin/Release/picross_solver_cli.exe --help
+```
+
+#### Solve and Convert Format
+
+Convert a single input to another file format. The output formmat is deduced from the fileanme extension. Available output formats are: NIN, NON, the native format and bitmap (PBM). The grid is solved and if the output format supports it, the solution is included in the saved file as the intended goal.
+
+```
+./build/bin/Release/picross_solver_cli.exe inputs/note.nin --output inputs/note.non --quiet
+```
+
 #### Validation Mode
 
 Use the validation mode to test multiple files at once and check the uniqueness of the solution.
