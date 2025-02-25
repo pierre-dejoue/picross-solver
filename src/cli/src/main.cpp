@@ -140,8 +140,17 @@ int main(int argc, char *argv[])
         "platform", { "--platform" },
         "Print platform information and exit", 0 },
       {
+        "no-solution", { "--no-solution" },
+        "Do not print out the solutions", 0 },
+      {
+        "no-stats", { "--no-stats" },
+        "Do not print out the stats", 0 },
+      {
         "no-timing", { "--no-timing" },
         "Do not print out timing measurements", 0 },
+      {
+        "quiet", { "--quiet" },
+        "Disable most of the print out", 0 },
       {
         "verbose", { "-v", "--verbose" },
         "Print additional debug information", 0 },
@@ -213,8 +222,14 @@ int main(int argc, char *argv[])
     }
 
     const bool validation_mode = args["validation-mode"];
-    const bool verbose_mode = args["verbose"];
     const std::chrono::seconds timeout_duration(args["timeout"].as<unsigned int>(0u));
+
+    const bool quiet_mode         = args["quiet"];
+    const bool verbose_mode       = !quiet_mode && args["verbose"];
+    const bool print_out_grid_sz  = !quiet_mode;
+    const bool print_out_solution = !quiet_mode && !args["no-solution"];
+    const bool print_out_stats    = !quiet_mode && !args["no-stats"];
+    const bool print_out_timing   = !quiet_mode && !args["no-timing"];
 
     // Depending on context, the default value for max_nb_solutions is different:
     //  - In validation mode, the default is 2
@@ -287,7 +302,10 @@ int main(int argc, char *argv[])
                 if (!validation_mode)
                 {
                     std::cout << "GRID " << ++count_grids << ": " << input_grid.name() << std::endl;
-                    std::cout << CLI_INDENT << "Size: " << grid_data.size << std::endl;
+                    if (print_out_grid_sz)
+                    {
+                        std::cout << CLI_INDENT << "Size: " << grid_data.size << std::endl;
+                    }
                 }
 
                 /* Sanity check of the input data */
@@ -344,7 +362,7 @@ int main(int argc, char *argv[])
                             stdutils::chrono::DurationMeas<float, std::milli> meas_ms(time_ms);
                             grid_data.validation_result = picross::validate_input_grid(*solver, input_grid, max_nb_solutions);
                         }
-                        if (!args["no-timing"])
+                        if (print_out_timing)
                             grid_data.timing_ms = time_ms.count();
                         if (verbose_mode)
                             grid_data.grid_stats = stats;
@@ -360,12 +378,13 @@ int main(int argc, char *argv[])
 
                         /* Solution display */
                         unsigned int nb_solutions = 0;
-                        picross::Solver::SolutionFound solution_found = [&nb_solutions, max_nb_solutions, &output_grid](picross::Solver::Solution&& solution)
+                        picross::Solver::SolutionFound solution_found = [&nb_solutions, max_nb_solutions, &output_grid, print_out_solution](picross::Solver::Solution&& solution)
                         {
+                            std::stringstream out_hdr;
                             if (solution.partial)
                             {
                                 assert(!solution.grid.is_completed());
-                                std::cout << CLI_INDENT << "Partial solution:" << std::endl;
+                                out_hdr << CLI_INDENT << "Partial solution:";
                             }
                             else
                             {
@@ -374,10 +393,14 @@ int main(int argc, char *argv[])
                                 {
                                     output_grid.m_goal = std::make_optional<picross::OutputGrid>(solution.grid);
                                 }
-                                std::cout << CLI_INDENT << "Solution nb " << ++nb_solutions << ": (branching depth: " << solution.branching_depth << ")" << std::endl;
+                                out_hdr << CLI_INDENT << "Solution nb " << ++nb_solutions << ": (branching depth: " << solution.branching_depth << ")";
                             }
-                            output_solution_grid(std::cout, solution.grid, 1);
-                            std::cout << std::endl;
+                            if (print_out_solution)
+                            {
+                                std::cout << out_hdr.str() << std::endl;
+                                output_solution_grid(std::cout, solution.grid, 1);
+                                std::cout << std::endl;
+                            }
                             return max_nb_solutions == 0 || nb_solutions < max_nb_solutions;
                         };
 
@@ -415,11 +438,14 @@ int main(int argc, char *argv[])
                         }
 
                         /* Display stats */
-                        output_solution_stats(std::cout, stats, 1);
-                        std::cout << std::endl;
+                        if (print_out_stats)
+                        {
+                            output_solution_stats(std::cout, stats, 1);
+                            std::cout << std::endl;
+                        }
 
                         /* Display timings */
-                        if (!args["no-timing"])
+                        if (print_out_timing)
                         {
                             std::cout << CLI_INDENT << "Wall time: " << time_ms.count() << "ms" << std::endl;
                         }
@@ -448,7 +474,7 @@ int main(int argc, char *argv[])
             {
                 std::cout << grid_data << std::endl;
             }
-            else
+            else if (!quiet_mode)
             {
                 std::cout << std::endl << std::endl;
             }
