@@ -20,7 +20,7 @@ jobs:
           - os: windows
             arch: arm64
 
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.os }}-${{ (matrix.os == 'macos' && (matrix.arch == 'x86_64' && '15-intel')) || 'latest' }}
 
     env:
       CMAKE_CONFIG_PROJECT: -DPICROSS_BUILD_CLI=ON -DPICROSS_BUILD_TESTS=ON -DPICROSS_BUILD_EXAMPLES=ON
