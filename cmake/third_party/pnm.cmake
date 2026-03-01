@@ -9,7 +9,7 @@ FetchContent_Populate(
     pnm
     QUIET
     GIT_REPOSITORY https://github.com/ToruNiina/pnm.git
-    GIT_TAG v1.0.1
+    GIT_TAG be4da10905b191d3c81e835deb03d03b5a534c61        # 2025/05/04
 )
 
 add_library(pnm++ INTERFACE)

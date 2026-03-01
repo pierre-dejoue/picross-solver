@@ -47,7 +47,7 @@ cmake --build . --config Release
 Dependencies:
 
 *  [Catch2](https://github.com/catchorg/Catch2)
-*  [PNM++](https://github.com/ToruNiina/pnm)
+*  [pnm++](https://github.com/ToruNiina/pnm)
 
 Build and run unit tests:
 
@@ -154,7 +154,7 @@ The applications are able to read puzzle files in the formats listed above for t
 
 Common to all:
 
-* [PNM++](https://github.com/ToruNiina/pnm)
+* [pnm++](https://github.com/ToruNiina/pnm)
 
 Command line interface:
 
