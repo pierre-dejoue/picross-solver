@@ -6,7 +6,8 @@
  *   and solve them. If several solutions exist, an exhaustive search is done
  *   and all of them are displayed.
  *
- * Copyright (c) 2010-2023 Pierre DEJOUE
+ * Copyright (c) 2010-2026 Pierre DEJOUE
+ * This code is distributed under the terms of the MIT License
  ******************************************************************************/
 #include <picross/picross.h>
 

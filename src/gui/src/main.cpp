@@ -3,7 +3,8 @@
  *
  *   Implementation of a GUI for the solver of Picross puzzles (nonograms)
  *
- * Copyright (c) 2021 Pierre DEJOUE
+ * Copyright (c) 2021-2026 Pierre DEJOUE
+ * This code is distributed under the terms of the MIT License
  ******************************************************************************/
 
 #include "picross_file.h"
@@ -22,8 +23,8 @@
 #include <pfd_wrap.h>
 #include <GLFW/glfw3.h>
 #include "glfw_context.h"
-// NB: No OpenGL loader here: This project mainly relies on the drawing features provided by Dear ImGui.
-// Dear ImGui embeds its own minimal loader for the OpenGL 3.x functions it needs.
+// NB: No OpenGL loader here: This project only needs the drawing features provided by Dear ImGui.
+// Dear ImGui embeds its own minimal loader for the OpenGL 3.x functions it requires.
 // See: https://github.com/ocornut/imgui/issues/4445 "OpenGL backend now embeds its own GL loader"
 
 #include <cassert>
