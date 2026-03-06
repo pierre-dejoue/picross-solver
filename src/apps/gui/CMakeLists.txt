@@ -7,6 +7,7 @@ find_package(OpenGL REQUIRED)       # Necessary because we do not use a loader (
 include(pfd)
 
 set(GUI_SOURCES
+    src/about_window.cpp
     src/draw_grid.cpp
     src/err_window.cpp
     src/glfw_context.cpp

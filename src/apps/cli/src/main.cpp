@@ -18,6 +18,7 @@
 #include <utils/console_progress_observer.h>
 #include <utils/input_grid_utils.h>
 #include <utils/picross_file_io.h>
+#include <utils/project.h>
 
 #include "argagg_wrap.h"
 
@@ -179,7 +180,7 @@ int main(int argc, char *argv[])
     } };
 
     std::ostringstream usage_note;
-    usage_note << "Picross Solver " << picross::get_version_string() << std::endl;
+    usage_note << project::get_name() << ' ' << picross::get_version_string() << std::endl;
     usage_note << std::endl;
     usage_note << "Usage:" << std::endl;
     usage_note << "    picross_solver_cli [options] FILES" << std::endl;
@@ -210,7 +211,7 @@ int main(int argc, char *argv[])
 
     if (args["version"])
     {
-        std::cerr << "Picross Solver " << picross::get_version_string() << std::endl;
+        std::cerr << project::get_name() << ' ' << picross::get_version_string() << std::endl;
         std::cerr << std::endl;
         stdutils::platform::print_compiler_all_info(std::cerr);
         exit(0);

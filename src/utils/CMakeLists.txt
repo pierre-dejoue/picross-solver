@@ -12,6 +12,7 @@ set(LIB_SOURCES
     src/grid_observer.cpp
     src/input_grid_utils.cpp
     src/picross_file_io.cpp
+    src/project.cpp
     src/text_io.cpp
 )
 

@@ -7,6 +7,7 @@
  * This code is distributed under the terms of the MIT License
  ******************************************************************************/
 
+#include "about_window.h"
 #include "picross_file.h"
 #include "settings.h"
 #include "settings_window.h"
@@ -16,6 +17,7 @@
 #include <picross/picross.h>
 #include <stdutils/io.h>
 #include <stdutils/macros.h>
+#include <utils/project.h>
 
 // Order matters in this section
 #include <imgui_wrap.h>
@@ -48,7 +50,7 @@ namespace details {
     std::string s_project_title()
     {
         std::stringstream title;
-        title << "Picross Solver " << picross::get_version_string();
+        title << project::get_name() << ' ' << picross::get_version_string();
         return title.str();
     }
 
@@ -138,7 +140,7 @@ struct Options
 {
     bool app_should_close{false};
     bool gui_dark_mode{false};
-    //bool open_about_window{false};
+    bool open_about_window{false};
     bool show_imgui_demo_window{false};
 };
 
@@ -177,6 +179,14 @@ void display(AppWindows& windows, Options& options)
             if (ImGui::MenuItem("Quit", shortcut::quit().label))
             {
                 options.app_should_close = true;
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Help"))
+        {
+            if (ImGui::MenuItem("About"))
+            {
+                options.open_about_window = true;
             }
             ImGui::EndMenu();
         }
@@ -269,6 +279,9 @@ int main(int argc, char *argv[])
             windows.settings->visit(can_be_erased, windows.layout.settings);
             assert(can_be_erased == false);     // Always ON
         }
+
+        // About window
+        menu_bar_options.open_about_window = menu_bar_options.open_about_window ? AboutWindow::visit() : false;
 
 #ifndef NDEBUG
         if (menu_bar_options.show_imgui_demo_window)
