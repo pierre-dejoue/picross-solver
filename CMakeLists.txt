@@ -35,13 +35,13 @@ endif()
 
 # Picross graphical app
 if(PICROSS_BUILD_APP)
-    add_subdirectory(src/gui/imgui)
-    add_subdirectory(src/gui)
+    add_subdirectory(src/apps/gui/imgui)
+    add_subdirectory(src/apps/gui)
 endif()
 
 # Picross CLI
 if(PICROSS_BUILD_CLI)
-    add_subdirectory(src/cli)
+    add_subdirectory(src/apps/cli)
 endif()
 
 # Tests
@@ -52,7 +52,7 @@ endif()
 
 # Examples
 if(PICROSS_BUILD_EXAMPLES)
-    add_subdirectory(src/examples)
+    add_subdirectory(src/apps/examples)
 endif()
 
 install(EXPORT picross_project NAMESPACE picross:: DESTINATION lib/picross)

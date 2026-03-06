@@ -79,7 +79,7 @@ The library CMake's build exports the following target: `picross::picross`
 Below is an example of how to use the library.
 The API is accessible via a unique header file [`<picross/picross.h>`](src/picross/include/picross/picross.h)
 
-_Source: [example_1.cpp](src/examples/src/example_1.cpp)_
+_Source: [example_1.cpp](src/apps/examples/src/example_1.cpp)_
 ```cpp
 #include <picross/picross.h>
 

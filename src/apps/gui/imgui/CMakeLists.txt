@@ -22,6 +22,7 @@ set(IMGUI_HDR
     ${imgui_SOURCE_DIR}/imgui_internal.h
     ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.h
     ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.h
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3_loader.h
 )
 
 add_library(imgui ${IMGUI_SRC} ${IMGUI_HDR})
