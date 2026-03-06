@@ -2,8 +2,6 @@
 # Build the graphical application
 #
 
-option(PICROSS_GUI_IMGUI_DEMO "Show ImGUI demo window" OFF)
-
 # Dependencies
 find_package(OpenGL REQUIRED)       # Necessary because we do not use a loader (such as gl3w or glad)
 include(pfd)
@@ -26,13 +24,6 @@ set(GUI_SOURCES
 file(GLOB GUI_HEADERS src/*.h)
 
 add_executable(picross_solver ${GUI_SOURCES} ${GUI_HEADERS})
-
-if(PICROSS_GUI_IMGUI_DEMO)
-    target_compile_definitions(picross_solver
-        PUBLIC
-        PICROSS_GUI_IMGUI_DEMO_FLAG
-    )
-endif()
 
 if(APPLE)
     # OpenGL API is deprecated since macOS 10.14

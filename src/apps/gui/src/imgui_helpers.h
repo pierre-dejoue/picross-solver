@@ -24,6 +24,10 @@ inline ImVec2 to_imgui_vec2(ScreenPos pos)
 
 namespace ImGui {
 
+constexpr char* NO_SHORTCUT = nullptr;
+constexpr bool* NO_POPEN = nullptr;
+constexpr bool  NOT_SELECTED = false;
+
 struct KeyShortcut
 {
     KeyShortcut(ImGuiKeyChord kc, const char* lbl = nullptr)

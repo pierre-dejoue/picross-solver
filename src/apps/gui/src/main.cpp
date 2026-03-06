@@ -134,9 +134,17 @@ void action_import_solution(AppWindows& windows)
     }
 }
 
-void display(AppWindows& windows, bool& application_should_close, bool& gui_dark_mode)
+struct Options
 {
-    application_should_close = false;
+    bool app_should_close{false};
+    bool gui_dark_mode{false};
+    //bool open_about_window{false};
+    bool show_imgui_demo_window{false};
+};
+
+void display(AppWindows& windows, Options& options)
+{
+    options.app_should_close = false;
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
@@ -156,16 +164,19 @@ void display(AppWindows& windows, bool& application_should_close, bool& gui_dark
             ImGui::Separator();
             if (ImGui::BeginMenu("Options"))
             {
-                if (ImGui::MenuItem("Dark Mode", "", &gui_dark_mode))
+                if (ImGui::MenuItem("Dark Mode", "", &options.gui_dark_mode))
                 {
-                    imgui_set_style(gui_dark_mode);
+                    imgui_set_style(options.gui_dark_mode);
                 }
+#ifndef NDEBUG
+                IGNORE_RETURN ImGui::MenuItem("ImGui Demo Window", ImGui::NO_SHORTCUT, &options.show_imgui_demo_window);
+#endif
                 ImGui::EndMenu();
             }
             ImGui::Separator();
             if (ImGui::MenuItem("Quit", shortcut::quit().label))
             {
-                application_should_close = true;
+                options.app_should_close = true;
             }
             ImGui::EndMenu();
         }
@@ -205,12 +216,14 @@ int main(int argc, char *argv[])
     std::cout << project_title() << std::endl;
     dear_imgui_context.backend_info(std::cout);
 
-    // Style
-    bool gui_dark_mode = false;
-    imgui_set_style(gui_dark_mode);
-
     // Application Settings
     Settings settings;
+
+    // Menu bar options
+    menu_bar::Options menu_bar_options;
+
+    // Style
+    imgui_set_style(menu_bar_options.gui_dark_mode);
 
     // Application Windows
     AppWindows windows;
@@ -230,9 +243,8 @@ int main(int argc, char *argv[])
 
         // Main menu
         {
-            bool app_should_close = false;
-            menu_bar::display(windows, app_should_close, gui_dark_mode);
-            if (app_should_close)
+            menu_bar::display(windows, menu_bar_options);
+            if (menu_bar_options.app_should_close)
                 glfwSetWindowShouldClose(glfw_context.window(), 1);
         }
 
@@ -258,9 +270,12 @@ int main(int argc, char *argv[])
             assert(can_be_erased == false);     // Always ON
         }
 
-#if PICROSS_GUI_IMGUI_DEMO_FLAG
-        // Dear Imgui Demo
-        ImGui::ShowDemoWindow();
+#ifndef NDEBUG
+        if (menu_bar_options.show_imgui_demo_window)
+        {
+            // Dear ImGui Demo
+            ImGui::ShowDemoWindow(&menu_bar_options.show_imgui_demo_window);
+        }
 #endif
 
         // We delay the Settings window opening until after the first ImGui rendering pass so that the actual work space
@@ -270,7 +285,7 @@ int main(int argc, char *argv[])
         // Rendering
         const auto [display_w, display_h] = glfw_context.framebuffer_size();
         glViewport(0, 0, display_w, display_h);
-        const auto clear_color = get_background_color(gui_dark_mode);
+        const auto clear_color = get_background_color(menu_bar_options.gui_dark_mode);
         glClearColor(clear_color[0], clear_color[1], clear_color[2], clear_color[3]);
         glClear(GL_COLOR_BUFFER_BIT);
         dear_imgui_context.render();
