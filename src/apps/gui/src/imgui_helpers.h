@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bitmap_image.h"
 #include "screen.h"
 #include "window_layout.h"
 
@@ -44,6 +45,13 @@ void SetNextWindowPosAndSize(const WindowLayout& window_layout, ImGuiCond cond =
 
 } // namespace ImGui
 
+/**
+ * A texture identifier independent of the backend
+ *
+ * With OpenGL, ImageInternalId is simply the GLuint identifier returned by glGenTextures.
+ */
+using TextureInternalId = std::uintptr_t;
+
 // Do not call this class ImGuiContext because this is an internal class of Dear ImGui
 struct GLFWwindow;
 class DearImGuiContext
@@ -59,4 +67,30 @@ public:
     void new_frame() const;
     void render() const;
     void backend_info(std::ostream& out) const;
+
+    /**
+     * Raw texture upload to the GPU.
+     * The resources are automatically freed up at the destruction of the DearImGuiContext.
+     */
+    TextureInternalId upload_texture(const bitmap::ColorImage& color_image);
+
+private:
+    void delete_texture(TextureInternalId internal_id);
+    void clear_textures();
+
+    std::vector<TextureInternalId> m_uploaded_textures;
 };
+
+struct ImGuiImage
+{
+    ImGuiImage(TextureInternalId tex_id, const bitmap::ColorImage& color_image);
+
+    ImTextureRef texture_ref;
+    ImVec2       image_size;
+};
+
+namespace ImGui {
+
+void ImageWithBorder(const ImGuiImage img, ImVec4 border_color, float border_size);
+
+} // namespace ImGui

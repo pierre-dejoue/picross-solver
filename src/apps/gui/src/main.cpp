@@ -8,6 +8,7 @@
  ******************************************************************************/
 
 #include "about_window.h"
+#include "logo.h"
 #include "picross_file.h"
 #include "settings.h"
 #include "settings_window.h"
@@ -218,7 +219,7 @@ int main(int argc, char *argv[])
 
     // Setup Dear ImGui context
     bool any_fatal_err = false;
-    const DearImGuiContext dear_imgui_context(glfw_context.window(), any_fatal_err);
+    DearImGuiContext dear_imgui_context(glfw_context.window(), any_fatal_err);
     if (any_fatal_err)
         return EXIT_FAILURE;
 
@@ -237,6 +238,9 @@ int main(int argc, char *argv[])
 
     // Application Windows
     AppWindows windows;
+
+    // Resources
+    const ImGuiImage app_logo = make_app_logo(dear_imgui_context, err_handler);
 
     // Main loop
     while (!glfwWindowShouldClose(glfw_context.window()))
@@ -281,7 +285,11 @@ int main(int argc, char *argv[])
         }
 
         // About window
-        menu_bar_options.open_about_window = menu_bar_options.open_about_window ? AboutWindow::visit() : false;
+        AboutWindow::Input about_window_input;
+        {
+            about_window_input.app_logo = &app_logo;
+        }
+        menu_bar_options.open_about_window = menu_bar_options.open_about_window ? AboutWindow::visit(about_window_input) : false;
 
 #ifndef NDEBUG
         if (menu_bar_options.show_imgui_demo_window)
@@ -298,7 +306,7 @@ int main(int argc, char *argv[])
         // Rendering
         const auto [display_w, display_h] = glfw_context.framebuffer_size();
         glViewport(0, 0, display_w, display_h);
-        const auto clear_color = get_background_color(menu_bar_options.gui_dark_mode);
+        const auto clear_color = gui_style::get_background_color(menu_bar_options.gui_dark_mode);
         glClearColor(clear_color[0], clear_color[1], clear_color[2], clear_color[3]);
         glClear(GL_COLOR_BUFFER_BIT);
         dear_imgui_context.render();

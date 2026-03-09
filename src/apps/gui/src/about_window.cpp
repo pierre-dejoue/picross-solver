@@ -2,6 +2,9 @@
 // This code is distributed under the terms of the MIT License
 #include "about_window.h"
 
+#include "logo.h"
+#include "style.h"
+
 #include <imgui_wrap.h>
 
 #include <picross/picross.h>
@@ -30,7 +33,7 @@ std::string s_application_copyright()
 
 } // namespace
 
-bool AboutWindow::visit()
+bool AboutWindow::visit(const Input& input)
 {
     static const std::string window_title = s_about_window_title();
     static const std::string application_copyright = s_application_copyright();
@@ -54,7 +57,7 @@ bool AboutWindow::visit()
             const float dummy_row_min_height = 20.f;
             const float app_name_row_min_height = 40.f;
 
-            // Row 0 (Blank, used for formatting)
+            // Row (Blank, used for formatting)
             {
                 ImGui::TableNextRow(ImGuiTableRowFlags_None);
                 ImGui::TableSetColumnIndex(0);
@@ -62,7 +65,22 @@ bool AboutWindow::visit()
                 ImGui::TableSetColumnIndex(2);
                 ImGui::Dummy(ImVec2(post_column_width, dummy_row_min_height));
             }
-            // Row 1 (App name)
+            // Row (App Logo)
+            if (input.app_logo)
+            {
+                ImGui::TableNextRow(ImGuiTableRowFlags_None);
+                ImGui::TableSetColumnIndex(1);
+                const auto border_color = gui_style::get_logo_border_color();
+                const auto border_color_im = ImVec4(border_color[0], border_color[1], border_color[2], border_color[3]);
+                ImGui::ImageWithBorder(*input.app_logo, border_color_im, gui_style::get_logo_border_size());
+            }
+            // Row (Blank)
+            {
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Dummy(ImVec2(1.f, dummy_row_min_height));
+            }
+            // Row (App name + version)
             {
                 ImGui::TableNextRow(ImGuiTableRowFlags_None, app_name_row_min_height);
                 ImGui::TableSetColumnIndex(1);
@@ -70,19 +88,19 @@ bool AboutWindow::visit()
                 ImGui::SameLine();
                 ImGui::TextUnformatted(picross::get_version_string().data());
             }
-            // Row 2 (Copyright notice)
+            // Row (Copyright notice)
             {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(1);
                 ImGui::TextUnformatted(application_copyright.c_str());
             }
-            // Row 3 (Blank)
+            // Row (Blank)
             {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Dummy(ImVec2(1.f, dummy_row_min_height));
             }
-            // Row 4 (OK button)
+            // Row (OK button)
             {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(1);
