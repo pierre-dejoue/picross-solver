@@ -13,7 +13,6 @@
 #include "settings.h"
 #include "settings_window.h"
 #include "style.h"
-#include "window_layout.h"
 
 #include <picross/picross.h>
 #include <stdutils/io.h>
@@ -68,10 +67,6 @@ struct AppWindows
 {
     std::unique_ptr<SettingsWindow> settings;
     std::vector<std::unique_ptr<PicrossFile>> picross;
-    struct
-    {
-        WindowLayout settings;
-    } layout;
 };
 
 namespace shortcut {
@@ -280,7 +275,7 @@ int main(int argc, char *argv[])
         if (windows.settings)
         {
             bool can_be_erased = false;
-            windows.settings->visit(can_be_erased, windows.layout.settings);
+            windows.settings->visit(can_be_erased);
             assert(can_be_erased == false);     // Always ON
         }
 
