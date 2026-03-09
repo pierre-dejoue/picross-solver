@@ -1,9 +1,10 @@
 #include "settings_window.h"
 
-#include "settings.h"
-
 #include <imgui_wrap.h>
+
 #include "imgui_helpers.h"
+#include "settings.h"
+#include "window_layout.h"
 
 #include <cassert>
 
@@ -14,13 +15,17 @@ SettingsWindow::SettingsWindow(Settings& settings)
 {
 }
 
-void SettingsWindow::visit(bool& can_be_erased, const WindowLayout& win_pos_sz)
+void SettingsWindow::visit(bool& can_be_erased)
 {
     can_be_erased = false;        // Cannot close
 
+    const ImVec2 top_right_corner = [](const float padding) {
+        const ImVec2& work_pos = ImGui::GetMainViewport()->WorkPos;
+        const ImVec2& work_sz  = ImGui::GetMainViewport()->WorkSize;
+        return ImVec2(work_pos.x + work_sz.x - padding, work_pos.y + padding);
+    }(WindowLayout::DEFAULT_PADDING);
+    ImGui::SetNextWindowPos(top_right_corner, ImGuiCond_Appearing, ImVec2(1.f, 0.f));
     ImGui::SetNextWindowSizeConstraints(ImVec2(0, 300), ImVec2(FLT_MAX, 600));
-
-    ImGui::SetNextWindowPosAndSize(win_pos_sz, ImGuiCond_Once);
     constexpr ImGuiWindowFlags win_flags = ImGuiWindowFlags_AlwaysAutoResize
                                          | ImGuiWindowFlags_NoSavedSettings;
 
