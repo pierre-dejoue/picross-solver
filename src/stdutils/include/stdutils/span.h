@@ -30,7 +30,7 @@ public:
 
 public:
     Span() noexcept : m_ptr(nullptr), m_size(0) { }
-    Span(T* ptr, std::size_t size) noexcept : m_ptr(ptr), m_size(size) { assert(m_ptr); }
+    Span(T* ptr, std::size_t size) noexcept : m_ptr(ptr), m_size(size) { assert(!m_ptr ^ m_size); }
     Span(const Span<T>&) noexcept = default;
     Span(Span<T>&&) noexcept = default;
     Span<T>& operator=(const Span<T>&) noexcept = default;
@@ -38,10 +38,11 @@ public:
 
     // For qualification conversions (e.g. non-const T to const T)
     template <typename R>
-    Span(const Span<R>& other) noexcept : m_ptr(other.data()), m_size(other.size()) { assert(m_ptr); }
+    Span(const Span<R>& other) noexcept : m_ptr(other.data()), m_size(other.size()) { assert(!m_ptr ^ m_size); }
 
-    std::size_t size() const  noexcept { return m_size; }
+    std::size_t size() const noexcept { return m_size; }
     bool empty() const noexcept { return m_size == 0 || m_ptr == nullptr; }
+    explicit operator bool() const noexcept { return !empty(); }
 
     pointer data() noexcept { return m_ptr; }
     pointer begin() noexcept { return m_ptr; }
@@ -100,6 +101,8 @@ public:
     Span(const Span<R, Sz, void>& other) noexcept : m_ptr(other.begin()) { assert(m_ptr); }
 
     constexpr std::size_t size() const noexcept { return Sz; }
+    constexpr bool empty() const noexcept { return false; }
+    explicit operator bool() const noexcept { return true; }
 
     pointer data() noexcept { return m_ptr; }
     pointer begin() noexcept { return m_ptr; }

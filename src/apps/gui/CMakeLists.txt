@@ -8,13 +8,17 @@ include(pfd)
 
 set(GUI_SOURCES
     src/about_window.cpp
+    src/bitmap_io_raw.cpp
     src/draw_grid.cpp
+    src/embedded_file.cpp
     src/err_window.cpp
     src/glfw_context.cpp
     src/imgui_helpers.cpp
     src/goal_window.cpp
     src/grid_info.cpp
     src/grid_window.cpp
+    src/logo.cpp
+    src/logo_file.cpp
     src/main.cpp
     src/picross_file.cpp
     src/settings.cpp

@@ -1,12 +1,14 @@
 Picross Solver Library
 ======================
 
+![Picross Solver Library's logo](./doc/img/logo.png)
+
 Picross is a puzzle game, also called nonogram or paint-by-number.
 The goal is to find a hidden picture in a rectangular grid, by painting some of the cells
 with one color, or leaving them blank. The information given is, for each row and each
 column, the number and size of the segments of continuous filled cells on that line.
 
-This is a solver library for picross puzzles. The solver will find the solutions of a grid
+This project is a solver library for picross puzzles. The solver will find the solutions of a grid
 based on the row and column constraints given as input. The solver handles grids with
 multiple solutions and can be used as a validator to check the uniqueness of the
 solution.
