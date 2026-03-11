@@ -1,13 +1,16 @@
 #include "logo_file.h"
 
-#include <stdutils/type_traits.h>
+#include <stdutils/span.h>
+
+#include <cstddef>
 
 namespace {
 
-template <typename ARRAY>
-stdutils::Span<const std::byte> get_array_span(const ARRAY& arr)
+template <typename T, unsigned N>
+auto make_byte_cspan(const T(&arr)[N])
 {
-    return stdutils::Span<const std::byte>(reinterpret_cast<const std::byte*>(&arr[0]), stdutils::array_size_v<ARRAY>);
+    static_assert(N > 0);
+    return stdutils::Span<const std::byte>(reinterpret_cast<const std::byte*>(&arr[0]), N * sizeof(T));
 }
 
 auto get_file_data_logo() {
@@ -2985,7 +2988,7 @@ auto get_file_data_logo() {
         0xE0,0xE0,0xE0,0xFF,0xE0,0xE0,0xE0,0xFF,0xE0,0xE0,0xE0,0xFF,0xE0,0xE0,0xE0,0xFF,
         0xE0,0xE0,0xE0,0xFF,
     };
-    return get_array_span(arr);
+    return make_byte_cspan(arr);
 }
 
 } // namespace

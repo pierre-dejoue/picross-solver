@@ -13,6 +13,7 @@
 #include "settings.h"
 #include "settings_window.h"
 #include "style.h"
+#include "window_icon.h"
 
 #include <picross/picross.h>
 #include <stdutils/io.h>
@@ -227,6 +228,9 @@ int main(int argc, char *argv[])
 
     // Menu bar options
     menu_bar::Options menu_bar_options;
+
+    // Set the window icon. This function call will have no effect on the macOS platform
+    set_window_icon(glfw_context, err_handler);
 
     // Style
     imgui_set_style(menu_bar_options.gui_dark_mode);
