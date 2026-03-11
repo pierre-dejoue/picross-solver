@@ -9,6 +9,7 @@ include(pfd)
 set(GUI_SOURCES
     src/about_window.cpp
     src/bitmap_io_raw.cpp
+    src/bitmap_to_glfw_image.cpp
     src/draw_grid.cpp
     src/embedded_file.cpp
     src/err_window.cpp
@@ -24,7 +25,14 @@ set(GUI_SOURCES
     src/settings.cpp
     src/settings_window.cpp
     src/style.cpp
+    src/window_icon.cpp
 )
+
+if(NOT APPLE)
+    list(APPEND GUI_SOURCES
+        src/window_icon_files.cpp
+    )
+endif()
 
 file(GLOB GUI_HEADERS src/*.h)
 
