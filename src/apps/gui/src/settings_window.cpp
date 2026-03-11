@@ -108,12 +108,14 @@ void SettingsWindow::visit(bool& can_be_erased)
         // FTL (Faster Than Light)
         ImGui::SameLine();
         ImGui::Checkbox("FTL", &animation_settings->ftl);
+        ImGui::HelpMarker("Faster Than Light. Solves the puzzle as fast as possible.");
 
         if (!animation_settings->ftl)
         {
             // Speed slider
             ImGui::SameLine();
             ImGui::SliderInt("##speed", &animation_settings->speed, limits.speed.min, limits.speed.max, "%d", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::TooltipTextUnformatted("Set a upper limit to the solving speed. Set to zero will pause the current solve.");
             assert(animation_settings->speed >= 0);
 
             // Modifying the speed while in pause will unpause

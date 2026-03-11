@@ -9,16 +9,24 @@
 
 namespace ImGui {
 
-void HelpMarker(const char* desc)
+void TooltipTextUnformatted(const char* tooltip)
 {
-    ImGui::TextDisabled("(?)");
+    if (!tooltip)
+        return;
     if (ImGui::BeginItemTooltip())
     {
         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(desc);
+        ImGui::TextUnformatted(tooltip);
         ImGui::PopTextWrapPos();
         ImGui::EndTooltip();
     }
+}
+
+void HelpMarker(const char* tooltip)
+{
+    ImGui::SameLine();
+    ImGui::TextDisabled("(?)");
+    TooltipTextUnformatted(tooltip);
 }
 
 // Place the window in the working area, that is the position of the viewport minus task bars, menus bars, status bars, etc.

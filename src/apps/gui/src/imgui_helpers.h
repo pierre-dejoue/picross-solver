@@ -40,7 +40,9 @@ struct KeyShortcut
     const char* label;
 };
 
-void HelpMarker(const char* desc);          // Function taken from imgui_demo.cpp
+void TooltipTextUnformatted(const char* tooltip);    // Applies to the previous ImGui item. Function copied from imgui_demo.cpp.
+void HelpMarker(const char* tooltip);                // A (?) marker with a tooltip, on the same line as the previous item.
+
 void SetNextWindowPosAndSize(const WindowLayout& window_layout, ImGuiCond cond = 0);
 
 } // namespace ImGui
