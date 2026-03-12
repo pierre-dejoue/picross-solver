@@ -84,7 +84,17 @@ void GridWindow::visit(bool& can_be_erased, const Settings& settings)
     if (ftl_enabled)
         ftl_req_snapshot = true;
 
-    auto target_speed = ftl_enabled ? 10 : animation_settings.speed;
+    const int target_speed = [this, one_step=animation_settings.one_event, speed=animation_settings.speed]() {
+        if (ftl_enabled)
+        {
+            return 10;          // Return 10 events per frame, but most events are filtered out
+        }
+        else if (speed == 0 && one_step)
+        {
+            return 1;
+        }
+        return speed;
+    }();
     if (speed != target_speed)
     {
         speed = target_speed;

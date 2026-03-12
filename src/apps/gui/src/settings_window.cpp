@@ -103,6 +103,9 @@ void SettingsWindow::visit(bool& can_be_erased)
 
         ImGui::Checkbox("Show branching with colors", &animation_settings->show_branching);
 
+        // Always reset the "one step" flag between frames
+        animation_settings->one_event = false;
+
         ImGui::TextUnformatted("Speed:");
 
         // FTL (Faster Than Light)
@@ -125,20 +128,46 @@ void SettingsWindow::visit(bool& can_be_erased)
         // Enabling FTL while in pause will unpause
         if (animation_settings->ftl) { animation.paused = false; }
 
+        // The next three buttons are on the same line
+        bool same_line = false;
+
         // Pause button
-        if (!animation.paused && ImGui::Button("Pause"))
+        if (!animation.paused && animation_settings->speed > 0)
         {
-            animation.paused = true;
-            animation.ftl = animation_settings->ftl;
-            animation.last_speed = animation_settings->speed;
-            animation_settings->ftl = false;
-            animation_settings->speed = 0;
+            same_line = true;
+            if (ImGui::Button("Pause"))
+            {
+                animation.paused = true;
+                animation.ftl = animation_settings->ftl;
+                animation.last_speed = animation_settings->speed;
+                animation_settings->ftl = false;
+                animation_settings->speed = 0;
+            }
         }
-        else if (animation.paused && ImGui::Button("Resume"))
+
+        // Resume button
+        if (animation.paused && animation.last_speed > 0)
         {
-            animation.paused = false;
-            animation_settings->ftl = animation.ftl;
-            animation_settings->speed = animation.last_speed;
+            if (same_line) { ImGui::SameLine(); }
+            same_line = true;
+            if (ImGui::Button("Resume"))
+            {
+                animation.paused = false;
+                animation_settings->ftl = animation.ftl;
+                animation_settings->speed = animation.last_speed;
+                animation.last_speed = 0;
+            }
+        }
+
+        // One-step button
+        if (animation.paused || animation_settings->speed == 0)
+        {
+            if (same_line) { ImGui::SameLine(); }
+            same_line = true;
+            if (ImGui::Button("One step"))
+            {
+                animation_settings->one_event = true;
+            }
         }
 
         ImGui::Unindent();

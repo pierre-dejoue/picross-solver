@@ -40,12 +40,14 @@ public:
     {
         Parameter::Limits<bool> show_branching;
         Parameter::Limits<bool> ftl;
+        Parameter::Limits<bool> one_event;
         Parameter::Limits<int> speed;
     };
     struct Animation
     {
         bool show_branching;
         bool ftl;
+        bool one_event;
         int speed;
     };
 

@@ -53,6 +53,8 @@ namespace {
 
         result.ftl = Parameter::limits_false;
 
+        result.one_event = Parameter::limits_false;
+
         result.speed.def = 20;
         result.speed.min = 0;
         result.speed.max = 40;
@@ -134,6 +136,7 @@ const Settings::Animation& Settings::read_animation_settings() const
         animation_settings = std::make_unique<Animation>();
         animation_settings->show_branching = read_animation_settings_limits().show_branching.def;
         animation_settings->ftl = read_animation_settings_limits().ftl.def;
+        animation_settings->one_event = read_animation_settings_limits().one_event.def;
         animation_settings->speed = read_animation_settings_limits().speed.def;
     }
     assert(animation_settings);
