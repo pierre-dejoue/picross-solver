@@ -12,7 +12,7 @@ GoalWindow::GoalWindow(const picross::OutputGrid& goal, std::string_view name)
 {
 }
 
-void GoalWindow::visit(bool& can_be_erased, Settings& settings)
+void GoalWindow::visit(bool& can_be_erased, const Settings& settings)
 {
     const size_t width = grid.width();
     const size_t height = grid.height();

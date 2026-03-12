@@ -72,7 +72,7 @@ GridWindow::~GridWindow()
     }
 }
 
-void GridWindow::visit(bool& can_be_erased, Settings& settings)
+void GridWindow::visit(bool& can_be_erased, const Settings& settings)
 {
     const size_t width = grid.width();
     const size_t height = grid.height();

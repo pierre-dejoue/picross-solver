@@ -74,7 +74,7 @@ Settings::Tile* Settings::get_tile_settings()
     return tile_settings.get();
 }
 
-const Settings::Tile& Settings::read_tile_settings()
+const Settings::Tile& Settings::read_tile_settings() const
 {
     // Create if not existing
     if (!tile_settings)
@@ -102,7 +102,7 @@ Settings::Solver* Settings::get_solver_settings()
     return solver_settings.get();
 }
 
-const Settings::Solver& Settings::read_solver_settings()
+const Settings::Solver& Settings::read_solver_settings() const
 {
     // Create if not existing
     if (!solver_settings)
@@ -126,7 +126,7 @@ Settings::Animation* Settings::get_animation_settings()
     return animation_settings.get();
 }
 
-const Settings::Animation& Settings::read_animation_settings()
+const Settings::Animation& Settings::read_animation_settings() const
 {
     // Create if not existing
     if (!animation_settings)

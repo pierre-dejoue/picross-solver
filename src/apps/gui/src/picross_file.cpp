@@ -17,7 +17,7 @@ PicrossFile::PicrossFile(std::string_view path, picross::io::PicrossFileFormat f
 
 PicrossFile::~PicrossFile() = default;
 
-void PicrossFile::visit_windows(bool& can_be_erased, Settings& settings)
+void PicrossFile::visit_windows(bool& can_be_erased, const Settings& settings)
 {
     can_be_erased = false;
     if (!is_file_open)

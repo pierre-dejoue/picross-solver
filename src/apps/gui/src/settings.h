@@ -54,21 +54,21 @@ public:
 
     // Tile settings
     Tile* get_tile_settings();
-    const Tile& read_tile_settings();
+    const Tile& read_tile_settings() const;
     static const TileLimits& read_tile_settings_limits();
 
     // Solver settings
     Solver* get_solver_settings();
-    const Solver& read_solver_settings();
+    const Solver& read_solver_settings() const;
     static const SolverLimits& read_solver_settings_limits();
 
     // Animation settings
     Animation* get_animation_settings();
-    const Animation& read_animation_settings();
+    const Animation& read_animation_settings() const;
     static const AnimationLimits& read_animation_settings_limits();
 
 private:
-    std::unique_ptr<Tile> tile_settings;
-    std::unique_ptr<Solver> solver_settings;
-    std::unique_ptr<Animation> animation_settings;
+    mutable std::unique_ptr<Tile> tile_settings;
+    mutable std::unique_ptr<Solver> solver_settings;
+    mutable std::unique_ptr<Animation> animation_settings;
 };

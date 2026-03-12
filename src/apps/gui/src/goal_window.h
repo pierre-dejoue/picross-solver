@@ -18,7 +18,7 @@ public:
     GoalWindow(const GoalWindow&) = delete;
     GoalWindow& operator=(const GoalWindow&) = delete;
 
-    void visit(bool& can_be_erased, Settings& settings);
+    void visit(bool& can_be_erased, const Settings& settings);
 
 private:
     const ObserverGrid grid;
