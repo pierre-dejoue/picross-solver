@@ -7,6 +7,14 @@
 #include <GLFW/glfw3.h>
 #include "glfw_context.h"
 
+ImGuiImage::ImGuiImage(TextureInternalId tex_id, const bitmap::ColorImage& color_image)
+    : texture_ref(static_cast<ImTextureID>(tex_id))
+    , image_size{}
+{
+    const bitmap::coord_2d_t& bitmap_size = color_image.size();
+    image_size = ImVec2{static_cast<float>(bitmap_size[0]), static_cast<float>(bitmap_size[1])};
+}
+
 namespace ImGui {
 
 void TooltipTextUnformatted(const char* tooltip)
@@ -37,6 +45,15 @@ void SetNextWindowPosAndSize(const WindowLayout& window_layout, ImGuiCond cond)
     const ImVec2 tl_corner(window_layout.m_position.x + work_tl_corner.x, window_layout.m_position.y + work_tl_corner.y);
     ImGui::SetNextWindowPos(tl_corner, cond);
     ImGui::SetNextWindowSize(to_imgui_vec2(window_layout.window_size(to_screen_size(work_size))), cond);
+}
+
+void ImageWithBorder(const ImGuiImage& img, ImVec4 border_color, float border_size)
+{
+    ImGui::PushStyleColor(ImGuiCol_Border, border_color);
+    ImGui::PushStyleVar(ImGuiStyleVar_ImageBorderSize, border_size);
+    ImGui::Image(img.texture_ref, img.image_size);
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor();
 }
 
 } // namespace ImGui
@@ -197,21 +214,4 @@ void DearImGuiContext::clear_textures()
         delete_texture(internal_id);
     }
     m_uploaded_textures.clear();
-}
-
-ImGuiImage::ImGuiImage(TextureInternalId tex_id, const bitmap::ColorImage& color_image)
-    : texture_ref(static_cast<ImTextureID>(tex_id))
-    , image_size{}
-{
-    const bitmap::coord_2d_t& bitmap_size = color_image.size();
-    image_size = ImVec2{static_cast<float>(bitmap_size[0]), static_cast<float>(bitmap_size[1])};
-}
-
-void ImGui::ImageWithBorder(const ImGuiImage& img, ImVec4 border_color, float border_size)
-{
-    ImGui::PushStyleColor(ImGuiCol_Border, border_color);
-    ImGui::PushStyleVar(ImGuiStyleVar_ImageBorderSize, border_size);
-    ImGui::Image(img.texture_ref, img.image_size);
-    ImGui::PopStyleVar();
-    ImGui::PopStyleColor();
 }

@@ -23,6 +23,24 @@ inline ImVec2 to_imgui_vec2(ScreenPos pos)
     return ImVec2(pos.x, pos.y);
 }
 
+/**
+ * A texture identifier independent of the backend
+ *
+ * With OpenGL, ImageInternalId is simply the GLuint identifier returned by glGenTextures.
+ */
+using TextureInternalId = std::uintptr_t;
+
+/**
+ * A wrapper around a texture uploaded to the GPU and the source image info
+ */
+struct ImGuiImage
+{
+    ImGuiImage(TextureInternalId tex_id, const bitmap::ColorImage& color_image);
+
+    ImTextureRef texture_ref;
+    ImVec2       image_size;
+};
+
 namespace ImGui {
 
 constexpr char* NO_SHORTCUT = nullptr;
@@ -45,14 +63,9 @@ void HelpMarker(const char* tooltip);                // A (?) marker with a tool
 
 void SetNextWindowPosAndSize(const WindowLayout& window_layout, ImGuiCond cond = 0);
 
-} // namespace ImGui
+void ImageWithBorder(const ImGuiImage& img, ImVec4 border_color, float border_size);
 
-/**
- * A texture identifier independent of the backend
- *
- * With OpenGL, ImageInternalId is simply the GLuint identifier returned by glGenTextures.
- */
-using TextureInternalId = std::uintptr_t;
+} // namespace ImGui
 
 // Do not call this class ImGuiContext because this is an internal class of Dear ImGui
 struct GLFWwindow;
@@ -82,17 +95,3 @@ private:
 
     std::vector<TextureInternalId> m_uploaded_textures;
 };
-
-struct ImGuiImage
-{
-    ImGuiImage(TextureInternalId tex_id, const bitmap::ColorImage& color_image);
-
-    ImTextureRef texture_ref;
-    ImVec2       image_size;
-};
-
-namespace ImGui {
-
-void ImageWithBorder(const ImGuiImage img, ImVec4 border_color, float border_size);
-
-} // namespace ImGui
