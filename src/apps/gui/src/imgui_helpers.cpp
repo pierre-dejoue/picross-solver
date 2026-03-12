@@ -70,6 +70,9 @@ DearImGuiContext::DearImGuiContext(GLFWwindow* glfw_window, bool& any_fatal_erro
         const bool init_glfw = ImGui_ImplGlfw_InitForOpenGL(glfw_window, true);
         const bool init_opengl3 = ImGui_ImplOpenGL3_Init(glsl_version());
 
+        // Specify the font to use among the two embedded in the Dear ImGui library
+        ImGui::GetIO().Fonts->AddFontDefaultVector();
+
         any_fatal_error = !versions_ok || (ctx == nullptr) || !init_glfw || !init_opengl3;
     }
     catch(const std::exception&)
