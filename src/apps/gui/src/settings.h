@@ -1,6 +1,7 @@
 #pragma once
 
 #include "parameter.h"
+#include "style.h"
 
 #include <memory>
 
@@ -8,6 +9,15 @@
 class Settings
 {
 public:
+    struct UILimits
+    {
+        Parameter::Limits<int> extra_scaling;
+    };
+    struct UI
+    {
+        gui_style::ExtraScaling extra_scaling;
+    };
+
     struct TileLimits
     {
         Parameter::Limits<int> size_enum;
@@ -26,6 +36,7 @@ public:
         bool hide_depth_greater;
         int hide_depth_value;
     };
+
     struct SolverLimits
     {
         Parameter::Limits<bool> limit_solutions;
@@ -36,6 +47,7 @@ public:
         bool limit_solutions;
         int max_nb_solutions;
     };
+
     struct AnimationLimits
     {
         Parameter::Limits<bool> show_branching;
@@ -54,6 +66,11 @@ public:
 public:
     Settings();
 
+    // UI settings
+    UI* get_ui_settings();
+    const UI& read_ui_settings() const;
+    static const UILimits& read_ui_settings_limits();
+
     // Tile settings
     Tile* get_tile_settings();
     const Tile& read_tile_settings() const;
@@ -70,7 +87,8 @@ public:
     static const AnimationLimits& read_animation_settings_limits();
 
 private:
-    mutable std::unique_ptr<Tile> tile_settings;
-    mutable std::unique_ptr<Solver> solver_settings;
+    mutable std::unique_ptr<UI>        ui_settings;
+    mutable std::unique_ptr<Tile>      tile_settings;
+    mutable std::unique_ptr<Solver>    solver_settings;
     mutable std::unique_ptr<Animation> animation_settings;
 };

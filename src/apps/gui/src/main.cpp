@@ -235,6 +235,13 @@ int main(int argc, char *argv[])
     // Style
     imgui_set_style(menu_bar_options.gui_dark_mode);
 
+    // Initial UI scaling
+    dear_imgui_context.set_ui_extra_scaling(
+        get_extra_scaling(
+            settings.read_ui_settings().extra_scaling
+        )
+    );
+
     // Application Windows
     AppWindows windows;
 
@@ -282,6 +289,13 @@ int main(int argc, char *argv[])
             windows.settings->visit(can_be_erased);
             assert(can_be_erased == false);     // Always ON
         }
+
+        // UI scaling
+        dear_imgui_context.set_ui_extra_scaling(
+            get_extra_scaling(
+                settings.read_ui_settings().extra_scaling
+            )
+        );
 
         // About window
         AboutWindow::Input about_window_input;

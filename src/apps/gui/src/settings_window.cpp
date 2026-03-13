@@ -24,7 +24,7 @@ void SettingsWindow::visit(bool& can_be_erased)
         const ImVec2& work_sz  = ImGui::GetMainViewport()->WorkSize;
         return ImVec2(work_pos.x + work_sz.x - padding, work_pos.y + padding);
     }(WindowLayout::DEFAULT_PADDING);
-    ImGui::SetNextWindowPos(top_right_corner, ImGuiCond_Appearing, ImVec2(1.f, 0.f));
+    ImGui::SetNextWindowPos(top_right_corner, ImGuiCond_Once, ImVec2(1.f, 0.f));
     ImGui::SetNextWindowSizeConstraints(ImVec2(0, 300), ImVec2(FLT_MAX, 600));
     constexpr ImGuiWindowFlags win_flags = ImGuiWindowFlags_AlwaysAutoResize
                                          | ImGuiWindowFlags_NoSavedSettings;
@@ -36,6 +36,28 @@ void SettingsWindow::visit(bool& can_be_erased)
         return;
     }
 
+    Settings::UI* ui_settings = settings.get_ui_settings();
+    if (ui_settings)
+    {
+        //const auto& limits = settings.read_ui_settings_limits();
+
+        ImGui::BulletText("UI");
+        ImGui::Indent();
+
+        int extra_scaling = static_cast<int>(ui_settings->extra_scaling);
+        bool pressed = false;
+        ImGui::Text("Scaling: ");
+        ImGui::SameLine(); pressed  = ImGui::RadioButton("Small##UI", &extra_scaling, 0);
+        ImGui::SameLine(); pressed |= ImGui::RadioButton("Mid##UI",   &extra_scaling, 1);
+        ImGui::SameLine(); pressed |= ImGui::RadioButton("Big##UI",   &extra_scaling, 2);
+        if (pressed)
+        {
+            ui_settings->extra_scaling = static_cast<gui_style::ExtraScaling>(extra_scaling);
+        }
+
+        ImGui::Unindent();
+    }
+
     Settings::Tile* tile_settings = settings.get_tile_settings();
     if (tile_settings)
     {
@@ -45,16 +67,11 @@ void SettingsWindow::visit(bool& can_be_erased)
         ImGui::Indent();
 
         ImGui::Text("Size: ");
-        ImGui::SameLine();
-        ImGui::RadioButton("XS", &tile_settings->size_enum, 0);
-        ImGui::SameLine();
-        ImGui::RadioButton("S", &tile_settings->size_enum, 1);
-        ImGui::SameLine();
-        ImGui::RadioButton("M", &tile_settings->size_enum, 2);
-        ImGui::SameLine();
-        ImGui::RadioButton("L", &tile_settings->size_enum, 3);
-        ImGui::SameLine();
-        ImGui::RadioButton("XL", &tile_settings->size_enum, 4);
+        ImGui::SameLine(); ImGui::RadioButton("XS", &tile_settings->size_enum, 0);
+        ImGui::SameLine(); ImGui::RadioButton("S",  &tile_settings->size_enum, 1);
+        ImGui::SameLine(); ImGui::RadioButton("M",  &tile_settings->size_enum, 2);
+        ImGui::SameLine(); ImGui::RadioButton("L",  &tile_settings->size_enum, 3);
+        ImGui::SameLine(); ImGui::RadioButton("XL", &tile_settings->size_enum, 4);
 
         //ImGui::SliderFloat("Rounding ratio", &tile_settings->rounding_ratio, limits.rounding_ratio.min, limits.rounding_ratio.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         //ImGui::SliderFloat("Size ratio", &tile_settings->size_ratio, limits.size_ratio.min, limits.size_ratio.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);

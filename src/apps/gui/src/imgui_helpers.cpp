@@ -1,11 +1,15 @@
 #include "imgui_helpers.h"
 
+#include "window_layout.h"
+
 #include <imgui_wrap.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_opengl3_loader.h>
 #include <GLFW/glfw3.h>
 #include "glfw_context.h"
+
+#include <algorithm>
 
 ImGuiImage::ImGuiImage(TextureInternalId tex_id, const bitmap::ColorImage& color_image)
     : texture_ref(static_cast<ImTextureID>(tex_id))
@@ -59,6 +63,7 @@ void ImageWithBorder(const ImGuiImage& img, ImVec4 border_color, float border_si
 } // namespace ImGui
 
 DearImGuiContext::DearImGuiContext(GLFWwindow* glfw_window, bool& any_fatal_error) noexcept
+    : m_uploaded_textures()
 {
     any_fatal_error = false;
     try
@@ -121,6 +126,29 @@ void DearImGuiContext::backend_info(std::ostream& out) const
     const auto* open_gl_renderer_str = glGetString(GL_RENDERER);
     if (open_gl_vendor_str && open_gl_renderer_str)
         out << "OpenGL Vendor: " << open_gl_vendor_str << "; Renderer: " << open_gl_renderer_str << std::endl;
+}
+
+void DearImGuiContext::set_ui_scaling(float ui_scaling)
+{
+    auto& imgui_style = ImGui::GetStyle();
+    imgui_style.FontScaleDpi = std::clamp(ui_scaling, 0.1f, 10.f);
+}
+
+void DearImGuiContext::set_ui_extra_scaling(float extra_scaling)
+{
+    auto& imgui_style = ImGui::GetStyle();
+    imgui_style.FontScaleMain = std::clamp(extra_scaling, 0.1f, 10.f);
+}
+
+void DearImGuiContext::push_font(float scaling_ratio)
+{
+    auto& imgui_style = ImGui::GetStyle();
+    ImGui::PushFont(ImGui::CURRENT_FONT, imgui_style.FontSizeBase * std::clamp(scaling_ratio, 0.1f, 10.f));
+}
+
+void DearImGuiContext::pop_font()
+{
+    ImGui::PopFont();
 }
 
 /**

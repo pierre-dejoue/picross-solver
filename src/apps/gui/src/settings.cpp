@@ -5,6 +5,17 @@
 
 namespace {
 
+    Settings::UILimits ui_settings_limits()
+    {
+        Settings::UILimits result;
+
+        result.extra_scaling.def = static_cast<int>(gui_style::ExtraScaling::Mid);
+        result.extra_scaling.min = static_cast<int>(gui_style::ExtraScaling::Small);
+        result.extra_scaling.max = static_cast<int>(gui_style::ExtraScaling::Big);
+
+        return result;
+    }
+
     Settings::TileLimits tile_settings_limits()
     {
         Settings::TileLimits result;
@@ -66,9 +77,33 @@ namespace {
 
 Settings::Settings()
 {
+    read_ui_settings();
     read_tile_settings();
     read_solver_settings();
     read_animation_settings();
+}
+
+Settings::UI* Settings::get_ui_settings()
+{
+    return ui_settings.get();
+}
+
+const Settings::UI& Settings::read_ui_settings() const
+{
+    // Create if not existing
+    if (!ui_settings)
+    {
+        ui_settings = std::make_unique<UI>();
+        ui_settings->extra_scaling = static_cast<gui_style::ExtraScaling>(read_ui_settings_limits().extra_scaling.def);
+    }
+    assert(ui_settings);
+    return *ui_settings;
+}
+
+const Settings::UILimits& Settings::read_ui_settings_limits()
+{
+    static Settings::UILimits result = ui_settings_limits();
+    return result;
 }
 
 Settings::Tile* Settings::get_tile_settings()

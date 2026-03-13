@@ -2,11 +2,12 @@
 
 #include "bitmap_image.h"
 #include "screen.h"
-#include "window_layout.h"
 
 #include <imgui_wrap.h>
 
 #include <ostream>
+
+struct WindowLayout;
 
 inline ScreenPos to_screen_pos(ImVec2 vec2)
 {
@@ -43,9 +44,10 @@ struct ImGuiImage
 
 namespace ImGui {
 
-constexpr char* NO_SHORTCUT = nullptr;
-constexpr bool* NO_POPEN = nullptr;
-constexpr bool  NOT_SELECTED = false;
+constexpr char*   NO_SHORTCUT  = nullptr;
+constexpr bool*   NO_POPEN     = nullptr;
+constexpr ImFont* CURRENT_FONT = nullptr;
+constexpr bool    NOT_SELECTED = false;
 
 struct KeyShortcut
 {
@@ -82,6 +84,11 @@ public:
     void new_frame() const;
     void render() const;
     void backend_info(std::ostream& out) const;
+
+    void set_ui_scaling(float ui_scaling);          // DPI awareness
+    void set_ui_extra_scaling(float ui_scaling);    // Application's UI scaling
+    void push_font(float scaling_ratio = 1.f);
+    void pop_font();
 
     /**
      * Raw texture upload to the GPU.

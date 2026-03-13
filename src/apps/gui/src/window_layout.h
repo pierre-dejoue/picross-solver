@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <cassert>
 
-
 struct WindowLayout
 {
     static constexpr float DEFAULT_PADDING = 2.0f;

@@ -2,6 +2,9 @@
 
 #include <imgui_wrap.h>
 
+#include <array>
+#include <cassert>
+#include <type_traits>
 
 namespace {
 
@@ -39,6 +42,20 @@ std::array<float, 4> get_logo_border_color()
 {
     static const auto c = static_cast<ImVec4>(LogoBorderColor);
     return std::array<float, 4>{ c.x, c.y, c.z, c.w };
+}
+
+float get_extra_scaling(ExtraScaling extra_scaling)
+{
+    constexpr unsigned int SZ = static_cast<unsigned int>(ExtraScaling::Big) + 1;
+    static std::array<float, SZ> scaling_ratio
+    {
+        1.f,
+        1.19f,
+        1.44f,
+    };
+    const auto idx = static_cast<unsigned int>(extra_scaling);
+    assert(idx < SZ);
+    return idx < SZ ? scaling_ratio[idx] : 1.f;
 }
 
 } // namespace gui_style
