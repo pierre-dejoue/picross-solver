@@ -2,6 +2,7 @@
 // This code is distributed under the terms of the MIT License
 #include "about_window.h"
 
+#include "imgui_helpers.h"
 #include "logo.h"
 #include "style.h"
 
@@ -40,7 +41,7 @@ bool AboutWindow::visit(const Input& input)
 
     bool keep_open = true;
     constexpr ImGuiWindowFlags win_flags = ImGuiWindowFlags_NoCollapse
-                                         | ImGuiWindowFlags_NoResize
+                                         | ImGuiWindowFlags_AlwaysAutoResize
                                          | ImGuiWindowFlags_NoSavedSettings;
 
     const ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -82,11 +83,14 @@ bool AboutWindow::visit(const Input& input)
             }
             // Row (App name + version)
             {
+                assert(input.dear_imgui_context);
+                input.dear_imgui_context->push_font(1.3f);
                 ImGui::TableNextRow(ImGuiTableRowFlags_None, app_name_row_min_height);
                 ImGui::TableSetColumnIndex(1);
                 ImGui::TextLinkOpenURL(project::get_name().data(), project::get_website().data());
                 ImGui::SameLine();
                 ImGui::TextUnformatted(picross::get_version_string().data());
+                input.dear_imgui_context->pop_font();
             }
             // Row (Copyright notice)
             {

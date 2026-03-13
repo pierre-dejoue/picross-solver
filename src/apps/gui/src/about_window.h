@@ -3,12 +3,14 @@
 #pragma once
 
 struct ImGuiImage;
+class DearImGuiContext;
 
 struct AboutWindow
 {
     struct Input
     {
         const ImGuiImage* app_logo{nullptr};
+        DearImGuiContext* dear_imgui_context{nullptr};
     };
 
     // Return true if the window is to remain open

@@ -301,6 +301,7 @@ int main(int argc, char *argv[])
         AboutWindow::Input about_window_input;
         {
             about_window_input.app_logo = &app_logo;
+            about_window_input.dear_imgui_context = &dear_imgui_context;
         }
         menu_bar_options.open_about_window = menu_bar_options.open_about_window ? AboutWindow::visit(about_window_input) : false;
 
