@@ -1,5 +1,3 @@
-// Copyright (c) 2026 Pierre DEJOUE
-// This code is distributed under the terms of the MIT License
 #pragma once
 
 #include <string_view>
@@ -17,5 +15,8 @@ std::string_view get_short_copyright();
 
 // Get the project website
 std::string_view get_website();
+
+// Get the compilation target (e.g. linux, win64, macos-arm64)
+std::string_view get_compilation_target_platform();
 
 } // namespace project

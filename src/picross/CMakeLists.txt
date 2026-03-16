@@ -4,7 +4,7 @@
 
 include(compiler_options)
 
-configure_file(src/picross_solver_version.h.in picross_solver_version.h @ONLY)
+configure_file(src/picross_solver_version.h.in src/picross_solver_version.h @ONLY)
 
 set(LIB_SOURCES
     src/binomial.cpp
@@ -36,7 +36,7 @@ target_include_directories(picross
     $<INSTALL_INTERFACE:include>
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/src
 )
 
 target_link_libraries(picross

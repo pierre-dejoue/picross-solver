@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
     if (args["version"])
     {
         std::cerr << project::get_name() << ' ' << picross::get_version_string() << std::endl;
-        std::cerr << std::endl;
+        std::cerr << "------" << std::endl;
         stdutils::platform::print_compiler_all_info(std::cerr);
         exit(0);
     }

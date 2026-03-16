@@ -5,6 +5,8 @@
 # Dependencies
 include(pnm)
 
+configure_file(src/project_defines.h.in src/project_defines.h @ONLY)
+
 set(LIB_SOURCES
     src/bitmap_io.cpp
     src/console_observer.cpp
@@ -30,6 +32,8 @@ endif()
 target_include_directories(utils
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}/src
 )
 
 target_link_libraries(utils

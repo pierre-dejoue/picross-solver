@@ -5,4 +5,4 @@
  ******************************************************************************/
 #pragma once
 
-#define PICROSS_SOLVER_VERSION_STRING "@picross_solver_VERSION@"
+#define PICROSS_SOLVER_LIBRARY_VERSION_STRING "@PROJECT_VERSION@"

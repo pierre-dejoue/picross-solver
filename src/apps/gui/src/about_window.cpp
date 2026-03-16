@@ -32,12 +32,20 @@ std::string s_application_copyright()
     return out.str();
 }
 
+std::string s_platform()
+{
+    std::stringstream out;
+    out << '(' << project::get_compilation_target_platform() << ')';
+    return out.str();
+}
+
 } // namespace
 
 bool AboutWindow::visit(const Input& input)
 {
     static const std::string window_title = s_about_window_title();
     static const std::string application_copyright = s_application_copyright();
+    static const std::string platform = s_platform();
 
     bool keep_open = true;
     constexpr ImGuiWindowFlags win_flags = ImGuiWindowFlags_NoCollapse
@@ -85,12 +93,19 @@ bool AboutWindow::visit(const Input& input)
             {
                 assert(input.dear_imgui_context);
                 input.dear_imgui_context->push_font(1.3f);
+                const float app_name_baseline = ImGui::GetFontSize() + ImGui::GetFontBaked()->Descent;
+                const auto align_bottom = [app_name_baseline]() {
+                    const float baseline = ImGui::GetFontSize() + ImGui::GetFontBaked()->Descent;
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + app_name_baseline - baseline);
+                };
                 ImGui::TableNextRow(ImGuiTableRowFlags_None, app_name_row_min_height);
                 ImGui::TableSetColumnIndex(1);
                 ImGui::TextLinkOpenURL(project::get_name().data(), project::get_website().data());
                 ImGui::SameLine();
                 ImGui::TextUnformatted(picross::get_version_string().data());
                 input.dear_imgui_context->pop_font();
+                ImGui::SameLine(); align_bottom();
+                ImGui::TextUnformatted(platform.c_str());
             }
             // Row (Copyright notice)
             {

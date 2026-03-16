@@ -11,7 +11,7 @@ namespace picross {
 
 std::string_view get_version_string()
 {
-    return std::string_view(PICROSS_SOLVER_VERSION_STRING);
+    return PICROSS_SOLVER_LIBRARY_VERSION_STRING;
 }
 
 } // namespace picross
