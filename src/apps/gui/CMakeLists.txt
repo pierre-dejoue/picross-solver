@@ -36,7 +36,18 @@ endif()
 
 file(GLOB GUI_HEADERS src/*.h)
 
-add_executable(picross_solver ${GUI_SOURCES} ${GUI_HEADERS})
+if(MSVC)
+    configure_file(src/icon.rc.in src/icon.rc @ONLY)
+    set(APP_ICON ${CMAKE_CURRENT_BINARY_DIR}/src/icon.rc)
+else()
+    set(APP_ICON "")
+endif()
+
+add_executable(picross_solver
+    ${GUI_SOURCES}
+    ${GUI_HEADERS}
+    ${APP_ICON}
+)
 
 if(APPLE)
     # OpenGL API is deprecated since macOS 10.14

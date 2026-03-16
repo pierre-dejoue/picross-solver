@@ -22,6 +22,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Resources
+set(RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/resources)
+
 # Stdutils
 add_subdirectory(src/stdutils)
 
