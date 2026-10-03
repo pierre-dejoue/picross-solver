@@ -1,22 +1,24 @@
 import hashlib
+import json
+import re
 import urllib.request
 import tarfile
 from pathlib import Path
 from typing import TypedDict, Callable
-
-class Puzzle(TypedDict):
-    name: str
-    sha: str
-    source: str
 
 class RawPuzzle(TypedDict):
     name: str
     sha: str
     source: str
 
+class Puzzle(RawPuzzle):
+    width: int
+    height: int
+
 CACHE_DIR = Path(__file__).resolve().parent.parent / "cache"
 RAW_DIR = CACHE_DIR / "raw"
 PUZZLE_DIR = CACHE_DIR / "puzzles"
+PUZZLE_INDEX = CACHE_DIR / "puzzles.json"
 
 SAMPLE_SIMPSON_URL = "https://webpbn.com/survey/puzzles/sample-simpson.tgz"
 RAND30_URL = "https://webpbn.com/survey/rand30.tgz"
@@ -133,5 +135,39 @@ def cache_puzzles() -> list[RawPuzzle]:
     puzzles += cache_tournament_puzzles()
     return puzzles
 
+def read_non_dimensions(path: Path) -> tuple[int, int]:
+    text = path.read_text()
+    width = re.search(r"^width\s+(\d+)", text, re.MULTILINE)
+    height = re.search(r"^height\s+(\d+)", text, re.MULTILINE)
+    if width is None or height is None:
+        return 0, 0
+    
+    return int(width.group(1)), int(height.group(1))
+
+def add_dimensions(puzzles: list[RawPuzzle]) -> list[Puzzle]:
+    enriched: list[Puzzle] = []
+    for puzzle in puzzles:
+        width, height = read_non_dimensions(PUZZLE_DIR / f"{puzzle['sha']}.non")
+        enriched.append({ **puzzle, "width": width, "height": height })
+
+    return enriched
+
+def load_puzzles_index() -> list[Puzzle] | None:
+    if not PUZZLE_INDEX.exists():
+        return None
+    with PUZZLE_INDEX.open() as f:
+        return json.load(f)
+
+def save_puzzles_index(puzzles: list[Puzzle]) -> None:
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    with PUZZLE_INDEX.open("w") as f:
+        json.dump(puzzles, f)
+
 def get_puzzles() -> list[Puzzle]:
-    return cache_puzzles()
+    cached = load_puzzles_index()
+    if cached is not None:
+        return cached
+
+    puzzles = add_dimensions(cache_puzzles())
+    save_puzzles_index(puzzles)
+    return puzzles
