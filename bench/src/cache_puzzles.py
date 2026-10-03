@@ -7,12 +7,14 @@ from typing import TypedDict, Callable
 class Puzzle(TypedDict):
     name: str
     sha: str
+    source: str
 
 class RawPuzzle(TypedDict):
     name: str
     sha: str
+    source: str
 
-CACHE_DIR = Path("cache")
+CACHE_DIR = Path(__file__).resolve().parent.parent / "cache"
 RAW_DIR = CACHE_DIR / "raw"
 PUZZLE_DIR = CACHE_DIR / "puzzles"
 
@@ -87,14 +89,14 @@ def rand30_to_non(name: str, puzzle: bytes) -> bytes | None:
     
     return clues_to_non(rows, cols)
 
-def cache_archived_puzzles(url: str, to_non: Callable[[str, bytes], bytes | None]) -> list[RawPuzzle]:
-    puzzles = []
+def cache_archived_puzzles(url: str, to_non: Callable[[str, bytes], bytes | None], source: str) -> list[RawPuzzle]:
+    puzzles: list[RawPuzzle] = []
     puzzle_data = fetch_archived_puzzles(url)
     for name, puzzle in puzzle_data:
         non = to_non(name, puzzle)
         if non is not None:
             sha = save_non(non)
-            puzzles.append({ "name": Path(name).name, "sha": sha })
+            puzzles.append({ "name": Path(name).name, "sha": sha, "source": source })
     
     return puzzles
 
@@ -110,24 +112,24 @@ def parse_tournament(data: str) -> list[tuple[str, bytes]]:
     return puzzles
 
 def cache_tournament(name: str) -> list[RawPuzzle]:
-    puzzles = []
+    puzzles: list[RawPuzzle] = []
     data = fetch_raw(f"{TOURNAMENT_URL}/question/{name}.txt")[0].decode()
     for id, non in parse_tournament(data):
         sha = save_non(non)
-        puzzles.append({ "name": f"{name}#{id}", "sha": sha })
+        puzzles.append({ "name": f"{name}#{id}", "sha": sha, "source": "tournament" })
 
     return puzzles
 
 def cache_tournament_puzzles() -> list[RawPuzzle]:
-    puzzles = []
+    puzzles: list[RawPuzzle] = []
     for tournament in TOURNAMENTS:
         puzzles += cache_tournament(tournament)
-    
+
     return puzzles
 
 def cache_puzzles() -> list[RawPuzzle]:
-    puzzles = cache_archived_puzzles(SAMPLE_SIMPSON_URL, simpson_to_non)
-    puzzles += cache_archived_puzzles(RAND30_URL, rand30_to_non)
+    puzzles = cache_archived_puzzles(SAMPLE_SIMPSON_URL, simpson_to_non, "survey")
+    puzzles += cache_archived_puzzles(RAND30_URL, rand30_to_non, "survey")
     puzzles += cache_tournament_puzzles()
     return puzzles
 
