@@ -8,6 +8,7 @@ option(PICROSS_BUILD_APP "Build the test application" OFF)
 option(PICROSS_BUILD_CLI "Build the command line app" OFF)
 option(PICROSS_BUILD_TESTS "Build and run unit tests" OFF)
 option(PICROSS_BUILD_EXAMPLES "Build the examples" OFF)
+option(PICROSS_BUILD_BENCH "Build and run the puzzle benchmark" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -75,6 +76,11 @@ endif()
 # Examples
 if(PICROSS_BUILD_EXAMPLES)
     add_subdirectory(src/apps/examples)
+endif()
+
+# Puzzle benchmark
+if(PICROSS_BUILD_BENCH)
+    add_subdirectory(bench)
 endif()
 
 install(EXPORT picross_project NAMESPACE picross:: DESTINATION lib/picross)

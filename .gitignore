@@ -1,6 +1,9 @@
 build/
 misc/
 .vscode/
+bench/cache/
+__pycache__/
+
 *.slo
 *.lo
 *.o
