@@ -120,9 +120,17 @@ std::ostream& operator<<(std::ostream& out, Solver::Status status);
 
 
 /*
+ * Feature flags
+ */
+struct SolverFlags {
+    bool enable_fp1 = false;
+};
+
+
+/*
  * Factory for the reference grid solver
  */
-std::unique_ptr<Solver> get_ref_solver();
+std::unique_ptr<Solver> get_ref_solver(SolverFlags flags = {});
 
 
 /*

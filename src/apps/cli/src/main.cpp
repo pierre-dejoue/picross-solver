@@ -176,7 +176,10 @@ int main(int argc, char *argv[])
         "The input is a text file with an output grid", 0 },
       {
         "output", { "--output" },
-        "Output a grid file which format is deduced from the file extension", 1 }
+        "Output a grid file which format is deduced from the file extension", 1 },
+      {
+        "fp1", { "--fp1" },
+        "Enable the FP1 optimization", 0 }
     } };
 
     std::ostringstream usage_note;
@@ -254,8 +257,12 @@ int main(int argc, char *argv[])
 
     if (validation_mode) { stream_out_validation_mode_header(std::cout, verbose_mode); }
 
+    /* Solver flags */
+    picross::SolverFlags flags;
+    flags.enable_fp1 = args["fp1"];
+
     /* Solver */
-    const auto solver = args["line-solver"] ? picross::get_line_solver() : picross::get_ref_solver();
+    const auto solver = args["line-solver"] ? picross::get_line_solver() : picross::get_ref_solver(flags);
 
 
     /***************************************************************************
