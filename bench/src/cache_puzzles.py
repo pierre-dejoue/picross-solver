@@ -130,8 +130,8 @@ def cache_tournament_puzzles() -> list[RawPuzzle]:
     return puzzles
 
 def cache_puzzles() -> list[RawPuzzle]:
-    puzzles = cache_archived_puzzles(SAMPLE_SIMPSON_URL, simpson_to_non, "survey")
-    puzzles += cache_archived_puzzles(RAND30_URL, rand30_to_non, "survey")
+    puzzles = cache_archived_puzzles(SAMPLE_SIMPSON_URL, simpson_to_non, "sample_simpson")
+    puzzles += cache_archived_puzzles(RAND30_URL, rand30_to_non, "rand30")
     puzzles += cache_tournament_puzzles()
     return puzzles
 

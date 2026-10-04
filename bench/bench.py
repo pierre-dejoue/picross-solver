@@ -9,15 +9,76 @@ from src.cache_puzzles import PUZZLE_DIR, get_puzzles
 from src.run_timing import DEFAULT_SOLVER, run_timing
 from src.run_phases import DEFAULT_PHASE_DRIVER, run_phases
 
+SOURCES = ("sample_simpson", "rand30", "tournament")
+
 def select_puzzles(args: argparse.Namespace) -> list:
     puzzles = get_puzzles()
     if args.source is not None:
         puzzles = [puzzle for puzzle in puzzles if puzzle["source"] == args.source]
 
-    n = min(args.num_puzzles, len(puzzles))
-    if n < args.num_puzzles:
-        print(f"only {n} puzzles are available but {args.num_puzzles} were requested", file=sys.stderr)
-    return random.Random(args.seed).sample(puzzles, n)
+    groups = {source: [puzzle for puzzle in puzzles if puzzle["source"] == source] for source in ([args.source] if args.source is not None else SOURCES)}
+
+    rng = random.Random(args.seed)
+    n = args.num_puzzles
+    base_share = n // len(groups)
+    shares = {group: min(len(puzzles), base_share) for group, puzzles in groups.items()}
+
+    leftover = n - sum(shares.values())
+    growable = [group for group in groups if shares[group] < len(groups[group])]
+    i = 0
+    while leftover > 0 and len(growable) > 0:
+        group = growable[i % len(growable)]
+        shares[group] += 1
+        leftover -= 1
+        if shares[group] >= len(groups[group]):
+            growable.remove(group)
+        else:
+            i += 1
+
+    if leftover > 0:
+        total = sum(len(puzzles) for puzzles in groups.values())
+        print(f"only {total} puzzles are available but {n} were requested", file=sys.stderr)
+
+    selected = []
+    for group, puzzles in groups.items():
+        selected += rng.sample(puzzles, shares[group])
+    return selected
+
+def select_puzzles_from_config(config: dict) -> list:
+    puzzles = get_puzzles()
+    sha_map = {puzzle["sha"]: puzzle for puzzle in puzzles}
+    source_map: dict[str, list] = {}
+    for puzzle in puzzles:
+        if puzzle["source"] not in source_map:
+            source_map[puzzle["source"]] = [puzzle]
+        else:
+            source_map[puzzle["source"]].append(puzzle)
+
+    rng = random.Random(config.get("seed"))
+    selected_shas: set[str] = set()
+    selected_puzzles = []
+
+    for source, count in config.get("sources", {}).items():
+        pool = source_map.get(source, [])
+        n = min(count, len(pool))
+        if n < count:
+            print(f"only {n} puzzles available in source '{source}' but {count } were requested", file=sys.stderr)
+        for puzzle in rng.sample(pool, n):
+            if puzzle["sha"] not in selected_shas:
+                selected_shas.add(puzzle["sha"])
+                selected_puzzles.append(puzzle)
+
+    for sha in config.get("include", []):
+        if sha in selected_shas:
+            continue
+        puzzle = sha_map.get(sha)
+        if puzzle is None:
+            print(f"unknown puzzle {sha}", file=sys.stderr)
+            continue
+        selected_shas.add(sha)
+        selected_puzzles.append(puzzle)
+
+    return selected_puzzles
 
 def run_benchmark(run_fn, binary: Path, puzzles: list, trials: int, timeout: float) -> list[dict]:
     report = []
@@ -74,8 +135,18 @@ def cmd_timing(args: argparse.Namespace) -> None:
 
     run = run_phases if args.command == "phases" else run_timing
 
-    puzzles = select_puzzles(args)
-    report = run_benchmark(run, binary, puzzles, args.trials, args.timeout)
+    if args.config is not None:
+        with open(args.config) as f:
+            config = json.load(f)
+            puzzles = select_puzzles_from_config(config)
+            trials = config.get("trials", args.trials)
+            timeout = config.get("timeout", args.timeout)
+    else:
+        puzzles = select_puzzles(args)
+        trials = args.trials
+        timeout = args.timeout
+
+    report = run_benchmark(run, binary, puzzles, trials, timeout)
 
     print(json.dumps(report))
 
@@ -84,7 +155,8 @@ def add_common_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--timeout", type=float, default=10.0, help="solve timeout in seconds (default: 10)")
     parser.add_argument("--num-puzzles", type=int, default=10, help="number of puzzles randomly selected to solve (default: 10)")
     parser.add_argument("--seed", type=int, default=None, help="seed for --num-puzzles (default: None)")
-    parser.add_argument("--source", type=str, default=None, choices=["survey", "tournament"], help="source to select puzzles from (default: all)")
+    parser.add_argument("--source", type=str, default=None, choices=list(SOURCES), help="source to select puzzles from (default: all)")
+    parser.add_argument("--config", type=str, default=None, help="path to JSON config file: {\"seed\":, \"trials\":, \"timeout\":,\n\"sources\": {name: count,}, \"include\": [sha,]}")
 
 def main() -> None:
     parser = argparse.ArgumentParser(prog="bench.py")
