@@ -71,7 +71,7 @@ private:
         bool            m_continue_probing  = false;
     };
 public:
-    WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Observer observer = Observer(), Solver::Abort abort_function = Solver::Abort(), float min_progress = 0.f, float max_progress = 1.f);
+    WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Observer observer = Observer(), Solver::Abort abort_function = Solver::Abort(), SolverFlags flags = {}, float min_progress = 0.f, float max_progress = 1.f);
     // Not movable
     WorkGrid(WorkGrid&&) noexcept = delete;
     WorkGrid& operator=(WorkGrid&&) noexcept = delete;
@@ -101,6 +101,7 @@ private:
     PassStatus full_grid_pass();
     ProbingResult probe();
     ProbingResult probe(LineId line_id);
+    ProbingResult probe_fp1();
     Solver::Status branch(const Solver::SolutionFound& solution_found);
     bool is_valid_solution() const;
     bool found_solution(const Solver::SolutionFound& solution_found) const;
@@ -131,6 +132,7 @@ private:
     LineCache                                       m_branch_line_cache;
     std::shared_ptr<FullReductionBuffers>           m_full_reduction_buffers;
     std::shared_ptr<binomial::Cache>                m_binomial;
+    SolverFlags                                     m_flags;
 };
 
 } // namespace picross

@@ -37,7 +37,7 @@ Solver::Result RefSolver<BranchingAllowed>::solve(const InputGrid& input_grid, u
     solver_policy.m_branching_allowed = BranchingAllowed;
     solver_policy.m_limit_on_max_nb_alternatives = false;
 
-    WorkGrid<SolverPolicy_RampUpMaxNbAlternatives> work_grid(input_grid, solver_policy, m_observer, m_abort_function);
+    WorkGrid<SolverPolicy_RampUpMaxNbAlternatives> work_grid(input_grid, solver_policy, m_observer, m_abort_function, m_flags);
     work_grid.set_stats(m_stats);
 
     SolutionFound solution_found = [&result, max_nb_solutions](Solution&& solution) -> bool
@@ -66,7 +66,7 @@ Solver::Status RefSolver<BranchingAllowed>::solve(const InputGrid& input_grid, S
     solver_policy.m_branching_allowed = BranchingAllowed;
     solver_policy.m_limit_on_max_nb_alternatives = false;
 
-    WorkGrid<SolverPolicy_RampUpMaxNbAlternatives> work_grid(input_grid, solver_policy, m_observer, m_abort_function);
+    WorkGrid<SolverPolicy_RampUpMaxNbAlternatives> work_grid(input_grid, solver_policy, m_observer, m_abort_function, m_flags);
     work_grid.set_stats(m_stats);
 
     return work_grid.solve(solution_found);
@@ -304,9 +304,9 @@ std::string_view str_difficulty_code(DifficultyCode code)
 }
 
 
-std::unique_ptr<Solver> get_ref_solver()
+std::unique_ptr<Solver> get_ref_solver(SolverFlags flags)
 {
-    return std::make_unique<RefSolver<true>>();
+    return std::make_unique<RefSolver<true>>(flags);
 }
 
 

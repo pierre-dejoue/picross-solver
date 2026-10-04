@@ -131,7 +131,7 @@ std::ostream& operator<<(std::ostream& out, WorkGridState state)
 
 
 template <typename SolverPolicy>
-WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Observer observer, Solver::Abort abort_function, float min_progress, float max_progress)
+WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solver_policy, Observer observer, Solver::Abort abort_function, SolverFlags flags, float min_progress, float max_progress)
     : Grid(grid.width(), grid.height(), Tile::UNKNOWN, grid.name())
     , m_state(WorkGridState::INITIAL_PASS)
     , m_solver_policy(solver_policy)
@@ -157,6 +157,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const InputGrid& grid, const SolverPolicy& solv
     , m_branch_line_cache()
     , m_full_reduction_buffers()
     , m_binomial(std::make_shared<binomial::Cache>())
+    , m_flags(flags)
 {
     assert(m_binomial);
 
@@ -228,6 +229,7 @@ WorkGrid<SolverPolicy>::WorkGrid(const WorkGrid& parent)
     , m_branch_line_cache()
     , m_full_reduction_buffers(parent.m_full_reduction_buffers)
     , m_binomial(parent.m_binomial)
+    , m_flags(parent.m_flags)
 {
     assert(m_binomial);
 
@@ -264,6 +266,7 @@ WorkGrid<SolverPolicy>& WorkGrid<SolverPolicy>::operator=(const WorkGrid& parent
     m_uncompleted_lines_end = m_all_lines.end();
     m_max_nb_alternatives = SolverPolicy::MIN_NB_ALTERNATIVES;
     m_probing_depth_incr = 0u;
+    m_flags = parent.m_flags;
     return *this;
 }
 
@@ -343,7 +346,7 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
                     if (pass_status.grid_changed)
                         m_state = WorkGridState::LINEAR_REDUCTION;
                 }
-                else if (!currently_probing && m_solver_policy.switch_to_probing(m_branching_depth, m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines))
+                else if (!currently_probing && (m_flags.enable_fp1 || m_solver_policy.switch_to_probing(m_branching_depth, m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines)))
                 {
                     m_state = WorkGridState::PROBING;
                 }
@@ -359,7 +362,7 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
 
             case WorkGridState::PROBING:
             {
-                const auto probing_result = probe();
+                const auto probing_result = m_flags.enable_fp1 ? probe_fp1() : probe();
                 if (probing_result.m_status == Solver::Status::CONTRADICTORY_GRID)
                     pass_status.contradictory = true;
                 if (probing_result.m_grid_has_changed)
@@ -973,6 +976,144 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe(Lin
             m_line_is_fully_reduced[Line::ROW][row_idx] = false;
     }
 
+    return result;
+}
+
+template <typename SolverPolicy>
+typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe_fp1()
+{
+    assert(m_solver_policy.m_branching_allowed);
+    ProbingResult result{};
+
+    Solver::SolutionFound do_nothing = [](Solver::Solution&&) -> bool { return true; };
+    auto nested_solver_policy = m_solver_policy;
+    nested_solver_policy.m_branching_allowed = false;
+
+    auto& probing_work_grid = nested_work_grid();
+
+    for (Line::Index row_idx = 0; row_idx < height(); row_idx++)
+    {
+        const LineSpan row_span = get_line(Line::ROW, row_idx);
+
+        for (Line::Index col_idx = 0; col_idx < width(); col_idx++)
+        {
+            if (row_span[static_cast<int>(col_idx)] != Tile::UNKNOWN)
+            {
+                continue;
+            }
+            if (m_grid_stats != nullptr)
+            {
+                m_grid_stats->nb_probing_calls++;
+                m_grid_stats->total_nb_probing_alternatives += 2;
+            }
+
+            // Probe assuming FILLED
+            probing_work_grid = *this;
+            probing_work_grid.configure(nested_solver_policy, WorkGridState::LINEAR_REDUCTION, nullptr, 0.f, 1.f);
+
+            Line filled_line = line_from_line_span(probing_work_grid.get_line(Line::ROW, row_idx));
+            filled_line[static_cast<unsigned int>(col_idx)] = Tile::FILLED;
+            probing_work_grid.update_line(filled_line, probing_work_grid.m_nb_alternatives[Line::ROW][row_idx]);
+            probing_work_grid.m_line_is_fully_reduced[Line::ROW][row_idx] = false;
+            probing_work_grid.partition_completed_lines();
+
+            const auto status_filled = probing_work_grid.line_solve(do_nothing, true);
+            if (status_filled == Solver::Status::ABORTED)
+            {
+                result.m_status = status_filled;
+                return result;
+            }
+
+            const bool filled_consistent = (status_filled != Solver::Status::CONTRADICTORY_GRID);
+            std::optional<GridSnapshot<Line::ROW>> snapshot_filled;
+            if (filled_consistent)
+            {
+                snapshot_filled.emplace(static_cast<const Grid&>(probing_work_grid));
+            }
+
+            // Probe assuming EMPTY
+            probing_work_grid = *this;
+            probing_work_grid.configure(nested_solver_policy, WorkGridState::LINEAR_REDUCTION, nullptr, 0.f, 1.f);
+
+            Line empty_line = line_from_line_span(probing_work_grid.get_line(Line::ROW, row_idx));
+            empty_line[static_cast<unsigned int>(col_idx)] = Tile::EMPTY;
+            probing_work_grid.update_line(empty_line, probing_work_grid.m_nb_alternatives[Line::ROW][row_idx]);
+            probing_work_grid.m_line_is_fully_reduced[Line::ROW][row_idx] = false;
+            probing_work_grid.partition_completed_lines();
+
+            const auto status_empty = probing_work_grid.line_solve(do_nothing, true);
+            if (status_empty == Solver::Status::ABORTED)
+            {
+                result.m_status = status_empty;
+                return result;
+            }
+
+            const bool empty_consistent = (status_empty != Solver::Status::CONTRADICTORY_GRID);
+
+            // Both branches contradict so grid is unsolvable
+            if (!filled_consistent && !empty_consistent)
+            {
+                result.m_status = Solver::Status::CONTRADICTORY_GRID;
+                return result;
+            }
+
+            // FILLED contradicts so cell must be EMPTY
+            if (!filled_consistent && empty_consistent)
+            {
+                Line confirmed = line_from_line_span(get_line(Line::ROW, row_idx));
+                confirmed[static_cast<unsigned int>(col_idx)] = Tile::EMPTY;
+                update_line(confirmed, m_nb_alternatives[Line::ROW][row_idx]);
+                m_line_is_fully_reduced[Line::ROW][row_idx] = false;
+                partition_completed_lines();
+
+                result.m_grid_has_changed = true;
+                result.m_continue_probing = true;
+                return result;
+            }
+
+            // EMPTY contradicts so cell must be FILLED
+            if (filled_consistent && !empty_consistent)
+            {
+                Line confirmed = line_from_line_span(get_line(Line::ROW, row_idx));
+                confirmed[static_cast<unsigned int>(col_idx)] = Tile::FILLED;
+                update_line(confirmed, m_nb_alternatives[Line::ROW][row_idx]);
+                m_line_is_fully_reduced[Line::ROW][row_idx] = false;
+                partition_completed_lines();
+
+                result.m_grid_has_changed = true;
+                result.m_continue_probing = true;
+                return result;
+            }
+
+            // Neither contradicts so we update other cells that ended up with the same state
+            assert(filled_consistent && empty_consistent && snapshot_filled.has_value());
+            snapshot_filled->reduce(static_cast<const Grid&>(probing_work_grid));
+
+            bool deduced = false;
+            for (Line::Index reduced_row_idx = 0; reduced_row_idx < height(); reduced_row_idx++)
+            {
+                const auto reduced_row = snapshot_filled->get_line(reduced_row_idx);
+                const auto nb_alt = m_nb_alternatives[Line::ROW][reduced_row_idx];
+                const bool line_changed = update_line(reduced_row, nb_alt);
+                if (line_changed)
+                {
+                    m_line_is_fully_reduced[Line::ROW][reduced_row_idx] = false;
+                    deduced = true;
+                }
+            }
+
+            if (deduced)
+            {
+                partition_completed_lines();
+                result.m_grid_has_changed = true;
+                result.m_continue_probing = true;
+                return result;
+            }
+        }
+    }
+
+    // No deductions found across all unknown cells
+    result.m_continue_probing = false;
     return result;
 }
 
