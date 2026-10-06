@@ -27,6 +27,12 @@ void merge_branching_grid_stats(GridStats& stats, const GridStats& branching_sta
     stats.total_nb_branching_alternatives += branching_stats.total_nb_branching_alternatives;
     stats.nb_probing_calls += branching_stats.nb_probing_calls;
     stats.total_nb_probing_alternatives += branching_stats.total_nb_probing_alternatives;
+    stats.nb_fp2_relations += branching_stats.nb_fp2_relations;
+    stats.nb_fp2_relation_applications += branching_stats.nb_fp2_relation_applications;
+    stats.nb_fp2_reprobes += branching_stats.nb_fp2_reprobes;
+    stats.nb_fp2_single_branch_conflicts += branching_stats.nb_fp2_single_branch_conflicts;
+    stats.nb_fp2_surviving_branch_deductions += branching_stats.nb_fp2_surviving_branch_deductions;
+    stats.nb_fp2_common_deductions += branching_stats.nb_fp2_common_deductions;
 
     stats.max_nb_alternatives_by_branching_depth.resize(stats.max_branching_depth, 0u);
     for (std::size_t d = 0; d < branching_stats.max_nb_alternatives_by_branching_depth.size(); d++)
@@ -65,6 +71,11 @@ std::ostream& operator<<(std::ostream& out, const GridStats& stats)
     {
         out << "  > Hypothesis (probing/branching) on " << stats.nb_probing_calls << "/" << stats.nb_branching_calls << " lines" << std::endl;
         out << "  > Total number of alternatives being tested (probing/branching): " << stats.total_nb_probing_alternatives << "/" << stats.total_nb_branching_alternatives << std::endl;
+        if (stats.nb_fp2_relations > 0u || stats.nb_fp2_relation_applications > 0u)
+        {
+            out << "  > FP2 relations (stored/applied/reprobes): " << stats.nb_fp2_relations << "/" << stats.nb_fp2_relation_applications << "/" << stats.nb_fp2_reprobes << std::endl;
+            out << "  > FP2 deductions (surviving/common): " << stats.nb_fp2_surviving_branch_deductions << "/" << stats.nb_fp2_common_deductions << std::endl;
+        }
         assert(stats.max_nb_alternatives_by_branching_depth.size() == stats.max_branching_depth);
         out << "  > Max number of alternatives by branching depth:";
         for (const auto& max_alternatives : stats.max_nb_alternatives_by_branching_depth)

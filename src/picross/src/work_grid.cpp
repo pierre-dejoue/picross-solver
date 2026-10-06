@@ -15,8 +15,10 @@
 #include <stdutils/macros.h>
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cstdint>
+#include <deque>
 #include <exception>
 #include <iterator>
 #include <limits>
@@ -346,7 +348,7 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
                     if (pass_status.grid_changed)
                         m_state = WorkGridState::LINEAR_REDUCTION;
                 }
-                else if (!currently_probing && (m_flags.enable_fp1 || m_solver_policy.switch_to_probing(m_branching_depth, m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines)))
+                else if (!currently_probing && (m_flags.enable_fp1 || m_flags.enable_fp2 || m_solver_policy.switch_to_probing(m_branching_depth, m_max_nb_alternatives, pass_status.grid_changed, pass_status.skipped_lines)))
                 {
                     m_state = WorkGridState::PROBING;
                 }
@@ -362,7 +364,10 @@ Solver::Status WorkGrid<SolverPolicy>::line_solve(const Solver::SolutionFound& s
 
             case WorkGridState::PROBING:
             {
-                const auto probing_result = m_flags.enable_fp1 ? probe_fp1() : probe();
+                // FP1 and FP2 are alternative fully-probing methods. FP2 takes
+                // precedence for programmatic callers that enable both; the CLI
+                // rejects that ambiguous combination.
+                const auto probing_result = m_flags.enable_fp2 ? probe_fp2() : (m_flags.enable_fp1 ? probe_fp1() : probe());
                 if (probing_result.m_status == Solver::Status::CONTRADICTORY_GRID)
                     pass_status.contradictory = true;
                 if (probing_result.m_grid_has_changed)
@@ -1114,6 +1119,271 @@ typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe_fp1
     }
 
     // No deductions found across all unknown cells
+    result.m_continue_probing = false;
+    return result;
+}
+
+template <typename SolverPolicy>
+typename WorkGrid<SolverPolicy>::ProbingResult WorkGrid<SolverPolicy>::probe_fp2()
+{
+    assert(m_solver_policy.m_branching_allowed);
+
+    struct PixelValue
+    {
+        std::size_t m_pixel;
+        Tile m_value;
+        bool m_contrapositive;
+    };
+    struct Trial
+    {
+        std::unique_ptr<WorkGrid<SolverPolicy>> m_grid;
+        std::vector<PixelValue> m_relations;
+        std::size_t m_applied_relations = 0u;
+        bool m_conflict = false;
+    };
+
+    ProbingResult result{};
+    const auto cell_count = width() * height();
+    std::vector<std::array<Trial, 2>> trials(cell_count);
+    std::vector<std::size_t> pixels;
+    pixels.reserve(cell_count);
+
+    const auto pixel_index = [this](Line::Index x, Line::Index y) {
+        return static_cast<std::size_t>(y) * width() + x;
+    };
+    const auto pixel_x = [this](std::size_t pixel) {
+        return static_cast<Line::Index>(pixel % width());
+    };
+    const auto pixel_y = [this](std::size_t pixel) {
+        return static_cast<Line::Index>(pixel / width());
+    };
+    const auto value_index = [](Tile value) -> std::size_t {
+        assert(value == Tile::EMPTY || value == Tile::FILLED);
+        return value == Tile::EMPTY ? 0u : 1u;
+    };
+    const auto complement = [](Tile value) {
+        assert(value == Tile::EMPTY || value == Tile::FILLED);
+        return value == Tile::EMPTY ? Tile::FILLED : Tile::EMPTY;
+    };
+
+    auto nested_solver_policy = m_solver_policy;
+    nested_solver_policy.m_branching_allowed = false;
+
+    // FP2 keeps both assumption grids alive for the duration of the FP pass.
+    // This is the paper's G_(p,0)/G_(p,1), rather than rebuilding a trial for
+    // every probe as FP1 currently does.
+    for (Line::Index y = 0; y < height(); y++)
+    {
+        for (Line::Index x = 0; x < width(); x++)
+        {
+            if (get(x, y) != Tile::UNKNOWN)
+                continue;
+
+            const auto pixel = pixel_index(x, y);
+            pixels.emplace_back(pixel);
+            for (Tile value : { Tile::EMPTY, Tile::FILLED })
+            {
+                Trial& trial = trials[pixel][value_index(value)];
+                trial.m_grid = std::unique_ptr<WorkGrid<SolverPolicy>>(new WorkGrid<SolverPolicy>(*this));
+                *trial.m_grid = *this;
+                trial.m_grid->configure(nested_solver_policy, WorkGridState::LINEAR_REDUCTION, nullptr, 0.f, 1.f);
+
+                Line assumed_line = line_from_line_span(trial.m_grid->get_line(Line::ROW, y));
+                assumed_line[x] = value;
+                trial.m_grid->update_line(assumed_line, trial.m_grid->m_nb_alternatives[Line::ROW][y]);
+                trial.m_grid->m_line_is_fully_reduced[Line::ROW][y] = false;
+                trial.m_grid->partition_completed_lines();
+            }
+        }
+    }
+
+    std::deque<std::size_t> pending_pixels(pixels.begin(), pixels.end());
+    std::vector<bool> in_pending(cell_count, false);
+    std::vector<bool> probed(cell_count, false);
+    for (const auto pixel : pixels)
+        in_pending[pixel] = true;
+
+    const auto enqueue = [&](std::size_t pixel) {
+        if (get(pixel_x(pixel), pixel_y(pixel)) == Tile::UNKNOWN && !in_pending[pixel])
+        {
+            pending_pixels.emplace_back(pixel);
+            in_pending[pixel] = true;
+        }
+    };
+
+    const auto add_relation = [&](Trial& trial, PixelValue relation) {
+        const auto duplicate = std::find_if(trial.m_relations.cbegin(), trial.m_relations.cend(), [&](const PixelValue& known) {
+            return known.m_pixel == relation.m_pixel && known.m_value == relation.m_value;
+        });
+        if (duplicate != trial.m_relations.cend())
+            return false;
+        trial.m_relations.emplace_back(relation);
+        if (relation.m_contrapositive && m_grid_stats != nullptr)
+            m_grid_stats->nb_fp2_relations++;
+        return true;
+    };
+
+    Solver::SolutionFound do_nothing = [](Solver::Solution&&) -> bool { return true; };
+
+    const auto probe_grid = [&](std::size_t assumption_pixel, Tile assumption_value, Trial& trial) {
+        if (trial.m_conflict)
+            return Solver::Status::CONTRADICTORY_GRID;
+
+        WorkGrid<SolverPolicy>& trial_grid = *trial.m_grid;
+        GridSnapshot<Line::ROW> before(static_cast<const Grid&>(trial_grid));
+
+        while (trial.m_applied_relations < trial.m_relations.size())
+        {
+            const PixelValue relation = trial.m_relations[trial.m_applied_relations++];
+            const auto x = pixel_x(relation.m_pixel);
+            const auto y = pixel_y(relation.m_pixel);
+            const Tile current = trial_grid.get(x, y);
+            if (current != Tile::UNKNOWN && current != relation.m_value)
+            {
+                trial.m_conflict = true;
+                return Solver::Status::CONTRADICTORY_GRID;
+            }
+            if (current == Tile::UNKNOWN)
+            {
+                Line updated_line = line_from_line_span(trial_grid.get_line(Line::ROW, y));
+                updated_line[x] = relation.m_value;
+                trial_grid.update_line(updated_line, trial_grid.m_nb_alternatives[Line::ROW][y]);
+                trial_grid.m_line_is_fully_reduced[Line::ROW][y] = false;
+                if (relation.m_contrapositive && m_grid_stats != nullptr)
+                    m_grid_stats->nb_fp2_relation_applications++;
+            }
+        }
+        trial_grid.partition_completed_lines();
+        trial_grid.configure(nested_solver_policy, WorkGridState::LINEAR_REDUCTION, nullptr, 0.f, 1.f);
+
+        const auto status = trial_grid.line_solve(do_nothing, true);
+        if (status == Solver::Status::CONTRADICTORY_GRID)
+        {
+            trial.m_conflict = true;
+            return status;
+        }
+        if (status == Solver::Status::ABORTED)
+            return status;
+
+        // A=c -> B=b gives the contrapositive B=!b -> A=!c. Store it
+        // on the opposite-assumption trial for B and schedule B for probing.
+        for (Line::Index y = 0; y < height(); y++)
+        {
+            const LineSpan old_row = before.get_line(y);
+            const LineSpan new_row = trial_grid.get_line(Line::ROW, y);
+            for (Line::Index x = 0; x < width(); x++)
+            {
+                const Tile new_value = new_row[static_cast<int>(x)];
+                if (old_row[static_cast<int>(x)] != Tile::UNKNOWN || new_value == Tile::UNKNOWN)
+                    continue;
+
+                const auto implied_pixel = pixel_index(x, y);
+                Trial& contrapositive_trial = trials[implied_pixel][value_index(complement(new_value))];
+                if (!contrapositive_trial.m_grid)
+                    continue;
+                if (add_relation(contrapositive_trial, PixelValue{ assumption_pixel, complement(assumption_value), true }))
+                    enqueue(implied_pixel);
+            }
+        }
+        return status;
+    };
+
+    const auto update_on_all_grids = [&](const std::vector<PixelValue>& deductions) {
+        for (const PixelValue deduction : deductions)
+        {
+            for (const auto owner : pixels)
+            {
+                bool owner_changed = false;
+                for (Trial& trial : trials[owner])
+                    owner_changed |= add_relation(trial, PixelValue{ deduction.m_pixel, deduction.m_value, false });
+                if (owner_changed)
+                    enqueue(owner);
+            }
+        }
+    };
+
+    while (!pending_pixels.empty())
+    {
+        const auto pixel = pending_pixels.front();
+        pending_pixels.pop_front();
+        in_pending[pixel] = false;
+
+        const auto x = pixel_x(pixel);
+        const auto y = pixel_y(pixel);
+        if (get(x, y) != Tile::UNKNOWN)
+            continue;
+
+        if (probed[pixel] && m_grid_stats != nullptr)
+            m_grid_stats->nb_fp2_reprobes++;
+        probed[pixel] = true;
+        if (m_grid_stats != nullptr)
+        {
+            m_grid_stats->nb_probing_calls++;
+            m_grid_stats->total_nb_probing_alternatives += 2u;
+        }
+
+        Trial& empty_trial = trials[pixel][value_index(Tile::EMPTY)];
+        Trial& filled_trial = trials[pixel][value_index(Tile::FILLED)];
+        const auto empty_status = probe_grid(pixel, Tile::EMPTY, empty_trial);
+        if (empty_status == Solver::Status::ABORTED)
+        {
+            result.m_status = empty_status;
+            return result;
+        }
+        const auto filled_status = probe_grid(pixel, Tile::FILLED, filled_trial);
+        if (filled_status == Solver::Status::ABORTED)
+        {
+            result.m_status = filled_status;
+            return result;
+        }
+
+        const bool empty_consistent = empty_status != Solver::Status::CONTRADICTORY_GRID;
+        const bool filled_consistent = filled_status != Solver::Status::CONTRADICTORY_GRID;
+        if (!empty_consistent && !filled_consistent)
+        {
+            result.m_status = Solver::Status::CONTRADICTORY_GRID;
+            return result;
+        }
+        const bool single_branch_conflict = empty_consistent != filled_consistent;
+        if (single_branch_conflict && m_grid_stats != nullptr)
+            m_grid_stats->nb_fp2_single_branch_conflicts++;
+
+        GridSnapshot<Line::ROW> deductions(
+            static_cast<const Grid&>(empty_consistent ? *empty_trial.m_grid : *filled_trial.m_grid));
+        if (empty_consistent && filled_consistent)
+            deductions.reduce(static_cast<const Grid&>(*filled_trial.m_grid));
+
+        std::vector<PixelValue> main_deductions;
+        for (Line::Index deduction_y = 0; deduction_y < height(); deduction_y++)
+        {
+            const LineSpan reduced_row = deductions.get_line(deduction_y);
+            for (Line::Index deduction_x = 0; deduction_x < width(); deduction_x++)
+            {
+                const Tile value = reduced_row[static_cast<int>(deduction_x)];
+                if (value != Tile::UNKNOWN && get(deduction_x, deduction_y) == Tile::UNKNOWN)
+                    main_deductions.push_back(PixelValue{ pixel_index(deduction_x, deduction_y), value, false });
+            }
+
+            const bool line_changed = update_line(reduced_row, m_nb_alternatives[Line::ROW][deduction_y]);
+            if (line_changed)
+                m_line_is_fully_reduced[Line::ROW][deduction_y] = false;
+        }
+
+        if (!main_deductions.empty())
+        {
+            if (m_grid_stats != nullptr)
+            {
+                if (single_branch_conflict)
+                    m_grid_stats->nb_fp2_surviving_branch_deductions += static_cast<unsigned int>(main_deductions.size());
+                else
+                    m_grid_stats->nb_fp2_common_deductions += static_cast<unsigned int>(main_deductions.size());
+            }
+            partition_completed_lines();
+            result.m_grid_has_changed = true;
+            update_on_all_grids(main_deductions);
+        }
+    }
+
     result.m_continue_probing = false;
     return result;
 }

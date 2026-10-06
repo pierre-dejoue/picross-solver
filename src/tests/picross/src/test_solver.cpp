@@ -450,4 +450,102 @@ TEST_CASE("Puzzle: 3-DOM", "[solver]")
     CHECK(validation_result.difficulty_code == 2);  // BRANCH
 }
 
+TEST_CASE("FP2 is opt-in and preserves default solver behavior", "[solver][fp2]")
+{
+    const InputGrid::Constraints rows { { 1, 1 }, { 2 } };
+    const InputGrid::Constraints cols { { 1 }, { 1 }, { 1 }, { 1 } };
+    const InputGrid puzzle(rows, cols, "Smile");
+
+    const auto default_solver = get_ref_solver();
+    const auto explicit_default_solver = get_ref_solver(SolverFlags{});
+    const auto default_result = default_solver->solve(puzzle);
+    const auto explicit_default_result = explicit_default_solver->solve(puzzle);
+
+    REQUIRE(default_result.solutions.size() == 1);
+    REQUIRE(explicit_default_result.solutions.size() == 1);
+    CHECK(default_result.status == explicit_default_result.status);
+    CHECK(default_result.solutions.front().grid == explicit_default_result.solutions.front().grid);
+    CHECK(default_result.solutions.front().branching_depth == explicit_default_result.solutions.front().branching_depth);
+}
+
+TEST_CASE("FP2 solves a probing puzzle without speculative main-grid writes", "[solver][fp2]")
+{
+    OutputGrid expected = build_output_grid_from(7, 7, R"(
+        ....###
+        ......#
+        ..###.#
+        ....#..
+        ###.#..
+        ..#....
+        ..#....
+    )", "3-DOM");
+    const InputGrid puzzle = get_input_grid_from(expected);
+    SolverFlags flags;
+    flags.enable_fp2 = true;
+    const auto solver = get_ref_solver(flags);
+    const auto result = solver->solve(puzzle);
+
+    CHECK(result.status == Solver::Status::OK);
+    REQUIRE(result.solutions.size() == 1);
+    CHECK(result.solutions.front().grid == expected);
+    CHECK(is_solution(puzzle, result.solutions.front().grid));
+}
+
+TEST_CASE("FP2 consumes contrapositives and preserves full branch deductions", "[solver][fp2]")
+{
+    const InputGrid::Constraints rows {
+        { 3 }, { 1 }, { 3, 1 }, { 1 }, { 3, 1 }, { 1 },
+        { 3, 1 }, { 1 }, { 3, 1 }, { 1 }, { 1 }
+    };
+    const InputGrid::Constraints cols {
+        { 1 }, { 1 }, { 1, 3 }, { 1 }, { 1, 3 }, { 1 },
+        { 1, 3 }, { 1 }, { 1, 3 }, { 1 }, { 3 }
+    };
+    const InputGrid puzzle(rows, cols, "5-DOM");
+    SolverFlags flags;
+    flags.enable_fp2 = true;
+    const auto solver = get_ref_solver(flags);
+    GridStats stats;
+    solver->set_stats(stats);
+    const auto result = solver->solve(puzzle, 1u);
+
+    CHECK(result.status == Solver::Status::OK);
+    REQUIRE(result.solutions.size() == 1);
+    CHECK(is_solution(puzzle, result.solutions.front().grid));
+    CHECK(stats.nb_fp2_relations > 0u);
+    CHECK(stats.nb_fp2_relation_applications > 0u);
+    CHECK(stats.nb_fp2_reprobes > 0u);
+    CHECK(stats.nb_fp2_single_branch_conflicts > 0u);
+    CHECK(stats.nb_fp2_surviving_branch_deductions > stats.nb_fp2_single_branch_conflicts);
+    CHECK(stats.nb_fp2_common_deductions > 0u);
+}
+
+TEST_CASE("FP2 state does not leak between solve calls", "[solver][fp2]")
+{
+    OutputGrid expected = build_output_grid_from(7, 7, R"(
+        ....###
+        ......#
+        ..###.#
+        ....#..
+        ###.#..
+        ..#....
+        ..#....
+    )", "3-DOM");
+    const InputGrid puzzle = get_input_grid_from(expected);
+    SolverFlags flags;
+    flags.enable_fp2 = true;
+    const auto solver = get_ref_solver(flags);
+
+    const auto first_result = solver->solve(puzzle);
+    const auto second_result = solver->solve(puzzle);
+
+    CHECK(first_result.status == Solver::Status::OK);
+    CHECK(second_result.status == Solver::Status::OK);
+    REQUIRE(first_result.solutions.size() == 1);
+    REQUIRE(second_result.solutions.size() == 1);
+    CHECK(first_result.solutions.front().grid == expected);
+    CHECK(second_result.solutions.front().grid == expected);
+    CHECK(first_result.solutions.front().grid == second_result.solutions.front().grid);
+}
+
 } // namespace picross

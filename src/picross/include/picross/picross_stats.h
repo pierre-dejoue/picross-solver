@@ -28,6 +28,12 @@ struct GridStats
     unsigned int total_nb_branching_alternatives = 0u;
     unsigned int nb_probing_calls = 0u;
     unsigned int total_nb_probing_alternatives = 0u;
+    unsigned int nb_fp2_relations = 0u;
+    unsigned int nb_fp2_relation_applications = 0u;
+    unsigned int nb_fp2_reprobes = 0u;
+    unsigned int nb_fp2_single_branch_conflicts = 0u;
+    unsigned int nb_fp2_surviving_branch_deductions = 0u;
+    unsigned int nb_fp2_common_deductions = 0u;
     unsigned int max_initial_nb_alternatives = 0u;
     unsigned int max_nb_alternatives_partial = 0u;
     unsigned int max_nb_alternatives_partial_w_change = 0u;

@@ -182,7 +182,10 @@ int main(int argc, char *argv[])
         "Enable the DP Line Solver optimization", 0 },
       {
         "fp1", { "--fp1" },
-        "Enable the FP1 optimization", 0 }
+        "Enable the FP1 optimization", 0 },
+      {
+        "fp2", { "--fp2" },
+        "Enable the FP2 optimization", 0 }
     } };
 
     std::ostringstream usage_note;
@@ -229,6 +232,12 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
+    if (args["fp1"] && args["fp2"])
+    {
+        std::cerr << "Options --fp1 and --fp2 are mutually exclusive." << std::endl;
+        exit(1);
+    }
+
     const bool validation_mode = args["validation-mode"];
     const std::chrono::seconds timeout_duration(args["timeout"].as<unsigned int>(0u));
 
@@ -264,6 +273,7 @@ int main(int argc, char *argv[])
     picross::SolverFlags flags;
     flags.enable_dp_line_solver = args["dp-line-solver"];
     flags.enable_fp1 = args["fp1"];
+    flags.enable_fp2 = args["fp2"];
 
     /* Solver */
     const auto solver = args["line-solver"] ? picross::get_line_solver() : picross::get_ref_solver(flags);
