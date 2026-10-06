@@ -178,6 +178,9 @@ int main(int argc, char *argv[])
         "output", { "--output" },
         "Output a grid file which format is deduced from the file extension", 1 },
       {
+        "dp-line-solver", { "--dp-line-solver" },
+        "Enable the DP Line Solver optimization", 0 },
+      {
         "fp1", { "--fp1" },
         "Enable the FP1 optimization", 0 }
     } };
@@ -259,6 +262,7 @@ int main(int argc, char *argv[])
 
     /* Solver flags */
     picross::SolverFlags flags;
+    flags.enable_dp_line_solver = args["dp-line-solver"];
     flags.enable_fp1 = args["fp1"];
 
     /* Solver */

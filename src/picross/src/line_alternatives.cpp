@@ -460,6 +460,9 @@ struct LineAlternatives::Impl
 
     Reduction reduce_all_alternatives(FullReductionBuffers* buffers = nullptr);
 
+    int get_dp_segment(int j) const;
+    Reduction reduce_all_alternatives_dp(FullReductionBuffers* buffers = nullptr);
+
     const Segments&                     m_segments;
     const LineSpan                      m_known_tiles;
     LineExt                             m_known_tiles_extended_copy;
@@ -962,6 +965,135 @@ LineAlternatives::Reduction LineAlternatives::Impl::reduce_all_alternatives(Full
     }
 }
 
+int LineAlternatives::Impl::get_dp_segment(int j) const {
+    return static_cast<int>(m_bidirectional_range.m_constraint_begin[j - 1]);
+}
+
+LineAlternatives::Reduction LineAlternatives::Impl::reduce_all_alternatives_dp(FullReductionBuffers* buffers)
+{
+    const auto& range = m_bidirectional_range;
+    const int k = static_cast<int>(std::distance(range.m_constraint_begin, range.m_constraint_end));
+    const int n = range.m_line_end - range.m_line_begin + 1;
+
+    const auto index = [k](int i, int j) -> std::size_t { 
+        return static_cast<std::size_t>(i) * static_cast<std::size_t>(k + 1) + static_cast<std::size_t>(j); 
+    };
+
+    constexpr char STEP_FIX0 = 1;
+    constexpr char STEP_FIX1 = 1 << 1;
+    constexpr char STEP_PAINT = 1 << 2;
+
+    std::vector<Tile> local_tiles;
+    std::vector<NbAlt> local_fix;
+    std::vector<char> local_step;
+    std::vector<int> local_zeros;
+    std::vector<int> local_lowest_one;
+    std::vector<char> local_can_be_empty;
+    auto& tiles_buffer = buffers ? buffers->m_dp_tiles : local_tiles;
+    auto& fix_buffer = buffers ? buffers->m_dp_fix : local_fix;
+    auto& step_buffer = buffers ? buffers->m_dp_step : local_step;
+    auto& zeros_buffer = buffers ? buffers->m_dp_zeros : local_zeros;
+    auto& low_one_buffer = buffers ? buffers->m_dp_lowest_one : local_lowest_one;
+    auto& pixel_fix_zero_buffer = buffers ? buffers->m_dp_can_be_empty : local_can_be_empty;
+
+    const auto states = static_cast<std::size_t>(n + 1) * static_cast<std::size_t>(k + 1);
+    tiles_buffer.resize(static_cast<std::size_t>(n));
+    fix_buffer.resize(states);
+    step_buffer.resize(states);
+    zeros_buffer.resize(static_cast<std::size_t>(n + 1));
+    Tile* const tiles = tiles_buffer.data();
+    NbAlt* const fix = fix_buffer.data();
+    char* const step = step_buffer.data();
+    int* const zeros = zeros_buffer.data();
+
+    tiles[0] = Tile::EMPTY;
+    for (int t = 1; t < n; t++) {
+        tiles[t] = m_known_tiles[range.m_line_begin + t - 1];
+    }
+
+    zeros[0] = 0;
+    for (int i = 1; i <= n; i++) {
+        zeros[i] = zeros[i - 1] + (tiles[i - 1] == Tile::EMPTY ? 1 : 0);
+    }
+
+    const auto fix0 = [&](int i, int j) -> NbAlt {
+        return tiles[i - 1] != Tile::FILLED ? fix[index(i - 1, j)] : NbAlt{0};
+    };
+
+    const auto fix1 = [&](int i, int j) -> NbAlt {
+        if (j < 1) {
+            return NbAlt{0};
+        }
+
+        const int d_j = get_dp_segment(j);
+        return (i >= d_j + 1 && tiles[i - d_j - 1] != Tile::FILLED && zeros[i - d_j] == zeros[i]) ? fix[index(i - d_j - 1, j - 1)] : NbAlt{0};
+    };
+
+    for (int j = 0; j <= k; j++) {
+        fix[index(0, j)] = (j == 0) ? NbAlt{1} : NbAlt{0};
+        step[index(0, j)] = 0;
+    }
+
+    for (int i = 1; i <= n; i++) {
+        for (int j = 0; j <= k; j++) {
+            NbAlt a = fix0(i, j);
+            NbAlt b = fix1(i, j);
+
+            step[index(i, j)] = static_cast<char>((a > 0 ? STEP_FIX0 : 0) | (b > 0 ? STEP_FIX1 : 0));
+            fix[index(i, j)] = binomial::add(a, b);
+        }
+    }
+
+    Line reduced_line_raw = line_from_line_span(m_known_tiles);
+    const NbAlt alternatives = fix[index(n, k)];
+    if (alternatives == 0) {
+        return Reduction { std::move(reduced_line_raw), NbAlt{0}, true };
+    }
+
+    low_one_buffer.assign(static_cast<std::size_t>(n + 1), n + 1);
+    pixel_fix_zero_buffer.assign(static_cast<std::size_t>(n + 1), 0);
+    int* const low_one = low_one_buffer.data();
+    char* const pixel_fix_zero = pixel_fix_zero_buffer.data();
+
+    const auto paint = [&](const auto& self, int i, int j) -> void {
+        const char state_step = step[index(i, j)];
+
+        if (state_step & STEP_PAINT) {
+            return;
+        }
+
+        step[index(i, j)] = static_cast<char>(state_step | STEP_PAINT);
+        
+        if (i == 0) {
+            return;
+        }
+
+        if (state_step & STEP_FIX0) {
+            pixel_fix_zero[i] = 1;
+            self(self, i - 1, j);
+        }
+
+        if (state_step & STEP_FIX1) {
+            const int d_j = get_dp_segment(j);
+            pixel_fix_zero[i - d_j] = 1;
+            low_one[i] = std::min(low_one[i], i - d_j + 1);
+            self(self, i - d_j - 1, j - 1);
+        }
+    };
+
+    paint(paint, n, k);
+
+    LineSpanW reduced_line(reduced_line_raw);
+    int lowest = n + 1;
+    for (int i = n; i >= 2; i--) {
+        lowest = std::min(lowest, low_one[i]);
+
+        const int line_idx = range.m_line_begin + i - 2;
+        reduced_line[line_idx] = (lowest <= i) ? (pixel_fix_zero[i] ? Tile::UNKNOWN : Tile::FILLED) : Tile::EMPTY;
+    }
+
+    return Reduction { std::move(reduced_line_raw), alternatives, true };
+}
 
 LineAlternatives::LineAlternatives(const LineConstraint& constraint, const LineSpan& known_tiles, binomial::Cache& binomial)
     : p_impl(std::make_unique<Impl>(constraint, known_tiles, binomial))
@@ -990,6 +1122,16 @@ LineAlternatives::Reduction LineAlternatives::full_reduction(FullReductionBuffer
         return from_line(p_impl->m_known_tiles, 0, false);
 
     return p_impl->reduce_all_alternatives(buffers);
+}
+
+LineAlternatives::Reduction LineAlternatives::full_reduction_dp(FullReductionBuffers* buffers)
+{
+    // Update extended copy of known tiles and bidirectional ranges
+    bool valid = p_impl->update();
+    if (!valid)
+        return from_line(p_impl->m_known_tiles, 0, false);
+
+    return p_impl->reduce_all_alternatives_dp(buffers);
 }
 
 LineAlternatives::Reduction LineAlternatives::linear_reduction()

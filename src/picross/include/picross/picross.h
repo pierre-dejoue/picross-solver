@@ -123,6 +123,7 @@ std::ostream& operator<<(std::ostream& out, Solver::Status status);
  * Feature flags
  */
 struct SolverFlags {
+    bool enable_dp_line_solver = false;
     bool enable_fp1 = false;
 };
 

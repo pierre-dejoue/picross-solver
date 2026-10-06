@@ -73,6 +73,8 @@ public:
     Reduction full_reduction(FullReductionBuffers* buffers = nullptr);
     Reduction linear_reduction();
 
+    Reduction full_reduction_dp(FullReductionBuffers* buffers = nullptr);
+
     // For test purpose only
     std::pair<bool, std::vector<SegmentRange>> find_segments_range() const;
 
@@ -89,6 +91,13 @@ struct FullReductionBuffers
     Line                                    m_line_buffer;
     std::vector<LineAlternatives::NbAlt>    m_alts_buffer;
     std::vector<char>                       m_bool_buffer;
+
+    std::vector<Tile>                       m_dp_tiles;
+    std::vector<LineAlternatives::NbAlt>    m_dp_fix;
+    std::vector<char>                       m_dp_step;
+    std::vector<int>                        m_dp_zeros;
+    std::vector<int>                        m_dp_lowest_one;
+    std::vector<char>                       m_dp_can_be_empty;
 };
 
 } // namespace picross

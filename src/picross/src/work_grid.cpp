@@ -705,7 +705,7 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_
 {
     PassStatus status;
 
-    if (m_line_is_fully_reduced[type][index] || m_nb_alternatives[type][index] > m_max_nb_alternatives)
+    if (m_line_is_fully_reduced[type][index] || (!m_flags.enable_dp_line_solver && m_nb_alternatives[type][index] > m_max_nb_alternatives))
     {
         if (!m_line_is_fully_reduced[type][index])
             status.skipped_lines++;
@@ -715,7 +715,8 @@ typename WorkGrid<SolverPolicy>::PassStatus WorkGrid<SolverPolicy>::single_line_
     // Reduce all possible lines that match the data already present in the grid and the line constraint
     if (m_grid_stats != nullptr) { m_grid_stats->nb_single_line_full_reduction++; }
     assert(m_full_reduction_buffers);
-    const auto full_reduction = m_alternatives[type][index].full_reduction(m_full_reduction_buffers.get());
+    auto& alternatives = m_alternatives[type][index];
+    const auto full_reduction = m_flags.enable_dp_line_solver ? alternatives.full_reduction_dp(m_full_reduction_buffers.get()) : alternatives.full_reduction(m_full_reduction_buffers.get());
 
     // If the list of alternative lines is empty, it means the grid data is contradictory
     if (full_reduction.nb_alternatives == 0)
@@ -1284,7 +1285,8 @@ void WorkGrid<SolverPolicy>::fill_cache_with_orthogonal_lines(LineId line_id)
             {
                 orth_line[line_id.m_index] = key;
                 assert(m_full_reduction_buffers);
-                const auto reduction = LineAlternatives(constraint, orth_line, *m_binomial).full_reduction(m_full_reduction_buffers.get());
+                LineAlternatives orth_alternatives(constraint, orth_line, *m_binomial);
+                const auto reduction = m_flags.enable_dp_line_solver ? orth_alternatives.full_reduction_dp(m_full_reduction_buffers.get()) : orth_alternatives.full_reduction(m_full_reduction_buffers.get());
                 m_branch_line_cache.store_line(orth_line_id, key, reduction.reduced_line, reduction.nb_alternatives);
                 if (m_grid_stats != nullptr)
                 {
