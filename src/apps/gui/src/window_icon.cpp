@@ -24,6 +24,14 @@ void set_window_icon(GLFWWindowContext& glfw_window_context, const stdutils::io:
 {
     assert(glfw_window_context.window() != nullptr);
 
+    const int platform = glfwGetPlatform();
+    if (platform == GLFW_PLATFORM_WAYLAND) {
+        // Wayland: There is no existing protocol to change an icon, the window will thus inherit the one defined in the application's desktop file.
+        //          Calling glfwSetWindowIcon always emits GLFW_FEATURE_UNAVAILABLE.
+        if (err_handler) { err_handler(stdutils::io::Severity::WARN, "GLFW cannot set the window icon on Wayland"); }
+        return;
+    }
+
     // Get the window icon in multiple resolutions
     const WindowIconFiles& icon_files = get_window_icon_files();
 
