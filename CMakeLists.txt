@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
 
+# - On XCODE 14, 15 and 16 the range of supported deployment targets begins with macOS 10.13 High Sierra
+#   Reference: https://developer.apple.com/support/xcode/
+# - Support for std::filesystem::path however is only available starting from macOS 10.15 Catalina
+# - With the arm64 architecture, the deployment target will be automagically set to 11.0, the first macOS version to support the M1 processor
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum macOS deployment target" FORCE)
+
 project(picross_solver
     VERSION 0.3.1
 )
