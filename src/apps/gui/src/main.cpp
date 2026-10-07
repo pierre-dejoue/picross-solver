@@ -326,6 +326,7 @@ int main(int argc, char *argv[])
         dear_imgui_context.render();
         glfwSwapBuffers(glfw_context.window());
     } // while (!glfwWindowShouldClose(window))
+    glfwPollEvents();
 
     return EXIT_SUCCESS;
 }
