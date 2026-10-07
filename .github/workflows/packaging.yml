@@ -21,7 +21,7 @@ jobs:
     runs-on: ${{ matrix.os }}-${{ (matrix.os == 'macos' && (matrix.arch == 'x86_64' && '15-intel')) || 'latest' }}
 
     env:
-      CMAKE_CONFIG_PROJECT: -DPICROSS_BUILD_CLI=ON -DPICROSS_BUILD_APP=ON
+      CMAKE_CONFIG_PROJECT: -DPICROSS_BUILD_GUI=ON
       CMAKE_CONFIG_EXTRA: ${{ matrix.os == 'macos' && format('-DCMAKE_OSX_ARCHITECTURES={0}', matrix.arch) || '' }}
 
     steps:
@@ -39,11 +39,6 @@ jobs:
     - name: Build
       working-directory: ${{ github.workspace }}/build
       run: cmake --build . --config ${{ matrix.build_type }}
-
-    - if: matrix.arch == 'x86_64'
-      name: Version
-      working-directory: ${{ github.workspace }}/build
-      run: cmake --build . --target picross_cli_version --config ${{ matrix.build_type }}
 
     # The Windows process
     - if: matrix.os == 'windows'

@@ -35,13 +35,24 @@ The Picross solver provided as a library
 
 ### Build
 
-With [CMake](https://cmake.org/download/). For example on Windows:
+With [CMake](https://cmake.org/download/).
+
+On Windows:
 
 ```
 mkdir ./build
 cd build
 cmake -G "Visual Studio 17 2022" ..
 cmake --build . --config Release
+```
+
+On Linux/macOS:
+
+```
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -S . -B build/release
+cmake --build build/release
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -S . -B build/debug
+cmake --build build/debug
 ```
 
 ### Unit Tests
@@ -176,8 +187,17 @@ On Windows:
 ```
 mkdir ./build
 cd build
-cmake -G "Visual Studio 17 2022" -DPICROSS_BUILD_APP=ON -DPICROSS_BUILD_CLI=ON ..
+cmake -G "Visual Studio 17 2022" -DPICROSS_BUILD_GUI=ON -DPICROSS_BUILD_CLI=ON ..
 cmake --build . --config Release
+```
+
+On Linux/macOS:
+
+```
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DPICROSS_BUILD_GUI=ON -DPICROSS_BUILD_CLI=ON -S . -B build/release
+cmake --build build/release
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DPICROSS_BUILD_GUI=ON -DPICROSS_BUILD_CLI=ON -S . -B build/debug
+cmake --build build/debug
 ```
 
 ### Command Line Tool Usage

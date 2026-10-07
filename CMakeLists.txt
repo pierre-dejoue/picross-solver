@@ -4,10 +4,10 @@ project(picross_solver
     VERSION 0.3.1
 )
 
-option(PICROSS_BUILD_APP "Build the test application" OFF)
+option(PICROSS_BUILD_GUI "Build the GUI application" OFF)
 option(PICROSS_BUILD_CLI "Build the command line app" OFF)
 option(PICROSS_BUILD_TESTS "Build and run unit tests" OFF)
-option(PICROSS_BUILD_EXAMPLES "Build the examples" OFF)
+option(PICROSS_BUILD_EXAMPLES "Build the library usage examples" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -51,12 +51,12 @@ add_subdirectory(src/stdutils)
 add_subdirectory(src/picross)
 
 # Utility library
-if(PICROSS_BUILD_APP OR PICROSS_BUILD_CLI OR PICROSS_BUILD_TESTS)
+if(PICROSS_BUILD_GUI OR PICROSS_BUILD_CLI OR PICROSS_BUILD_TESTS)
     add_subdirectory(src/utils)
 endif()
 
 # Picross graphical app
-if(PICROSS_BUILD_APP)
+if(PICROSS_BUILD_GUI)
     add_subdirectory(src/apps/gui/imgui)
     add_subdirectory(src/apps/gui)
 endif()
