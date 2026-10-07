@@ -31,6 +31,9 @@ public:
     std::pair<int, int> framebuffer_size() const;
     std::pair<int, int> window_size() const;
 
+    // Window title
+    void set_window_title(const char* title);
+
     // Ratio between the framebuffer coordinates and the screen coordinates. Supposedly the same on the X and Y axis
     float get_framebuffer_scale() const;
 

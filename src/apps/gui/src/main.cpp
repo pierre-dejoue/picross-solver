@@ -212,6 +212,7 @@ int main(int argc, char *argv[])
     }();
     if (glfw_context.window() == nullptr)
         return EXIT_FAILURE;
+    glfw_context.set_window_title(project::get_name().data()) ;
 
     // Setup Dear ImGui context
     bool any_fatal_err = false;

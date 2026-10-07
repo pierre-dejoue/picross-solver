@@ -106,6 +106,12 @@ std::pair<int, int> GLFWWindowContext::window_size() const
     return sz;
 }
 
+void GLFWWindowContext::set_window_title(const char* title)
+{
+    assert(title);
+    glfwSetWindowTitle(m_window_ptr, title);
+}
+
 float GLFWWindowContext::get_framebuffer_scale() const
 {
     float scale{1.f};
