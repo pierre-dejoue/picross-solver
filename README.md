@@ -18,7 +18,7 @@ solution.
  - The solver library has no dependencies other than C++17
  - Compilation of the library is checked against: MSVC, gcc, clang.
  - Black and white puzzles only
- - Handle puzzles with multiple solutons and check for uniqueness
+ - Handle puzzles with multiple solutions and check for uniqueness
  - Three puzzle file formats are supported:
    - Steve Simpson's [NON format](doc/FILE_FORMAT_NON.md)
    - Jakub Wilk's [NIN format](doc/FILE_FORMAT_NIN.md)
