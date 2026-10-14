@@ -61,6 +61,15 @@ GLFWWindowContext::GLFWWindowContext(int width, int height, const GLFWOptions& o
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     if (options.maximize_window)
         glfwWindowHint(GLFW_MAXIMIZED, GL_TRUE);
+
+#if defined(__linux__)
+    // Set an identifier for the application window on Linux Wayland and X11.
+    // The value set here must match the 'StartupWMClass' field in the .desktop file.
+    glfwWindowHintString(GLFW_X11_CLASS_NAME,    options.app_id);
+    glfwWindowHintString(GLFW_X11_INSTANCE_NAME, options.app_id);
+    glfwWindowHintString(GLFW_WAYLAND_APP_ID,    options.app_id);
+#endif
+
     assert(title.data());
     m_window_ptr = glfwCreateWindow(width, height, title.data(), nullptr, nullptr);
     if (m_window_ptr == nullptr)

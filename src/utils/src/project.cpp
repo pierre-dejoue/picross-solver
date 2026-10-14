@@ -4,6 +4,11 @@
 
 namespace project {
 
+std::string_view get_id()
+{
+    return THIS_PROJECT_ID;
+}
+
 std::string_view get_name()
 {
     return THIS_PROJECT_NAME;

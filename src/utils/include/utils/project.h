@@ -4,6 +4,9 @@
 
 namespace project {
 
+// Get the project identifier
+std::string_view get_id();
+
 // Get the project name
 std::string_view get_name();
 

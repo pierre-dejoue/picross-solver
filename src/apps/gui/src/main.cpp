@@ -46,20 +46,13 @@ void err_callback(stdutils::io::SeverityCode sev, std::string_view msg)
     std::cerr << stdutils::io::str_severity_code(sev) << ": " << msg << std::endl;
 }
 
-namespace details {
-
-    std::string s_project_title()
-    {
+std::string_view project_title()
+{
+    static const std::string project_title = [](){
         std::stringstream title;
         title << project::get_name() << ' ' << picross::get_version_string();
         return title.str();
-    }
-
-} // namespace details
-
-std::string_view project_title()
-{
-    static std::string project_title = details::s_project_title();
+    }();
     return project_title;
 }
 
@@ -205,6 +198,7 @@ int main(int argc, char *argv[])
         constexpr int WINDOW_WIDTH = 1280;
         constexpr int WINDOW_HEIGHT = 720;
         GLFWOptions options;
+        options.app_id = project::get_id().data();
         options.title = project_title();
         options.maximize_window = true;
         GLFWWindowContext context(WINDOW_WIDTH, WINDOW_HEIGHT, options, &err_handler);

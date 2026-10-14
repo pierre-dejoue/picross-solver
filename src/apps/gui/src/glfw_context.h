@@ -9,6 +9,7 @@
 
 struct GLFWOptions
 {
+    const char* app_id{nullptr};
     std::string_view title{};
     bool maximize_window{false};
 };
