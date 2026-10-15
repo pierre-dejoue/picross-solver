@@ -240,6 +240,22 @@ int main(int argc, char *argv[])
     // Application Windows
     AppWindows windows;
 
+    // Check file dialogs are correctly initialized
+    if (!pfd::settings::available())
+    {
+        // From PFD's documentation:
+        //   The return value of pfd::settings::available() indicates whether a suitable dialog backend
+        //   (such as Zenity or KDialog on Linux) has been found. If not, the library will not work and
+        //   all dialog invocations will be no-ops.
+        err_handler(stdutils::io::Severity::ERR,
+#if defined(__linux__)
+            "PFD could not find a suitable backend for dialog boxes. Install Zenity (GNOME) or KDialog (KDE)."
+#else
+            "PFD could not find a suitable backend for dialog boxes"
+#endif
+        );
+    }
+
     // Resources
     const ImGuiImage app_logo = make_app_logo(dear_imgui_context, err_handler);
 
