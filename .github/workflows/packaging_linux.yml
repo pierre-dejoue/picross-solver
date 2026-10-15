@@ -1,0 +1,69 @@
+name: packaging_linux
+
+on:
+  # This workflow is manually triggered
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'Release'
+        type: choice
+        options:
+        - Release
+        - Debug
+      runner_version:
+        description: 'Runner version (Ubuntu)'
+        required: true
+        default: 'latest'
+        type: choice
+        options:
+        - latest
+        - 26.04
+        - 24.04
+        - 22.04
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu ]
+        arch: [ x86_64 ]
+
+    runs-on: ${{ matrix.os }}-${{ inputs.runner_version }}
+
+    env:
+      CMAKE_CONFIG_PROJECT: -DPICROSS_BUILD_GUI=ON -DPICROSS_BUILD_CLI=ON
+      CMAKE_CONFIG_EXTRA: ${{ matrix.os == 'macos' && format('-DCMAKE_OSX_ARCHITECTURES={0}', matrix.arch) || '' }}
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - if: matrix.os == 'ubuntu'
+      name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libwayland-dev libxkbcommon-dev xorg-dev libgl1-mesa-dev
+
+    - name: Configure CMake
+      run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} ${{ env.CMAKE_CONFIG_PROJECT }} ${{ env.CMAKE_CONFIG_EXTRA }}
+
+    - name: Build
+      working-directory: ${{ github.workspace }}/build
+      run: cmake --build . --config ${{ inputs.build_type }}
+
+    - name: Install
+      working-directory: ${{ github.workspace }}/build
+      run: cmake --install . --config ${{ inputs.build_type }} --prefix install
+
+    - name: Tar files
+      working-directory: ${{ github.workspace }}/build
+      run: tar -czvf package.tgz -C install .
+
+    - name: Upload
+      uses: actions/upload-artifact@v7
+      with:
+        name: package-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.build_type }}
+        path: ${{ github.workspace }}/build/package.tgz
+        retention-days: 6

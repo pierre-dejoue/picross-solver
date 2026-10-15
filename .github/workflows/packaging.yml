@@ -85,11 +85,11 @@ jobs:
     - if: matrix.os != 'windows'
       name: Tar files
       working-directory: ${{ github.workspace }}/build
-      run: tar -cvf package.tar -C install .
+      run: tar -cvf package.tgz -C install .
 
     - name: Upload
       uses: actions/upload-artifact@v7
       with:
         name: package-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.build_type }}
-        path: ${{ github.workspace }}/build/${{ matrix.os == 'windows' && 'install' || 'package.tar' }}
+        path: ${{ github.workspace }}/build/${{ matrix.os == 'windows' && 'install' || 'package.tgz' }}
         retention-days: 6
