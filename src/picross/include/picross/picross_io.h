@@ -78,20 +78,27 @@ using ErrorHandler = std::function<void(ErrorCodeT, std::string_view)>;
 std::vector<IOGrid> parse_input_file_native(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
 
 /*
- * File parser, NIN file format used by Jakub Wilk's nonogram solver program
+ * File parser, NIN file format (used by Jakub Wilk's nonogram solver program)
  *
  *      10 10               <--- Width and height
- *      1 2 3               <--- Constraint on one line, first rows then columns
+ *      1 2 3               <--- Constraint on the top row
+ *      1 1                 <--- Constraint on the next row
+ *      ...
+ *      3 2                 <--- Constraint on the left column
+ *      2 2 1               <--- Constraint on the next column
  *      ...
  *
- * Example of puzzles with this format: https://github.com/jwilk-archive/nonogram/tree/master/data
+ * Write `0` for a blank row or column.
+ *
+ * Examples of puzzles with this format: https://github.com/jwilk-archive/nonogram/tree/master/data
  */
 std::vector<IOGrid> parse_input_file_nin_format(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
 
 /*
  * File parser, NON file format (originally by Steve Simpson)
  *
- *   https://github.com/mikix/nonogram-db/blob/master/FORMAT.md
+ *   https://stevocity.me.uk/nonogram/fmt2
+ *   https://github.com/Sprunth/nonogram-db/blob/master/FORMAT.md
  *
  */
 std::vector<IOGrid> parse_input_file_non_format(std::string_view filepath, const ErrorHandler& error_handler) noexcept;
