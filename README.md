@@ -23,9 +23,10 @@ solution.
    - Steve Simpson's [NON format](doc/FILE_FORMAT_NON.md)
    - Jakub Wilk's [NIN format](doc/FILE_FORMAT_NIN.md)
    - A native format created for this library
+ - Import black and white images and convert them to puzzles
  - Fast, and battle-tested on a wide range of puzzles: [Performance](doc/PERF.md)
  - Two applications on top of the library: CLI and GUI.
- - Use the GUI to [make your own picross puzzles](doc/Create_a_Picross.md)!
+ - Use the GUI application to [make your own picross puzzles](doc/Create_a_Picross.md)!
 
 There's a demo video: [Here](https://www.youtube.com/watch?v=svnpxgFXfuE)!
 
@@ -200,7 +201,11 @@ cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DPICROSS_BUILD_GUI=ON -DPICROSS_BUILD_C
 cmake --build build/debug
 ```
 
-### Command Line Tool Usage
+### Packaging
+
+For information about packaging the applications for Linux, read: [Linux Packaging](./doc/README-LINUX-PACKAGING.md).
+
+### Command Line Tool
 
 #### Basic Usage
 
@@ -251,11 +256,13 @@ The output, in CSV format, will contain the following information:
 |domino_logic.txt  |8-Dom|17x17|OK|BRANCH|1|1628|
 |domino_logic.txt  |9-Dom|19x19|OK|BRANCH|1|21867.5|
 
-### Make your own Puzzles with the GUI
+### GUI
+
+#### Make your own Puzzles with the GUI
 
 See tutorial [here](doc/Create_a_Picross.md).
 
-### Screenshots of the GUI
+#### Screenshots of the GUI
 
 The GUI shows an animation of the solving process, and finally the solution(s). Here are two examples
 from the game Picross DS:
