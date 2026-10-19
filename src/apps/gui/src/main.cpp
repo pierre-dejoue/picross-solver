@@ -129,7 +129,7 @@ void action_import_solution(AppWindows& windows)
 struct Options
 {
     bool app_should_close{false};
-    bool gui_dark_mode{false};
+    bool gui_dark_mode{true};
     bool open_about_window{false};
     bool show_imgui_demo_window{false};
 };
